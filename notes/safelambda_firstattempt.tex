@@ -1,0 +1,309 @@
+\documentclass{article}
+
+\usepackage{a4wide}
+\usepackage{rawfonts}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[all]{xy}
+\usepackage{pstricks,pst-node}
+
+
+\fboxsep  = 5pt % making the shadow box smaller (default = 10pt)
+%\shadowwidth = 2pt % making the shadow smaller (default = 4pt)
+
+%ftp://ftp.dcs.qmw.ac.uk/pub/tex/contrib/pt/diagrams/
+
+\newcommand{\diff}{\mathrm{diff}}
+\newcommand{\ad}{\mathrm{ad}}
+\newcommand{\Leaves}{\mathrm{Leaves}}
+\newcommand{\bigF}{\mathcal{F}}
+\newcommand{\bigA}{\mathcal{A}}
+\newcommand{\bigT}{\mathcal{T}}
+\newcommand{\bigB}{\mathcal{B}}
+\newcommand{\bigU}{\mathcal{U}}
+\newcommand{\bigG}{\mathcal{G}}
+\newcommand{\bigS}{\mathcal{S}}
+\newcommand{\bigL}{\mathcal{L}}
+\newcommand{\Subf}{\mathrm{Sub}}
+\newcommand{\MSOL}{\mathrm{MSOL}}
+\newcommand{\mrm}[1]{\; \mathrm{#1} \;}
+\newcommand{\Force}{\mathrm{Force}}
+\newcommand{\underarrow}[1]{\ensuremath{\underset{\rightarrow}{\text{#1}}}}
+\newcommand{\anglebra}[1]{\langle\,{#1}\,\rangle}
+\newcommand{\privatenote}[1]{\noindent\makebox[\textwidth][l]{\hrulefill}
+\noindent\textbf{\small Note.}~~{\small #1}\\
+\makebox[\textwidth][l]{\hrulefill}}
+\newcommand\textbfit[1]{{\bf\em #1}\index{#1}}
+\newcommand\larr[1]{\stackrel{{#1}}{\longrightarrow}}
+\newcommand{\makeset}[1]{\{\,{#1}\,\}}
+% rule with a lhs label
+\newcommand\lprule[3]{$\makebox[1.6cm][l]{(#1)}
+                             \displaystyle{\displaystyle #2 \over
+                                           \displaystyle #3}$}
+% rule with a lhs label and a rhs condition
+\newcommand\lprulec[4]{$\makebox[1.6cm][l]{(#1)}
+                             \displaystyle{\displaystyle #2 \over
+                                           \displaystyle #3}\quad\makebox[1.7cm][l]{#4}$}
+\newcommand\prulec[3]{$
+                             \displaystyle{\displaystyle #1 \over
+                                           \displaystyle #2}\quad\makebox[1.7cm][l]{#3}$}
+% rule without a lhs label
+\newcommand\prule[2]{$\displaystyle{\displaystyle #1 \over
+                                          \displaystyle #2}$}
+\newcommand   \myendproof{{%        set up
+           \parfillskip=0pt            % so \par doesnt push \square to left
+           \widowpenalty=10000         % so we dont break the page before \square
+               \displaywidowpenalty=10000  % ditto
+               \finalhyphendemerits=0      % TeXbook exercise 14.32
+        %
+        %                 horizontal
+        \leavevmode                 % \nobreak means lines not pages
+           \unskip                     % remove previous space or glue
+          \nobreak                    % don't break lines
+                \hfil                       % ragged right if we spill over
+        \penalty50                  % discouragement to do so
+        \hskip2pt                   % ensure some space
+        \null                       % anchor following \hfill
+        \hfill                      % push \square to right
+         $\square$                   % the end-of-proof mark
+        %
+        %                   vertical
+        \par                        % build paragraph
+        \penalty-200                % prefer proofs with statements
+        \smallskip                  % space after
+          }
+         }
+\newcommand\mor{\longrightarrow}
+\newcommand\oq{{\sf \textbf{[}}}
+\newcommand\oa{{\sf \textbf{)}}}
+\newcommand\pq{{\sf \textbf{(}}}
+\newcommand\pa{{\sf \textbf{]}}}
+\newcommand{\mklink}[2]{{#1}^{\langle{#2}\rangle}}
+\newcommand\compose{\mathbin{\hbox{\boldmath{$;$}}}}
+\newcommand{\funsp}{\rightarrow}
+\newcommand\level[1]{{\sf level}(#1)}
+\newcommand\seq[2]{{{#1} \vdash {#2}}}
+\newcommand\blambda{\hbox{\boldmath $\lambda$}}
+\newcommand\lterm[2]{{\blambda{#1}.{#2}}}
+\newcommand\defined{\mathbin{{\buildrel{\rm \scriptscriptstyle
+                   def}\over{=}}}}
+\newcommand\mkstore[1]{\hbox{\tt [}{#1}\hbox{\tt ]}}
+\newcommand\push{{\sf push}}
+\newcommand\pop{{\sf pop}}
+\newcommand\repl{{\sf repl}}
+\newcommand\mytop{{\sf top}}
+\newcommand\id{{\sf id}}
+\newcommand\arity[1]{{\sf ar}(#1)}
+\newcommand\terms[2]{{\cal T}^{#1}(#2)}
+\newcommand\head[1]{{\sf head}\,{#1}}
+\newcommand\tail[1]{{\sf tail}\,{#1}}
+\newcommand\args[1]{\hbox{\it Args}\,(#1)}
+\renewcommand\exp{{\it Exp}}
+\newcommand\stackl{\hbox{\tt [}}
+\newcommand\stackr{\hbox{\tt ]}}
+\newcommand  \bohm{\mathrel{\lower.2ex
+                \hbox{${\stackrel{\sqsubset}{\scriptscriptstyle \sim}}$}}}
+
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{rules}[theorem]{Rule}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{notation}[theorem]{Notation}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{question}[theorem]{Question}
+
+\theoremstyle{definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{definition}[theorem]{Definition}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def\funto{\longrightarrow}
+\newcommand\rank[1]{{\sf rank}(#1)}
+\newcommand\order[1]{{\sf order}(#1)}
+\newcommand\height[1]{{\sf height}(#1)}
+\newcommand\nparam[1]{{\sf nparam}(#1)}
+\def\nat{\mathbb{N}}
+
+\title{Safe $\lambda$-Calculus}
+
+\begin{document}
+
+\maketitle
+
+\section{Homogenous type}
+
+Let $Types$ be the set of simple types generated by the grammar $A
+\, ::= \, o \; | \; A \funsp A$. Any type different from the base
+type $o$ can be written $(A_1, \cdots, A_n, o)$ for some $n \geq 1$,
+which is a shorthand for $A_1 \funsp \cdots \funsp A_n \funsp o$ (by
+convention, $\rightarrow$ associates to the right).
+
+We suppose that a ranking function has been defined: ${\sf rank} :
+Types \funto (L, \leq)$ where $(L, \leq)$ is any linearly ordered
+set. Possible candidates for the ranking function are:
+\begin{itemize}
+\item ${\sf order} : Types \funto (\nat,\leq)$ with $\order{o} = 0$
+and $\order{A \funsp B} = \max(\order{A}+1, \order{B})$.
+\item ${\sf height} : Types \funto (\nat,\leq)$ with $\height{o} = 0$
+and $\height{A \funsp B} = 1 + \max(\height{A}, \height{B})$.
+\item ${\sf nparam} : Types \funto (\nat,\leq)$ with $\nparam{o} = 0$
+and $\nparam{A_1, \cdots, A_n} = n$.
+\item ${\sf ordernp} : Types \funto (\nat \times \nat,\leq)$ with $ {\sf ordern} (t)  = (\order{t}, \nparam{t})$ for $t \in Types$.
+\end{itemize}
+
+
+Following \cite{KNU02}, a type is rank-homogeneous if it is $o$ or
+if it is $(A_1, \cdots, A_n, o)$ with the condition that $rank(A_1)
+\geq rank(A_2)\geq \cdots \geq rank(A_n)$ and each $A_1$, \ldots,
+$A_n$ is rank-homogeneous.
+
+
+
+Suppose that $\overline{A_1}$, $\overline{A_2}$, \ldots,
+$\overline{A_n}$ are $n$ lists of types, where $A_{ij}$ denotes the
+$j^{th}$ type of list $\overline{A_i}$ and $l_i$ the size of
+$\overline{A_i}$. Then the notation $A \; = \; (\overline{A_1} \, |
+\, \cdots \, | \, \overline{A_r} \, | \, o)$ means that
+\begin{itemize}
+  \item $A$ is the type $(A_{11},A_{12},\cdots, A_{1l_1}, A_{21}, \cdots,A_{2l_2}, \cdots A_{n1},\cdots, A_{nl_n},o)$
+  \item $\forall i: \forall u,v \in A_i : \rank u = \rank v $
+  \item $\forall i,j . \forall u \in A_i . \forall v \in A_j . i<j \implies \rank u >
+   \rank v $
+\end{itemize}
+Consequently, $A$ is rank-homogenous. This notation organises the
+$A_{ij}$s into partitions according to their ranks. Suppose $B =
+(\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)$.
+We write $(\overline{A_1} \, | \, \cdots \, | \, \overline{A_n} \, |
+\, {B})$ to mean
+\[(\overline{A_1} \, | \, \cdots \, | \, \overline{A_n} \, | \,
+\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o).\]
+
+
+\section{Safe $\lambda$-calculus -- correction of \cite{DBLP:conf/fossacs/AehligMO05}}
+
+In the following we shall consider terms-in-context $\seq{\Gamma}{M
+: A}$ of the simply-typed $\lambda$-calculus. Let $\Delta$ be a
+simply-typed alphabet i.e., each symbol in $\Delta$ has a simple
+type. We write $\terms{A}{\Delta}$ for the set of terms of type $A$
+built up from the set $\Delta$ understood as constant symbols,
+\emph{without} using $\lambda$-abstraction.
+
+
+The \textbfit{Safe $\lambda$-Calculus} is a sub-system of the
+simply-typed $\lambda$-calculus. Typing judgements (or
+terms-in-context) are of the form
+\begin{equation}
+\nonumber \seq{\overline{x_1}:\overline{A_1} \, | \, \cdots \, | \,
+\overline{x_n} :  \overline{A_n}}{M : B}
+\end{equation}
+which is shorthand for $\seq{x_{11} : A_{11}, \cdots, x_{1r}:
+A_{1r}, \cdots}{M : B}$. \emph{Valid typing judgements} of the
+system are defined by induction over the following rules, where
+$\Delta$ is a given homogeneously-typed alphabet:
+\[{{(\overline{A_1} \, | \, \cdots \, | \, \overline{A_n} \, | \, B)
+\hbox{ homogeneous} \qquad {b : B} \; \in \; \Delta} \over
+{\seq{\overline{x_1} : \overline{A_1}\, | \, \cdots\, | \,
+\overline{x_n} : \overline{A_n}}{b : B}}}(\mbox{const})\]
+
+\[{{(\overline{A_1}
+\, | \, \cdots \, | \, \overline{A_n}) \hbox{ homogeneous}} \over
+{\seq{\overline{x_1} : \overline{A_1}\, | \, \cdots\, | \,
+\overline{x_n} : \overline{A_n}}{x_{ij} : A_{ij}}}}(\mbox{var})\]
+
+\[
+{ {\seq{\overline{x_1} : \overline{A_1}\, | \, \cdots\, | \,
+\overline{x_{n+1}} : \overline{A_{n+1}}}{M : B}} \qquad
+\rank{\overline{A_{n+1}}} \geq \rank{B} \over {\seq{\overline{x_1} :
+\overline{A_1}\, | \, \cdots\, | \, \overline{x_{n}} :
+\overline{A_{n}}}{\lterm{\overline{x_{n+1}} : \overline{A_{n+1}}}{M}
+: (\overline{A_{n+1}} \, | \, B)}} } (\mbox{$\lambda$-abs})\]
+
+\[ {{\seq{\Gamma}{M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)} \qquad
+\seq{\Gamma}{N_1 : B_{11}} \quad \cdots \quad \seq{\Gamma}{N_{l_1} :
+B_{1l_1}} }\over{ \seq{\Gamma}{M N_1 \cdots N_{l_1} :
+(\overline{B_2} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)}}}
+(\mbox{app})\]
+
+
+
+\begin{lemma}\label{lem:safe}
+Suppose $\seq{\overline{x_1} : \overline{A_1}\, | \, \cdots\, | \,
+\overline{x_n} : \overline{A_n}}{M : B}$ is valid. Then
+\begin{itemize}
+\item[(i)] B is homogeneous.
+\item[(ii)] Any free variable of $M$ has rank
+at least $\rank{M}$.
+\item[(iii)] For any subterm $\lterm{\Phi}{L}$
+of $M$, if the variable $\varphi$ occurs in $L$ and $\rank{\varphi}
+< \rank{\Phi}$ then $\varphi$ is bound in $L$. \myendproof
+\end{itemize}
+\end{lemma}
+
+We omit the straightforward proofs.
+
+\subsubsection*{What does ``safe'' mean?}
+
+Substitution is a fundamental operation in the $\lambda$-calculus.
+In the key clause of the definition
+\[ (\lterm{x}{M})[N / y] \; \defined \; \lterm{z}{((M[z / x]) [N / y])} \quad
+\hbox{where ``$z$ is fresh''}\] bound variables are renamed afresh
+to prevent variable capture. In the {safe $\lambda$-calculus}, one
+can get away without any renaming.
+
+\begin{lemma}In the safe $\lambda$-calculus, there is no need to
+rename bound variables afresh when performing substitution
+\[M[N_1 / x_1 , \cdots, N_n / x_n]\]
+provided the substitution is performed simultaneously on \emph{all}
+free variables of the same rank in $M$ i.e.~$\makeset{x_1, \cdots,
+x_n}$ is the set variables of the same rank as $x_1$ that occur free
+in $M$.
+\end{lemma}
+
+\begin{proof} Suppose $\varphi$ occurs free in $M$, and
+bound variables in $M$ are not renamed in the substitution $M[N /
+\varphi]$. Further suppose $x$, a variable occurring free in $N$, is
+captured as a result of the substitution. I.e.~there is a subterm
+$\lterm{x}{L}$ of $M$ such that $\varphi$ occurs free in $L$. We
+compare $\rank{x}$ with $\rank{\varphi}$:
+
+\begin{itemize}
+\item {Case 1}: $\rank{x} > \rank{\varphi}$.
+
+This is impossible: Since $\lterm{x}{L}$ is safe, by
+Lemma~\ref{lem:safe}(iii), $L$ can have no free variables of rank
+less than $\rank{x}$.
+
+\item {Case 2}: $\rank{x} < \rank{\varphi}$.
+
+This is impossible: Since $N$ is safe and of level $\rank{\varphi}$,
+by Lemma~\ref{lem:safe}(ii), it can have no free variable of rank
+less than $\rank{\varphi}$.
+
+\item {Case 3}: $\rank{x} = \rank{\varphi}$.
+
+If follows from the formation rule for $\lambda$-abstraction that
+$\varphi$ cannot occur free in $M$ since the subterm $\lterm{x}{L}$
+must be in the scope of some subterm $\lterm{\varphi}{\cdots}$ of
+$M$, so that $\varphi$ does not occur free in $M$. Thus this case
+cannot arise either.
+\end{itemize}
+
+\end{proof}
+
+\bibliographystyle{plain}
+\bibliography{../bib/higherorder.bib}
+
+\end{document}
