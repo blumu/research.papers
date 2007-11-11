@@ -195,8 +195,8 @@ $$\tau''(Y_A F) = \tree{ \lambda \overline{y}}
 $$
 
 Since nodes labelled by the same free variable are mapped by $\psi$ to the same question move in the game arena, the game-semantic correspondence still holds:
-$$ \psi : \travset^{\upharpoonright r}_{\tau''}( Y_A F) \stackrel{\cong}{\longrightarrow} \sem{Y_A F}$$
-where $\travset^{\upharpoonright r}_{\tau''}(M)$ denotes the set of reductions of traversals of the computation tree $\tau''(M)$.
+$$ \psi : \travset_{\tau''}( Y_A F )^{\filter r} \stackrel{\cong}{\longrightarrow} \sem{Y_A F}$$
+where $\travset_{\tau''}(M)^{\filter r}$ denotes the set of reductions of traversals of the computation tree $\tau''(M)$.
 
 
 The computation tree $\tau''(Y_A F)$ is finite but it still does not match exactly with the finitary representation $\tau'(Y_A F)$ defined in the previous section:
@@ -206,10 +206,10 @@ $$
 We define a partial map $\alpha$ from the set of nodes of $\tau''(Y_A F)$ to the set of nodes of $\tau'(Y_A F)$ as follows. Each node labelled by a variable $x_i$ is mapped to the child of the root of the sub-tree $\tau(y_i)$ in $\tau''(Y_A F)$ labelled with $y_i$. Also, $\alpha$ maps each node hereditarily justified by $x_i$ to the corresponding node hereditarily justified by $y_i$ in $\tau''(Y_A F)$.
 
 \begin{lemma}
-$\alpha(\travset^{\upharpoonright r}_{\tau'}(Y_A F)) = \travset^{\upharpoonright r}_{\tau''}(Y_A F)$.
+$\alpha(\travset_{\tau'}(Y_A F)^{\filter r}) = \travset_{\tau''}(Y_A F)^{\filter r}$.
 \end{lemma}
 \begin{proof}
-We prove $\travset^{\upharpoonright r}_{\tau''}(Y_A F) \subseteq \alpha(\travset^{\upharpoonright r}_{\tau'}(Y_A F))$ by induction on the traversal rules for $\tau''$.
+We prove $\travset_{\tau''}(Y_A F)^{\filter r} \subseteq \alpha(\travset_{\tau'}(Y_A F)^{\filter r})$ by induction on the traversal rules for $\tau''$.
 The base case is trivial. For the step case we consider the (Var) rule, the other cases being trivial.
 
 Take the tree $\tau''$, when traversing the sub-tree $\tau^-(F)$, each time a variable node hereditarily justified by $\lambda (f) \overline{x}$ is encountered, the next step consists in taking a jump to a node in $\tau(y_i)$ hereditarily justified by the root of $\tau(y_i)$. Then the traversal of $\tau(y_i)$ continues until it reaches a variable node $z$ hereditarily justified by the root of $\tau(y_i)$ after which it jumps back to a node $\lambda \overline{\eta}$ in $\tau^-(F)$. $\lambda \overline{\eta}$ is the child of a previously visited node $p$ hereditarily justified by $\lambda (f) \overline{x}$ and from which a previous jump to $\tau(y_i)$ was taken:
@@ -234,7 +234,7 @@ After the traversal $t_1'\upharpoonright r$ of $\tau'$, it is possible to  visit
 $$(t_1'\upharpoonright r) \cdot p' \cdot \lambda \overline{\eta}' \in \travset(\tau'(Y_A F)) $$
 and $\alpha((t_1'\upharpoonright r) \cdot p' \cdot \lambda \overline{\eta}') = t\upharpoonright r$.
 
-The proof of $\travset^{\upharpoonright r}_{\tau''}(Y_A F) \supseteq \alpha(\travset^{\upharpoonright r}_{\tau'}(Y_A F))$ is similar.
+The proof of $\travset_{\tau''}(Y_A F)^{\filter r} \supseteq \alpha(\travset_{\tau'}(Y_A F)^{\filter r})$ is similar.
  \end{proof}
 
 Although $\alpha$ is not injective (it maps two different nodes of $\tau'$ labelled by the same variable to the same node of $\tau''$), its node-wise extension to the set of reductions of traversals is injective.
@@ -242,10 +242,10 @@ The proof is by an easy induction on the traversal rules.
 
 
 
-Hence $\alpha$ defines an isomorphism from $\travset^{\upharpoonright r}_{\tau''}(Y_A F)$
-to $\travset^{\upharpoonright r}_{\tau'}(Y_A F)$.
+Hence $\alpha$ defines an isomorphism from $\travset_{\tau''}(Y_A F)^{\filter r}$
+to $\travset_{\tau'}(Y_A F)^{\filter r}$.
 Consequently,
-$$ \psi  \circ \alpha : \travset^{\upharpoonright r}_{\tau'}( Y_A F) \stackrel{\cong}{\longrightarrow} \sem{Y_A F}$$
+$$ \psi  \circ \alpha : \travset_{\tau'}( Y_A F)^{\filter r} \stackrel{\cong}{\longrightarrow} \sem{Y_A F}$$
 
 This shows that the finitary representation of the computation tree defined in the previous section is adequate in the sense that the game-semantics characterisation sill holds.
 
