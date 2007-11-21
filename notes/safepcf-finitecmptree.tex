@@ -22,7 +22,10 @@
 \newcommand{\travset}{\mathcal{T}rv}
 
 % trees
-\newcommand{\tree}[2][levelsep=3.5ex]{\pstree[levelsep=3.5ex,#1]{\TR{#2}}}
+\newcommand{\tree}[2][]{\pstree[#1]{\TR{#2}}}
+% pstricks parameters for drawing arena trees and computation trees
+\newcommand{\pssetarena}{\psset{levelsep=4ex,linewidth=0.5pt}}
+\newcommand{\pssetcomptree}{\psset{levelsep=4ex,linewidth=0.5pt}}
 
 % back pointer using psttricks
 \newcommand{\bkptr}[2][nodesep=0pt]{\ncarc[linewidth=0.4pt,offset=-2pt,nodesep=0pt,ncurv=1,arcangleA=-#2, arcangleB=-#2,#1]{->}}
@@ -167,7 +170,7 @@ Therefore the correspondence theorem concerning the \emph{unrevealed} game seman
 \subsection{Adequacy of the finite representation}
 
 Consider a term of the form $Y_A F$ with $A = (A_1, \ldots A_n)$, $\overline{x} : \overline{A}$ where $\overline{A} = A_1 \ldots A_n$. Its computation tree $\tau(Y_A F)$ is defined recursively as follows:
-$$\tau(Y_A F) = \tree{ \lambda \overline{y}}
+$$\tau(Y_A F) = \pssetcomptree\tree{ \lambda \overline{y}}
      {  \tree{@}
                { \tree{ \lambda f \overline{x}}{\TR{\tau^-(F)}}
             \TR{\tau(Y_A F)}
@@ -184,7 +187,7 @@ Its set of traversals is written $\travset(Y_A F)$. We now make a harmless chang
 We can now ``compress'' the computation tree by identifying   the subtree $\tau(Y_A F)$ in $\tau(Y_A F)$ with the main computation tree. Now when a traversal visits the recursion variable $f$ in the subtree $\tau^-(F)$, instead of jumping to the root of the subtree $\tau(Y_A F)$, we jump back to the root of the main tree. Since this new occurrence of the root in the traversal has no pointer associated to it, it is clear that with our modified notion of reduction, the set of traversals reduction remains unchanged up to identification of the free variable nodes occurring in the different ``copies'' of the subtree $\tau(Y_A F)$ created during the infinite tree expansion.
 
 Hence we can use the following finite representation of the computation tree provided that we add a further rule permitting  the traversal to jump to the root after visiting $f$ in  $\tau^-(F)$:
-$$\tau''(Y_A F) = \tree{ \lambda \overline{y}}
+$$\tau''(Y_A F) = \pssetcomptree\tree{ \lambda \overline{y}}
      {  \tree{@}
                { \tree{ \lambda (f) \overline{x}}{\TR{\tau^-(F)}}
             \TR{\tau(y_1)}
@@ -200,7 +203,7 @@ where $\travset_{\tau''}(M)^{\filter r}$ denotes the set of reductions of traver
 
 
 The computation tree $\tau''(Y_A F)$ is finite but it still does not match exactly with the finitary representation $\tau'(Y_A F)$ defined in the previous section:
-$$\tau'(Y_A F) = \tree{ \lambda (f) \overline{x}}{\TR{\tau^-(F)}}
+$$\tau'(Y_A F) = \pssetcomptree\tree{ \lambda (f) \overline{x}}{\TR{\tau^-(F)}}
 $$
 
 We define a partial map $\alpha$ from the set of nodes of $\tau''(Y_A F)$ to the set of nodes of $\tau'(Y_A F)$ as follows. Each node labelled by a variable $x_i$ is mapped to the child of the root of the sub-tree $\tau(y_i)$ in $\tau''(Y_A F)$ labelled with $y_i$. Also, $\alpha$ maps each node hereditarily justified by $x_i$ to the corresponding node hereditarily justified by $y_i$ in $\tau''(Y_A F)$.
