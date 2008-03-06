@@ -1,0 +1,33 @@
+\documentclass{article}
+\input{../gamesem.pre}
+
+\title{TODO}
+\author{William Blum}
+\begin{document}
+\maketitle
+
+* all types are inhabited in the lambda calculus
+
+* find a generic encoding of any non-elementary time turing machine
+in the safe lambda calculus (using a non-uniform representation of
+numbers)
+
+* PB: How many variable names are required to generate all the
+closed beta normal form of a given type?
+
+In the lambda calculus, it is unbounded. Take the order-3 type $\tau
+\cong (((o,o),o), (o^n->o), o, o)$. For any $n\in\nat$ the following
+beta normal term:
+$$ M \cong \lambda f g x . f (\lambda x_1.f(\lambda x_2.f(\lambda \ldots f(\lambda \ldots f(\lambda x_{n-1}.g x_1 \ldots x_{n-1}) \ldots )$$
+is of type $\tau$ and uses $n$ distinct variable names. It is easy to see that
+any other $\beta$-normal form using less that $n$ distinct names cannot be alpha converted to $M$
+since the function $g$ expect as argument $n$ variables bound at $n$ different places.
+
+
+In the safe lambda calculus, however, the number of variable names required to generate
+all the closed beta normal forms is bounded by $size(\tau)-1$ where $size$ is defined by
+$size(o)= 1$ and $size(\tau\tyepar\mu) = size(\tau) + size(\mu)$.
+
+* Space complexity of normalization of safe order 4 terms.
+
+\end{document}
