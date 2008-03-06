@@ -1,0 +1,133 @@
+% -*- TeX -*- -*- Soft -*-
+
+% Copyright 2007 by William Blum
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesClass{gamesem}[2008/03/01 Macro for game-semantics]
+
+% Macro used for game semantics
+%%%%%%%%%%%%%%%%%%%%%%%% PACKAGES
+\RequirePackage{amssymb}
+\RequirePackage{pst-tree}
+\RequirePackage[defblank]{paralist}
+\RequirePackage{picins}
+\RequirePackage{wrapfig}
+\RequirePackage{fancybox}
+\RequirePackage{manfnt}
+\RequirePackage{pstring}
+\definecolor{darkGreen}{rgb}{0.03,0.35,0.05}
+\pstrSetArrowColor{darkGreen}
+
+
+%%%%%%%%%%%%%%%%% MACROS
+% Note to myself
+\newcommand\notetoself[1]{
+\bigskip \noindent \fbox{
+\begin{tabular}{cl}
+\textdbend &
+\begin{minipage}{0.80\textwidth}
+#1
+\end{minipage}
+\end{tabular}
+} }
+
+% ABBREVIATIONS
+\def\ie{{\it i.e.}\ }
+\def\eg{{\em e.g.}}
+\def\cf{{\em cf.}}
+
+
+% highlight for definition names
+\newcommand\defname[1]{{\bf\em #1}\index{#1}}
+
+% reduction, substitution
+\newcommand\betared{\rightarrow_\beta}
+\newcommand\betasred{\rightarrow_{\beta_s}}
+\newcommand\betaredtr{\twoheadrightarrow_\beta} % transitive closure of the beta reduction
+\newcommand\subst[2]{\left[ #1/#2 \right]}
+\newcommand\captsubst[2]{\{#1/#2 \}}
+
+% computation tree, eta normal form, traversals
+\newcommand{\elnf}[1]{\lceil #1\rceil} % eta long normal form
+\newcommand\travset{\mathcal{T}rv}
+
+% lambda calculus, reduction, types
+\newcommand\dps{\displaystyle}
+\newcommand\rulef[2]{\frac{\dps #1}{\dps #2}}
+\newcommand\rulefex[3][5pt]{\frac{\dps
+    #2}{\stackrel{\rule{0pt}{#1}}{\dps #3}}}
+\newcommand\ord[1]{{\sf
+    ord}(#1)}
+\newcommand{\rulename}[1]{\mathbf{({\sf #1})}}
+\newcommand{\rulenamet}[1]{${\sf (#1)}$}
+\newcommand{\encode}[1]{\overline{#1}}
+\newcommand\seq[2]{{{#1} \vdash {#2}}}
+\newcommand\typear{\rightarrow}
+
+
+% set theory
+\newcommand{\makeset}[1]{\{\,{#1}\,\}}
+\newcommand\inter{\cap}
+\newcommand\union{\cup}
+\newcommand\Union{\bigcup}
+\newcommand\prefset{\textsf{Pref}}
+\newcommand{\relimg}[1]{{(\!| #1 |\!)}}
+\newcommand\nat{\mathbb{N}}
+
+
+% game semantics
+\newcommand{\theroot}{\circledast} % the root of the computation tree
+\newcommand{\lsem}{[\![} % \llbracket
+\newcommand{\rsem}{]\!]} % \rrbracket
+\newcommand{\sem}[1]{{[\![ #1 ]\!]}}
+\newcommand{\revsem}[1]{{\langle\!\langle #1 \rangle\!\rangle}}
+\newcommand{\syntrevsem}[1]{{\langle\!\langle #1 \rangle\!\rangle}_{\sf s}}
+\newcommand\intercomp{\fatsemi{^\|}}
+
+
+% logic
+\newcommand\imp{\Longrightarrow}
+\newcommand\zor{\vee}
+\newcommand\zand{\wedge}
+\newcommand\entail{\vdash}
+
+
+
+
+% pcf and ia
+\newcommand\ialgol{{IA}}
+\newcommand\iacom{\texttt{com}}
+\newcommand\iaexp{\texttt{exp}}
+\newcommand\iavar{\texttt{var}}
+\newcommand\pcf{{PCF}}
+
+% justified sequence of moves
+\newcommand{\oview}[1]{\llcorner #1 \lrcorner}
+\newcommand{\pview}[1]{\ulcorner #1 \urcorner}
+\newcommand{\filter}{\upharpoonright}
+
+
+
+% trees
+\newcommand{\tree}[2][]{\pstree[#1]{\TR{#2}}}
+% pstricks parameters for drawing arena trees and computation trees
+\newcommand{\pssetarena}{\psset{levelsep=4ex,linewidth=0.5pt}}
+\newcommand{\pssetcomptree}{\psset{levelsep=4ex,linewidth=0.5pt}}
+
+\newcommand{\arclabel}[1]{\mput*{\mbox{{\small $#1$}}}}
+\newcommand\mng[1]{{\mathopen{[\![}\,#1\,\mathclose{]\!]}}}
+
+\def\eg{{\em e.g.}}
+\def\cf{{\em cf.}}
+
+
+\newlength{\mylength}
+\newenvironment{FramedTable}%
+{\begin{table}[htbp]
+\begin{Sbox}%
+\setlength{\mylength}{\textwidth}%
+\addtolength{\mylength}{-4\fboxsep}%
+\addtolength{\mylength}{-2\fboxrule}%
+\begin{minipage}{\mylength}}%
+{\end{minipage}\end{Sbox}\shadowbox{\TheSbox}\end{table}}%
+
+
