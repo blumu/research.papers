@@ -1,17 +1,21 @@
 \documentclass{article}
-\usepackage{../gamesem}
+\usepackage{gamesem}
 
 \title{TODO list}
 \author{William Blum}
 \begin{document}
 \maketitle
 \begin{itemize}
-\item All types (with one atom) are inhabited in the lambda
-calculus. What about multiple atoms?
+
 
 \item find a generic encoding of any non-elementary time turing machine
 in the safe lambda calculus (using a non-uniform representation of
 numbers)
+
+\item Space complexity of beta normalization at order 4 for safe terms?
+EXPSPACE? Safety allows us to not have to encode variable names.
+
+\itme Space complexity of beta eta equality at order 4 for safe terms?
 
 \item PB: How many variable names are required to generate all the
 closed beta normal form of a given type?
@@ -33,6 +37,43 @@ $size(\tau)-1$ where $size$ is defined by $size(o)= 1$ and
 $size(\tau\typear\mu) = size(\tau) + size(\mu)$.
 
 \item Space complexity of normalization of safe order 4 terms.
+
+\item All types (with one atom) are inhabited in the lambda
+calculus. What about multiple atoms?
+
+For any atom $a$, we can construct the types $\tau(n,a)$
+as follows: $\tau(0,a) = a$ and $\tau(n+1,a) = \tau(n,a) \typear a$.
+Take three distinct atoms $a$, $b$ and $c$. We give examples of types with some inhabitant (safe if one is known):
+\begin{enumerate}
+\item For any atoms $a$,$b$ and $c$ and any $i,j,k\in\nat$, the type
+$(\tau(i,a) \typear \tau(j,b)) \typear (\tau(j,b) \typear \tau(k,c)) \typear \tau(i,a) \typear
+\tau(k,c)$ is inhabited by the term $\lambda x y z w . y (x z)$ which is unsafe if and only if $i<j$.
+
+
+\item
+$(\tau(1,a) \typear \tau(2,a)) \typear (\tau(2,a) \typear \tau(4,a)) \typear \tau(1,a) \typear
+\tau(4,a)$ is inhabited by the safe term $$\lambda x^{\tau(1,a)
+\typear \tau(2,a)} y^{(\tau(2,a) \typear \tau(4,a))} z^{\tau(1,a)}
+w^{\tau(3,a)} . x (\lambda x^a . x) (\lambda x^a . x)\ .$$
+
+\item $(\tau(1,a) \typear \tau(2,b)) \typear (\tau(2,b) \typear \tau(4,c)) \typear \tau(1,a) \typear
+\tau(4,c)$
+is inhabited by the safe term:
+$$ \lambda x y z w . y (\lambda g . x (\lambda a . a) (\lambda b . b)) (\lambda f . f (\lambda c . c))$$
+where
+$x : ((a, a), (b, b), b)$,
+$y : (((b, b), b), (((c, c), c), c), c)$,
+$g : (b, b)$,
+$f : ((c, c), c)$. (Safe inhabitant found by Luke.)
+\item
+$(\tau(1,a) \typear \tau(3,b)) \typear (\tau(3,b) \typear \tau(4,c)) \typear \tau(1,c) \typear
+\tau(4,c)$
+is inhabited by the safe term
+$$ \lambda x^{(\tau(1,a) \typear \tau(3,b))} y^{(\tau(3,b) \typear \tau(4,c))} z^{\tau(1,c)} w^{\tau(3,c)} . y (x (\lambda u^a . u)) \ .$$
+\item We conjecture that $(\tau(2,a) \typear \tau(3,b)) \typear (\tau(3,b) \typear \tau(4,c)) \typear \tau(2,a) \typear
+\tau(4,c)$ is not safely inhabited.
+\end{enumerate}
+
 \end{itemize}
 
 \end{document}
