@@ -6,17 +6,49 @@
 \author{William Blum}
 \begin{document}
 \maketitle
+
+\section{Space complexity}
+\begin{enumerate}
+
+\item Express the size of $\eta$-long expansion with respect to the size of the original term. Probably something like: $|\eta\mbox{-nf}(M:\tau)| = \mathcal{O}(|M|.|\tau|)$, which would mean a size polynomial in the size of the input (=size of term + size of its type).
+
+\item In fact beta-normalization is PSPACE(-complete) at order 3! This means that although by Sec.~\ref{sec:misc}:\ref{safe_varnames} there are order-3 terms needing arbitrarily large number of variables names, in order to reduce any given order 3 terms, we only need to introduce a number of fresh variable names that is at most exponential in the size of the formula (since encoding a variable name requires space logarithmic in the total number of names).
+
+\item At order 3, it should be possible to prove the PSPACE complexity result by showing that the maximum size of the stack of the DPDA encoding the game semantics of the term (see Lukes' paper on observation equivalence of order-3 finitary IA) is polynomial in the size of the term.
+
+
+\item With safety, no names need to be introduced at any order. Thus in a certain sense we save some space, but only logarithmic in the number of variable names that we would have needed to introduced without the safety constraint.
+
+\item When the order is not bound, normalization of safe term is non-elementary.
+But at this level ``TIME=SPACE''. So safety probably does not give anything in term of space complexity.
+
+\item The last two points raise the following question: When the order is bound, does it really cost anything to introduce fresh variable names? For instance, is it possible to find say an order-$4$ (unsafe) term for which an unbounded number of variable names need to be introduced in order to be able to reduce it (using any possible reduction strategy)?
+    No answer at the moment.
+
+\item I expect the complexity of normalization for order-$r$ simply-typed terms where $r\geq4$ to be something like $(r-3)$-EXPSPACE.
+    What would safety give use in that case?
+
+\item Space complexity of beta normalization at order 4 for safe terms?
+EXPSPACE? Safety allows us to not have to encode variable names.
+
+\item Space complexity of beta eta equality at order 4 for safe terms?
+
+\end{enumerate}
+
+\section{Miscellaneous ideas}
+\label{sec:misc}
 \begin{enumerate}
 
 \item General idea to develop ``safety appears at order 3 but kicks in at order 4''. For instance the simplest closed beta normal form is order 3 (kierstead term). But at order 3, the economy of variable names does not buy you anything since normalization is already PSPACE-complete! In fact we hope to prove that safety at order 4 causes a gain in term of space complexity for the normalization problem.
     Moreover I suspect that De Miranda's result on the nonnecessity of safety for generation word languages at order 2 can be extended to order 3.
+
 
 \item find a generic encoding of any non-elementary time turing machine
 in the safe lambda calculus (using a non-uniform representation of
 numbers)
 
 
-\item PB: How many variable names are required to generate all the
+\item \label{safe_varnames} PB: How many variable names are required to generate all the
 closed beta normal form of a given type?
 
 In the lambda calculus, it is unbounded. Take the order-3 type
@@ -35,33 +67,21 @@ required to generate all the closed beta normal forms is bounded by
 $size(\tau)-1$ where $size$ is defined by $size(o)= 1$ and
 $size(\tau\typear\mu) = size(\tau) + size(\mu)$.
 
-\item In fact beta-normalization is PSPACE(-complete) at order 3! This means that although by the previous point there are order-3 terms needing arbitrarily large number of variables names, in order to reduce any given order 3 terms, we only need to introduce a number of fresh variable names that is exponential in the size of the formula (since encoding a variable name requires space logarithmic in the total number of names).
 
-\item At order 3, it should be possible to prove the PSPACE complexity result by showing that the maximum size of the stack of the DPDA encoding the game semantics of the term (see Lukes' paper on observation equivalence of order-3 finitary IA) is polynomial in the size of the term.
+\item In a call-by-value programming language, safety does not buy you anything because the reduction strategy is such that no reduction occurs under a lambda abstraction. Consequently, when evaluating a (closed) program, $\beta$-reduction will never require variable renaming!
 
-\item  Conjecture: ``there is an order 4 (unsafe) term for which an unbounded number of variable names need to be introduced in order to be able to reduce it.''
+    There is still a potential, however, for applications in the domain of partial evaluation. Indeed, partial evaluation strategies proceed by contracting redex within the body of a lambda abstraction. The safety constraint allows you to perform these reductions without having to introduce new variable names.
+\end{enumerate}
 
-    With safety, no names need to be introduced at any order. So my conjecture is: normalization of safe order-$n$ terms for $n\geq4$ is
-    in $(n-3)-EXSPACE$.
-
-
-
-
-
-
-\item Space complexity of beta normalization at order 4 for safe terms?
-EXPSPACE? Safety allows us to not have to encode variable names.
-
-\item Space complexity of beta eta equality at order 4 for safe terms?
-
-
-\item All types (with one atom) are inhabited in the lambda
-calculus. What about multiple atoms?
+\section{Type inhabitation}
 
 Let us say that a type is UNSAFE if it is inhabited, and every
 inhabitant is unsafe; further we say that an unsafe type is UNIQUELY
 UNSAFE if it has a unique inhabitant.
 
+\begin{enumerate}
+
+\item All types with one atom are safe (either not inhabited at all or inhabited in the safe lambda calculus). What about multiple atoms?
 
 For any atom $a$, we can construct the types $\tau(n,a)$
 as follows: $\tau(0,a) = a$ and $\tau(n+1,a) = \tau(n,a) \typear a$.
@@ -130,9 +150,6 @@ up to $\beta$, $\eta$, $\alpha$ conversion is $\lambda x.\lambda y. y(\lambda z.
 
 \item Luke's conjecture: "there is no uniquely unsafe type that is generated with only two atoms."
 
-\item In a call-by-value programming language, safety does not buy you anything because the reduction strategy is such that no reduction occurs under a lambda abstraction. Consequently, when evaluating a (closed) program, $\beta$-reduction will never require variable renaming!
-
-    There is still a potential, however, for applications in the domain of partial evaluation. Indeed, partial evaluation strategies proceed by contracting redex within the body of a lambda abstraction. The safety constraint allows you to perform these reductions without having to introduce new variable names.
 \end{enumerate}
 
 \end{document}
