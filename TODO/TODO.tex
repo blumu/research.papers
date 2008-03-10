@@ -39,7 +39,7 @@ EXPSPACE? Safety allows us to not have to encode variable names.
 \label{sec:misc}
 \begin{enumerate}
 
-\item General idea to develop ``safety appears at order 3 but kicks in at order 4''. For instance the simplest closed beta normal form is order 3 (kierstead term). But at order 3, the economy of variable names does not buy you anything since normalization is already PSPACE-complete! In fact we hope to prove that safety at order 4 causes a gain in term of space complexity for the normalization problem.
+\item A general idea to develop: ``safety appears at order 3 but kicks in at order 4''. For instance the simplest closed beta normal form is order 3 (kierstead term). But at order 3, the economy of variable names does not buy you anything since normalization is already PSPACE-complete! In fact we hope to prove that safety at order 4 causes a gain in term of space complexity for the normalization problem.
     Moreover I suspect that De Miranda's result on the nonnecessity of safety for generation word languages at order 2 can be extended to order 3.
 
 
@@ -150,6 +150,9 @@ up to $\beta$, $\eta$, $\alpha$ conversion is $\lambda x.\lambda y. y(\lambda z.
 
 \item Luke's conjecture: "there is no uniquely unsafe type that is generated with only two atoms."
 
+
+\item Conjecture: Even for terms that are not unsafe but that are intrinsically
+safe, the variable-capture permitting lemma still holds.
 \end{enumerate}
 
 \end{document}
