@@ -1,21 +1,20 @@
 \documentclass{article}
 \usepackage{gamesem}
+\usepackage{amsmath}
 
 \title{TODO list}
 \author{William Blum}
 \begin{document}
 \maketitle
-\begin{itemize}
+\begin{enumerate}
 
+\item General idea to develop ``safety appears at order 3 but kicks in at order 4''. For instance the simplest closed beta normal form is order 3 (kierstead term). But at order 3, the economy of variable names does not buy you anything since normalization is already PSPACE-complete! In fact we hope to prove that safety at order 4 causes a gain in term of space complexity for the normalization problem.
+    Moreover I suspect that De Miranda's result on the nonnecessity of safety for generation word languages at order 2 can be extended to order 3.
 
 \item find a generic encoding of any non-elementary time turing machine
 in the safe lambda calculus (using a non-uniform representation of
 numbers)
 
-\item Space complexity of beta normalization at order 4 for safe terms?
-EXPSPACE? Safety allows us to not have to encode variable names.
-
-\itme Space complexity of beta eta equality at order 4 for safe terms?
 
 \item PB: How many variable names are required to generate all the
 closed beta normal form of a given type?
@@ -36,28 +35,58 @@ required to generate all the closed beta normal forms is bounded by
 $size(\tau)-1$ where $size$ is defined by $size(o)= 1$ and
 $size(\tau\typear\mu) = size(\tau) + size(\mu)$.
 
-\item Space complexity of normalization of safe order 4 terms.
+\item In fact beta-normalization is PSPACE(-complete) at order 3! This means that although by the previous point there are order-3 terms needing arbitrarily large number of variables names, in order to reduce any given order 3 terms, we only need to introduce a number of fresh variable names that is exponential in the size of the formula (since encoding a variable name requires space logarithmic in the total number of names).
+
+\item At order 3, it should be possible to prove the PSPACE complexity result by showing that the maximum size of the stack of the DPDA encoding the game semantics of the term (see Lukes' paper on observation equivalence of order-3 finitary IA) is polynomial in the size of the term.
+
+\item  Conjecture: ``there is an order 4 (unsafe) term for which an unbounded number of variable names need to be introduced in order to be able to reduce it.''
+
+    With safety, no names need to be introduced at any order. So my conjecture is: normalization of safe order-$n$ terms for $n\geq4$ is
+    in $(n-3)-EXSPACE$.
+
+
+
+
+
+
+\item Space complexity of beta normalization at order 4 for safe terms?
+EXPSPACE? Safety allows us to not have to encode variable names.
+
+\item Space complexity of beta eta equality at order 4 for safe terms?
+
 
 \item All types (with one atom) are inhabited in the lambda
 calculus. What about multiple atoms?
 
+Let us say that a type is UNSAFE if it is inhabited, and every
+inhabitant is unsafe; further we say that an unsafe type is UNIQUELY
+UNSAFE if it has a unique inhabitant.
+
+
 For any atom $a$, we can construct the types $\tau(n,a)$
 as follows: $\tau(0,a) = a$ and $\tau(n+1,a) = \tau(n,a) \typear a$.
-Take three distinct atoms $a$, $b$ and $c$. We give examples of types with some inhabitant (safe if one is known):
+It is easy to see that for all $k\in\nat$ and atom $a$, $\tau(2k,a)$ is not inhabited by any term (even unsafe) and $\tau(2k+1,a)$ is safely inhabited.
+
+Take three distinct atoms $a$, $b$ and $c$. For any $i,j,k\in\nat$, we write $\sigma(i,j,k)$ to denote the type
+$$\sigma(i,j,k) \cong (\tau(i,a) \typear \tau(j,b)) \typear (\tau(j,b) \typear \tau(k,c)) \typear \tau(i,a) \typear
+\tau(k,c) \ .$$
+We now give examples of types together with some inhabitant (safe if one is known):
 \begin{enumerate}
-\item For any atoms $a$,$b$ and $c$ and any $i,j,k\in\nat$, the type
-$(\tau(i,a) \typear \tau(j,b)) \typear (\tau(j,b) \typear \tau(k,c)) \typear \tau(i,a) \typear
-\tau(k,c)$ is inhabited by the term $\lambda x y z w . y (x z)$ which is unsafe if and only if $i<j$.
+\item $\sigma(i,j,k)$ is inhabited by the term $\lambda x y z w . y (x z)$ which is unsafe if and only if $i<j$.
 
+\item For any odd number $k$, $\sigma(i,j,k)$ is safely inhabited. Indeed if $k=1$ then it is inhabited by the safe term
+    $$\lambda x y z w^c. w$$
+    and otherwise it is inhabited by
+    $$\lambda x y z w^{\tau(c,k-1)}. w (In(k-2))$$
+    where $In(k-2)$ denotes the safe inhabitant of type $\tau(c,k-2)$ (which exists since $k-2$ is odd.
 
-\item
+\item The single-atom type
 $(\tau(1,a) \typear \tau(2,a)) \typear (\tau(2,a) \typear \tau(4,a)) \typear \tau(1,a) \typear
 \tau(4,a)$ is inhabited by the safe term $$\lambda x^{\tau(1,a)
 \typear \tau(2,a)} y^{(\tau(2,a) \typear \tau(4,a))} z^{\tau(1,a)}
 w^{\tau(3,a)} . x (\lambda x^a . x) (\lambda x^a . x)\ .$$
 
-\item $(\tau(1,a) \typear \tau(2,b)) \typear (\tau(2,b) \typear \tau(4,c)) \typear \tau(1,a) \typear
-\tau(4,c)$
+\item $\sigma(1,2,4)$
 is inhabited by the safe term:
 $$ \lambda x y z w . y (\lambda g . x (\lambda a . a) (\lambda b . b)) (\lambda f . f (\lambda c . c))$$
 where
@@ -66,14 +95,44 @@ $y : (((b, b), b), (((c, c), c), c), c)$,
 $g : (b, b)$,
 $f : ((c, c), c)$. (Safe inhabitant found by Luke.)
 \item
-$(\tau(1,a) \typear \tau(3,b)) \typear (\tau(3,b) \typear \tau(4,c)) \typear \tau(1,c) \typear
-\tau(4,c)$
+$\sigma(1,3,4)$
 is inhabited by the safe term
 $$ \lambda x^{(\tau(1,a) \typear \tau(3,b))} y^{(\tau(3,b) \typear \tau(4,c))} z^{\tau(1,c)} w^{\tau(3,c)} . y (x (\lambda u^a . u)) \ .$$
-\item We conjecture that $(\tau(2,a) \typear \tau(3,b)) \typear (\tau(3,b) \typear \tau(4,c)) \typear \tau(2,a) \typear
-\tau(4,c)$ is not safely inhabited.
+
+\item $\sigma(2,3,4)$ is inhabited by the safe term
+$\lambda x y z w . y (\lambda f . f (\lambda b . b)) (\lambda g . g (\lambda c . c))$
+where
+$f : ((b, b), b)$,
+$g : ((c, c), c)$.
+
+\item It is easy to show that $\sigma(0,2,0)$ (order $4$) is not safely inhabited:
+Its only inhabitant up to $\beta$, $\eta$, $\alpha$ conversion
+is $\lambda x y z w. y (x z) $ which is unsafe.
+Same for $\sigma(0,2,4)$.
+
+\item Luke's example: $(a, (((a, b), b),c), c)$ (order $4$). Its only inhabitant
+up to $\beta$, $\eta$, $\alpha$ conversion is $\lambda x.\lambda y. y(\lambda z.zx)$ which is unsafe.
+
+\item At order $3$: The type $( ((a, c), b),  ((c, b), a),  a)$ is inhabited by only one term: $\lambda f g . g (\lambda x . f (\lambda y . c))$ which is unsafe.
+
+\item At order $3$ with only $2$ atoms:
+ $( ((b, a), b),  ((a, b), a),  a)$ is only inhabited by the following family of unsafe terms:
+ \begin{align*}
+& \lambda f g . g (\lambda x_1 . f (\lambda y_1 . x_1)) \\
+&\lambda f g . g (\lambda x_1 . f (\lambda y_1 . g (\lambda x_2 . y_1))) \\
+&\lambda f g . g (\lambda x_1 . f (\lambda y_1 . g (\lambda x_2 . f (\lambda y_2 . x_i))) \qquad\mbox{where $i = 1, 2$} \\
+&\lambda f g . g (\lambda x_1 . f (\lambda y_1 . g (\lambda x_2 . f (\lambda y_2 . g (\lambda x_3 . y_i))) \qquad\mbox{where $i = 1, 2$} \\
+&\ldots
+\end{align*}
+\item At order $2$ all closed $\beta$-normal terms are safe so there is no unsafe type at this order.
 \end{enumerate}
 
-\end{itemize}
+
+\item Luke's conjecture: "there is no uniquely unsafe type that is generated with only two atoms."
+
+\item In a call-by-value programming language, safety does not buy you anything because the reduction strategy is such that no reduction occurs under a lambda abstraction. Consequently, when evaluating a (closed) program, $\beta$-reduction will never require variable renaming!
+
+    There is still a potential, however, for applications in the domain of partial evaluation. Indeed, partial evaluation strategies proceed by contracting redex within the body of a lambda abstraction. The safety constraint allows you to perform these reductions without having to introduce new variable names.
+\end{enumerate}
 
 \end{document}
