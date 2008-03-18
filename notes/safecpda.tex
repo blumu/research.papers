@@ -130,7 +130,7 @@ of the recursion scheme (which is also the order of CPDA(G)).
 
 Let $s$ be a 1-stack. It can then be written as
 $$ s = u_{r+1} \cdot \lambda \overline{\eta}_r^{k_r} \cdot u_r \cdot
-\ldots \cdot \lambda \overline{\eta}_1^{k_1} \cdot  u_1 $$ 
+\ldots \cdot \lambda \overline{\eta}_1^{k_1} \cdot  u_1 $$
 for some $r\geq 0$ where
 \begin{compactitem}
 \item  $\lambda \overline{\eta}_1^{k_1}$ is the
@@ -139,12 +139,12 @@ last $\lambda$-node in $s$ with order strictly positive;
 \item for $1 \leq l \leq r$, $\lambda
 \overline{\eta}_l^{k_l}$ is the last $\lambda$-node in $s_{\prefixof
 \lambda \overline{\eta}_{l-1}^{k_{l-1}}}$ with order strictly
-greater than $\ord{\lambda \overline{\eta}_{l-1}^{k_{l-1}}}$, 
+greater than $\ord{\lambda \overline{\eta}_{l-1}^{k_{l-1}}}$,
 
 \item  $r$ is defined as the smallest number such that
 $s_{\prefixof \lambda \overline{\eta}_{r}^{k_{r}}}$ does not contain
 any lambda-node of order strictly greater than $\lambda
-\overline{\eta}_{r}^{k_{r}}$. 
+\overline{\eta}_{r}^{k_{r}}$.
 \end{compactitem}
 
 Thus:
@@ -163,7 +163,7 @@ order-decomposition) of $s$ and we write $\orddec{s}$ to denote the
 subsequence $\lambda
 \overline{\eta}_r^{k_r} \ldots \overline{\eta}_1^{k_1}$ of $s$ consisting of the lambda-nodes $\lambda
 \overline{\eta}_l^{k_l}$ defined above. For $1\leq l \leq r$, $l$ is called the \defname{incremental index} of the lambda-node $\lambda \overline{\eta}_l^{k_l}$ in $\orddec{s}$.
- Note that this sequence is uniquely determined. 
+ Note that this sequence is uniquely determined.
 
 Convention: Usually the operation $top_i~s$, that returns the top $(i-1)$-stack of a higher-order stack $s$, does not preserve the dangling pointers resulting from the extraction of the stack. Here, we define $top_i$ in such a way that the pointers are preserved. In the implementation side, this just means that we keep the pair of integers that encodes each pointer. This convention allows us to
 extend the definition of the order-decomposition to higher-level stacks as follows:
@@ -257,7 +257,7 @@ $s$ is safe if and only if
     \lambda \overline{\eta}_1^1 \rangle$
     and for all $1 \leq q \leq r$ such that $n-\ord{\lambda \overline{\eta}_q}+1 < \ord{s}$,
     $collapse (s_{\prefixof \lambda \overline{\eta}_q^1})$ is safe.
-    \end{itemize}
+
 
 %\newcommand\saferel\rightsquigarrow
 %\begin{definition}
@@ -315,7 +315,7 @@ If $s$ is safe then $s^{\langle n-l+1 \rangle}$ is $b$-safe.
 \end{lemma}
 \begin{proof}
   By induction on the order of $s$.
-The base case is $\ord{s} = 2$. 
+The base case is $\ord{s} = 2$.
 Since $s$ is safe we have:
 \begin{equation}
  \orddec{s} = \langle \lambda \overline{\eta}_r^1
@@ -327,14 +327,13 @@ the stack symbol is $l$ and is kept unchanged otherwise.
 Hence we have:
 \begin{equation}
 \orddec{s^{\langle n-l+1 \rangle}} = \langle
-\lambda \overline{\eta}_r^1
-, \ldots,  \lambda \overline{\eta}_{b}^1, \lambda \overline{\eta}_{b-1}^{k_{b-1}}, \ldots,
- \lambda \overline{\eta}_1^{k_1}} \rangle
-\ . 
+\lambda \overline{\eta}_r^1, \ldots,  \lambda \overline{\eta}_{b}^1, \lambda \overline{\eta}_{b-1}^{k_{b-1}}, \ldots,
+ \lambda \overline{\eta}_1^{k_1} \rangle
+\ .
 \end{equation}
 for some $k_{b-1}, \ldots , k_1 \leq 2$ and where $q$ is precisely the incremental index of the last lambda-node in $\orddec{s}$ with order $>l$ \ie $q=b$. Thus $s^{\langle n-l+1 \rangle}$ is $b$-safe.
 
-Step case: $n>\ord{s}>2$. 
+Step case: $n>\ord{s}>2$.
 By definition of the order-decomposition we have
 $\orddec{s^{\langle n-l+1 \rangle}} = \orddec{top_2 (s^{\langle n-l+1 \rangle})}$.
 Clearly we have $top_2 (s^{\langle n-l+1 \rangle}) = (top_2 (s))^{\langle n-l+1 \rangle}$.
@@ -436,7 +435,7 @@ Let $s=[s_1 \ldots s_{c+1}]$ be any safe higher-order stack of order. We show th
 
 We claim that provided that the input recursion scheme is safe, the
 $collapse$ operation in $CPDA(G)$ can be simulated by the operation
-$pop_{n-\ord{top_1(s)}+1}$. (If we use the formulation $CPDA'(G)$ instead, then 
+$pop_{n-\ord{top_1(s)}+1}$. (If we use the formulation $CPDA'(G)$ instead, then
 $collapse$ is simulated by $pop_{n-\ord{top_1(s)}+1}$ if $top_1(s)$
 is a $j$-child with $j\geq 2$ and by $pop_1$ if it is a prime
 child).
@@ -477,11 +476,11 @@ shows that (i) holds and (ii) trivially holds.
 
 Since $s$ is safe we have $\orddec{s} = \langle \lambda
 \overline{\eta}_r^1 , \ldots, \lambda \overline{\eta}_1^1
-\rangle$. 
+\rangle$.
 Since the recursion-scheme $G$ is safe, by Lemma \ref{lem:binder_in_ordecompos}, $x$'s binder is precisely the
 last node in $\orddec{s}$ with order strictly greater than $l$.
 Hence by Lemma \ref{lem:pushj_safe_implies_b-safe}
-we have that $push_{n-l+1}\ s$ is $b$-safe where $b$ is the 
+we have that $push_{n-l+1}\ s$ is $b$-safe where $b$ is the
 incremental index of $x$'s binder in $\orddec{c}$.
 
 %\begin{itemize}
