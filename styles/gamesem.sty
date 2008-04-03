@@ -14,6 +14,7 @@
 \RequirePackage{fancybox}
 \RequirePackage{manfnt}
 \RequirePackage{pstring}
+\RequirePackage{tikz}
 \definecolor{darkGreen}{rgb}{0.03,0.35,0.05}
 \pstrSetArrowColor{darkGreen}
 
@@ -39,39 +40,56 @@
 % highlight for definition names
 \newcommand\defname[1]{{\bf\em #1}\index{#1}}
 
+
+
+
 % reduction, substitution
 \newcommand\betared{\rightarrow_\beta}
 \newcommand\betasred{\rightarrow_{\beta_s}}
 \newcommand\betaredtr{\twoheadrightarrow_\beta} % transitive closure of the beta reduction
 \newcommand\subst[2]{\left[ #1/#2 \right]}
 \newcommand\captsubst[2]{\{#1/#2 \}}
+%\newcommand\blambda{\hbox{\boldmath $\lambda$}}
+%\newcommand\lterm[2]{{\blambda{#1}.{#2}}}
+
 
 % computation tree, eta normal form, traversals
-\newcommand{\elnf}[1]{\lceil #1\rceil} % eta long normal form
-\newcommand\travset{\mathcal{T}rv}
+\newcommand\elnf[1]{\lceil #1\rceil}  %eta-long normal form
+\newcommand\etalnf[1]{\eta_{\sf lnf}(#1)} %eta-long normal form (alternative notation)
+\newcommand\betanf[1]{\beta_{\sf nf}(#1)}
+\newcommand\etabetlanf[1]{\eta\beta_{\sf lnf}(#1)}
+\newcommand\travset{\mathcal{T}rav}
+
 
 % lambda calculus, reduction, types
-\newcommand\dps{\displaystyle}
-\newcommand\rulef[2]{\frac{\dps #1}{\dps #2}}
-\newcommand\rulefex[3][5pt]{\frac{\dps
-    #2}{\stackrel{\rule{0pt}{#1}}{\dps #3}}}
-\newcommand\ord[1]{{\sf
-    ord}(#1)}
+\newcommand{\ord}{\mathop{\mathrm{ord}}}
+%\newcommand{\ord}[1]{{\sf ord}(#1)}
 \newcommand{\rulename}[1]{\mathbf{({\sf #1})}}
 \newcommand{\rulenamet}[1]{${\sf (#1)}$}
 \newcommand{\encode}[1]{\overline{#1}}
 \newcommand\seq[2]{{{#1} \vdash {#2}}}
 \newcommand\typear{\rightarrow}
 
+% axiom and rules
+\newcommand\axiomf[1]{\frac{\dps}{#1}}
+\newcommand\dps{\displaystyle}
+\newcommand\rulef[2]{\frac{\dps #1}{\dps #2}}
+\newcommand\rulefex[3][5pt]{\frac{\dps
+    #2}{\stackrel{\rule{0pt}{#1}}{\dps #3}}}
+
 
 % set theory
-\newcommand{\makeset}[1]{\{\,{#1}\,\}}
 \newcommand\inter{\cap}
 \newcommand\union{\cup}
 \newcommand\Union{\bigcup}
 \newcommand\prefset{\textsf{Pref}}
+\newcommand\sthat{\ | \ }  % ``such that'' for set defined by comprehension
 \newcommand{\relimg}[1]{{(\!| #1 |\!)}}
+\newcommand{\makeset}[1]{\{\,{#1}\,\}}
+\newcommand\natbf{\mathbf{N}}
+\newcommand\zset{\mathbb{Z}}
 \newcommand\nat{\mathbb{N}}
+
 
 
 % game semantics
@@ -83,6 +101,20 @@
 \newcommand{\syntrevsem}[1]{{\langle\!\langle #1 \rangle\!\rangle}_{\sf s}}
 \newcommand\intercomp{\fatsemi{^\|}}
 
+% game arenas
+\newcommand\lingamear{\multimap} %linear functional game
+\newcommand\gamear{\rightarrow}
+\newcommand\gameprod{\times}
+
+
+% plays
+\newcommand\cover{{\sf cover}}
+
+% observation equiv.
+%\newcommand\bot{\perp}
+\newcommand\eval{\Downarrow}
+\newcommand\obspre{\sqsubseteq}
+\newcommand\obseq{\approx}
 
 % logic
 \newcommand\imp{\Longrightarrow}
@@ -93,18 +125,89 @@
 
 
 
-% pcf and ia
+% IA
 \newcommand\ialgol{{IA}}
+\newcommand\ialgolmnew{\ialgol-$\{\ianew\}$}
+\newcommand\iaseqcom{$\tt{seq_{com}}$}
+\newcommand\iaseqexp{$\tt{seq_{exp}}$}
+\newcommand\iaseq{\texttt{seq}}
+\newcommand\iaskip{\texttt{skip}}
+\newcommand\iaderef{\texttt{deref}}
+\newcommand\iaassign{\texttt{assign}}
+\newcommand\iadone{\texttt{done}}
+\newcommand\iarun{\texttt{run}}
+\newcommand\iawrite{\texttt{write}}
+\newcommand\iaread{\texttt{read}}
+\newcommand\iaok{\texttt{ok}}
+\newcommand\iamkvar{\texttt{mkvar}}
+\newcommand\ianew{\texttt{new}}
+\newcommand{\ianewin}[1]{\texttt{new}\ #1\ \texttt{in}}
+\newcommand\iabool{\texttt{bool}}
+\newcommand\iawhile{\texttt{while}}
+\newcommand\iado{\texttt{do}}
 \newcommand\iacom{\texttt{com}}
 \newcommand\iaexp{\texttt{exp}}
 \newcommand\iavar{\texttt{var}}
+
+% PCF
 \newcommand\pcf{{PCF}}
+\newcommand\pcfcond{\texttt{cond}}
+\newcommand\pcfsucc{\texttt{succ}}
+\newcommand\pcfpred{\texttt{pred}}
+\newcommand\pcfcase{\texttt{case}} % part of PCF'
+
 
 % justified sequence of moves
 \newcommand{\oview}[1]{\llcorner #1 \lrcorner}
 \newcommand{\pview}[1]{\ulcorner #1 \urcorner}
-\newcommand{\filter}{\upharpoonright}
+\newcommand{\longoview}[1]{\lfloor #1 \rfloor}
 
+
+
+% bullet moves
+\newcommand{\extomovecolor}{-red!75!green!50}
+\newcommand{\genpmovecolor}{darkgray}
+\newcommand{\extomove}{\textcolor{\extomovecolor}}
+\newcommand{\genpmove}{\textcolor{\genpmovecolor}}
+
+% filtering
+\newcommand{\filter}{\upharpoonright}
+\newcommand{\filterplus}{\upharpoonright^+} % hereditary filtering with respect to the justification of t^+
+
+\newcommand{\hjfilter}{\upharpoonright_j} %hereditary justification filter
+\newcommand{\hefilter}{\upharpoonright_e} %hereditary enabling filter
+\newcommand{\subtermfilter}{\upharpoonright} %subterm filter
+
+
+% sequence transformations
+\newcommand\ip{{\sf ip}} % immediate prefix
+\newcommand\jp{{\sf jp}} % justification prefix
+\newcommand\ptrdist{{\sf ptrdist}} % distance to justifier
+
+\newcommand{\subseqof}{\sqsubseteq}
+%\newcommand{\strictsubseqof}{\sqsubsetneq}
+\newcommand{\prefixof}{\leqslant}
+\newcommand{\suffixof}{\geqslant}
+
+% traversal extension
+\newcommand{\extension}[1]{{\sf ext}(#1)}
+\newcommand\oeview[1]{\oview{#1}_{{\sf e}}}
+\newcommand\peview[1]{\pview{#1}^{{\sf e}}}
+
+
+
+
+
+% trees
+\newcommand{\SubTree}[2][]{\Tr[ref=t]{\pstribox[#1]{#2}}}
+\newcommand{\SubTreeE}[2][]{\Tr[ref=t]{\pstribox[#1]{#2}}}
+\def\noedge#1#2{}
+\def\dedge{\ncline[linestyle=dashed]}
+\def\dotedge{\ncline[linestyle=dotted]}
+\def\valueedge{\ncline[linestyle=dashed,linewidth=0.5pt]}
+\newcommand{\TRV}[1][edge=\valueedge]{\TR[edge=\valueedge,#1]}
+\newcommand\treelabel[1]{\mput*{\mbox{{\small $#1$}}}}
+% \tvput*{1}
 
 
 % trees
@@ -139,3 +242,75 @@
 \newcommand\pmove{\raise 1.3px \hbox{\tiny \fontshape{n} \Circle}}
 \newcommand\opmove{\raise 1.3px \hbox{\tiny  \fontshape{n} \LEFTcircle}}
 \newcommand\pomove{\raise 1.3px \hbox{\tiny \fontshape{n} \RIGHTcircle}}
+
+
+%%%%%%%%%%%%%% My simple margin TODO
+% todo symbol
+\newcommand\todosymbol{\textdbend}
+\newcommand\todomargin[1]{\marginpar{\textdbend \begin{sloppypar} #1 \end{sloppypar}}}
+\newcommand\todobox[1]{\colorbox{lightgray}{\parbox[h]{0.9\textwidth}{#1}}\marginpar[\textdbend]{\textdbend}}
+
+
+%%%%%%%%%%%%%%% TODO nodes from fauskes.net
+% Customization:
+%    \tikzstyle{notestyle} += [text width=\marginparwidth]
+%    \tikzstyle{notestyleleft} += [text width=0.9\marginparwidth]
+
+
+\makeatletter \newcommand \listoftodos{\section*{Todo list} \@starttoc{tdo}}
+\newcommand\l@todo[2]
+    {\par\noindent \textit{#2}, \parbox{10cm}{#1}\par} \makeatother
+
+\definecolor{orange}{rgb}{1,0.5,0}
+\tikzstyle{notestyle} = [draw=black, fill=orange, text width = 3cm]
+\tikzstyle{notestyleleft} = [notestyle]
+\tikzstyle{connectstyle} = [draw = orange, thick]
+% Command for inserting a todo item
+\newcommand{\todo}[1]{%
+% Add to todo list
+\addcontentsline{tdo}{todo}{\protect{#1}}%
+%
+\begin{tikzpicture}[remember picture, baseline=-0.75ex]%
+    \node [coordinate] (inText) {};
+\end{tikzpicture}%
+%
+% Make the margin par
+\marginpar[%
+{% Draw note in left margin
+    \tikz[remember picture] \draw node[notestyleleft] (inNote) {#1};%
+    \begin{tikzpicture}[remember picture, overlay]%
+        \draw[connectstyle]
+            ([yshift=-0.2cm] inText)
+                -| ([xshift=0.2cm] inNote.east)
+                -| (inNote.east);
+    \end{tikzpicture}%
+}%
+]{% Draw note in right margin
+    \tikz[remember picture] \draw node[notestyle] (inNote) {#1};%
+    \begin{tikzpicture}[remember picture, overlay]%
+        \draw[connectstyle]
+            ([yshift=-0.2cm] inText)
+                -| ([xshift=-0.2cm] inNote.west)
+                -| (inNote.west);
+    \end{tikzpicture}%
+}%
+}%
+
+\def\printtodomargin{
+% Make the margin par
+\marginpar{%
+    \begin{tikzpicture}[remember picture]%
+        \draw node[notestyle] (inNote)
+                 {#1};%
+    \end{tikzpicture}%
+}%
+%
+\begin{tikzpicture}[remember picture, overlay]%
+    \draw[connectstyle]
+        ([yshift=-0.2cm] inText)
+            -| ([xshift=-0.2cm] inNote.west)
+            -| (inNote.west);
+\end{tikzpicture}%
+%
+}%
+
