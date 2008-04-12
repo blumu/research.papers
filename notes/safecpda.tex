@@ -1,20 +1,21 @@
 \documentclass{article}
+\usepackage{gamesem}
 \usepackage{amsmath, amsthm, amssymb}
 \usepackage[defblank]{paralist}
 \usepackage{shadowbox}
 \usepackage{a4wide}
 \usepackage{manfnt}
 
-\newcommand{\ord}{\mathop{\mathrm{ord}}}
-\newcommand{\subseqof}{\sqsubseteq}
-\newcommand{\prefixof}{\leqslant}
-\newcommand{\suffixof}{\geqslant}
-\newcommand\defname[1]{{\bf\em #1}\index{#1}}
-
-\newcommand{\theroot}{\circledast} % the root of the computation tree
-
-% misc
-\newcommand\assignar\leftarrow
+%\newcommand{\ord}{\mathop{\mathrm{ord}}}
+%\newcommand{\subseqof}{\sqsubseteq}
+%\newcommand{\prefixof}{\leqslant}
+%\newcommand{\suffixof}{\geqslant}
+%\newcommand\defname[1]{{\bf\em #1}\index{#1}}
+%
+%\newcommand{\theroot}{\circledast} % the root of the computation tree
+%
+%% misc
+%\newcommand\assignar\leftarrow
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{corollary}[theorem]{Corollary}
@@ -36,31 +37,31 @@
 \newcommand\orddec\overline
 
 
-% ABBREVIATIONS
-\def\ie{{\it i.e.}\ }
-\def\eg{{\em e.g.}}
-\def\cf{{\em cf.}}
+%% ABBREVIATIONS
+%\def\ie{{\it i.e.}\ }
+%\def\eg{{\em e.g.}}
+%\def\cf{{\em cf.}}
 
-% set theory
-\newcommand{\makeset}[1]{\{\,{#1}\,\}}
-\newcommand\inter{\cap}
-\newcommand\union{\cup}
-\newcommand\Union{\bigcup}
-\newcommand\prefset{\textsf{Pref}}
-\newcommand{\relimg}[1]{{(\!| #1 |\!)}}
-\newcommand\nat{\mathbb{N}}
-
-
-% Note to myself
-\newcommand\notetoself[1]{
-\bigskip \noindent \fbox{
-\begin{tabular}{cl}
-\textdbend &
-\begin{minipage}{0.80\textwidth}
-#1
-\end{minipage}
-\end{tabular}
-} }
+%% set theory
+%\newcommand{\makeset}[1]{\{\,{#1}\,\}}
+%\newcommand\inter{\cap}
+%\newcommand\union{\cup}
+%\newcommand\Union{\bigcup}
+%\newcommand\prefset{\textsf{Pref}}
+%\newcommand{\relimg}[1]{{(\!| #1 |\!)}}
+%\newcommand\nat{\mathbb{N}}
+%
+%
+%% Note to myself
+%\newcommand\notetoself[1]{
+%\bigskip \noindent \fbox{
+%\begin{tabular}{cl}
+%\textdbend &
+%\begin{minipage}{0.80\textwidth}
+%#1
+%\end{minipage}
+%\end{tabular}
+%} }
 
 
 \author{William Blum}
@@ -96,6 +97,29 @@ We call \defname{configuration} any order-$n$ stack where $n$ is the order
 of $CPDA(G)$ \ie the order of the recursion scheme $G$.
 
 
+\subsection{Remarks}
+
+The purpose of the CPDA $CPDA(G)$ is to compute the set of traversals of the computation tree of $G$. One can easily transform $CPDA(G)$ into an automaton that ``prints out'' the traversal that is being computed. This can be done by changing the behaviour of the $push_1$ operation to make it print out the input element before pushing it on the stack. The justification pointers can then be recovered
+inductively using the node labels: to recover the justifier of a variable node, we just need to look for the only node-occurrence that binds it in the P-view at that point (which is computable by the induction hypothesis).
+Prime lambda nodes always point to their immediate predecessor. For non-prime lambda nodes, the justifier is always the occurrence preceding the justifier of the variable node preceding the lambda node.
+
+Since some of the transitions of the CPDA, such as $collapse$, are destructive, the current content of stack does not contain sufficient information in order to reconstruct the traversal that is being computed.
+Nevertheless, two very useful pieces of information can be recovered from the configuration-stack: namely the O-view and the P-view of the traversal.
+
+Let $c$ be a configuration. The \defname{long O-view} 
+(resp.\ O-view, reps.\ P-view) of the traversal that is currently computed by the configuration $c$, written respectively $\longoview{c}$, $\oview{c}$ and $\pview{c}$, can be recovered as follows:
+\begin{align*}
+  \longoview{s} &= \epsilon & \mbox{if $top_1 s$ is undefined;} \\
+      &=   \longoview{pop_1 s} \cdot top_1 s & \mbox{if $top_1 s \in N_{\sf var}$, $top_1 s$ pointing to its immediate predecesor;} \\
+      &=   \longoview{pop_1 s} \cdot top_1 s & \mbox{if $top_1 s \in N_@$, $@$ having no pointer;} \\  
+      &=   \longoview{collapse\,s} \cdot top_1 s & \mbox{if $top_1 s \in N_\lambda^{\sf prime}$, $top_1 s$ pointing to its immediate predecesor;} \\
+      &=   \longoview{collapse\,s} \cdot top_1 s & \mbox{if $top_1 s \in N_\lambda\setminus N_\lambda^{\sf prime}$, $top_1 s$ pointing to $\ip(\jp(collapse\,s))$.} \\
+\end{align*}
+The O-view is defined similarly to the long-O-view except that the calculation stops when an @-node is reached:
+\begin{align*}
+  \oview{s}  &=   top_1 s & \mbox{if $top_1 s \in N_@$, $@$ having no pointer;} \\
+\end{align*}
+As shown in the original paper, the P-view is given by $top_2\,c$.
 
 
 \subsection{Incremental order-decomposition}
@@ -222,8 +246,8 @@ We say that $s$ is \defname{safe} iif
     \item for all $1 \leq q \leq r$ such that $n-\ord{\lambda \overline\eta_q}+1 \leq \ord{s}$,
     $collapse~s_{\prefixof \lambda\overline\eta_q}$ is safe.
     \end{enumerate}
-        
-We say that $s$ is \defname{$q$-safe} if and only if the lambda node 
+
+We say that $s$ is \defname{$q$-safe} if and only if the lambda node
 $\lambda\overline\eta$ of $\orddec{s}$ with incremental index $q$ verifies
     $collapse~s_{\prefixof \lambda\overline\eta}$ is safe.
 \end{definition}
@@ -236,7 +260,7 @@ for any lambda-node $\lambda\overline\eta \in \orddec{s}$ such that $n-\ord{\lam
 
 
 \begin{lemma}
-\label{lem:safecollapsesimulation} 
+\label{lem:safecollapsesimulation}
 If $s$ is safe, then for any lambda node $\lambda\overline\eta$ in $\orddec{s}$ we have:
 $$collapse~s_{\prefixof\lambda\overline\eta} = pop_{n-\ord{\lambda\overline\eta}+1} ~s_{\prefixof\lambda\overline\eta} \ . $$
 \end{lemma}
@@ -308,7 +332,7 @@ $n-\ord{\lambda \overline{\eta}_{q}} +1 \leq \ord{s^{\langle n-l+1 \rangle}}$, $
 \end{enumerate}
 
 First condition: Clearly we have $top_2~s^{\langle n-l+1 \rangle} = (top_2~s)^{\langle n-l+1 \rangle}$. Since $s$ is safe, so is $top_2~s$. We have proven the result for $1$-stacks thus we can apply it to $top_2~s$ which shows that $(top_2~s)^{\langle n-l+1 \rangle}$ is $b$-safe.
- 
+
 Second condition: The only symbols that are updated in $s$ by the operation $s \mapsto s^{\langle n-l+1 \rangle}$ are those occurring in the top order-$1$ stack $top_2~s$. Thus since the first $r-b+1$ lambda-nodes in $\orddec{s^{\langle n-l+1 \rangle}}$ and $\orddec{s}$ coincide, this implies that $collapse(s^{\langle n-l+1 \rangle}_{\prefixof\lambda\overline\eta_q}) = collapse(s_{\prefixof\lambda\overline\eta_q})$ for all $b \leq q \leq r$.
 Hence the safety of $s$ implies the safety of $s^{\langle n-l+1 \rangle}_{\prefixof\lambda\overline\eta_b}$ \ie the $b$-safety of $s^{\langle n-l+1 \rangle}$.
 \qed
@@ -340,7 +364,7 @@ $pop_{n-\ord{\lambda \overline{\eta}}+1}~s_{\prefixof \lambda \overline{\eta}} =
 Otherwise $n-\ord{\lambda \overline{\eta}}+1 < \ord{s}$ and we have:
 \begin{align*}
   collapse~s_{\prefixof\lambda\overline\eta}
-      &= pop_{n-\ord{\lambda \overline{\eta}}+1}~s_{\prefixof\lambda\overline\eta} 
+      &= pop_{n-\ord{\lambda \overline{\eta}}+1}~s_{\prefixof\lambda\overline\eta}
       & \mbox{by Lemma \ref{lem:safecollapsesimulation}, since $s_{\prefixof\lambda\overline\eta}$ is safe} \\
   &= [ s_1 \ldots s_l\ (pop_{n-\ord{\lambda\overline\eta}+1}~ {s_{l+1}}_{\prefixof\lambda\overline\eta}) ]
    & \mbox{$n-\ord{\lambda \overline{\eta}}+1<\ord{s}$}  \\
@@ -398,7 +422,7 @@ Let $s=[s_1 \ldots s_{c+1}]$ be any safe higher-order stack of order. We show th
 \section{Simulation}
 
 We claim that provided that the input recursion scheme is safe, the
-uses of the $collapse$ operation in $CPDA(G)$ can all be replaced by the operation $pop_{n-\ord{top_1(s)}+1}$. 
+uses of the $collapse$ operation in $CPDA(G)$ can all be replaced by the operation $pop_{n-\ord{top_1(s)}+1}$.
 
 \section{Proof of correctness}
 
@@ -499,7 +523,7 @@ $$\delta(u) = pop_1^p ; collapse;push_1 E_i(top_1)$$
 \end{figure}
 Contrary to $CPDA(G)$, in a configuration of this CPDA the link associated to a lambda node $\lambda\overline\eta$ is not necessarily of the form
 $(n-\ord{\lambda\overline\eta}+1,k)$. Instead the first component of the link pair $(j,k)$ associated to a lambda node is defined as follows:
-$j = 1$ if $\lambda\overline\eta$ is a prime node and $j=n-\ord{\lambda\overline\eta}+1$ otherwise. Therefore we can simulate the collapse operation 
+$j = 1$ if $\lambda\overline\eta$ is a prime node and $j=n-\ord{\lambda\overline\eta}+1$ otherwise. Therefore we can simulate the collapse operation
 using transitions performing $pop_1$ if $top_1~s$ is prime and $pop_{n-\ord{top_1(s)}+1}$ otherwise.
 \clearpage
 
