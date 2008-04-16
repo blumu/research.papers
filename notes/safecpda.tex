@@ -34,7 +34,7 @@
 \newtheorem{algorithm}{Algorithm}[section]
 
 % order-decomposition of a 1-stack
-\newcommand\orddec\overline
+\newcommand\orddec{\sf orddec}
 
 
 %% ABBREVIATIONS
@@ -106,12 +106,12 @@ Prime lambda nodes always point to their immediate predecessor. For non-prime la
 Since some of the transitions of the CPDA, such as $collapse$, are destructive, the current content of stack does not contain sufficient information in order to reconstruct the traversal that is being computed.
 Nevertheless, two very useful pieces of information can be recovered from the configuration-stack: namely the O-view and the P-view of the traversal.
 
-Let $c$ be a configuration. The \defname{long O-view} 
+Let $c$ be a configuration. The \defname{long O-view}
 (resp.\ O-view, reps.\ P-view) of the traversal that is currently computed by the configuration $c$, written respectively $\longoview{c}$, $\oview{c}$ and $\pview{c}$, can be recovered as follows:
 \begin{align*}
   \longoview{s} &= \epsilon & \mbox{if $top_1 s$ is undefined;} \\
       &=   \longoview{pop_1 s} \cdot top_1 s & \mbox{if $top_1 s \in N_{\sf var}$, $top_1 s$ pointing to its immediate predecesor;} \\
-      &=   \longoview{pop_1 s} \cdot top_1 s & \mbox{if $top_1 s \in N_@$, $@$ having no pointer;} \\  
+      &=   \longoview{pop_1 s} \cdot top_1 s & \mbox{if $top_1 s \in N_@$, $@$ having no pointer;} \\
       &=   \longoview{collapse\,s} \cdot top_1 s & \mbox{if $top_1 s \in N_\lambda^{\sf prime}$, $top_1 s$ pointing to its immediate predecesor;} \\
       &=   \longoview{collapse\,s} \cdot top_1 s & \mbox{if $top_1 s \in N_\lambda\setminus N_\lambda^{\sf prime}$, $top_1 s$ pointing to $\ip(\jp(collapse\,s))$.} \\
 \end{align*}
@@ -124,13 +124,13 @@ As shown in the original paper, the P-view is given by $top_2\,c$.
 
 \subsection{Incremental order-decomposition}
 
-Let $s$ be a 1-stack. It can then be written as
+Let $s$ be a 1-stack. For any $l\in \nat$, $s$ can then be written
 $$ s = u_{r+1} \cdot \lambda \overline{\eta}_r^{k_r} \cdot u_r \cdot
 \ldots \cdot \lambda \overline{\eta}_1^{k_1} \cdot  u_1 $$
 where
 \begin{compactitem}
 \item  $\lambda \overline{\eta}_1^{k_1}$ is the
-last $\lambda$-node in $s$ with order strictly positive;
+last $\lambda$-node in $s$ with order strictly greater than $l$;
 
 \item for $1 < l \leq r$, $\lambda
 \overline{\eta}_l^{k_l}$ is the last $\lambda$-node in $s_{\prefixof
@@ -149,16 +149,25 @@ any lambda-node of order strictly greater than $\lambda
 strictly smaller than $\ord{\lambda \overline{\eta}_l}$;
 \item for $1\leq l<l'\leq r$ we have $\ord{\lambda \overline{\eta}_l^{k_l}}
 < \ord{\lambda \overline{\eta}_{l'}^{k_{l'}}}$;
-\item $r=0$ if and only if all the lambda node in $s$ have order $0$ \ie if they are dummy lambda nodes.
+\item $r=0$ if and only if all the lambda node in $s$ have order $\geq l$.
 \end{compactitem}
 \smallskip
 
 We call \defname{incremental order-decomposition} (or just
-order-decomposition) of $s$ and we write $\orddec{s}$ to denote the
-subsequence $\lambda
-\overline{\eta}_r^{k_r} \ldots \lambda\overline{\eta}_1^{k_1}$ of $s$ consisting of the lambda-nodes $\lambda
-\overline{\eta}_l^{k_l}$ defined above. For $1\leq l \leq r$, $l$ is called the \defname{incremental index} of the lambda-node $\lambda \overline{\eta}_l^{k_l}$ in $\orddec{s}$.
- Note that this sequence is uniquely determined.
+order-decomposition) of $s$ with respect to $l\in \nat$ and we write $\orddec_l(s)$ to denote the
+subsequence $\lambda \overline{\eta}_r^{k_r} \ldots \lambda\overline{\eta}_1^{k_1}$ of $s$ consisting of the lambda-nodes $\lambda
+\overline{\eta}_l^{k_l}$ defined above. For any given $l\in \nat$ this sequence is uniquely determined. It is formally defined as follows:
+\begin{align*}
+  \orddec_l(\epsilon) &= \epsilon \\
+    \orddec_l(s) &=     \orddec_{\ord{\lambda\overline{\eta}}}(s_{<\lambda\overline{\eta}}) \cdot \lambda\overline{\eta}^k
+&    \mbox{for } s\neq\epsilon \\
+& \mbox{\quad where } \lambda\overline{\eta}^k \mbox{ is the last node in $top_1(s)$ with order $>l$\ .}
+\end{align*}
+
+
+
+%For $1\leq j \leq r$, $j$ is called the \defname{incremental index} of the lambda-node $\lambda \overline{\eta}_l^{k_l}$ in $\orddec{s}$.
+
 
 Convention: In the original definition, the operation $top_i$ that returns the top $(i-1)$-stack of a higher-order stack, removes any dangling pointer resulting from the operation. Here, we suppose that $top_i$ is defined in such a way that all pointers are preserved. From an implementation viewpoint, since links are encoded as pairs of integers, this means that $top_i$ just returns an unmodified copy of the top $(i-1)$-stack. This convention allows us to
 extend the definition of order-decomposition to higher-level stacks as follows:
