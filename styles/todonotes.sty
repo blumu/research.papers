@@ -1,0 +1,92 @@
+% Part: Identification
+\ProvidesPackage{todonotes}
+
+% Part: Initial code
+\RequirePackage{xkeyval}
+\newcommand{\@backgroundcolor}{orange}
+\newcommand{\@bordercolor}{black}
+
+% Part: The declaration of options
+\define@boolkey{todonotes.sty}%
+[todo]{disable}{}
+\define@key{todonotes.sty}%
+{color}{\renewcommand{\@backgroundcolor}{#1}}
+\define@key{todonotes.sty}%
+{bordercolor}{\renewcommand{\@bordercolor}{#1}} \ProcessOptionsX
+
+% Part: The package loading part
+\RequirePackage{tikz}
+
+% Part: The main code part
+\iftododisable
+\newcommand{\listoftodos}{}
+\newcommand{\todo}{}
+\else
+\newcommand{\listoftodos}
+{\section*{Todo list} \@starttoc{tdo}}
+%\newcommand{\l@todo}
+%{\@dottedtocline{1}{0em}{2.3em}}
+\newcommand\l@todo[2]
+    {\par\noindent \textit{#2}, \parbox{10cm}{#1}\par}
+
+
+ \tikzstyle{notestyle} = [draw=\@bordercolor,
+fill=\@backgroundcolor, text width = 3cm]
+\tikzstyle{notestyleleft} =
+[notestyle] \tikzstyle{connectstyle} = [draw = \@backgroundcolor,
+thick]
+
+\newcommand{\todo}[1]{%
+% Add to todo list
+\addcontentsline{tdo}{todo}{\protect{#1}}%
+%
+% Remember where we are
+\begin{tikzpicture}[remember picture, baseline=-0.75ex]%
+\node [coordinate] (inText) {};%
+\end{tikzpicture}%
+%
+% Make the margin par
+\marginpar{% Draw note in right margin
+\tikz[remember picture] \draw node[notestyle] {}; \\ %
+#1 %
+\tikz[remember picture] \draw node[notestyle] (inNote) {};%
+\begin{tikzpicture}[remember picture, overlay]%
+\draw[connectstyle] ([yshift=-0.2cm] inText) -| ([xshift=-0.2cm]
+inNote.west) -| (inNote.west);
+\end{tikzpicture}%
+}%
+}%
+
+\def\printtodomargin{
+% Make the margin par
+\marginpar{%
+    \begin{tikzpicture}[remember picture]%
+        \draw node[notestyle] (inNote)
+                 {##1};%
+    \end{tikzpicture}%
+}%
+%
+\begin{tikzpicture}[remember picture, overlay]%
+    \draw[connectstyle]
+        ([yshift=-0.2cm] inText)
+            -| ([xshift=-0.2cm] inNote.west)
+            -| (inNote.west);
+\end{tikzpicture}%
+%
+}%
+
+\fi
+
+
+%%%%%%%%%%%%%%% TODO nodes from fauskes.net
+% Customization:
+%    \tikzstyle{notestyle} += [text width=\marginparwidth]
+%    \tikzstyle{notestyleleft} += [text width=0.9\marginparwidth]
+
+
+
+%%%%%%%%%%%%%% A simple margin TODO
+% todo symbol
+\newcommand\todosymbol{\textdbend}
+\newcommand\todomargin[1]{\marginpar{\textdbend \begin{sloppypar} #1 \end{sloppypar}}}
+\newcommand\todobox[1]{\colorbox{lightgray}{\parbox[h]{0.9\textwidth}{#1}}\marginpar[\textdbend]{\textdbend}}
