@@ -20,22 +20,11 @@
 
 
 %%%%%%%%%%%%%%%%% MACROS
-% Note to myself
-\newcommand\notetoself[1]{
-\bigskip \noindent \fbox{
-\begin{tabular}{cl}
-\textdbend &
-\begin{minipage}{0.80\textwidth}
-#1
-\end{minipage}
-\end{tabular}
-} }
 
 % ABBREVIATIONS
-\def\ie{{\it i.e.}\ }
-\def\eg{{\em e.g.}}
-\def\cf{{\em cf.}}
-
+\newcommand\ie{{\it i.e.}\ }
+\newcommand\eg{{\em e.g.}}
+\newcommand\cf{{\em cf.}}
 
 % highlight for definition names
 \newcommand\defname[1]{{\bf\em #1}\index{#1}}
@@ -219,8 +208,7 @@
 \newcommand{\arclabel}[1]{\mput*{\mbox{{\small $#1$}}}}
 \newcommand\mng[1]{{\mathopen{[\![}\,#1\,\mathclose{]\!]}}}
 
-\def\eg{{\em e.g.}}
-\def\cf{{\em cf.}}
+
 
 
 \newlength{\mylength}

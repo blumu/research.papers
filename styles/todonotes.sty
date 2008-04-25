@@ -90,3 +90,15 @@ inNote.west) -| (inNote.west);
 \newcommand\todosymbol{\textdbend}
 \newcommand\todomargin[1]{\marginpar{\textdbend \begin{sloppypar} #1 \end{sloppypar}}}
 \newcommand\todobox[1]{\colorbox{lightgray}{\parbox[h]{0.9\textwidth}{#1}}\marginpar[\textdbend]{\textdbend}}
+
+
+% Note to myself
+\newcommand\notetoself[1]{
+\par \bigskip \noindent \fbox{
+\begin{tabular}{cl}
+\textdbend &
+\begin{minipage}{0.80\textwidth}
+#1
+\end{minipage}
+\end{tabular}
+} }
