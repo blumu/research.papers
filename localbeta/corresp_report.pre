@@ -1,0 +1,76 @@
+ % -*- TeX -*- -*- Soft -*-
+\documentclass{article}
+
+%\usepackage[all]{xy}
+\usepackage{gamesem}
+\usepackage{todonotes}
+\usepackage{a4wide}
+\usepackage[defblank]{paralist}
+%\usepackage{url}
+\usepackage{amsmath,amsthm,amssymb}
+\usepackage{wasysym}
+\usepackage{stmaryrd}
+\usepackage[numbers]{natbib}
+\usepackage{pst-tree}
+\usepackage{bbm,latexsym}
+\usepackage{tabularx}
+\usepackage{ifpdf}
+\ifpdf
+  \usepackage[breaklinks=true,colorlinks=true, linkcolor=blue]{hyperref}
+\else
+  \usepackage{url}
+  \newcommand\texorpdfstring[2]{#1}
+\fi
+\usetikzlibrary{matrix}
+
+% THEOREMS
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}[theorem]{Corollary}
+
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{property}[theorem]{Property}
+\newtheorem{example}[theorem]{Example}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{algorithm}[theorem]{Algorithm}
+
+
+% MACROS
+
+
+%\newcommand\textbfit[1]{{\bf\em #1}\index{#1}}
+\newcommand\defeq{\stackrel{\textsf{def}}{=}}
+
+
+% Safe lambda calculus
+\newcommand\funto{\longrightarrow}
+\newcommand\rank[1]{{\sf rank}(#1)}
+\newcommand\order[1]{{\sf order}(#1)}
+\newcommand\slheight[1]{{\sf height}(#1)}
+\newcommand\nparam[1]{{\sf nparam}(#1)}
+\newcommand\level[1]{{\sf level}(#1)}
+\newcommand\typeof[1]{{\sf type}(#1)}
+
+% stacking things up
+% use \stk{text}_{underneath} to write 'underneath' underneath 'text'
+%\def\stk#1{\mathop{\vtop{\ialign{##\crcr
+%$\hfil\displaystyle{#1}\hfil$\crcr\noalign{\kern2pt\nointerlineskip}
+%\crcr\noalign{\kern2pt}}}}\limits}
+
+% use \stk{text}{underneath} to write 'underneath' underneath 'text'
+\def\stk#1#2{%
+\setbox0=\hbox{$#1$}
+\setbox1=\hbox{\small $#2$}
+\dimen0=-\wd1 \advance \dimen0 by \wd0 \divide \dimen0 by 2
+\lower\baselineskip\vbox{\copy0 \moveright\dimen0\box1}
+}
+
+\def\stkt#1#2#3{\stk{#1}{\stk{#2}{#3}}}
+
+\tikzstyle{notestyle} += [text width=0.9\marginparwidth]
+\tikzstyle{notestyleleft} += [text width=0.9\marginparwidth]
