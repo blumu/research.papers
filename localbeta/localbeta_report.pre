@@ -1,12 +1,10 @@
  % -*- TeX -*- -*- Soft -*-
 \documentclass{article}
 
-%\usepackage[all]{xy}
 \usepackage{gamesem}
 \usepackage{todonotes}
 \usepackage{a4wide}
 \usepackage[defblank]{paralist}
-%\usepackage{url}
 \usepackage{amsmath,amsthm,amssymb}
 \usepackage{wasysym}
 \usepackage{stmaryrd}
