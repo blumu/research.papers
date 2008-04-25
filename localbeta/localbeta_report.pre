@@ -21,6 +21,11 @@
 \fi
 \usetikzlibrary{matrix}
 
+% adjust todonotes options
+\tikzstyle{notestyle} += [text width=0.9\marginparwidth]
+\tikzstyle{notestyleleft} += [text width=0.9\marginparwidth]
+
+
 % THEOREMS
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{corollary}[theorem]{Corollary}
@@ -43,7 +48,6 @@
 %\newcommand\textbfit[1]{{\bf\em #1}\index{#1}}
 \newcommand\defeq{\stackrel{\textsf{def}}{=}}
 
-
 % Safe lambda calculus
 \newcommand\funto{\longrightarrow}
 \newcommand\rank[1]{{\sf rank}(#1)}
@@ -53,6 +57,7 @@
 \newcommand\level[1]{{\sf level}(#1)}
 \newcommand\typeof[1]{{\sf type}(#1)}
 
+%% Macros to stack things up
 % use \stk{text}{underneath} to write 'underneath' underneath 'text'
 \def\stk#1#2{%
 \setbox0=\hbox{$#1$}
@@ -60,8 +65,9 @@
 \dimen0=-\wd1 \advance \dimen0 by \wd0 \divide \dimen0 by 2
 \lower\baselineskip\vbox{\copy0 \moveright\dimen0\box1}
 }
-
+% stacking 3 things
 \def\stkt#1#2#3{\stk{#1}{\stk{#2}{#3}}}
 
-\tikzstyle{notestyle} += [text width=0.9\marginparwidth]
-\tikzstyle{notestyleleft} += [text width=0.9\marginparwidth]
+
+% Entailments for different kinds of judgments
+\newcommand\stentail{\vdash_{\sf st}} % entailment for simply-typed term
