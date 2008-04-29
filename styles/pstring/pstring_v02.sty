@@ -1,0 +1,257 @@
+\NeedsTeXFormat{LaTeX2e}
+% Created by William Blum on 28 January 2007
+% Version 0.02
+
+\ProvidesClass{pstring}[2007/02/14 Package for representing pointer-strings]
+
+\RequirePackage{pstricks}
+\RequirePackage{pst-node}
+
+\edef\TheAtCode{\the\catcode`\@}
+\catcode`\@=11
+
+%%%% If the prologue .pro file is not present then 
+% we need to include the definitions of our custom Postscript procedures in the dvi file itself.
+% The drawback is that the code for the postscript procedures will be copied for each use of the procedure.
+\newif\ifwriteprologue
+\IfFileExists{pstring.pro}{\writeprologuefalse}{\writeprologuetrue}
+
+\ifwriteprologue
+  \newwrite\prologuefile
+  \openout\prologuefile = pstring.pro
+  \newlinechar = `\^^J
+  %\chardef\percent = `\%
+ 	%\write\prologuefile{\percent!^^J}
+   %\write\prologuefile{\percent PostScript prologue for pstring.sty.^^J}
+  %\write\prologuefile{\percentFor distribution, see pstring.^^J}
+\fi
+
+% The macro \pstr@def creates a macro named #1 where #1 is the name of a postscript procedure and #2 is the postscript code for the procedure.
+\def\pstr@def#1<#2>{\ifwriteprologue
+	% prologue absent: dump the content of the postscript code
+	\write\prologuefile{/#1 { #2 } def}
+	\fi
+	% prologue present: just dump the name of the postscript command (the code being already defined in the .pro file)
+	\@namedef{#1}{#1 }
+}
+
+
+
+% TODO : I should move the following 3 macros to a prologue .pro file in order to avoid multiple instanciation of them for each link that is created in the document!
+\pstr@def{pstr@GetEdge}< dup 0 eq 
+{ pop begin
+%%%%% WB: the cosinus and the sinus are set to 1 and 0 which correspond to a direction going toward the top of the page. This way, the node position computed by the procedure NodePos will correspond exactly to the middle of the top line of the node box (the coordinates returned by NodePos are relative to the center of the node box).
+  %1 0 NodeMtrx dtransform CM idtransform
+  %exch atan sub dup sin /Sin ED cos /Cos ED /NodeSep ED NodePos
+%%%%% BECOMES
+ pop 1 /Sin ED 0 /Cos ED /NodeSep ED NodePos
+%%%%%
+NodeMtrx dtransform CM idtransform
+end } 
+{ 1 eq {{exch}} {{}} ifelse /Do ED pop XYPos } ifelse >
+
+
+\pstr@def{pstr@GetEdgeA}< NodeSepA AngleA NodeA NodeSepTypeA \pstr@GetEdge 
+%%%% WB: The offset is not computed the same way as in pst-node: it is an horizontal offset instead of an offset along the line (AB). Thus the line
+%   OffsetA AngleA AddOffset yA add /yA1 ED xA add /xA1 ED
+%%%% becomes:
+yA add /yA1 ED xA add OffsetA add /xA1 ED 
+% This last line computes the absolute position of the connector ending by adding up its relative position to the position of the center of the node box plus the horizontal offset.
+%%%%
+>
+
+\pstr@def{pstr@GetEdgeB}< NodeSepB AngleB NodeB NodeSepTypeB \pstr@GetEdge 
+% OffsetB AngleB AddOffset yB add /yB1 ED xB add /xB1 ED 
+ yB add /yB1 ED xB add OffsetB sub /xB1 ED 
+>
+
+
+\pstr@def{pstr@NCCurve}<%
+%%%%%% Redirect the call to \pstr@GetEdgeA  and \pstr@GetEdgeB instead of \tx@GetEdgeA and \tx@GetEdgeB 
+\pstr@GetEdgeA \pstr@GetEdgeB
+xA1 xB1 sub yA1 yB1 sub Pyth
+2 div dup
+3 -1 roll mul /ArmA ED mul /ArmB ED
+/ArmTypeA 0 def /ArmTypeB 0 def GetArmA GetArmB
+xA2 yA2 xA1 yA1 tx@Dict begin ArrowA end
+xB2 yB2 xB1 yB1 tx@Dict begin ArrowB end
+curveto
+/LPutVar [ xA1 yA1 xA2 yA2 xB2 yB2 xB1 yB1 ] cvx def
+/LPutPos { t LPutVar BezierMidpoint } def
+/HPutPos { { HPutLines } HPutCurve } def 
+/VPutPos { { VPutLines } HPutCurve } def>
+
+
+\ifwriteprologue
+  %\write\prologuefile{^^J\% END pstring.pro^^J}
+  \closeout\prologuefile
+\fi
+
+
+
+% We define a new pstricks command: ncHarc.
+% The H is for "horizontal". It acts as ncarc
+% except that the angle parameter 
+% angleA (resp. angleB) specifies the angle between the X axis
+% and the tangent to the arrow at point A (resp B) instead
+% of the angle between the line (AB) and the tangent of the arrow  at A (or B).
+%
+% This kind of arc is not really usefull for graphs however it is easier to specify angles like this for links in justified sequences.
+\def\ncHarc{\pst@object{ncHarc}}
+\def\ncHarc@i{\check@arrow{\ncHarc@ii}}
+\def\ncHarc@ii#1#2{\nc@object{Open}{#1}{#2}{.5}{%
+%yB yA sub xB xA sub \tx@Atan
+  180 
+\psk@arcangleA\space sub /AngleA ED
+\psk@arcangleB\space %sub 180 add
+/AngleB ED
+\psk@ncurvB\space \psk@ncurvA\space \pstr@NCCurve 
+%\tx@NCCurve
+}}
+
+
+
+% Create a link using psttricks
+\newcommand{\link}{\@ifstar
+                     \linkStar%
+                     \linkNoStar%
+}
+\newcommand{\linkNoStar}[2][]{
+\edef\options{#1}
+\ifx\options\@empty 
+\def\opt{[linewidth=0.4pt,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2]}
+\else 
+\def\opt{[linewidth=0.4pt,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2,#1]}
+\fi
+\expandafter\ncarc\opt{->}
+}
+
+% the starred version uses ncHarc instead of ncarc.
+\newcommand{\linkStar}[2][]{
+\edef\options{#1}
+\ifx\options\@empty 
+\def\opt{[linewidth=0.4pt,offsetA=0pt,offsetB=2pt,nodesep=1pt,arcangleA=#2, arcangleB=#2]}
+\else 
+\def\opt{[linewidth=0.4pt,offsetA=0pt,offsetB=2pt,nodesep=1pt,arcangleA=#2, arcangleB=#2, #1]}
+\fi
+\expandafter\ncHarc\opt{->}
+}
+
+% Label the last link created
+\newcommand{\lnklabel}{\@ifstar
+                     \lnklabelStar%
+                     \lnklabelNoStar%
+}
+\newcommand{\lnklabelStar}[1]{\mput*{\mbox{{\tiny $#1$}}}}
+\newcommand{\lnklabelNoStar}[1]{\Bput[1pt]{\mbox{{\tiny $#1$}}}}
+
+
+
+
+
+%\edef\OpenSqBrCode{\the\catcode`\[}
+%\edef\CloseSqBrCode{\the\catcode`\]}
+\begingroup
+%\catcode`\@=11
+%\catcode`&=\active
+%\catcode`\[=\active
+%\catcode`\]=\active
+%\catcode`-=\active
+
+
+\newbox\pstr@tempbox
+\newdimen\pstr@tempdim
+
+%%%%%%%%%%%%%%%%
+%% First way of creating a pointer string:
+%  \Pstr[0.4cm][1pt]{ (b) this (a-b,45) that } 
+
+\gdef\Pstr{\@ifnextchar[{\Pstr@i}{\Pstr@ii[0cm][1pt]}}
+% Pstr with one optional parameter
+\gdef\Pstr@i[#1]{\@ifnextchar[{\Pstr@ii[#1]}{\Pstr@ii[#1][1pt]}}
+% Pstr with two optional parameters
+% [#1] specifies the amount of vertical space to add to the box
+% containing the pointer string.
+% [#2] specifies the distance between the node and the arc
+% #3 contains the specification of the nodes and pointers of the sequence.
+\gdef\Pstr@ii[#1][#2]#3{%
+\begingroup
+ \setlength\pstr@tempdim{#1}%
+ \def\pstr@arcoptions{#2}%
+\setbox\pstr@tempbox\hbox\bgroup$%
+\@@Pstr#3(@-@,@){}\@nil
+ %\@@Pstr#2(@-@,@){@}\@nil\ignorespaces
+$\egroup%
+ \ht\pstr@tempbox\pstr@tempdim
+ \box\pstr@tempbox
+\endgroup
+}
+
+% Parse the specification of the pointer string.
+% #1 stuff to be typset in the pointer string
+% #2 a new node definition
+% #3 node content
+\gdef\@@Pstr#1(#2)#3{%
+ #1% dump the stuff
+ % parse the node specification
+ \@@@Pstr#2-,#3\@nil
+ % proceeds to the rest of the specification.
+ \@ifnextchar\@nil{\@gobble}{\@@Pstr}
+}
+
+% Parse a node specification
+\gdef\@@@Pstr#1-#2,{%
+% create the node only if it is not the dummy node (@-@,@){@}
+\if#1@
+ \expandafter\pstr@skipdummynode
+\else
+  % test whether a destination node is specified
+  % in which case a link needs to be created:
+  \def\dst{#2}
+  \ifx\dst\@empty \pstr@skipdstangle{#1}%
+  \else \pstr@createlink{#1}{#2}
+  \fi
+\fi
+}
+%%%%% auxiliary macros for node specification parsing
+\gdef\pstr@skipdummynode#1-,#2\@nil{}
+\gdef\pstr@skipdstangle#1#2\@nil{ \rnode{#1}{#2} }
+% create a new node together with a link
+%  #1 node name
+%  #2 link destination name
+%  #3 link arc angle 
+%  #4 node content
+\gdef\pstr@createlink#1#2#3-,#4\@nil{
+\rnode{#1}{#4}% 
+\edef\angle{#3}%
+\ifx\angle\@empty\else\link*[nodesep=\pstr@arcoptions]{\angle}{#1}{#2}\fi
+}
+
+%%%%%%%%%%%%%%%%
+%%Second way of creating a pointer string:
+%  \pstr[raiseamount][nodesep]{ sequencespecification }
+% example:
+%  \pstr[0.4cm][1pt]{ \lnk(b) this \lnk(a-b,45) that } 
+
+\gdef\pstr{\@ifnextchar[{\pstr@i}{\pstr@ii[0cm][1pt]}}
+% pstr with one optional parameter
+\gdef\pstr@i[#1]{\@ifnextchar[{\pstr@ii[#1]}{\pstr@ii[#1][1pt]}}
+% pstr with two optional parameters
+\gdef\pstr@ii[#1][#2]#3{%
+\begingroup
+ \setlength\pstr@tempdim{#1}%
+ \def\pstr@arcoptions{#2}%
+ \setbox\pstr@tempbox\hbox{$#3$}%
+ \ht\pstr@tempbox\pstr@tempdim
+ \box\pstr@tempbox
+\endgroup
+}
+\gdef\lnk(#1)#2{\@@@Pstr#1-,#2\@nil}
+
+\endgroup
+
+\@addtofilelist{pstring.pro}
+\special{header=pstring.pro}
+
+\catcode`\@=\TheAtCode\relax
+

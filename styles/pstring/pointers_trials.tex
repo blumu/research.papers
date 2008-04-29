@@ -1,0 +1,259 @@
+\documentclass{article}
+\usepackage{pstricks}
+\usepackage{pst-node}
+\usepackage{pstring}
+\usepackage[all]{xy}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{tikz}
+
+\newcommand{\oview}[1]{\llcorner #1 \lrcorner}
+\newcommand{\pview}[1]{\ulcorner #1 \urcorner}
+
+
+%\psset{arrowlength=1,arrowinset=.4}
+
+\begin{document}
+
+
+%%%%%%%%%% POINTERS USING PSTRICKS
+\section{POINTERS USING PSTRICKS}
+
+
+\subsection{using the commands defined in pstring.sty}
+In the following sequences the links are created with the $\backslash$lnk command.
+$$\begin{array}{rclrcl}
+\mbox{First line} &=& \parbox[t]{8cm}{there should be enough space between the bottom of this line and the arc of the next line.} \\
+s &=& \pview{\pstr[28pt][10pt]{
+ s \cdot \nd(m) m \cdot \ldots \cdot
+\nd(lmd-m,40) {\lambda\overline{\xi}}
+ }} \quad \mbox{ the arc is elevated using the raise option of $\backslash$pstr.}
+\end{array}
+$$
+
+The next example can only be done using the pstricks engine. It can't be done in PGF due to the impossibility to create nodes outside PGF graphics environment
+It is possible to achieved this using overlays but it seems to work with the Tikz interface language to PGF
+and I do not know how to implement it at the base PGF level. Also the use of overlays requires two compilations in order to resolve the node name references
+and it will only work with pdflatex (not with latex).
+$$\pstr[0.5cm][5pt]{ s = \underbrace{\cdots\ \nd(r){r}^O \cdots }_{s'} \
+\nd(n){n}^P \ \underbrace{\cdots\ \nd(a-r,35){a}^P \cdots }_{u} \
+\nd(m-n,30){m}^O } \ .$$
+
+
+
+\subsection{other examples using the succinct syntax (defined in pstring.sty)}
+
+\Pstr[0.1cm]{
+s \cdot (m) m \cdot \ldots \cdot
+(lmd-m,40) {\lambda\overline{\xi}}
+}
+
+\Pstr[0.8cm]{ \psi =
+(n){q^0}  \ (n4-n,60){q^1}  \ (n5-n4,60){q^2} \  (n8-n,50){q^1}  \ (n9-n8,60){q^2}   \ (n10-n,40){q^3}  \ .}
+
+
+
+
+%%%%%desired syntax:
+%\pstr{
+%\psi_M(t\upharpoonright r) =
+%& [n] q^0 [n4->n]{30} q^1 [n5->n4]{30} q^2 [n8->n]{30} q^1  [n9->n8]{30} q^2 [n10->n]{30} q^3.}
+
+%\hbox{\pstr[0.4cm]{ \psi =
+%[n] q^0 | \ [n4-n,60] q^1 | \ [n5-n4,60] q^2 | \  [n8-n,50] q^1 | \ [n9-n8,60] q^2  | \ [n10-n,40] q^3  | \ .
+%}
+
+
+\subsection{examples using directly the command $\backslash$rnode from pstricks and $\backslash$link (from pstring.sty)}
+$\backslash$link (from pstring.sty) uses a modification of the $\backslash$psarc command from pstricks and is implemented in pstring.sty.
+$$
+ \pview{ s \rnode{m}{m} \cdot \ldots \cdot \rnode{lmd}{\lambda \overline{\xi}}} = \pview{s} \cdot \rnode{m2}{m} \cdot \rnode{lmd2}{\lambda \overline{\xi}}   \link*[nodesep=1pt]{30}{lmd}{m}    \link[nodesep=0pt]{35}{lmd2}{m2}
+%  \psbezier[linewidth=0.8mm,linecolor=red,showpoints=true]{|->}%
+%           {m}{m}(2,2)(0,0)
+$$
+
+\begin{itemize}
+  \item  \raisebox{0cm}[0.7cm]{$
+t = \rnode{n}{\lambda f z} \
+\rnode{n2}{@} \
+\rnode{n3}{\lambda g x} \
+\rnode{n4}{f^{[1]}} \
+\rnode{n5}{\lambda^{[2]}} \
+\rnode{n6}{x} \
+\rnode{n7}{\lambda^{[3]}} \
+\rnode{n8}{f^{[4]}} \
+\rnode{n9}{\lambda^{[5]}} \
+\rnode{n10}{z}
+%\psset{ncurv=0.4}
+\link*{60}{n3}{n2}
+\link*{50}{n4}{n}
+\link*{45}{n5}{n4}
+\link*{55}{n6}{n3}
+\link*{35}{n7}{n2}
+\link*{35}{n8}{n}
+\link*{45}{n9}{n8}
+\link*{35}{n10}{n}$}
+
+\item \raisebox{0cm}[0.8cm]{$
+t\upharpoonright r = \rnode{n}{\lambda f z} \
+\rnode{n4}{f}^{[1]} \
+\rnode{n5}{\lambda}^{[2]} \
+\rnode{n8}{f}^{[4]} \
+\rnode{n9}{\lambda}^{[5]} \
+\rnode{n10}{z}
+\link*{50}{n4}{n}
+\link*{60}{n5}{n4}
+\link*{35}{n8}{n}
+\link*{60}{n9}{n8}
+\link*{33}{n10}{n}$}
+\item \raisebox{0cm}[0.8cm]{$
+\psi_M(t\upharpoonright r) = \rnode{n}{q^0}\ \rnode{n4}{q^1}\ \rnode{n5}{q^2}\ \rnode{n8}{q^1}\ \rnode{n9}{q^2}\ \rnode{n10}{q^3}
+\link*{60}{n4}{n}
+\link*{60}{n5}{n4}
+\link*{50}{n8}{n}
+\link*{60}{n9}{n8}
+\link*{40}{n10}{n}\ .$}
+\end{itemize}
+
+
+%%%%%%%%%% POINTERS USING XYPIC
+\section{POINTERS USING XYPIC}
+
+%\SelectTips{eu}{10}
+%\UseTips
+$\psi_M(t\upharpoonright r) =
+\xymatrix@1@=0pt @C=1pt @R=0pt {
+q^0 & q^1 \ar@/_2pt/+U-(1,0);[l]+U+(1,0) &
+q^2 \ar@/_2pt/+U-(1,0);[l]+U+(1,0) &
+ q^1 \ar@/_7pt/+U-(1,0);[lll]+U+(1,0) &
+ q^2 \ar@/_2pt/+U-(1,0);[l]+U+(1,0)&
+q^3 \ar@/_7pt/+U-(1,0);[lllll]+U+(1,0) \\
+}$
+
+\xymatrix{ \bullet
+\ar[r]^x
+\ar@/^3pc/[rr]^{\quad}_{}="0"
+& \bullet
+\ar[r]^{\bar{x}}
+\ar@/_3pc/[rr]^{\quad}_{}="2"
+\ar@{=>}"0"; {} ^{i_x}
+& \bullet
+\ar[r]^x
+\ar@{=>}{}; "2" ^{e_x}
+& \bullet }
+
+\xy
+(0,0)*+{A d {\frac{\frac{\frac{\frac{A}{V}}{V}}{V}}{V}} }="a";
+ (10,0)*+{B}="b";
+%(-16,-5)*+{\bullet}="c";
+{\ar@/^.25pc/ "a"+U;"b"+U};
+%{\ar@/_.25pc/"a";"c"};
+%{\ar@/_.15pc/ "b";"c"};
+\endxy
+
+
+
+
+
+
+%%%%%%%%%% POINTERS USING PGF AND TIKZ
+\section{POINTERS USING TIKZ (BASED ON PGF)}
+
+The following sequences are generated using the Tikz interface for PGF.
+
+\tikzstyle{nn}=[%rectangle,draw=blue!50,fill=blue!20,thick,
+inner sep=1pt, minimum height = 0cm, minimum width = 0cm,anchor = base west]
+
+\tikzstyle{linklabel}=[rectangle,fill=white,
+inner sep=1pt, minimum height = 0cm, minimum width = 0cm]
+
+
+
+\def\pstr#1{\tikz[baseline=(ref.base)]{\path node[nn] (ref) {}#1 }}
+
+\def\nd(#1)#2#3{node[nn] (#1) {$#2$} (#1.base east) node[nn] (#1t) {$#3 $} (#1t.base east) }
+
+\def\lnk#1#2#3#4{
+\draw[line width=0.3pt,arrows=-stealth](#1.120 )  .. controls +(120:#3) and +(60:#3) .. node[linklabel] {#4} (#2.north) }
+
+\def\lnkb#1#2#3#4{
+\count255 = 180 \advance \count255 by -#3
+\path[line width=0.3pt,arrows=-stealth] ([xshift=-0.5pt] #1.north)  edge[out=\number\count255,in=#3] node[linklabel] {#4} (#2.north) }
+
+A sequence with links drawn with Bezier curves
+t= \pstr{
+\nd(n){\lambda f z}{}
+\nd(n2){@}{}
+\nd(n3){\lambda g x}{}
+\nd(n4){f^{[1]}}{}
+\nd(n5){\lambda^{[2]}}{}
+\nd(n6){x}{}
+\nd(n7){\lambda^{[3]}}{}
+\nd(n8){f^{[4]}}{}
+\nd(n9){\lambda^{[5]}}{}
+\nd(n10){z}{};
+\lnk{n3}{n2}{5pt} {} ;
+\lnk{n4}{n} {10pt}{};
+\lnk{n5}{n4}{5pt} {};
+\lnk{n6}{n3}{5mm} {};
+\lnk{n7}{n2}{5mm} {};
+\lnk{n8}{n} {18pt}{};
+\lnk{n9}{n8}{5pt} {};
+\lnk{n10}{n}{25pt}{};
+}.
+
+Same sequence drawn with arcs t= \pstr{
+\nd(n){\lambda f z}{}
+\nd(n2){@}{}
+\nd(n3){\lambda g x}{}
+\nd(n4){f^{[1]}}{}
+\nd(n5){\lambda^{[2]}}{}
+\nd(n6){x}{}
+\nd(n7){\lambda^{[3]}}{}
+\nd(n8){f^{[4]}}{}
+\nd(n9){\lambda^{[5]}}{}
+\nd(n10){z}{};
+\lnkb{n3}{n2}{60}{};
+\lnkb{n4}{n} {45}{};
+\lnkb{n5}{n4}{45}{};
+\lnkb{n6}{n3}{45}{};
+\lnkb{n7}{n2}{35}{};
+\lnkb{n8}{n} {35}{};
+\lnkb{n9}{n8}{45}{};
+\lnkb{n10}{n}{35}{};
+}
+
+Another example using Bezier curves
+$t = \lambda  \cdot {}$ \pstr{
+\nd(app){@}{\cdot}
+\nd(ly){\lambda y}{\ldots}
+\nd(y){y}{\cdot}
+\nd(lx){\lambda \overline{x}}{\ldots}
+\nd(x){x_i}{\cdot}
+\nd(leta){\lambda \overline{\eta_i} }{\ldots};
+\lnk{y}{ly}  {7pt} {\tiny 1};
+\lnk{lx}{app}{15pt}{\tiny 1};
+\lnk{x}{lx}  {7pt} {\tiny i};
+\lnk{leta}{y}{15pt}{\tiny i};
+}
+.
+
+
+And the corresponding sequence using arcs
+$t = \lambda  \cdot {}$ \pstr{
+\nd(app){@}{\cdot}
+\nd(ly){\lambda y}{\ldots}
+\nd(y){y}{\cdot}
+\nd(lx){\lambda \overline{x}}{\ldots}
+\nd(x){x_i}{\cdot}
+\nd(leta){\lambda \overline{\eta_i} }{\ldots};
+\lnkb{y}{ly}  {35}{\tiny 1};
+\lnkb{lx}{app}{38}{\tiny 1};
+\lnkb{x}{lx}  {30}{\tiny i};
+\lnkb{leta}{y}{40}{\tiny i};
+}
+voila.
+
+
+
+\end{document}
