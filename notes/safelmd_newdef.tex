@@ -1,4 +1,5 @@
 \documentclass{article}
+\def\ord{\sf ord}
 
 \begin{document}
 
@@ -10,7 +11,7 @@
 
 Why not generalising $\vdash^-$ by introducing $\vdash^{-k}$ for
 $k>1$ with the following meaning: $ \Gamma \vdash^{-k} M : A$ when
-variable in $\Gamma$ have orders at least $ord(M)-k$?
+variable in $\Gamma$ have orders at least $\ord(M)-k$?
 \\
 
 
@@ -22,7 +23,7 @@ generalization.
 
 
 Consider $M : \overline{A} | B$. Because of homogeneity of the
-partitioned type $\overline{A} | B$ we have $ord(M) = 1 + ord(A)$.
+partitioned type $\overline{A} | B$ we have $\ord(M) = 1 + \ord(A)$.
 
 Note that there are only two cases where we need to weaken a
 judgment $\Gamma \vdash M : \overline{A} | B$ to $\Gamma, x: C
@@ -33,9 +34,9 @@ cases are:
 \begin{itemize}
 \item
  we want to form a safe term by abstracting a variable. The requirement here is to respect type homogeneity
- therefore we need to have $ord(x) \geq ord(A)$.
-Hence the weakening should allow the case when $ord(x) = ord(A) =
-ord(M) - 1$.
+ therefore we need to have $\ord(x) \geq \ord(A)$.
+Hence the weakening should allow the case when $\ord(x) = \ord(A) =
+\ord(M) - 1$.
 
 \item
  we want to form a safe term by apply another term $N$ to $M$ such
@@ -48,7 +49,7 @@ The only way to recover the unsafety of $\Gamma, x: C \vdash^- M :
 the unsafe term $M$ does not appear at an operand position).
 
 But since $x$ occurs freely in the safe term $\Gamma, x: C \vdash N$
-we should have $ord(x) \geq ord(N) = ord(A) = ord(M) -1$
+we should have $\ord(x) \geq \ord(N) = \ord(A) = \ord(M) -1$
 \end{itemize}
 
 Hence the only weakening rule that we need is $\vdash^-1$.
