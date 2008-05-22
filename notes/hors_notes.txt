@@ -122,8 +122,6 @@ the grammar is of order $3$. Hence $M$ is not eta-expanded when computing the et
 
 2-DPDA equivalence problem:
 
-An approach to prove undecidability of equivalence of order
-$2$-DPDA could consist in proving that the set of traversals of a
-closed Safe \pcf\ term of ground type with redexes of order $n$ at
-most can be encoded into an $n$-DPDA by adapting the construction of
-\cite{KNU02}.
+Is 2-DPDA equivalence decidable? Unknown result.
+Can we encode the set of traversals of a Safe $PCF_2$ term into a 2-DPDA?
+
