@@ -1,50 +1,22 @@
 \documentclass{article}
 \usepackage{pdfsync}
 \usepackage{a4wide}
-\usepackage{amsmath, amsthm, amssymb}
+\usepackage{gamesem}
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{corollary}[theorem]{Corollary}
 \newtheorem{lemma}[theorem]{Lemma}
-%\newtheorem{prop}[thm]{Proposition}
-
-
-
-\newcommand{\encode}[1]{\ulcorner #1 \urcorner}
-\newcommand{\nat}{\mathbb{N}}
-\newcommand{\union}{\cup}
-\newcommand{\Union}{\bigcup}
-
-\newcommand\eop{{\sf eop}}
-\newcommand{\betared}{\rightarrow_\beta}
-
-%pcf
-\newcommand\ialgol{{\textsl{IA}}}
-\newcommand\pcf{\textsl{PCF}}
-\newcommand\pcfcond{\texttt{cond}}
-\newcommand\pcfsucc{\texttt{succ}}
-\newcommand\pcfpred{\texttt{pred}}
-
-\newcommand\iaskip{\texttt{skip}}
-
-
 
 \author{William Blum}
 \title{que s ue encoding in the Safe Lambda Calculus}
 
 \begin{document}
 \maketitle
-Now suppose we are looking for a term behaving like a conditional but of type $I\rightarrow o\rightarrow o \rightarrow o$ instead. In the lambda calculus we have the term $\lambda t x y . (C\,t\,\encode{0}\, \encode{1}) (\lambda u . \underline{y}) x$ but it is unsafe. In fact it can be shown that there is no such term in the safe lambda calculus simply because the only safe terms of type $I\rightarrow o\rightarrow o \rightarrow o$  are $\lambda t x y . x$  and $\lambda t x y . y$ up to $\alpha\beta\eta$-equivalence.
-  
-
-
-\section{Decidability of observational equivalence for order 2 fragments}
-
 
 
 \subsection{Observational equivalence of infinitary 2nd-order Safe \pcf\ with $Y_1$ recursion}
 
-We describe a transformation which, given a queue-program $P$, produces a Safe \pcf\ term $M_P$ that simulates $P$ in the sense that $P \Downarrow$ if and only if $M_P \rightarrow^* \eop$.
+Given a \textsc{Queue} program $P$, we construct a safe \pcf\ term $M_P$ that simulates $P$ in the sense that $P \Downarrow$ if and only if $M_P \rightarrow^* \eop$.
 
 We fix a distinguished element $\bot$ denoting the end of the queue. Let $\Sigma^\bot = \Sigma \cup \{ \bot \}$. We assume that an injective function $\encode{\underline{\ }}$ is defined that encodes  the
 elements of $\Sigma^\bot$ into $\nat$. It can for instance be defined as follows:
@@ -54,7 +26,7 @@ elements of $\Sigma^\bot$ into $\nat$. It can for instance be defined as follows
  a_k &\mapsto& k \ , \mbox{for } k \in 1..p \ .
 \end{eqnarray*}
 
-We say that a $\pcf$ term $M$ \emph{computes} an infinite sequence $s \in {(\Sigma^\bot)}^\omega$ if and only if $M k =_\beta \encode{s k}$ for all $k\in \nat$. We now identify a queue content $s \in \Sigma^*$ with the infinite sequence $s \bot^\omega \in \Sigma^\omega$. A queue content $s \in \Sigma^*$ will be represented by a \pcf\ term $\hat{s}$ computing the sequence $s \bot^\omega$.
+We say that a $\pcf$ term $M$ \emph{computes} an infinite sequence $s \in {(\Sigma^\bot)}^\omega$ if and only if $M k =_\beta \encode{s k}$ for all $k\in \nat$. We now identify a queue content $s \in \Sigma^*$ with the infinite sequence $s \bot^\omega \in \Sigma^\omega$. A queue content $s \in \Sigma^*$ is represented by a safe \pcf\ term $\hat{s}$ computing the sequence $s \bot^\omega$.
 
 Each instruction $c$ of $\mathcal{I}$ is encoded uniquely into a natural number $\encode{c}$. The following table gives an example of injection $c\mapsto\encode{c}$:
 \begin{center}
@@ -77,12 +49,12 @@ where {\sf match} is just syntactic sugar for nested conditionals.
 
 We now define a \pcf\ program that act as an interpreter for queue-programs given in compiled form.
 \begin{eqnarray*}
-SIM = Y ( \lambda f i x . {\sf match\ } \hat{P}\, i  {\sf \ with\ }   \\
+\userop{Sim} = Y ( \lambda f i x . \pcfcase\ \hat{P}\, i    \\
  \encode{ \tt halt }&\rightarrow& \encode{\eop} \\
+| \encode{ {\tt dequeue } } &\rightarrow& f (i+1) (\lambda j . x (j+1) ) \\
 | \encode{ {\tt enqueue\ } a_1 } &\rightarrow& f (i+1) ( \lambda j . {\sf if} j = \underline{\sf length}\ x\ {\sf then\ } \encode{a_1} {\sf\ else\ } x j ) \\
 | \ldots \\
 | \encode{ {\tt enqueue\ } a_p } &\rightarrow& f (i+1) ( \lambda j . {\sf if} j = \underline{\sf length}\ x\ {\sf then\ } \encode{a_p} {\sf\ else\ } x j ) \\
-| \encode{ {\tt dequeue } } &\rightarrow& f (i+1) (\lambda j . x (j+1) ) \\
 | \encode{ {\tt goto\ } l {\tt\ if\ first=\ } a_1 } &\rightarrow&
 {\sf if\ } \underline{\sf length}\ x = 0 {\ \sf then\ } f (i+1) x \\
 &&{\sf else\ if\ } \encode{a_1} = x 0 {\sf\ then\ } f l x \\
@@ -100,12 +72,12 @@ $$ \underline{\sf  length}  = Y( \lambda f x k . {\sf if\ } x k = \encode{\bot} 
 
 Note that the test of equality of two natural numbers is definable in $\pcf_2$ since the substraction operation is  also definable (by recursion). Moreover, it is easy to verify that the corresponding term is safe.
 
-It is easy to show that $SIM \betared^* \encode{\eop}$ if and only if $P \rightarrow^* \eop$. We thus have:
+Clearly we have $\userop{Sim} =_\beta \encode{\eop}$ if and only if $P \rightarrow^* \eop$. Hence
 \begin{theorem}
   Safe \pcf\ is Turing Complete.
 \end{theorem}
 
-Clearly, the observational equivalence problem is reducible to the \testsl{Halting} problem, therefore since $SIM$ is a 2nd-order safe $\pcf$ term, we have the following corollary:
+Clearly, the observational equivalence problem is reducible to the \testsl{Halting} problem, therefore since \userop{Sim} is a 2nd-order safe $\pcf$ term, we have the following corollary:
 \begin{corollary}
 Observational equivalence for 2nd-order Safe $\pcf$ with $Y_1$ recursion (and unbounded base types) is undecidable.
 \end{corollary}
@@ -199,6 +171,135 @@ substraction operation.
 %$t_x$ and $t_y$ depends either on $x$ or $y$ or both (otherwise the recursive call can just be replaced by the $\beta$-normal form of $Y (\lambda f x y . e) t_x t_y$).
 %
 %In order to guarantee termination, at least one of the recursive call to $f$ in $e$ must be decreasing. This suggests that in order to define $e$, one needs to have access to a deconstructing function such as the predecessor function. Such function can only be encoded if we allow input and output value to have different representations.
+
+
+
+
+\section{Notes on HORS}
+
+What are the infinite words languages generated by HO recursion
+scheme?
+
+At order 0, do we get the omega-regular languages? (i.e. languages of
+infinite words  recognized by Buchi automata)
+
+At order 1, what do we get? Context-free languages of infinite words? Is
+there such a thing?
+
+
+\subsection{Urzycyn language U}
+
+U is not context-free. The standard pumping lemma for context-free
+language (Bar-Hillel lemma) cannot be used to prove it. Instead
+one must Ogden's lemma, a a stronger version of the pumping lemma:
+
+Let n be a number > 0.
+
+Take w = [  [^{n+1}  ]^n  ]  [  *^{n+3}.
+                     ---
+
+where the underlined ] denotes the n distinguished position of the Ogden Lemma.
+
+Then w admits no decomposition that would allow to pump two (or even
+more) subwords at the same time. Hence by Ogden Lemma, U is not
+context free.
+
+It is not even possible to decompose w so that three or more
+subwords can be pumped at the same time!
+
+This suggests the following conjecture:
+
+\paragraph{Conjecture: Ogden pumping lemma for n-PDA}
+Let L be a language recognized by an order-n PDA A.
+Then there is a number n>0 such that for all word w with |w|>0
+and all marking of at least n distinguished positions in w,
+there is a decomposition w = u p0  u2 p1  ...   un pn u{n+1} such that
+- the word p0 p1 ... pn contains at least one marked position
+- the word p0 u2 p1  ...  un pn contains at most n marked position
+- for all i>=0, u p0^i u2 p1^i  ...   un pn^i u{n+1} is in L.
+
+
+
+\subsection{Conjecture}
+The language L defined as follows is intrinsically unsafe (for any order).
+
+\Sigma = \{ a, b, c \}
+
+L = \{ w *_1^{(|w|_b - |w|_a)} *_2^{(|w|_c - |w|_a)} \ | \
+   w \in \Sigma^* \zand |w|_b \geq |w|_a \zand |w|_c \geq |w|_a \}
+
+
+
+
+Lemma Let A be a n-PDA then there is a n+1-PDA recognizing
+the reverse of L(A).
+
+Proof: just replace the production of terminals by a $push_1$
+of a corresponding element on the stack followed by a $push_{n+1}$.
+When the end of string symbol is emitted, the reversed string can be
+retrieved using the following algorithm:
+
+    while stack is not empty do
+       emit top1(s)
+       $pop_{n+1}$
+    done
+EOP
+
+
+
+
+
+\subsection{safe HORS to HO-PDA}
+
+Hague, Murawsky, Ong and Serre proposed an algorithm that transforms a
+given order-n recursive scheme G to an order-n collapsible pushdown
+ automaton (CPDA) $A_G$ that computes the value tree of G (i.e. the tree
+ generated by G); precisely, $A_G$ computes exactly the traversals over the
+ computation tree of G. (The paper is at
+\url{http://users.comlab.ox.ac.uk/luke.ong/publications/stoc07-long.pdf},
+the relevant part is section 5).
+
+We prove that if G is safe, then $A_G$ is a pushdown automaton
+ (of order n). This gives a new proof of the fact that order-n pushdown automata compute
+ trees generated by order-n safe recursion schemes, independent of the
+ original KNU02 approach. (There is a similar conjecture/result in the
+ other direction.)
+
+
+Proof idea:
+In fact for incrementally-bound computation trees,
+the n-CPDA that computes the traversals is  such that only links created with the $push_1$
+operation will ever be used by a collapse operation later on.
+Links that are created during the duplication of a stack by the
+operations $push_j$ (for j>=2) can all be ignored. Hence the
+collapse operation can safely be simulated with the operation
+$pop_{n-ord(u)+1}$ where u is the top_1 lambda-node.
+
+
+\subsection{2}
+
+For a grammar G of order 2, the eta-long normal form of G introduces variables
+of order 0 only.
+
+Proof: First necessarily, the variables introduced are of order 1 at most
+(otherwise the eta-expanded grammar would not be of order 2).
+
+Suppose a subterm $M$ is eta-expanded to $\lambda u . M u$ where $u$ is a variable
+of order $1$. Then this implies that $M$ is of order $2$. Consequently $M$ is a non-terminal!
+Indeed any variable or an applicative term is of order $1$ at most in an order $2$ grammar.
+
+However non-terminals of order $2$ cannot occur at operand position, otherwise this would imply that
+the grammar is of order $3$. Hence $M$ is not eta-expanded when computing the eta-long normal form, which contradicts the hypothesis.
+
+
+\subsection{2-DPDA equivalence problem:}
+
+Is 2-DPDA equivalence decidable? Unknown result.
+Can we encode the set of traversals of a Safe $PCF_2$ term into a 2-DPDA?
+
+
+
+
 
 \bibliographystyle{plain}
 \bibliography{../bib/gamesem,../bib/higherorder,../bib/lambdacalculus}
