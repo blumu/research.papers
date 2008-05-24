@@ -1,5 +1,7 @@
 \documentclass{article}
+\usepackage{amsmath,amsthm,amssymb}
 \usepackage{pdfsync}
+\usepackage{url}
 \usepackage{a4wide}
 \usepackage{gamesem}
 
@@ -7,181 +9,20 @@
 \newtheorem{corollary}[theorem]{Corollary}
 \newtheorem{lemma}[theorem]{Lemma}
 
+
 \author{William Blum}
-\title{que s ue encoding in the Safe Lambda Calculus}
+\title{Notes on HORS}
 
 \begin{document}
 \maketitle
-
-
-\subsection{Observational equivalence of infinitary 2nd-order Safe \pcf\ with $Y_1$ recursion}
-
-Given a \textsc{Queue} program $P$, we construct a safe \pcf\ term $M_P$ that simulates $P$ in the sense that $P \Downarrow$ if and only if $M_P \rightarrow^* \eop$.
-
-We fix a distinguished element $\bot$ denoting the end of the queue. Let $\Sigma^\bot = \Sigma \cup \{ \bot \}$. We assume that an injective function $\encode{\underline{\ }}$ is defined that encodes  the
-elements of $\Sigma^\bot$ into $\nat$. It can for instance be defined as follows:
-\begin{eqnarray*}
-\encode{\underline{\ }} : \Sigma^\bot &\longrightarrow& 0..p \\
- \bot &\mapsto& 0 \\
- a_k &\mapsto& k \ , \mbox{for } k \in 1..p \ .
-\end{eqnarray*}
-
-We say that a $\pcf$ term $M$ \emph{computes} an infinite sequence $s \in {(\Sigma^\bot)}^\omega$ if and only if $M k =_\beta \encode{s k}$ for all $k\in \nat$. We now identify a queue content $s \in \Sigma^*$ with the infinite sequence $s \bot^\omega \in \Sigma^\omega$. A queue content $s \in \Sigma^*$ is represented by a safe \pcf\ term $\hat{s}$ computing the sequence $s \bot^\omega$.
-
-Each instruction $c$ of $\mathcal{I}$ is encoded uniquely into a natural number $\encode{c}$. The following table gives an example of injection $c\mapsto\encode{c}$:
-\begin{center}
-\begin{tabular}{c|c|c|c|c}
-$c \in \mathcal{I}$ & {\tt halt} & {\tt dequeue } & {\tt enqueue} $a_i$ &  {\tt goto} l {\tt if first=} $a_i$ \\ \hline
-$\encode{ c } \in \nat$ & $0$ & $1$ & $1+i$ & $1+p + n.l +i$ \\
-\end{tabular}
-\end{center}
-where $1 \leq i \leq p, 1 \leq l \leq n$.
-
-Let us fix a queue-program $P$ with $n$ instructions.
-The code of $P$ is compiled into the following \pcf\ program $\hat{P}$
-that given an index $i$ returns the encoding of the $i^{\sf th}$ instruction of $P$:
-\begin{equation}
-\hat{P} = \lambda i .  {\sf match\ } i {\sf \ with\ }
-   0 \rightarrow \encode{ P\, 0 }
-  \ | \ldots \ | n \rightarrow \encode{ P\, n }  | \_ \rightarrow \encode{\bot}
-\end{equation}
-where {\sf match} is just syntactic sugar for nested conditionals.
-
-We now define a \pcf\ program that act as an interpreter for queue-programs given in compiled form.
-\begin{eqnarray*}
-\userop{Sim} = Y ( \lambda f i x . \pcfcase\ \hat{P}\, i    \\
- \encode{ \tt halt }&\rightarrow& \encode{\eop} \\
-| \encode{ {\tt dequeue } } &\rightarrow& f (i+1) (\lambda j . x (j+1) ) \\
-| \encode{ {\tt enqueue\ } a_1 } &\rightarrow& f (i+1) ( \lambda j . {\sf if} j = \underline{\sf length}\ x\ {\sf then\ } \encode{a_1} {\sf\ else\ } x j ) \\
-| \ldots \\
-| \encode{ {\tt enqueue\ } a_p } &\rightarrow& f (i+1) ( \lambda j . {\sf if} j = \underline{\sf length}\ x\ {\sf then\ } \encode{a_p} {\sf\ else\ } x j ) \\
-| \encode{ {\tt goto\ } l {\tt\ if\ first=\ } a_1 } &\rightarrow&
-{\sf if\ } \underline{\sf length}\ x = 0 {\ \sf then\ } f (i+1) x \\
-&&{\sf else\ if\ } \encode{a_1} = x 0 {\sf\ then\ } f l x \\
-&&{\sf else\ } f (i+1) x \\
-| \ldots \\
-| \encode{{\tt goto\ } l {\tt\ if\ first=\ } a_p} &\rightarrow&
-{\sf if\ } \underline{\sf length}\ x = 0 {\ \sf then\ } f (i+1) x \\
-&&{\sf else\ if\ } \encode{a_p} = x 0 {\sf\ then\ } f l x \\
-&&{\sf else\ } f (i+1) x \\
-)\ 0\ (\lambda j . 0)
-\end{eqnarray*}
-
-where $f: (o,(o,o),o)$, $i:o$, $x:(o,o)$ and $\encode{\eop}$ is defined to be some \pcf\ natural number constant.
-$$ \underline{\sf  length}  = Y( \lambda f x k . {\sf if\ } x k = \encode{\bot} {\sf\ then\ } 0 {\sf\ else\ } 1 + (f x (k+1)))$$
-
-Note that the test of equality of two natural numbers is definable in $\pcf_2$ since the substraction operation is  also definable (by recursion). Moreover, it is easy to verify that the corresponding term is safe.
-
-Clearly we have $\userop{Sim} =_\beta \encode{\eop}$ if and only if $P \rightarrow^* \eop$. Hence
-\begin{theorem}
-  Safe \pcf\ is Turing Complete.
-\end{theorem}
-
-Clearly, the observational equivalence problem is reducible to the \testsl{Halting} problem, therefore since \userop{Sim} is a 2nd-order safe $\pcf$ term, we have the following corollary:
-\begin{corollary}
-Observational equivalence for 2nd-order Safe $\pcf$ with $Y_1$ recursion (and unbounded base types) is undecidable.
-\end{corollary}
-
-\subsection{Observational equivalence for finitary $\pcf_2 + Y_1$}
-
-We will now see that in fact the previous result also hold in the
-finitary case. Indeed, Ong showed in \cite{Ong02} that
-observational equivalence for finitary second-order \ialgol\ with
-recursion ($\ialgol_2 + Y_1$) is undecidable:
-\begin{theorem}[Ong, LICS 2002]
-Assuming that base types are finite, observational equivalence of 2nd-order IA with recursion is undecidable.
-\end{theorem}
-
-The proof proceeds by reduction of the Queue-Halting problem to the
-observational equivalence of two $\ialgol_2 + Y_1$ programs: given a
-Queue program $P$, a $IA_2 + Y_1$ term $M_P$ is defined such that
-$M_P$ simulates $P$. $P$ terminates if and only if $M_P$ is
-equivalent to $\iaskip$.
-
-It happens that the term $M_P$ defined by Ong is a safe term
-therefore:
-\begin{corollary}
-Assuming that base types are finite, observational equivalence of 2nd-order Safe IA with recursion is undecidable.
-\end{corollary}
-
-\subsection{Relation with the 2-DPDA equivalence problem}
-
-The simply-typed $\lambda$-calculus augmented with the
-$Y$-combinator written $\lambda^\rightarrow + Y$ is as expressive as
-recursion schemes in the sense that any \emph{ground type} term of
-$\lambda^\rightarrow + Y$ with redexes of order $n$ at most can be
-encoded into an order-$n$ recursion scheme (furthermore, the
-transformation is such that safe terms correspond to safe recursion
-schemes). For example, take the ground type term $s^n z$ where
-$s:o\rightarrow o$, $z :o$ for some natural number $n$. This term
-can be transformed into the recursion scheme containing a single
-equation $S = s^n z$. The value tree of this recursion scheme is a
-flat tree over the alphabet $\Sigma = \{s:o\rightarrow o, z:o\}$
-where nodes are labelled $s$ and leaves are labelled $z$.
-
-
-Suppose that we are able to do the same for any \pcf\ term, then we
-could convert $SIM$ into an equivalent safe recursion scheme. And
-since order-$n$ safe recursion schemes are as expressive as
-$n$-DPDA\footnote{Ssee \cite{KNU02} where an effective
-transformation in both directions is given.}, we could build a
-2-DPDA computing $SIM$ as well as a 2-DPDA computing
-$\encode{\eop}$. But since Queue-Halting is undecidable, this would
-imply the undecidability of 2-DPDA equivalence!\footnote{Equivalence
-of 1-DPDA was shown to be decidable but it is still not known
-whether it is the case at higher orders.}
-
-Instead of trying to encode  \pcf\ terms into recursion schemes, we
-can look at the equivalent problem of simulating \pcf\ constructs in
-$\lambda^\rightarrow + Y$. It is well-known that the Church Numeral
-representation does not permit to represent the predecessor function
-in $\lambda^\rightarrow$ \cite{DBLP:journals/jacm/FortuneLO83}. It
-is however possible to represent the predecessor function provided
-that we allow a different representation of input and output numbers
-\cite{DBLP:journals/jacm/FortuneLO83}. Unfortunately, the
-substraction function is not definable in $\lambda^\rightarrow$
-(equivalently  the equality test function $\lambda xy. {\sf if\ } x
-= y {\sf\ then\ } u {\sf\ else\ } v$ is not definable)
-\cite{DBLP:journals/jacm/FortuneLO83}. Hence we know that \pcf\
-cannot be simulated into the simply-typed $\lambda$-calculus without
-the $Y$ combinator.
-
-Would the $Y$ combinator help to simulate the \pcf\ constructs? It
-does not seem so. Indeed, as we have just seen, substraction --
-which is definable in $\pcf$ using recursion and the conditional
-operator -- is not definable in $\lambda^\rightarrow$. Throwing in
-the recursion can be useful only if we have some destruction
-function, such as the predecessor function. Indeed, only this can
-permit us to make recursive call with decreasing parameters (which
-is necessary to guarantee termination). Therefore we are bound to
-use a numeral representation that can differ from input to output.
-In other words, the type of the input may differ from the type of
-the output. But with such difference in the representation,
-recursion cannot be used anymore! Note that this problem is due to
-the fact that \pcf\ uses simple types. With other kinds of types,
-for instance second-order types, it would be possible to encode the
-substraction operation.
-
-%Suppose that equality test is definable by recursion by an the expression of  the form  $Y (\lambda f x y . e)$.
-%
-%A \emph{recursive call} in $e$ is an occurrence of $f$ in $e$.
-%A recursive call is \emph{decreasing} if it is of the form $f t_x t_y$ where $t_x$ and $t_y$ denote $\lambda$-expressions in which $x$ and $y$ may occur free and such that for all $n_x, n_y \in \nat$: $t_x [\encode{n_x},\encode{n_x} /x,y] \betared^* \encode{m_x}$ and $t_y[\encode{n_x},\encode{n_x} /x,y] \betared^* \encode{m_y}$ for some $m_x,m_y \in \nat$ with  $m_x < n_x \vee  m_y < n_y$.
-%
-%We can assume that all recursive calls $f t_x t_y$ are such that
-%$t_x$ and $t_y$ depends either on $x$ or $y$ or both (otherwise the recursive call can just be replaced by the $\beta$-normal form of $Y (\lambda f x y . e) t_x t_y$).
-%
-%In order to guarantee termination, at least one of the recursive call to $f$ in $e$ must be decreasing. This suggests that in order to define $e$, one needs to have access to a deconstructing function such as the predecessor function. Such function can only be encoded if we allow input and output value to have different representations.
-
-
-
 
 \section{Notes on HORS}
 
 What are the infinite words languages generated by HO recursion
 scheme?
 
-At order 0, do we get the omega-regular languages? (i.e. languages of
-infinite words  recognized by Buchi automata)
+At order 0, do we get the omega-regular languages? (\ie languages of
+infinite words  recognized by Buchi automata.)
 
 At order 1, what do we get? Context-free languages of infinite words? Is
 there such a thing?
@@ -195,8 +36,7 @@ one must Ogden's lemma, a a stronger version of the pumping lemma:
 
 Let n be a number > 0.
 
-Take w = [  [^{n+1}  ]^n  ]  [  *^{n+3}.
-                     ---
+Take $w = [  [^{n+1}  \underline{]^n}  ]  [  *^{n+3}.$
 
 where the underlined ] denotes the n distinguished position of the Ogden Lemma.
 
@@ -211,22 +51,22 @@ This suggests the following conjecture:
 
 \paragraph{Conjecture: Ogden pumping lemma for n-PDA}
 Let L be a language recognized by an order-n PDA A.
-Then there is a number n>0 such that for all word w with |w|>0
-and all marking of at least n distinguished positions in w,
-there is a decomposition w = u p0  u2 p1  ...   un pn u{n+1} such that
+Then there is a number n>0 such that for all word w with $|w|>0$
+and all marking of at least n distinguished positions in $w$,
+there is a decomposition $w = u p0  u2 p1  ...   un pn u{n+1}$ such that
 - the word p0 p1 ... pn contains at least one marked position
 - the word p0 u2 p1  ...  un pn contains at most n marked position
-- for all i>=0, u p0^i u2 p1^i  ...   un pn^i u{n+1} is in L.
+- for all i>=0, $u p0^i u2 p1^i  ...   un pn^i u{n+1}$ is in L.
 
 
 
 \subsection{Conjecture}
 The language L defined as follows is intrinsically unsafe (for any order).
 
-\Sigma = \{ a, b, c \}
+$\Sigma = \{ a, b, c \}$
 
-L = \{ w *_1^{(|w|_b - |w|_a)} *_2^{(|w|_c - |w|_a)} \ | \
-   w \in \Sigma^* \zand |w|_b \geq |w|_a \zand |w|_c \geq |w|_a \}
+$L = \{ w *_1^{(|w|_b - |w|_a)} *_2^{(|w|_c - |w|_a)} \ | \
+   w \in \Sigma^* \zand |w|_b \geq |w|_a \zand |w|_c \geq |w|_a \}$
 
 
 
@@ -273,7 +113,7 @@ operation will ever be used by a collapse operation later on.
 Links that are created during the duplication of a stack by the
 operations $push_j$ (for j>=2) can all be ignored. Hence the
 collapse operation can safely be simulated with the operation
-$pop_{n-ord(u)+1}$ where u is the top_1 lambda-node.
+$pop_{n-ord(u)+1}$ where u is the $top_1$ lambda-node.
 
 
 \subsection{2}
@@ -294,10 +134,79 @@ the grammar is of order $3$. Hence $M$ is not eta-expanded when computing the et
 
 \subsection{2-DPDA equivalence problem:}
 
-Is 2-DPDA equivalence decidable? Unknown result.
+\emph{Question:} Is 2-DPDA equivalence decidable?
+Equivalence of 1-DPDA was shown to be decidable but it is still not known
+whether it is the case at higher orders.
 Can we encode the set of traversals of a Safe $PCF_2$ term into a 2-DPDA?
 
+\subsubsection{Does Undecidability of Finitary Safe $PCF_2$ implies
+that of 2-DPDA equivalence?}
 
+The simply-typed $\lambda$-calculus augmented with the
+$Y$-combinator written $\lambda^\rightarrow + Y$ is as expressive as
+recursion schemes in the sense that any \emph{ground type} term of
+$\lambda^\rightarrow + Y$ with redexes of order $n$ at most can be
+encoded into an order-$n$ recursion scheme (furthermore, the
+transformation is such that safe terms correspond to safe recursion
+schemes). For example, take the ground type term $s^n z$ where
+$s:o\rightarrow o$, $z :o$ for some natural number $n$. This term
+can be transformed into the recursion scheme containing a single
+equation $S = s^n z$. The value tree of this recursion scheme is a
+flat tree over the alphabet $\Sigma = \{s:o\rightarrow o, z:o\}$
+where nodes are labelled $s$ and leaves are labelled $z$.
+
+
+Suppose that we are able to do the same for any \pcf\ term, then we
+could convert $SIM$ into an equivalent safe recursion scheme. And
+since order-$n$ safe recursion schemes are as expressive as
+$n$-DPDA\footnote{Ssee \cite{KNU02} where an effective
+transformation in both directions is given.}, we could build a
+2-DPDA computing $SIM$. So the Queue program terminates iff
+this DPDA is equivalent to the constant representing termination of the Queue program. But since Queue-Halting is undecidable, this would
+imply the undecidability of 2-DPDA equivalence!
+
+
+
+Instead of trying to encode  \pcf\ terms into recursion schemes, we
+can look at the equivalent problem of simulating \pcf\ constructs in
+$\lambda^\rightarrow + Y$. It is well-known that the Church Numeral
+representation does not permit to represent the predecessor function
+in $\lambda^\rightarrow$ \cite{DBLP:journals/jacm/FortuneLO83}. It
+is however possible to represent the predecessor function provided
+that we allow a different representation of input and output numbers
+\cite{DBLP:journals/jacm/FortuneLO83}. Unfortunately, the
+substraction function is not definable in $\lambda^\rightarrow$
+(equivalently  the equality test function $\lambda xy. {\sf if\ } x
+= y {\sf\ then\ } u {\sf\ else\ } v$ is not definable)
+\cite{DBLP:journals/jacm/FortuneLO83}. Hence we know that \pcf\
+cannot be simulated into the simply-typed $\lambda$-calculus without
+the $Y$ combinator.
+
+Would the $Y$ combinator help to simulate the \pcf\ constructs? It
+does not seem so. Indeed, as we have just seen, substraction --
+which is definable in $\pcf$ using recursion and the conditional
+operator -- is not definable in $\lambda^\rightarrow$. Throwing in
+the recursion can be useful only if we have some destruction
+function, such as the predecessor function. Indeed, only this can
+permit us to make recursive call with decreasing parameters (which
+is necessary to guarantee termination). Therefore we are bound to
+use a numeral representation that can differ from input to output.
+In other words, the type of the input may differ from the type of
+the output. But with such difference in the representation,
+recursion cannot be used anymore! Note that this problem is due to
+the fact that \pcf\ uses simple types. With other kinds of types,
+for instance second-order types, it would be possible to encode the
+substraction operation.
+
+%Suppose that equality test is definable by recursion by an the expression of  the form  $Y (\lambda f x y . e)$.
+%
+%A \emph{recursive call} in $e$ is an occurrence of $f$ in $e$.
+%A recursive call is \emph{decreasing} if it is of the form $f t_x t_y$ where $t_x$ and $t_y$ denote $\lambda$-expressions in which $x$ and $y$ may occur free and such that for all $n_x, n_y \in \nat$: $t_x [\encode{n_x},\encode{n_x} /x,y] \betared^* \encode{m_x}$ and $t_y[\encode{n_x},\encode{n_x} /x,y] \betared^* \encode{m_y}$ for some $m_x,m_y \in \nat$ with  $m_x < n_x \vee  m_y < n_y$.
+%
+%We can assume that all recursive calls $f t_x t_y$ are such that
+%$t_x$ and $t_y$ depends either on $x$ or $y$ or both (otherwise the recursive call can just be replaced by the $\beta$-normal form of $Y (\lambda f x y . e) t_x t_y$).
+%
+%In order to guarantee termination, at least one of the recursive call to $f$ in $e$ must be decreasing. This suggests that in order to define $e$, one needs to have access to a deconstructing function such as the predecessor function. Such function can only be encoded if we allow input and output value to have different representations.
 
 
 
