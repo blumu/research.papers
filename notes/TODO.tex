@@ -1,13 +1,14 @@
 \documentclass{article}
 \usepackage{gamesem}
 \usepackage{amsmath}
+\usepackage{pdfsync}
 
 \title{TODO list}
 \author{William Blum}
 \begin{document}
 \maketitle
 
-\section{Space complexity}   
+\section{Space complexity}
 \begin{enumerate}
 
 \item Express the size of $\eta$-long expansion with respect to the size of the original term. Probably something like: $|\eta\mbox{-nf}(M:\tau)| = \mathcal{O}(|M|.|\tau|)$, which would mean a size polynomial in the size of the input (=size of term + size of its type).
@@ -153,6 +154,90 @@ up to $\beta$, $\eta$, $\alpha$ conversion is $\lambda x.\lambda y. y(\lambda z.
 
 \item Conjecture: Even for terms that are not unsafe but that are intrinsically
 safe, the variable-capture permitting lemma still holds.
+\end{enumerate}
+
+\section{Conjectures}
+
+\begin{enumerate}
+  \item Proof of decompositionality of O-incrementally justified strategy. If this result can be proved then we can build a category of O-ij strategies.
+
+  \item Compilation of a safe HORS to a HOPDA (see the note of my failed attempt).
+
+  \item Observational equivalence of Safe $IA_4$ beta-normal form: I conjecture that it is decidable
+  by a reduction to the DPDA equivalence problem following ideas used by Murawski et al.\ to show decidability of obs.\ equ.\ of $IA_3 + Y_0$.
+  I have shown that observational equivalence is characterized by equality of the set of complete O-ij plays. Furthermore, up to order $3$, because of O-i.j., the dagger operator $(\cdot)^\dagger$ for strategies can only stack up and iterate copies of $\sigma$. Indeed O is the only player who is able to change the current thread, but the O-ij condition forces him to either stay in the same thread or create a new thread, but he cannot switch to a previously created thread.
+  This property should allow us to construct a DPDA recognizing $\mathcal{O}(id_A)$ for any order $3$-game $A$. It then remains to show that all the constructs of IA can be handled. Following Murawksi et al.\ we can decompose the application case into multiplicative application+contraction. Since we deal with beta normal form an application is of the form $f M_1 \ldots M_q$ for some variable $f$ of order at most $3$. The set $comp(\mathcal{O}(\sem{f M_1 \ldots M_q}))$ boils down to the computation of $comp(\mathcal{O}(\sem{f}^\dagger))$.
+
+  We claim that for every P/O-i.j.\ strategy $\sigma$ the following property holds:
+  $$ \mathcal{O}(\sigma^\dagger) \subseteq \mathcal{O}(\sigma)^\dagger $$
+  By unfolding the definition of dagger, this amounts to showing that for any legal position $s$, if all its prefixes ending with an O-question are O-i.j then for any initial move $m$ in $s$, all the prefixes of $s\filter m$ ending with an O-question are O-i.j:  Let $q$ be an O-question occurring in $s\filter m$.
+  It is easy to show by induction that
+  for any legal position $s$ and any initial move $m$, $\oview{s\filter m}$ is a subsequence of $\oview{s}$.
+  Thus if $s_{\prefixof q}$ is O-i.j.\ then so is 
+  $(s\filter m)_{\prefixof q}$.
+
+Instantiating the previous equation with $\sigma\leftarrow \mathcal{O}(\sigma)$ gives:
+  $$ \mathcal{O}(\sigma^\dagger) = \mathcal{O}(\mathcal{O}(\sigma)^\dagger) $$
+
+
+  Hence by the previous remark concerning the dagger operation at order $3$, and following Murawksi et al.'s construction, it should be possible to build a DPDA recognizing $comp(\mathcal{O}(\sem{f}^\dagger))$ from a DPDA recognizing $comp(\mathcal{O}(\sem{f}))$.
+
+
+\end{enumerate}
+
+\section{Thesis TODO}
+\begin{enumerate}
+\item Safe combinators. What is the counterpart of the S, K, I combinators for the safe lambda calculus? S is not safe. In fact we can construct a family of combinators $S_m^m$, for $m,n\in\nat$ which can generate any term of the safe lambda calculus.
+
+\item chapter HORS, safety, PDA
+
+\item mention that computation tree are just a generalization of Bohm trees to term that are not necessarily in $\beta$-nf. For PCF they are a generalization of the Evaluation tree of Abramsky (see ``Full abstraction of PCF'' paper).
+
+\end{enumerate}
+
+
+\subsection{To mention in further works}
+\begin{enumerate}
+\item What is the UNTYPED version of the safe lambda calculus?
+Which notion of order to use? Order of the minimal instantiation of its principal type?
+
+\item Safe System F: is there a notion of safety for the second-order lambda calculus?
+
+\item Can we encode an alternating TM in the safe lambda calculus?
+(I need to have a look at the encoding of TM in MLL by Mairson (``PTIME in MLL'')
+
+\item Is the safe lambda calculus of any use?
+
+\item Proof theoretic consequences of safety?
+
+\item At order $3$, normalization in the simply-typed lambda calculus is PSPACE-complete. What about the safe lambda calculus?
+
+\item what is the largest fragment of the simply-typed lambda calculus for whic capture permitting substitution is sound for reducing redexes? (suggested by Thorsten Altenkirch).
+\end{enumerate}
+
+\subsection{Application of traversal theory}
+\begin{enumerate}
+  \item Potential application: observational equivalence of terms that are not necessarily in beta-nf.
+\end{enumerate}
+
+\section{various ideas}
+\begin{enumerate}
+\item Ideas to develop:
+
+Non-deterministic safe = non-deterministic unsafe.
+
+Deterministic = determinacy for the Proponent
+
+Deterministic \emph{safe} = some determinacy for the Opponent (because the incremental binding of variables constrains the O-view.)
+
+\item Is the safe lambda calculus of any use?
+\end{enumerate}
+
+
+
+\section{To read/learn}
+\begin{enumerate}
+\item Finite model Theorem (Statman+Dowek): $\forall M. \exists^{\mbox{finite}} \mathcal{M}. \forall N. \mathcal{M} \models M=N \mbox{ iff } M \equiv N$
 \end{enumerate}
 
 \end{document}

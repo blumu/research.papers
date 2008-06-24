@@ -1,4 +1,4 @@
-\documentclass{article}
+\documentclass[a4paper]{article}
 \usepackage{gamesem}
 \usepackage{todonotes}
 \usepackage{amsmath, amsthm, amssymb}
@@ -33,6 +33,8 @@
 
 \begin{document}
 \maketitle
+\todo{ The proof presented in this note is incomplete (I have not managed to show Lemma \ref{lem:incrk_qsafe}) so the simulation may just be wrong...}
+
 \begin{abstract}
 In \cite{hague-sto07}, Hague, Murawski, Ong and Serre introduced
 higher-order collapsible pushdown automata (CPDA) and showed their
@@ -44,6 +46,8 @@ $n$ (non-collapsible) push-down automaton (PDA). The proof does not make
 use of the type-homogeneity constraint. This contrasts with the original proof
 of equi-expressivity (in term of generated trees) of PDAs and safe recursion schemes \cite{KNU02}.
 \end{abstract}
+
+
 
 
 \section{The HORS to HOCPDA encoding}
@@ -106,7 +110,7 @@ Hence we can omit the $j$-component altogether when representing stack symbols: 
 From now on we use the term ``stack'' to refer to a stack that is the sub-stack of some reachable configuration of $CPDA(G)$. This means that for the stacks that we consider, the above link-convention
 can be used.
 
-\todo{Add definition of stack prefix $s_{\prefixof m}$.}
+\todo{Add definition of stack prefix ``$s_{\prefixof m}$'' (See \cite{hague-sto07}).}
 
 \subsection{Incremental order-decomposition}
 
@@ -175,7 +179,7 @@ $$
 %\end{definition}
 %
 It follows immediately from the definition that:
-\begin{equation} 
+\begin{equation}
 l<l' \implies \orddec_{l'}(s) \prefixof \orddec_{l}(s)
 \label{eqn_safe_prefix}\end{equation}
 where $\prefixof$ denotes the sequence-prefix ordering.
@@ -387,13 +391,25 @@ Suppose that $|s_{\prefixof \lambda\overline\eta_j}|<|s|$.
 The stack $s_{\prefixof \lambda\overline\eta_j}$ is safe by Lemma \ref{lem:safe_imp_incprefixsafe}. Thus since $s_{\prefixof \lambda\overline\eta_j}$ is smaller than $s$ we can apply the induction hypothesis on $s_{\prefixof \lambda\overline\eta_j}$ which gives that $s_{\prefixof \lambda\overline\eta_j}^{\langle n-l+1\rangle}$ is $l$-safe. But by
 Eq.\ \ref{eqn_ordec_l},  $\orddec_l(s_{\prefixof \lambda\overline\eta_j}^{\langle n-l+1\rangle})
 = \orddec(s_{\prefixof \lambda\overline\eta_j}^{\langle n-l+1\rangle})$
-therefore $s_{\prefixof \lambda\overline\eta_j}^{\langle n-l+1\rangle}$ 
+therefore $s_{\prefixof \lambda\overline\eta_j}^{\langle n-l+1\rangle}$
 is safe. Hence $collapse\, s_{\prefixof \lambda\overline\eta_j}^{\langle n-l+1\rangle}$ is safe.
 
 
 
 Suppose that $|s_{\prefixof \lambda\overline\eta_j}|=|s|$ then $s_{\prefixof \lambda\overline\eta_j}=s$ and therefore $b=j=0$.
-\todo{to finish}
+
+We have 
+\begin{align*}
+  collapse(s_{\prefixof \lambda\overline\eta_j}^{\langle n-l+1\rangle})
+  &= collapse(s^{\langle n-l+1\rangle}) \\
+  &= pop_{n-\ord(top_1\, s)+1} s^{\langle n-l+1\rangle} \\
+  &= (pop_{n-\ord(top_1\, s)+1} s)^{\langle n-l+1\rangle} \\
+  &= (collapse\, s)^{\langle n-l+1\rangle}
+\end{align*}
+Since $s$ is safe, so is $collapse s$ and therefore by the I.H.,
+$(collapse\, s)^{\langle n-l+1\rangle}$ is $l$-safe.
+\unfinished{But this is not enough: we want to show that $(collapse s)^{\langle n-l+1\rangle}$ is safe, and not only $l$-safe!!!
+}
 
 Hence $s^{\langle n-l+1 \rangle}$ is $l$-safe. \qed
 \smallskip
@@ -560,7 +576,7 @@ the top $1$-stack \ie the $@$-node itself.
  cases ($V_0$) and ($V_1$). The sequences of instruction $pop_1^{p+1}$ can now be replaced by
  $pop_1^p ; collapse$. The resulting CPDA is denoted by $CPDA'(G)$ and is described in
 Figure \ref{fig:cpdaprime}.
-\begin{figure}[htbp]
+\begin{figure}
 \begin{center}
 \makebox{
 \begin{shadowbox}[10cm]
@@ -588,7 +604,7 @@ Contrary to $CPDA(G)$, in a configuration of this CPDA the link associated to a 
 $(n-\ord{\lambda\overline\eta}+1,k)$. Instead the first component of the link pair $(j,k)$ associated to a lambda node is defined as follows:
 $j = 1$ if $\lambda\overline\eta$ is a prime node and $j=n-\ord{\lambda\overline\eta}+1$ otherwise. Therefore we can simulate the collapse operation
 using transitions performing $pop_1$ if $top_1\, s$ is prime and $pop_{n-\ord{top_1(s)}+1}$ otherwise.
-\clearpage
+
 
 \bibliographystyle{abbrv}
 \bibliography{../bib/dphil-all}
