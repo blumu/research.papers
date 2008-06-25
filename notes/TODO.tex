@@ -166,14 +166,14 @@ safe, the variable-capture permitting lemma still holds.
   \item Observational equivalence of Safe $IA_4$ beta-normal form: I conjecture that it is decidable
   by a reduction to the DPDA equivalence problem following ideas used by Murawski et al.\ to show decidability of obs.\ equ.\ of $IA_3 + Y_0$.
   I have shown that observational equivalence is characterized by equality of the set of complete O-ij plays. Furthermore, up to order $3$, because of O-i.j., the dagger operator $(\cdot)^\dagger$ for strategies can only stack up and iterate copies of $\sigma$. Indeed O is the only player who is able to change the current thread, but the O-ij condition forces him to either stay in the same thread or create a new thread, but he cannot switch to a previously created thread.
-  This property should allow us to construct a DPDA recognizing $\mathcal{O}(id_A)$ for any order $3$-game $A$. It then remains to show that all the constructs of IA can be handled. Following Murawksi et al.\ we can decompose the application case into multiplicative application+contraction. Since we deal with beta normal form an application is of the form $f M_1 \ldots M_q$ for some variable $f$ of order at most $3$. The set $comp(\mathcal{O}(\sem{f M_1 \ldots M_q}))$ boils down to the computation of $comp(\mathcal{O}(\sem{f}^\dagger))$.
+  This property should allow us to construct a DPDA recognizing $\mathcal{O}(id_A)$ for any order $3$-game $A$. It then remains to show that all the constructs of IA can be handled. Following Murawksi et al.\ we can decompose the application case into multiplicative application+contraction. Since we deal with beta normal forms, we consider applications of the form $f M_1 \ldots M_q$ for some variable $f$ of order at most $3$. The set $comp(\mathcal{O}(\sem{f M_1 \ldots M_q}))$ boils down to the computation of $comp(\mathcal{O}(\sem{f}^\dagger))$.
 
   We claim that for every P/O-i.j.\ strategy $\sigma$ the following property holds:
   $$ \mathcal{O}(\sigma^\dagger) \subseteq \mathcal{O}(\sigma)^\dagger $$
   By unfolding the definition of dagger, this amounts to showing that for any legal position $s$, if all its prefixes ending with an O-question are O-i.j then for any initial move $m$ in $s$, all the prefixes of $s\filter m$ ending with an O-question are O-i.j:  Let $q$ be an O-question occurring in $s\filter m$.
   It is easy to show by induction that
   for any legal position $s$ and any initial move $m$, $\oview{s\filter m}$ is a subsequence of $\oview{s}$.
-  Thus if $s_{\prefixof q}$ is O-i.j.\ then so is 
+  Thus if $s_{\prefixof q}$ is O-i.j.\ then so is
   $(s\filter m)_{\prefixof q}$.
 
 Instantiating the previous equation with $\sigma\leftarrow \mathcal{O}(\sigma)$ gives:
