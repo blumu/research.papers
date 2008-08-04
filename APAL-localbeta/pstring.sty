@@ -1,6 +1,6 @@
 % Copyright 2007 by William Blum (http://william.famille-blum.org/software/latex/index.html)
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{pstring}[2007/05/02 Package for representing pointer-strings]
+\ProvidesClass{pstring}[2008/06/26 Package for representing strings with pointers]
 
 \newif\ifRequestPSengine
 \newif\ifRequestPGFengine
@@ -60,7 +60,7 @@
 \ifLoadPGFengine
     % Implement pointing string using pgf
     \RequirePackage{pgfcore}
-    \RequirePackage{pgfbaseshapes}
+    \usepgfmodule{shapes}
 
     % Set the default drawing engine to PGF
     \gdef\@engine{PGF}
@@ -81,6 +81,11 @@
 \gdef\pstrSetArrowAngle#1{\gdef\pstr@DefaultArrowAngle{#1}}
 \gdef\pstrSetArrowLabel#1{\gdef\pstr@DefaultArrowLabel{#1}}
 \gdef\pstrSetArrowLineWidth#1{\gdef\pstr@ArrowLineWidth{#1}}
+\gdef\pstrSetArrowLineStyle#1{\gdef\pstr@DefaultArrowLineStyle{#1}}
+\gdef\pstr@linestyledashed{dashed}
+\gdef\pstr@linestyledotted{dotted}
+\gdef\pstr@linestylesolid{solid}
+\gdef\pstr@linestylenone{none}
 
 
 % Default styles and arrow parameters
@@ -89,7 +94,7 @@
 \pstrSetArrowColor{orange}
 \pstrSetArrowAngle{45}
 \pstrSetArrowLineWidth{0.3pt}
-
+\pstrSetArrowLineStyle{\pstr@linestylesolid} % none, solid, dashed or dotted
 
 \def\@nil{}
 
@@ -108,16 +113,17 @@
 %%% Version of the package relying on PSTRICKS
 
 % If the postscript prologue file does not exist then it needs to be created.
-\IfFileExists{pstring.pro}{\writeprologuefilefalse}{\writeprologuefiletrue}
-
-\ifwriteprologuefile
-  \newwrite\prologuefile
-  \openout\prologuefile = pstring.pro
-  \newlinechar = `\^^J
-  \write\prologuefile{\percentchar }
-  \write\prologuefile{\percentchar PostScript prologue for pstring.sty.}
-  \write\prologuefile{\percentchar For distribution, see pstring.^^J}
-\fi
+\AtBeginDocument{%
+\IfFileExists{pstring.pro}{\writeprologuefilefalse}{\writeprologuefiletrue}%
+\ifwriteprologuefile%
+  \newwrite\prologuefile%
+  \immediate\openout\prologuefile=pstring.pro%
+  \newlinechar = `\^^J%
+  \immediate\write\prologuefile{\percentchar }%
+  \immediate\write\prologuefile{\percentchar PostScript prologue for pstring.sty.}%
+  \immediate\write\prologuefile{\percentchar For distribution, see pstring.^^J}%
+\fi%
+}
 
 
 % Calling the following macro with \pstr@def{PROCNAME}<PSCODE> will:
@@ -128,10 +134,12 @@
 % but as a drawback the postscript code would be copied for each use of the procedure and the
 % resulting ps file would be huge.
 \def\pstr@def#1<#2>{%
+\AtBeginDocument{%
     \ifwriteprologuefile%
         % Add the code to the postscript prologue  file
-        \write\prologuefile{/#1 { #2 } def}
-    \fi
+        \immediate\write\prologuefile{/#1 { #2 } def}%
+    \fi%
+}%
     % prologue present: just dump the name of the postscript command (the code being already defined in the .pro file)
     \@namedef{#1}{#1 }
 }
@@ -181,10 +189,12 @@ curveto
 /VPutPos { { VPutLines } HPutCurve } def>
 
 
-\ifwriteprologuefile
-  \write\prologuefile{^^J\percentchar END pstring.pro^^J}
-  \closeout\prologuefile
-\fi
+\AtBeginDocument{%
+\ifwriteprologuefile%
+  \immediate\write\prologuefile{^^J\percentchar END pstring.pro^^J}%
+  \immediate\closeout\prologuefile%
+\fi%
+}
 
 
 
@@ -216,9 +226,9 @@ curveto
 \newcommand{\linkNoStar}[2][]{
 \edef\options{#1}
 \ifx\options\@empty
-\def\opt{[linecolor=\pstr@DefaultArrowColor,linewidth=\pstr@ArrowLineWidth,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2]}
+\def\opt{[linecolor=\pstr@DefaultArrowColor,linestyle=\pstr@DefaultArrowLineStyle,linewidth=\pstr@ArrowLineWidth,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2]}
 \else
-\def\opt{[linecolor=\pstr@DefaultArrowColor,linewidth=\pstr@ArrowLineWidth,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2,#1]}
+\def\opt{[linecolor=\pstr@DefaultArrowColor,linestyle=\pstr@DefaultArrowLineStyle,linewidth=\pstr@ArrowLineWidth,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2,#1]}
 \fi
 \expandafter\ncarc\opt{->}
 }
@@ -227,9 +237,9 @@ curveto
 \newcommand{\linkStar}[2][]{
 \edef\options{#1}
 \ifx\options\@empty
-\def\opt{[linecolor=\pstr@DefaultArrowColor,linewidth=\pstr@ArrowLineWidth,offsetA=0pt,offsetB=2pt,nodesep=1pt,arcangleA=#2, arcangleB=#2]}
+\def\opt{[linecolor=\pstr@DefaultArrowColor,linestyle=\pstr@DefaultArrowLineStyle,linewidth=\pstr@ArrowLineWidth,offsetA=0pt,offsetB=2pt,nodesep=1pt,arcangleA=#2, arcangleB=#2]}
 \else
-\def\opt{[linecolor=\pstr@DefaultArrowColor,linewidth=\pstr@ArrowLineWidth,offsetA=0pt,offsetB=2pt,nodesep=1pt,arcangleA=#2, arcangleB=#2, #1]}
+\def\opt{[linecolor=\pstr@DefaultArrowColor,linestyle=\pstr@DefaultArrowLineStyle,linewidth=\pstr@ArrowLineWidth,offsetA=0pt,offsetB=2pt,nodesep=1pt,arcangleA=#2, arcangleB=#2, #1]}
 \fi
 \expandafter\ncHarc\opt{->}
 }
@@ -288,8 +298,9 @@ curveto
 %    #3 angle
 %    #4 label
 %    #5 arc color
-\def\pstr@PS@drawArrow#1#2#3#4#5{%
-  \link*[linecolor=#5,nodesep=\pstr@arcoptions]{#3}{#1}{#2} \lnklabel{#4}%
+%    #6 line style
+\def\pstr@PS@drawArrow#1#2#3#4#5#6{%
+  \link*[linecolor=#5,linestyle=#6,nodesep=\pstr@arcoptions]{#3}{#1}{#2} \lnklabel{#4}%
 }
 
 % Create the node and store the commands for the creation of the link in the list of tokens tok0
@@ -304,7 +315,7 @@ curveto
 %  #7 node content
 \gdef\pstr@PS@createNodeAndArrow#1#2#3#4#5#6#7{%
     \pstr@drawNode{#1}{#2}{#7}%
-    \pstr@drawArrow{#2}{#3}{#4}{#5}{#6}%
+    \pstr@drawArrow{#2}{#3}{#4}{#5}{#6}{\pstr@DefaultArrowLineStyle}%
 }
 
 
@@ -312,7 +323,7 @@ curveto
 %%Second way of creating a pointing string: user command \pstr
 %  \pstr[raiseamount][nodesep]{ sequencespecification }
 % example:
-%  \pstr[0.4cm][1pt]{ \lnk(b) this \lnk(a-b,45) that }
+%  \pstr[0.4cm][1pt]{ \nd(b) this \nd(a-b,45) that }
 
 \gdef\pstr@PS{\@ifnextchar[{\pstr@PS@i}{\pstr@PS@ii[0cm][1pt]}}
 % pstr with one optional parameter
@@ -347,8 +358,8 @@ curveto
 %   #3 content of the node
 \def\pstr@PGF@drawNode#1#2#3{%
   \pgfsetfillcolor{white!100}%
-  \pgfsetshapeinnerxsep{1pt}%
-  \pgfsetshapeinnerysep{0.6pt}%
+  \pgfset{inner xsep=1pt}%
+  \pgfset{inner ysep=0.6pt}%
 %  \pgfnode{rectangle}{base west}{\color{black}${}#1{}$}{#2@Next}{\pgfusepath{discard}}%
 %  \pgftransformshift{\pgfpointanchor{#2@Next}{base east}}%
   \pgfnode{rectangle}{base west}{\color{black}${}#3{}$}{#2}{\pgfusepath{discard}}%
@@ -361,8 +372,8 @@ curveto
     \ifx\text\empty%
     \else%
       \pgfsetfillcolor{white!100}%
-      \pgfsetshapeinnerxsep{1pt}%
-      \pgfsetshapeinnerysep{0pt}%
+      \pgfset{inner xsep=1pt}%
+      \pgfset{inner ysep=0pt}%
       \pgfnode{rectangle}{base west}{\color{black}${}#1{}$}{dummy}{\pgfusepath{discard}}%
       \pgftransformshift{\pgfpointanchor{dummy}{base east}}%
     \fi%
@@ -374,8 +385,9 @@ curveto
 %    #2 target node name
 %    #3 angle
 %    #4 label
-%    #5 link color
-\def\pstr@PGF@drawArrow#1#2#3#4#5{%
+%    #5 line color
+%    #6 line style
+\def\pstr@PGF@drawArrow#1#2#3#4#5#6{%
     \def\angleB{#3}%
     \count255=180 \advance \count255 by -\angleB%
     \def\angleA{\number\count255}%
@@ -408,19 +420,59 @@ curveto
     %%%% draw using bezier curves
       \pgfpathmoveto{\ptA}\pgfpathcurveto{\cptC}{\cptD}{\ptB}%
     %%%%
-    \color{#5} \pgfusepath{stroke}%
+    \pgfsetcolor{#5}%
+
+    \def\linestyle{#6}
+    \ifx\linestyle\pstr@linestyledashed
+        \pgfsetdash{{3pt}{3pt}}{0cm}%
+        \pgfusepath{stroke}%
+    \else
+        \ifx\linestyle\pstr@linestyledotted
+            \pgfsetdash{{1pt}{3pt}}{0cm}%
+            \pgfusepath{stroke}%
+        \else
+            \ifx\linestyle\pstr@linestylenone
+
+            \else%solid
+                \pgfsetdash{}{0pt}%
+                \pgfusepath{stroke}%
+            \fi
+        \fi
+    \fi
+
 
    %%% Put the label on the link if there is one
     \def\label{#4}%
     \ifx\label\empty%
     \else%
 %      \pgfsetfillcolor{white!100}%
-%      \pgfsetshapeinnerxsep{1pt}%
-      \pgfsetshapeinnerysep{1pt}%
+%      \pgfset{inner xsep=1pt}%
+      \pgfset{inner ysep=1pt}%
       %\pgftransformshift{\bendpt} % position the label at the bendpoint
-      \pgftransformshift{\pgfpointcurveattime{0.5}{\ptA}{\cptC}{\cptD}{\ptB}} % position the label at half-way on the curve
+      \pgftransformshift{\pgfpointcurveattime{0.5}{\ptA}{\cptC}{\cptD}{\ptB}} % position the label half-way on the curve
       \pgfnode{rectangle}{south}{\color{black} {\pstr@LabelStyle $\label$}}{}{\pgfusepath{discard}}%
     \fi%
+}
+
+
+% Simulation of the \underbrace TeX command with PGF.
+%  #1 and #2 are the names of the nodes delimiting the width of the brace
+%  #3 is the vertical distance between the brace and the nodes
+%  #4 is a label to be written under the brace
+\def\pstrPGFbrace#1#2#3#4{
+\pgfsetlinewidth{1pt}
+\pgfsetarrowsstart{}%
+\pgfsetarrowsend{}%
+\pgfsetdash{}{0pt}
+\def\ptA{\pgfpointdiff{\pgfpoint{0pt}{#3}}{\pgfpointanchor{#2}{base east}}}
+\def\ptB{\pgfpointdiff{\pgfpoint{0pt}{#3}}{\pgfpointanchor{#1}{base west}}}
+\begin{pgfdecoration}{{brace}{\pgfdecoratedpathlength}}
+\pgfpathmoveto{\ptA}
+\pgfpathlineto{\ptB}
+\end{pgfdecoration}
+\pgfusepath{stroke}
+\pgftransformshift{\pgfpointdiff{\pgfpoint{0pt}{5pt}}{\pgfpointlineattime{0.5}\ptA\ptB}}
+\pgfnode{rectangle}{north}{\color{black}{}#4}{}{\pgfusepath{discard}}%
 }
 
 
@@ -446,10 +498,10 @@ curveto
 \begin{pgfpicture}%
   \def\pstr@arcoptions{#2}%
   \pgfsetbaseline{0pt}%
-  \pgfsetshapeminwidth{0cm}%
-  \pgfsetshapeminheight{0cm}%
-  \pgfsetshapeinnerxsep{0pt}%
-  \pgfsetshapeinnerysep{0.3pt}%
+  \pgfset{minimum width=0cm}%
+  \pgfset{minimum height=0pt}%
+  \pgfset{inner xsep=0pt}%
+  \pgfset{inner ysep=0.3pt}%
   \pgfsetarrows{-stealth}%
   \pgfsetlinewidth{\pstr@ArrowLineWidth}%
   \pstr@ptrlist={}% Create an empty list of links.
@@ -466,13 +518,13 @@ curveto
 %  #3 target node name
 %  #4 arrow angle
 %  #5 link label
-%  #6 link color
+%  #6 line color
 %  #7 node content
 \gdef\pstr@PGF@createNodeAndArrow#1#2#3#4#5#6#7{
     %\pstr@createpgfnode{s}{s}{\mbox{C[1($#1$)  2($#2$) 3($#3$) 4(#4) 5(#5) 6(#6)]} }
     \pstr@drawNode{#1}{#2}{#7}%
     % add the arrow to the list of arrows
-    \toks0={\pstr@drawArrow{#2}{#3}{#4}{#5}{#6}}%
+    \toks0={\pstr@drawArrow{#2}{#3}{#4}{#5}{#6}{\pstr@DefaultArrowLineStyle}}%
     \edef\act{\noexpand\pstr@ptrlist={\the\pstr@ptrlist \the\toks0}}%
     \act%
 }
@@ -492,18 +544,23 @@ curveto
 % pstr with one optional parameter
 \gdef\pstr@PGF@i[#1]{\@ifnextchar[{\pstr@PGF@ii[#1]}{\pstr@PGF@ii[#1][1pt]}}
 % pstr with two optional parameters
-\gdef\pstr@PGF@ii[#1][#2]#3{%
+\gdef\pstr@PGF@ii[#1][#2]#3{\@ifnextchar[{\pstr@PGF@iii[#1][#2]{#3}}{\pstr@PGF@iii[#1][#2]{#3}[]}}
+% pstr with two optional parameters + an optional PGF postamble
+\gdef\pstr@PGF@iii[#1][#2]#3[#4]{%
 \begin{pgfpicture}%
   \def\pstr@arcoptions{#2}%
   \pgfsetbaseline{0pt}%
-  \pgfsetshapeminwidth{0cm}%
-  \pgfsetshapeminheight{0cm}%
-  \pgfsetarrows{-stealth}%
-  \pgfsetlinewidth{0.3pt}%
+  \pgfset{minimum width=0cm}%
+  \pgfset{minimum height=0pt}%
+  \pgfset{inner xsep=0pt}%
+  \pgfset{inner ysep=0.3pt}%
   \pstr@ptrlist={}% Create an empty list of links.
   \pstr@defineUserCommands% define the command \nd and \txt that the package user can use to define the sequence
-  #3%
+  #3%call the body specification
+  \pgfsetarrows{-stealth}%
+  \pgfsetlinewidth{\pstr@ArrowLineWidth}%
   \the\pstr@ptrlist% dump the list of links.
+#4%call the PGF postamble
 \end{pgfpicture}%
 }
 
@@ -522,6 +579,7 @@ curveto
 %
 % It is called in the \pstr@PS and \pstr@PGF macros.
 \gdef\pstr@defineUserCommands{%
+    % node/link creation
     \def\nd##1(##2)##3{%
      % print out the text preceding the node specification
      \pstr@printText{##1}%
@@ -532,6 +590,8 @@ curveto
      % print out text
      \pstr@printText{##1}%
     }%
+    % creation of an additional arrow
+    \def\arrow{\pstr@drawArrow}%
 }
 
 %%%%
@@ -646,16 +706,38 @@ curveto
 
 Change log:
 -----------
+Version 0.3.5 - 26 June 2008:
+-Solve an incompatibility with the latest version of LatexDaemon:
+   *in the \openout command opening the prologue file, the spaces around the = sign are now removed.
+   *the .pro prolog file is now written at `\begin{document}`
 
-Version 0.3.1, 3 May 2007:
+Version 0.3.4 - 29 April 2008:
+- add the command \pstrPGFbrace to simulate the \underbrace TeX command in PGF mode.
+This allows you to put brace around a subsequence of nodes.
+The syntax is
+\def\pstrPGFbrace#1#2#3#4{
+where
+  #1 and #2 are the names of the nodes delimiting the width of the brace
+  #3 is the vertical distance between the brace and the nodes
+  #4 is a label to be written under the brace
+
+Version 0.3.4 - 29 April 2008:
+- updated for use with the latest version of the pgf package
+Version 0.3.3 - 12 Oct 2007:
+- it is possible to specify the line style with the option \pstrSetArrowLineStyle
+- additional arrows can be created with \arrow in the \pstr syntax mode (but not in \Pstr)
+
+Version 0.3.2 - 24 Sep 2007:
+- the file pstring.pro was not created when the preamble was precompiled using latexdaemon
+Version 0.3.1 - 3 May 2007:
 - It is now possible to specify the link color individually with the following link specification syntax:
     (src-dst,80:label,green)
-Version 0.3, 1 Mar 2007:
+Version 0.3 - 1 Mar 2007:
 - added support for pgf as a drawing engine instead of the (hacked) pstricks
 - incompatibility with LatexDaemon fixed: before when loading the pstring package from a precompiled
 preamble, the prologue file was not included properly during the dvips conversion.
 
-Version 0.1, 28 Jan 2007
+Version 0.1 - 28 Jan 2007 First version
 
 
 Examples:

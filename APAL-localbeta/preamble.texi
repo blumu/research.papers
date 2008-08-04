@@ -3,7 +3,7 @@
 \usepackage{todonotes}
 \usepackage{a4wide}
 \usepackage[defblank]{paralist}
-\usepackage{amsmath,amsthm,amssymb}
+\usepackage{amsmath,amssymb,amsthm}
 \usepackage{wasysym}
 \usepackage{stmaryrd}
 \usepackage[numbers]{natbib}
@@ -11,13 +11,20 @@
 \usepackage{bbm,latexsym}
 \usepackage{tabularx}
 \usepackage{ifpdf}
+\usepackage[off]{pdfsync}
 \ifpdf
   \usepackage[breaklinks=true,colorlinks=true, linkcolor=blue]{hyperref}
 \else
   \usepackage{url}
   \newcommand\texorpdfstring[2]{#1}
 \fi
+\usetikzlibrary{arrows}
 \usetikzlibrary{matrix}
+\usetikzlibrary{shapes.geometric}
+\usepgflibrary{decorations.pathreplacing}
+\usepgflibrary{decorations.markings}
+\usetikzlibrary{decorations}
+\usetikzlibrary{positioning}
 
 % adjust todonotes options
 \tikzstyle{notestyle} += [text width=0.9\marginparwidth]
@@ -25,23 +32,25 @@
 
 
 % THEOREMS
-%\newtheorem{theorem}{Theorem}[section]
-%\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}[theorem]{Corollary}
 
-%\newtheorem{lemma}[theorem]{Lemma}
-%\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
 
-%\theoremstyle{remark}
-%\newtheorem{remark}[theorem]{Remark}
-%\newtheorem{property}[theorem]{Property}
-%\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{property}[theorem]{Property}
+\newtheorem{example}[theorem]{Example}
 
-%\theoremstyle{definition}
-%\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
 %\newtheorem{algorithm}[theorem]{Algorithm}
 
 
 % MACROS
+
+\newcommand\enable\vdash
 
 %\newcommand\textbfit[1]{{\bf\em #1}\index{#1}}
 \newcommand\defeq{\stackrel{\textsf{def}}{=}}
@@ -52,7 +61,7 @@
 \newcommand\order[1]{{\sf order}(#1)}
 \newcommand\slheight[1]{{\sf height}(#1)}
 \newcommand\nparam[1]{{\sf nparam}(#1)}
-\newcommand\level[1]{{\sf level}(#1)}
+%\newcommand\level[1]{{\sf level}(#1)}
 \newcommand\typeof[1]{{\sf type}(#1)}
 
 %% Macros to stack things up
@@ -69,3 +78,6 @@
 
 % Entailments for different kinds of judgments
 \newcommand\stentail{\vdash_{\sf st}} % entailment for simply-typed term
+
+% ignore notations declaration
+\def\notation#1#2{}%

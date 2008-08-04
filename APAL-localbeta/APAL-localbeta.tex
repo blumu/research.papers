@@ -1,0 +1,37 @@
+% -*- TeX -*- -*- Soft -*-
+%Daemon> ini=latex
+%Daemon> afterjob=dvipspdf
+%Daemon> filter=err+warn
+%Daemon> custom_args="-synctex=-1 --include-directory=../thesis/"
+\documentclass[amsthm]{elsart}
+\input{preamble.texi}
+\usepackage{lineno}
+
+\begin{document}
+\begin{keyword}
+Lambda calculus \sep beta-reduction
+traversal theory
+\end{keyword}
+\begin{frontmatter}
+\title{Local computation of $\beta$-reduction---A concrete presentation of Game Semantics}
+\author{William Blum and C.H. Luke Ong}
+\address{Oxford University Computing Laboratory}
+\thanks[EPSRC]{Supported by EPSRC}
+\begin{abstract}
+We show that ...
+\end{abstract}
+\end{frontmatter}
+
+\maketitle \tableofcontents \bigskip
+
+\listoftodos
+\bigskip
+
+\input{../thesis/corresp.texi}
+
+\bibliographystyle{elsart-num}
+\bibliography{../bib/dphil-all}
+
+\end{document}
+
+\printtodomargin
