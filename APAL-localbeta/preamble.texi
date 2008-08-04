@@ -12,12 +12,12 @@
 \usepackage{tabularx}
 \usepackage{ifpdf}
 \usepackage[off]{pdfsync}
-\ifpdf
+%\ifpdf
   \usepackage[breaklinks=true,colorlinks=true, linkcolor=blue]{hyperref}
-\else
-  \usepackage{url}
-  \newcommand\texorpdfstring[2]{#1}
-\fi
+%\else
+%  \usepackage{url}
+%  \newcommand\texorpdfstring[2]{#1}
+%\fi
 \usetikzlibrary{arrows}
 \usetikzlibrary{matrix}
 \usetikzlibrary{shapes.geometric}
