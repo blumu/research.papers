@@ -1,6 +1,4 @@
  % -*- TeX -*- -*- Soft -*-
-\documentclass{article}
-
 \usepackage{gamesem}
 \usepackage{todonotes}
 \usepackage{a4wide}
@@ -27,20 +25,20 @@
 
 
 % THEOREMS
-\newtheorem{theorem}{Theorem}[section]
-\newtheorem{corollary}[theorem]{Corollary}
+%\newtheorem{theorem}{Theorem}[section]
+%\newtheorem{corollary}[theorem]{Corollary}
 
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{proposition}[theorem]{Proposition}
+%\newtheorem{lemma}[theorem]{Lemma}
+%\newtheorem{proposition}[theorem]{Proposition}
 
-\theoremstyle{remark}
-\newtheorem{remark}[theorem]{Remark}
-\newtheorem{property}[theorem]{Property}
-\newtheorem{example}[theorem]{Example}
+%\theoremstyle{remark}
+%\newtheorem{remark}[theorem]{Remark}
+%\newtheorem{property}[theorem]{Property}
+%\newtheorem{example}[theorem]{Example}
 
-\theoremstyle{definition}
-\newtheorem{definition}[theorem]{Definition}
-\newtheorem{algorithm}[theorem]{Algorithm}
+%\theoremstyle{definition}
+%\newtheorem{definition}[theorem]{Definition}
+%\newtheorem{algorithm}[theorem]{Algorithm}
 
 
 % MACROS
