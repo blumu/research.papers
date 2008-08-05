@@ -36,7 +36,7 @@
 \todo{ The proof presented in this note is incomplete (I have not managed to show Lemma \ref{lem:incrk_qsafe}) so the simulation may just be wrong...}
 
 \begin{abstract}
-In \cite{hague-sto07}, Hague, Murawski, Ong and Serre introduced
+Hague, Murawski, Ong and Serre \cite{hmos-lics08} introduced
 higher-order collapsible pushdown automata (CPDA) and showed their
 equivalence with higher-order recursion scheme. They proposed an
 algorithm that transforms a given order-$n$ recursive  scheme G to
@@ -53,7 +53,7 @@ of equi-expressivity (in term of generated trees) of PDAs and safe recursion sch
 \section{The HORS to HOCPDA encoding}
 
 We fix a higher-order recursion scheme $G$ of order $n$.
-We consider the $n$-CPDA $CPDA(G)$ constructed from $G$ as defined in \cite[Definition 5.2]{hague-sto07}.
+We consider the $n$-CPDA $CPDA(G)$ constructed from $G$ as defined in Hague et al.'s paper \cite[Definition 5.2]{hague-collaps-full}.
 Recall that the stack-alphabet $\Gamma$ is defined as the set of nodes of the computation graph $Gr(G)$ of $G$.
 
 The purpose of the CPDA $CPDA(G)$ is to compute the set of traversals of the computation tree of $G$. One can easily transform $CPDA(G)$ into an automaton that ``prints out'' the traversal that is being computed. This can be done by changing the behaviour of the $push_1$ operation to make it print out the input element before pushing it on the stack. The justification pointers can then be recovered
@@ -97,7 +97,7 @@ By analysing the $n$-CPDA $CPDA(G)$, we show that it is possible to construct a 
 \subsection{Conventions}
 We use the notion of reachability with respect to the $\rightarrow$-step relation introduced in the original paper\footnote{Recall that $c\rightarrow c'$
 just if $c' = \delta(top_1 c)(c)$ where $\delta$ is the transition
-function defined in \cite[Figure 2]{hague-sto07}.}: a configuration is $\rightarrow$-reachable if it can be attained starting from the initial configuration $c_0$ by performing one or more applications of the steps (A), (S), (L), $(V_1)$, $(V_0)$ from the algorithm defining $CPDA(G)$.
+function defined Hague et al.'s paper \cite[Figure 2]{hague-collaps-full}.}: a configuration is $\rightarrow$-reachable if it can be attained starting from the initial configuration $c_0$ by performing one or more applications of the steps (A), (S), (L), $(V_1)$, $(V_0)$ from the algorithm defining $CPDA(G)$.
 Thus the intermediate configurations visited by the internal transitions within a step are not $\rightarrow$-reachable.
 A configuration is said to be \defname{reachable} if it is $\rightarrow$-reachable or if it is visited by an internal transitions
 within a step (A), (S), (L), $(V_1)$ or $(V_0)$ of $CPDA(G)$.
@@ -110,7 +110,7 @@ Hence we can omit the $j$-component altogether when representing stack symbols: 
 From now on we use the term ``stack'' to refer to a stack that is the sub-stack of some reachable configuration of $CPDA(G)$. This means that for the stacks that we consider, the above link-convention
 can be used.
 
-\todo{Add definition of stack prefix ``$s_{\prefixof m}$'' (See \cite{hague-sto07}).}
+\todo{Add definition of stack prefix ``$s_{\prefixof m}$'' \cite{hmos-lics08}.}
 
 \subsection{Incremental order-decomposition}
 
@@ -240,12 +240,10 @@ In other words, $x$'s binder is the last lambda node in $\orddec_{\ord x}(c)$.
 \end{lemma}
 \proof
 \begin{enumerate}[i.]
-\item By Corollary 8 from \cite{hague-sto07}, the top $1$-stack of a $\rightarrow$-reachable configuration contains the P-view of some
-    traversal whose last visited node is the $top_1$ symbol, and
-    by Proposition 6 from \cite{OngLics2006}, the P-view of a
-    traversal is exactly the path (in the unfolding of) the
+\item The top $1$-stack of a $\rightarrow$-reachable configuration contains the P-view of some traversal whose last visited node is the $top_1$ symbol \cite[Corollary 8]{hague-collaps-full}; and
+    the P-view of a traversal is exactly the path (in the unfolding of) the
     computation graph from the last visited node to
-    the root. Hence the binder of $x$, whose order
+    the root \cite[Proposition 6]{OngLics2006}. Hence the binder of $x$, whose order
     is strictly greater than $\ord{x}$, occurs in the top $1$-stack.
     Consequently $\orddec(c)$ must contain at least one node of order strictly greater than $l$.
 
@@ -398,7 +396,7 @@ is safe. Hence $collapse\, s_{\prefixof \lambda\overline\eta_j}^{\langle n-l+1\r
 
 Suppose that $|s_{\prefixof \lambda\overline\eta_j}|=|s|$ then $s_{\prefixof \lambda\overline\eta_j}=s$ and therefore $b=j=0$.
 
-We have 
+We have
 \begin{align*}
   collapse(s_{\prefixof \lambda\overline\eta_j}^{\langle n-l+1\rangle})
   &= collapse(s^{\langle n-l+1\rangle}) \\
@@ -455,8 +453,7 @@ since $|collapse~{s_{l+1}}_{\prefixof\lambda\overline\eta}| < |s_{l+1}|$ we can 
 \end{itemize}
 
 
-We reproduce here the definition of the
-CPDA operation $push_j$ from \cite{hague-sto07}:
+We reproduce here the definition of the CPDA operation $push_j$ \cite{hmos-lics08}:
 $$ push_j \underbrace{[ s_1 \ldots s_{l+1} ]}_{s} =
 \left\{
   \begin{array}{ll}
@@ -566,8 +563,8 @@ Together with Lemma \ref{lem:safecollapsesimulation}, this shows that $PDA(G)$ i
 
 
 \section{Remark}
-It is possible to redefine $CPDA(G)$ from
-\cite{hague-sto07} in a more compact way by merging the two subcases in
+It is possible to redefine the collapsible pushdown automaton $CPDA(G)$ from Hague et al.
+\cite{hmos-lics08} in a more compact way by merging the two subcases in
 $(V_1)$ and $(V_0)$. This is done as follows: In case (A), when
 pushing the prime child of an application node $@$ on the stack, we
 associate a link to it that points to the preceding stack symbol in
