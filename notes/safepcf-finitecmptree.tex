@@ -126,7 +126,7 @@ We define a partial map $\alpha$ from the set of nodes of $\widetilde\tau(Y_A F)
 $\alpha(\travset_{\hat\tau}(Y_A F)^{\filter \theroot}) =
 \travset_{\widetilde\tau}(Y_A F)^{\filter \theroot}$.
 \end{lemma}
-\proof
+\begin{proof}
 We prove $\travset_{\widetilde\tau}(Y_A F)^{\filter \theroot} \subseteq
 \alpha(\travset_{\hat\tau}(Y_A F)^{\filter \theroot})$ by induction on
 the traversal rules for $\widetilde\tau$. The base case is trivial. For the
@@ -163,8 +163,7 @@ and $\alpha((t_1'\filter r) \cdot p' \cdot \lambda \overline{\eta}')
 
 The proof of $\travset_{\widetilde\tau}(Y_A F)^{\filter \theroot} \supseteq
 \alpha(\travset_{\hat\tau}(Y_A F)^{\filter \theroot})$ is similar.
-\qed
-\bigskip
+\end{proof}
 
 Although $\alpha$ is not injective (it maps two different nodes of $\hat\tau$ labelled by the same variable to the same node of $\widetilde\tau$), its node-wise extension to the set of reductions of traversals is injective.
 The proof is by an easy induction on the traversal rules. Hence $\alpha$ defines an isomorphism from $\travset_{\widetilde\tau}(Y_A

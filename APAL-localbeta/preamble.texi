@@ -80,4 +80,4 @@
 \newcommand\stentail{\vdash_{\sf st}} % entailment for simply-typed term
 
 % ignore notations declaration
-\def\notation#1#2{}%
+\def\indexnotation#1#2{}%

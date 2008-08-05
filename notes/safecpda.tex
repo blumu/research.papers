@@ -238,7 +238,7 @@ configuration of $CPDA(G)$ such that $top_1\,c$ is a variable $x$. Then
 \end{enumerate}
 In other words, $x$'s binder is the last lambda node in $\orddec_{\ord x}(c)$.
 \end{lemma}
-\proof
+\begin{proof}
 \begin{enumerate}[i.]
 \item The top $1$-stack of a $\rightarrow$-reachable configuration contains the P-view of some traversal whose last visited node is the $top_1$ symbol \cite[Corollary 8]{hague-collaps-full}; and
     the P-view of a traversal is exactly the path (in the unfolding of) the
@@ -251,9 +251,9 @@ In other words, $x$'s binder is the last lambda node in $\orddec_{\ord x}(c)$.
  incrementally bound (see \cite{blumong:safelambdacalculus})
  which means that its binder is precisely the first $\lambda$-node in the
  path to the root in the computation tree with order strictly
- greater than $x$. \qed
+ greater than $x$. \qedhere
 \end{enumerate}
-%% end of proof
+\end{proof}
 
 \subsection{Stack safety}
 
@@ -357,7 +357,8 @@ for all stack $s$ and stack-symbol $m$ occurring in $s$.
 Let $0\leq l < n$ and $s$ be a stack of level $1\leq \ord{s} <n$.
 If $s$ is safe then $s^{\langle n-l+1 \rangle}$ is $l$-safe.
 \end{lemma}
-\proof  Let $s$ be a safe stack with $1\leq \ord s <n$. We prove the result by induction on the size of $s$.
+\begin{proof}
+Let $s$ be a safe stack with $1\leq \ord s <n$. We prove the result by induction on the size of $s$.
 Base case: $s$ is the initial stack and the result holds trivially.
 
 Step case: Since $s$ is safe we have
@@ -409,8 +410,9 @@ $(collapse\, s)^{\langle n-l+1\rangle}$ is $l$-safe.
 \unfinished{But this is not enough: we want to show that $(collapse s)^{\langle n-l+1\rangle}$ is safe, and not only $l$-safe!!!
 }
 
-Hence $s^{\langle n-l+1 \rangle}$ is $l$-safe. \qed
-\smallskip
+Hence $s^{\langle n-l+1 \rangle}$ is $l$-safe.
+\end{proof}
+
 
 \begin{lemma}
 \label{lem:cons_qsafety} Let $s$ be a higher-order stack of level $\geq 2$. If
@@ -420,7 +422,7 @@ Hence $s^{\langle n-l+1 \rangle}$ is $l$-safe. \qed
 \end{enumerate}
 then $s$ is safe.
 \end{lemma}
-\proof
+\begin{proof}
 Let $s = [s_1 \ldots s_l~s_{l+1}]$ for some $l\geq0$.
 We proceed by induction on  $top_{\ord{s}}\,s=s_{l+1}$.
 The base case $s_{l+1} = \bot_{\ord{s}-1}$ is trivial.
@@ -449,9 +451,9 @@ Otherwise $n-\ord{\lambda \overline{\eta}}+1 < \ord{s}$ and we have:
 By the second assumption, $s_{l+1} = top_{\ord{s}}\,s$ is safe therefore by definition
 of safety so is $collapse~{s_{l+1}}_{\prefixof\lambda\overline\eta}$, thus
 since $|collapse~{s_{l+1}}_{\prefixof\lambda\overline\eta}| < |s_{l+1}|$ we can use the induction hypothesis which shows that $[s_1 \ldots s_p\ (collapse\, {s_{l+1}}_{\prefixof\lambda\overline\eta}) ]$ is safe.
-\qed
+\qedhere
 \end{itemize}
-
+\end{proof}
 
 We reproduce here the definition of the CPDA operation $push_j$ \cite{hmos-lics08}:
 $$ push_j \underbrace{[ s_1 \ldots s_{l+1} ]}_{s} =
@@ -466,7 +468,7 @@ $$
 \begin{lemma}
 \label{lem:pushj_safe_implies_l-safe} Let $n>l\geq 0$ and $s$ be a safe higher-order stack such that $2 \leq n-l+1 \leq \ord{s} \leq n$. Then $push_{n-l+1}\ s$ is $l$-safe.
 \end{lemma}
-\proof
+\begin{proof}
 Let $s=[s_1 \ldots s_{c+1}]$ be a safe higher-order stack such that $2 \leq n-l+1 \leq \ord{s} \leq n$. Then by Lemma \ref{lem:push1pop1_preserves_safety}, $s_{c+1}$ is safe.
 
 We show that $push_{n-l+1}~s$ is $l$-safe by finite induction on the order of $s$.
@@ -484,9 +486,9 @@ We show that $push_{n-l+1}~s$ is $l$-safe by finite induction on the order of $s
 
     Since $s_{c+1}$ is safe, by the
     induction hypothesis $push_{n-l+1}~s_{c+1}$ is $l$-safe, and by Lemma \ref{lem:cons_qsafety} so is $[ s_1 \ldots s_{c+1} push_{n-l+1}\,s_{c+1}]$.
-\qed
+\qedhere
     \end{compactitem}
-%end of proof
+\end{proof}
 
 
 
@@ -502,7 +504,7 @@ $CPDA(G)$ by replacing all the $collapse$ transitions by $pop_{n-\ord(top_1\,s)+
 \begin{proposition}
 All the $\rightarrow$-reachable configurations of CPDA(G) are safe.
 \end{proposition}
-\proof
+\begin{proof}
 If $n =\ord{c} =1$ then the result holds trivially since CPDA(G) does not contain
 any transition of the form $push_j$ for $j>1$ and therefore all the links associated to symbols in a configuration have a $k$-component equal to $1$.
 
@@ -541,10 +543,9 @@ Case ($V_0$): $l=0$ (which implies that  $b=0$). We have $c' = push_1 E_i(top_1)
 push_1 E_i(top_1)\,collapse(c_{\prefixof \lambda \overline\eta_b})$.
 Since $c$ is safe, so is $collapse(c_{\prefixof \lambda \overline\eta_b})$ and
 by Lemma \ref{lem:push1pop1_preserves_safety} so is $c'$.
-\qed
+\qedhere
 \end{itemize}
-%% end of proof
-\smallskip
+\end{proof}
 
 \begin{corollary}[Correctness of the simulation] \hfill
 In CPDA(G), the $collapse$ operation is executed only on safe configurations.
