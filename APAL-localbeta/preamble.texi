@@ -31,21 +31,41 @@
 \tikzstyle{notestyleleft} += [text width=0.9\marginparwidth]
 
 
+
+% THEOREM style
+\newtheoremstyle{myremark}% name of the style to be used
+  {\topsep}% measure of space to leave above the theorem. E.g.: 3pt
+  {\topsep}% measure of space to leave below the theorem. E.g.: 3pt
+  {}% name of font to use in the body of the theorem
+  {}% measure of space to indent
+  {\sc}% name of head font
+  {}% punctuation between head and body
+  {.5em}% space after theorem head
+  {\thmname{#1}\thmnumber{ #2}\thmnote{ (\rm #3)}}% Manually specify head
+
+
 % THEOREMS
+\theoremstyle{theorem}
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
 
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{proposition}{Proposition}[section]
 
 \theoremstyle{remark}
-\newtheorem{remark}[theorem]{Remark}
-\newtheorem{property}[theorem]{Property}
-\newtheorem{example}[theorem]{Example}
+\newtheorem{property}{Property}[section]
+
+\theoremstyle{myremark}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{convention}{Convention}[section]
+\newtheorem{notation}{Notation}[section]
+\newtheorem{notations}[notation]{Notations}
 
 \theoremstyle{definition}
-\newtheorem{definition}[theorem]{Definition}
-%\newtheorem{algorithm}[theorem]{Algorithm}
+\newtheorem{example}{Example}[section]
+\newtheorem{definition}{Definition}[section]
+\newtheorem{algorithm}{Algorithm}[section]
 
 
 % MACROS
