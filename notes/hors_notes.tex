@@ -74,7 +74,7 @@ $L = \{ w *_1^{(|w|_b - |w|_a)} *_2^{(|w|_c - |w|_a)} \ | \
 Lemma Let A be a n-PDA then there is a n+1-PDA recognizing
 the reverse of L(A).
 
-Proof: just replace the production of terminals by a $push_1$
+Proof: Just replace the production of terminals by a $push_1$
 of a corresponding element on the stack followed by a $push_{n+1}$.
 When the end of string symbol is emitted, the reversed string can be
 retrieved using the following algorithm:

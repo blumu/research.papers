@@ -66,7 +66,7 @@ child {node{@}}
 };
 \end{tikzpicture}
 $$
-where the exponent $rec$ means that the root of the subtree $\widetilde\tau(F)$ has a mark indicating that it is a special recursion lambda-node. The notion of traversal can be changed accordingly: whenever a traversal meets a recursion variable $f$ in the subtree $\tau(F)$ then instead of jumping to the second child of the application node, it jumps to the root of the main tree. (Thus with this notion of traversal, the root can occur multiple times in the same traversal.) The definition of the mapping $\psi$ from nodes to moves remains consistent with this notion of computation tree, and the game-semantic correspondence still holds:
+where the exponent $rec$ means that the root of the subtree $\widetilde\tau(F)$ has a mark indicating that it is a special recursion lambda-node. The notion of traversal can be changed accordingly: Whenever a traversal meets a recursion variable $f$ in the subtree $\tau(F)$ then instead of jumping to the second child of the application node, it jumps to the root of the main tree. (Thus with this notion of traversal, the root can occur multiple times in the same traversal.) The definition of the mapping $\psi$ from nodes to moves remains consistent with this notion of computation tree, and the game-semantic correspondence still holds:
 $$ \psi : \travset_{\widetilde\tau}( Y_A F )^{\filter \theroot} \stackrel{\cong}{\longrightarrow} \sem{Y_A F}$$
 where $\travset_{\widetilde\tau}(M)^{\filter \theroot}$ denotes the set of reductions of traversals of the computation tree $\widetilde\tau(M)$.
 
@@ -98,7 +98,7 @@ The definition of the  order of an abstraction node does not change:
 it is the order of the term represented by the subtree rooted at
 this node. In other word, the order of $\lambda \overline{x}$ is defined as the order of $\lambda \overline{y}$ where $\overline{y}$ is the sublist of $\overline{x}$  obtained by removing all the recursion variables in parenthesis.
 
-The numbering of variables bound in a $\lambda$-node labelled $\lambda \overline{x}$ is as follows: the $i^{\sf th}$ standard variable in $\overline{x}$ is denoted by $i$ and the the $i^{\sf th}$ recursion variable in $\overline{x}$ is denoted by $(i)$. The links in a justified sequence of nodes are labelled accordingly.
+The numbering of variables bound in a $\lambda$-node labelled $\lambda \overline{x}$ is as follows: The $i^{\sf th}$ standard variable in $\overline{x}$ is denoted by $i$ and the the $i^{\sf th}$ recursion variable in $\overline{x}$ is denoted by $(i)$. The links in a justified sequence of nodes are labelled accordingly.
 
 We can now define a notion of traversals adapted to this new kind of computation tree as follows. All the traversal rules are kept unmodified. The recursion variables in the $\lambda$-nodes are automatically ignored by the rules since such variables are numbered differently from standard variables. In particular, the (Var) rules only applies to non-recursion variables.
 We add a new rule to handle recursion variable:
@@ -110,7 +110,7 @@ If  \Pstr[0.6cm]{t' \cdot (n){n} \cdot (l){\lambda \overline{x}} \ldots (f-l,50:
 \end{center}
 
 With the original definition of computation tree, the proof of
-the Correspondence Theorem for \pcf\ was straightforward: it was done by a reduction
+the Correspondence Theorem for \pcf\ was straightforward: It was done by a reduction
 to the simply-typed lambda calculus case using the technique of approximants.
 With the finite version of computation trees, it is not obvious to see which uncovering of moves gives rises to a correspondence with the set of traversals. However it is easy to show that the set of traversal reductions of the finite computation tree is equal to the set of traversal reductions of the standard computation tree. Therefore the Correspondence Theorem still holds.
 

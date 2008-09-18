@@ -56,8 +56,7 @@ We fix a higher-order recursion scheme $G$ of order $n$.
 We consider the $n$-CPDA $CPDA(G)$ constructed from $G$ as defined in Hague et al.'s paper \cite[Definition 5.2]{hague-collaps-full}.
 Recall that the stack-alphabet $\Gamma$ is defined as the set of nodes of the computation graph $Gr(G)$ of $G$.
 
-The purpose of the CPDA $CPDA(G)$ is to compute the set of traversals of the computation tree of $G$. One can easily transform $CPDA(G)$ into an automaton that ``prints out'' the traversal that is being computed. This can be done by changing the behaviour of the $push_1$ operation to make it print out the input element before pushing it on the stack. The justification pointers can then be recovered
-inductively using the node labels: to recover the justifier of a variable node, we just need to look for the only node-occurrence that binds it in the P-view at that point (which is computable by the induction hypothesis).
+The purpose of the CPDA $CPDA(G)$ is to compute the set of traversals of the computation tree of $G$. One can easily transform $CPDA(G)$ into an automaton that ``prints out'' the traversal that is being computed. This can be done by changing the behaviour of the $push_1$ operation to make it print out the input element before pushing it on the stack. The justification pointers can then be recovered inductively using the node labels: To recover the justifier of a variable node, we just need to look for the only node-occurrence that binds it in the P-view at that point (which is computable by the induction hypothesis).
 Prime lambda nodes always point to their immediate predecessor. For non-prime lambda nodes, the justifier is always the occurrence preceding the justifier of the variable node preceding the lambda node.
 
 Since some of the transitions of the CPDA, such as $collapse$, are destructive, the current content of stack does not contain sufficient information in order to reconstruct the traversal that is being computed.
@@ -97,7 +96,7 @@ By analysing the $n$-CPDA $CPDA(G)$, we show that it is possible to construct a 
 \subsection{Conventions}
 We use the notion of reachability with respect to the $\rightarrow$-step relation introduced in the original paper\footnote{Recall that $c\rightarrow c'$
 just if $c' = \delta(top_1 c)(c)$ where $\delta$ is the transition
-function defined Hague et al.'s paper \cite[Figure 2]{hague-collaps-full}.}: a configuration is $\rightarrow$-reachable if it can be attained starting from the initial configuration $c_0$ by performing one or more applications of the steps (A), (S), (L), $(V_1)$, $(V_0)$ from the algorithm defining $CPDA(G)$.
+function defined Hague et al.'s paper \cite[Figure 2]{hague-collaps-full}.}: A configuration is $\rightarrow$-reachable if it can be attained starting from the initial configuration $c_0$ by performing one or more applications of the steps (A), (S), (L), $(V_1)$, $(V_0)$ from the algorithm defining $CPDA(G)$.
 Thus the intermediate configurations visited by the internal transitions within a step are not $\rightarrow$-reachable.
 A configuration is said to be \defname{reachable} if it is $\rightarrow$-reachable or if it is visited by an internal transitions
 within a step (A), (S), (L), $(V_1)$ or $(V_0)$ of $CPDA(G)$.
@@ -407,7 +406,7 @@ We have
 \end{align*}
 Since $s$ is safe, so is $collapse s$ and therefore by the I.H.,
 $(collapse\, s)^{\langle n-l+1\rangle}$ is $l$-safe.
-\unfinished{But this is not enough: we want to show that $(collapse s)^{\langle n-l+1\rangle}$ is safe, and not only $l$-safe!!!
+\unfinished{But this is not enough: We want to show that $(collapse s)^{\langle n-l+1\rangle}$ is safe, and not only $l$-safe!!!
 }
 
 Hence $s^{\langle n-l+1 \rangle}$ is $l$-safe.
@@ -592,7 +591,7 @@ $$\delta(u) = push_{n-l+1} ; pop_1^p ; collapse;push_1 E_i(top_1)^{(n-l+1,1)}$$
 \item $(V_0)$ If the variable is of ground type then
 $$\delta(u) = pop_1^p ; collapse;push_1 E_i(top_1)$$
 \end{itemize}
-\caption{CPDA'(G): a compact version of CPDA(G).}
+\caption{CPDA'(G), a compact version of CPDA(G).}
 \label{fig:cpdaprime}
 \end{shadowbox}
 }
