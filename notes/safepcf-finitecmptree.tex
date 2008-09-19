@@ -22,7 +22,7 @@ compuation tree for some fragment of \pcf. The idea would be to have an automato
 
 
 \section*{The original definition as a least-upper bound}
-The computation tree of a PCF term, written $\tau(M)$, is defined as the least upper bound of the computation trees of its approximants:  Take a term of the form $Y_A F$ where $F:A\rightarrow A$ and $A = (A_1,\ldots,A_n,o)$. We define the eta-normal form $\elnf{Y_A F}$ of $Y_A F$ to be the unique infinite term satisfying the recursive equation $X \equiv \lambda \overline{x}: \overline{A} . \elnf{F} X \elnf{x_1} \ldots \elnf{x_n} $ where $\overline{x} = x_1 \ldots x_n$ are fresh variables. Similarly, the computation tree $\tau(Y_A F)$ is given by the unique infinite tree verifying the recursive equation:
+The computation tree of a PCF term, written $\tau(M)$, is defined as the least upper bound of the computation trees of its approximants:  Take a term of the form $Y_A F$ where $F:A\rightarrow A$ and $A = (A_1,\ldots,A_n,o)$. We define the eta-normal form $\elnf{Y_A F}$ of $Y_A F$ to be the unique infinite term satisfying the recursive equation $X \equiv \lambda \overline{x}: \overline{A} . \elnf{F} X \elnf{x_1} \ldots \elnf{x_n} $ where $\overline{x} = x_1 \ldots x_n$ are fresh variables. Similarly, the computation tree $\tau(Y_A F)$ is given by the unique infinite tree satisfying the recursive equation:
 $$\tau(Y_A F) =
 \begin{tikzpicture}[level distance=7mm,inner ysep=0.5mm,sibling distance=15mm,baseline=(r.base)]
 \node (r)  {$\lambda \overline{x}$}
