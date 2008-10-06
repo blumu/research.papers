@@ -1,0 +1,877 @@
+In this section, we show how to extend the game-semantic correspondence
+established for the lambda calculus to other languages such as \pcf\ and \ialgol.
+
+\subsection{\pcf\ fragment}
+
+The $Y$ combinator needs a special treatment. In order to deal with
+it, we use an idea from Abramsky and McCusker's tutorial on game semantics \cite{abramsky:game-semantics-tutorial}: we consider the sublanguage \pcf$_1$ of \pcf\ in which the only allowed use of the $Y$ combinator is in terms of the form $Y(
+\lambda x^A .x )$ for some type $A$. We will write $\Omega_A$ to
+denote the non-terminating term $Y(\lambda x^A .x)$ for a given type
+$A$.
+
+We introduce the \emphind{syntactic approximants} to $Y_A M$:
+\begin{eqnarray*}
+Y^0_A M &=& \Gamma \entail \Omega_A : A\\
+Y^{n+1}_A M &=& M( Y^n M ) \enspace .
+\end{eqnarray*}
+For every \pcf\ term $M$ and natural number $n$, we define $M_n$ to be
+the \pcf$_1$ term obtained from $M$ by replacing each subterm of the
+form $Y N$ with $Y^n N_n$. We then have $\sem{M} = \Union_{n\in\omega}
+\sem{M_n}$ \cite[lemma 16]{abramsky:game-semantics-tutorial}.
+
+
+\subsubsection{Computation tree}
+
+In order to define the notion of computation tree for \pcf\ terms, we first extend the inductive definition of computation tree for simply-typed terms (Def.~\ref{dfn:comptree}) to \pcf$_1$ terms by adding the new inductive case:
+$$\tau(\Omega_{(A_1, \ldots, A_n, o)}) =  \lambda x_1^{A_1} \ldots x_n^{A_n} . \bot$$
+where $\bot$ is a special constant representing the non-terminating computation of ground type $\Omega_o$.
+
+
+We now introduce a partial order on the set of trees.
+A \defname{tree} $t$ is formally defined by a labelling function $t:T\rightarrow L$ where
+$T$, called the \index{tree!domain}\emphind{domain} of $t$ and written $dom(t)$, is a non-empty prefix-closed subset of some free monoid $X^*$ and $L$ denotes the
+set of possible labels. Intuitively, $T$ represents the structure of
+the tree---the set of all paths---and $t$ is the labelling function
+mapping paths to labels. \indexnotation{$t \treeapprox t'$}{Approximation ordering for trees}%
+Trees are ordered using the \emphind{approximation ordering} \cite[section 1]{KNU02}: we
+write $t' \treeapprox t$ if the tree $t'$ is obtained from $t$ by
+replacing some of its subtrees by $\bot$. Formally:
+$$t' \treeapprox t \quad \iff dom(t') \subseteq dom(t) \wedge \forall  w \in dom(t'). (t'(w) = t(w) \vee t'(w) = \bot) \enspace .$$ The set of all trees together with the approximation ordering form a
+complete partial order.
+
+
+Here we take $L$ to be the set of labels consisting of the $\Sigma$-constants, @, the special constant $\bot$, variables, and abstractions of any sequence of variables. It is easy to check that the sequence of computation trees
+$(\tau(M_n))_{n\in\omega}$ is a chain. We can therefore define the
+\defname{computation tree} of a \pcf\ term $M$ to be the least upper-bound of
+the chain of computation trees of its approximants:
+$$\tau(M) = \Union_{n\in\omega}(\tau(M_n))_{n\in\omega} \enspace .$$
+In other words, we construct the computation tree by expanding ad infinitum any subterm of the form $Y M$.
+Thus for a term of the form $Y_A F$ with $A=(A_1,\ldots,A_n,o)$, the computation tree is the unique (up to alpha-conversion) infinite tree
+that is solution of the equation:
+\begin{equation}
+\tau(Y_A F) = \lambda \overline{x}^{\overline{A}} . \tau(F)\ \tau(Y_A F)\ \tau(x_1) \ldots \tau(x_n) \label{eq:pcfcomptree}
+\end{equation}
+where $\overline{x} = x_1 \ldots x_n$ are fresh variables.
+
+We will write $(CT, \treeapprox)$ to denote the set of computation
+trees of \pcf\ terms ordered by the approximation ordering $\treeapprox$ defined
+above. Clearly $(CT, \treeapprox)$ is also a complete partial order.
+\bigskip
+
+\begin{example}
+Take  $M = Y (\lambda f x. f x)$ where $f:(o,o)$ and $x:o$. Its computation tree $\tau(M)$, is the tree
+representation of the $\eta$-long nf of the infinite term $(\lambda f x. f x) ((\lambda f x. f x) ((\lambda f x. f x)  ( \ldots$. It is the unique (up to alpha conversion) solution of the following equation on trees:
+$$\tau(M) =
+\begin{tikzpicture}[level distance=7mm,inner ysep=0.5mm,baseline=(root.base)]
+\node (root) {$\lambda y$}
+child {
+    node {@}
+    child {
+        node {$\lambda f x$}
+        child{
+            node{$f$}
+            child{
+                node{$\lambda$}
+                child{
+                    node{$x$}
+                }
+            }
+        }
+    }
+    child{
+        node{$\tau(M)$}
+    }
+    child{
+        node{$\lambda$}
+        child{
+            node{$y$}
+        }
+    }
+};
+\end{tikzpicture}
+$$
+\end{example}
+
+The remaining operators of \pcf\ are treated as standard
+constants and the corresponding computation trees are constructed from
+the $\eta$-long normal form in the standard way. For instance
+the diagram below shows the computation tree for $\pcfcond\ b\ x\ y$
+(left) and $\lambda x . 5$ (right):
+$$\begin{tikzpicture}[level distance=7mm,inner ysep=0.5mm,baseline=(root.base)]
+\path
+node (root) {$\lambda b x y$}
+child {
+    node {\pcfcond}
+    child {
+        node {$\lambda$}
+        child{
+            node{$b$}
+        }
+    }
+    child{
+        node {$\lambda$}
+        child{
+            node{$x$}
+        }
+    }
+    child{
+        node {$\lambda$}
+        child{
+            node{$y$}
+        }
+    }
+}
++(4,0)
+node {$\lambda$}
+child{
+    node{$5$}
+};
+\end{tikzpicture}
+$$
+The node labelled $5$ has, like any other node, children
+value-leaves which are not represented on the diagram above for
+simplicity.
+
+
+\subsubsection{Traversal}
+
+New traversal rules are added to interpret \pcf\ constants.
+The arithmetic constants are traversed as follows:
+\begin{itemize}
+\item \rulenamet{Nat} If $t \cdot n$ is a traversal where $n$ denotes a node labelled with some numeral constant $i\in \nat$ then
+            $\Pstr{t \cdot (n){n} \cdot (in-n){i_n}}$
+            is also a traversal where $i_n$ denotes the value-leaf of $m$ corresponding to the value $i\in \nat$.
+
+\item \rulenamet{Succ} If $t \cdot \pcfsucc$ is a traversal and $\lambda$ denotes the only child node of \pcfsucc\ then
+$\Pstr{t \cdot (succ){\pcfsucc} \cdot (l-succ,35:1){\lambda}}$ is also a traversal.
+
+\item \rulenamet{Succ'} If
+$\Pstr{ t_1 \cdot (succ){\pcfsucc} \cdot (l-succ,35:1){\lambda} \cdot t_2
+\cdot (lv-l){i_{\lambda}}} $ is a traversal for
+$i \in \nat$ then $\Pstr{t_1 \cdot (succ){\pcfsucc} \cdot
+(l-succ,35:1){\lambda} \cdot t_2 \cdot (lv-l){i_{\lambda}} \cdot
+(succv-succ,25){(i+1)_{\pcfsucc}}}$ is also a traversal.
+
+\item The rules for \pcfpred\ are defined similarly to \rulenamet{Succ} and \rulenamet{Succ'}.
+\end{itemize}
+
+
+The conditional operator is implemented as follows. (We recall that a \pcfcond-node in the computation tree has three children nodes numbered from $1$ to $3$ corresponding to the three parameters of the conditional operator.)
+\begin{itemize}
+\item \rulenamet{Cond\mbox{-}If} If $t_1 \cdot \pcfcond$ is a traversal and $\lambda$ denotes the first child of \pcfcond\ then
+$\Pstr{ t_1 \cdot (cond){{\pcfcond}} \cdot (l-cond,30:1){\lambda}}$
+ is also a traversal.
+
+\item \rulenamet{Cond\mbox{-}ThenElse} If
+$\Pstr{t_1 \cdot (cond){\pcfcond} \cdot (l-cond,35:1){\lambda} \cdot t_2
+\cdot (lv-l){i_{\lambda}}} $
+is a traversal then so is $\Pstr{t_1 \cdot
+(cond){\pcfcond} \cdot (l-cond,35:1){\lambda} \cdot t_2 \cdot
+(lv-l){i_{\lambda}} \cdot (condthenelse-cond,35:{2+[i>0]}){\lambda} }
+$.
+
+\item \rulenamet{Cond'} If
+$\Pstr{t_1 \cdot (cond){\pcfcond} \cdot t_2 \cdot (l-cond,35:k){\lambda}
+\cdot t_3 \cdot (lv-l){i_{\lambda}}}$ is a traversal
+ for $k=2$ or $k=3$ then the sequence $\Pstr[0.7cm]{ t_1 \cdot
+(cond){\pcfcond} \cdot t_2 \cdot (l-cond,35:k){\lambda} \cdot t_3
+\cdot (lv-l){i_{\lambda}} \cdot (condv-cond,25){i_{\pcfcond}}}$
+ is also a traversal.
+\end{itemize}
+It is easy to verify that these traversal rules are all
+well-behaved. This completes the definition of traversals for \pcf.
+
+\subsubsection{Revealed semantics}
+We recall that the definition of the syntactically-revealed
+semantics (Sec.~\ref{sec:revealed_semantics}, Def.~\ref{dfn:fully_revealed_semantics}) accounts for the presence of
+interpreted constants: For every $\Sigma$-constant $f :
+(A_1,\ldots,A_p,B)$ in the language, the revealed strategy of a term
+of the form $\lambda \overline{\xi}. f N_1 \ldots N_p$ is defined
+as:
+$$ \revsem{\lambda \overline{\xi}. f N_1 \ldots N_p} = \langle \revsem{N_1}, \ldots, \revsem{N_p} \rangle \fatcompos^{0..p-1} \sem{f}$$
+where $\sem{f}$ is the standard strategy denotation of $f$.
+
+\subsubsection{Correspondence theorem}
+We now show how to extend the Correspondence Theorem of the simply-typed lambda calculus (Theorem \ref{thm:correspondence}) to \pcf.
+
+\begin{lemma}
+\label{lem:travred_continuous} Let $(S,\subseteq)$ denote the set of
+sets of justified sequences of nodes ordered by subset inclusion.
+The function $\travset(\_)^{\filter \theroot} : (CT,\treeapprox)
+\rightarrow (S,\subseteq)$ is continuous.
+\end{lemma}
+\begin{proof}
+    \begin{itemize}[-]    \item \emph{Monotonicity}: Let $T$ and $T'$ be two computation trees such that $T \treeapprox T'$
+    and let $t$ be some traversal of $T$.
+    Traversals ending with a node labelled $\bot$ are maximal therefore $\bot$ can only occur
+    at the last position in a traversal. We prove the following properties:
+        \begin{itemize}
+            \item[(i)]  If $t = t \cdot n$ with $n\neq \bot$ then $t$ is a traversal of $T'$;
+            \item[(ii)] if $t= t_1 \cdot \bot$ then $t_1\in \travset(T')$.
+        \end{itemize}
+
+        (i) By induction on the length of $t$. It is trivial for the empty traversal.
+            Suppose that $t = t_1 \cdot n$ is a traversal where $n \neq \bot$ and $t_1$ is a traversal of $T'$. We observe that in all traversal rules, the produced traversal is of the form $t_1 \cdot n$ where
+            $n$ is defined to be a child node or value-leaf of some node $m$ occurring in $t_1$.
+            Moreover, the choice of the node $n$ only depends on the traversal $t_1$
+            (provided that the constant rules are well-behaved).
+
+            Since $T \treeapprox T'$, any node $m$ occurring in $t_1$ belongs
+            to $T'$ and the children nodes of $m$ in $T$ also belong to the tree $T'$.
+            Hence $n$ is also present in $T'$ and the rule used to produce the traversal $t$ of $T$
+            can be used to produce the traversal $t$ of $T'$.
+
+        (ii) $\bot$ can only occur at the last position in a traversal
+        therefore $t_1$ does not end with $\bot$ and by (i) we have $t_1\in \travset(T')$.
+\vspace{6pt}
+
+        Hence we have:
+        \begin{align*}
+        \travset(T)^{\filter \theroot} &= \{ t \filter r \ | \ t \in \travset(T)     \} \\
+        & = \{ (t\cdot n) \filter r \ | \ t\cdot n \in \travset(T) \wedge n \neq \bot \}
+            \union \{ (t \cdot \bot ) \filter r \ | \ t \cdot \bot \in \travset(T)  \} \\
+\mbox{(by (i) and (ii))} \quad        & \subseteq  \{ (t\cdot n)
+\filter r \ | \ t\cdot n \in \travset(T') \wedge n \neq \bot
+\}
+            \union \{ t \filter r \ | \ t \in \travset(T')  \} \\
+        & = \travset(T')^{\filter \theroot} \enspace .
+        \end{align*}
+
+        \item \emph{Continuity}: Let $t \in \travset \left( \Union_{n\in\omega} T_n \right)$.
+        We write $t_i$ for the finite prefix of $t$ of length $i$.
+        The set of traversals is prefix-closed therefore $t_i \in \travset \left( \Union_{n\in\omega} T_n \right)$ for every $i$.
+        Since $t_i$ has finite length we have $t_i \in \travset(T_{j_i})$ for some $j_i \in \omega$.
+        Therefore we have:
+        \begin{align*}
+          t \filter r &= (\bigvee_{i\in\omega} t_i ) \filter r   & (\mbox{the sequence $(t_i)_{i\in\omega}$ converges to $t$}) \\
+          &= \Union_{i\in\omega} ( t_i \filter r )   & \mbox{since $\_ \filter r$ is continuous (Lemma \ref{lem:projection_continuous})} \\
+          &\in \Union_{i\in\omega} \travset(T_{j_i})^{\filter \theroot}   & \mbox{since $t_i \in \travset(T_{j_i})$} \\
+          &\subseteq \Union_{i\in\omega} \travset(T_i)^{\filter \theroot}   & \mbox{since } \{ j_i \sthat i \in \omega \} \subseteq \omega.
+        \end{align*}
+
+        Hence $\travset(\Union_{n\in\omega} T_n )^{\filter
+        \theroot} \subseteq \Union_{n\in\omega}
+        \travset(T_n)^{\filter \theroot}.$
+\qedhere
+    \end{itemize}
+\end{proof}
+
+
+\begin{proposition}
+Let $\Gamma \entail M : T$ be a PCF term and $r$ be the root of
+$\tau(M)$. Then:
+\begin{align*}
+(i)  \quad\varphi_M(\travset(M)^*) = \revsem{M} \enspace ,  \\
+(ii) \quad \varphi_M(\travset(M)^{\filter \theroot}) = \sem{M} \enspace .
+\end{align*}
+\end{proposition}
+\begin{proof}
+We first show the result for \pcf$_1$: For (i), the proof is an
+induction identical to the proof of Theorem \ref{thm:correspondence}; we just need to complete it with the new constants cases. The cases \pcfsucc, \pcfpred, \pcfcond\ and numeral constants are straightforward. Case $M = \Omega_o$: We have $\travset(\Omega_o) = \prefset ( \{ \lambda \cdot \bot \} )$ therefore
+$\travset(\Omega_o)^{\filter \theroot} = \prefset( \{ \lambda \}
+)$ and $\sem{\Omega_o} = \prefset( \{ q \})$ with
+$\varphi(\lambda) = q$. Hence $\sem{\Omega_o} = \varphi
+(\travset(\Omega_o)^{\filter \theroot})$.
+(ii) is a direct consequence of (i) and the Projection Lemma
+\ref{lem:varphi_proj}.
+\medskip
+
+We now extend the result to \pcf. Let $M$ be a \pcf\ term, we have:
+\begin{align*}
+\sem{M} &= \Union_{n\in\omega} \sem{M_n} & \mbox{\cite[lemma 16]{abramsky:game-semantics-tutorial}}\\
+&= \Union_{n\in\omega} \travset(\tau(M_n))^{\filter \theroot} & \mbox{since $M_n$ is a \pcf$_1$ term} \\
+&= \travset(\Union_{n\in\omega} \tau(M_n) )^{\filter \theroot} & \mbox{by continuity of $\travset(\_)^{\filter \theroot}$, Lemma \ref{lem:travred_continuous}} \\
+&= \travset(\tau(M))^{\filter \theroot} & \mbox{by definition of } \tau(M) \\
+&= \travset(M)^{\filter \theroot} \enspace . \qquad
+\qedhere
+\end{align*}
+\end{proof}
+
+
+Hence by Corollary \ref{cor:varphi_bij}, $\varphi$ defines a
+bijection from $\travset(M)^{\filter \theroot}$ to $\sem{M}$:
+$$\varphi : \travset(M)^{\filter \theroot} \stackrel{\cong}{\longrightarrow} \sem{M} \enspace .$$
+
+\begin{example}[Successor operator]
+Consider the term $M = \pcfsucc\ 5$ whose computation tree is
+represented below. Vertices attached to their parent node with a dashed line represent the value-leaves.
+\begin{center}
+\begin{tikzpicture}[level distance=7mm,inner ysep=0.5mm,sibling distance=10mm]
+\node {$\lambda^0$}
+    child[missing]{}
+    child[missing]{}
+    child[missing]{}
+    child {
+        node {\pcfsucc}
+        child[missing]{}
+        child[missing]{}
+        child[missing]{}
+        child {
+            node {$\lambda^1$}
+            child[missing]{}
+            child[missing]{}
+            child[missing]{}
+            child{
+                node{$5$}
+                child[missing]{}
+                child[missing]{}
+                child[missing]{}
+                child[missing]{}
+                child{node{$0$} edge from parent[dashed]}
+                child{node{$1$} edge from parent[dashed]}
+                child{node{$\ldots$} edge from parent[dashed]}
+            }
+            child{node{$0$} edge from parent[dashed]}
+            child{node{$1$} edge from parent[dashed]}
+            child{node{$\ldots$} edge from parent[dashed]}
+        }
+        child{node{$0$} edge from parent[dashed]}
+        child{node{$1$} edge from parent[dashed]}
+        child{node{$\ldots$} edge from parent[dashed]}
+    }
+    child{node{$0$} edge from parent[dashed]}
+    child{node{$1$} edge from parent[dashed]}
+    child{node{$\ldots$} edge from parent[dashed]}
+;
+\end{tikzpicture}
+\end{center}
+
+The following sequence of nodes is a traversal of $\tau(M)$:
+$$ \Pstr[21pt]{ t = (l0){\lambda^0} \cdot (succ){\pcfsucc} \cdot (l1){\lambda^1} \cdot (c5){5} \cdot (v55-c5){5_5} \cdot (5l1-l1){5_{\lambda^1}} \cdot (6succ-succ){6_\pcfsucc} \cdot (6l0-l0,33){6_{\lambda^0}}} \enspace .
+$$
+
+The subsequences $t^*$ and $t \filter r$ are given by:
+$$
+\Pstr[17pt]{ t^* = (l0){\lambda^0} \cdot (l1-l0){\lambda^1} \cdot
+(5l1-l1){5_{\lambda^1}} \cdot (6l0-l0){6_{\lambda^0}}
+\qquad  \mbox{ and } \qquad t
+\filter r = (l0b){\lambda^0} \cdot
+(6l0b-l0b){6_{\lambda^0}} } \enspace .
+$$
+The sequence $\varphi(t^*) = q_0 \cdot q_5 \cdot 5_{q_5} \cdot 5_{q_0}$
+where $q_0$ and $q_5$ both denote the root of the flat arena over $\nat$,
+corresponds to a play of the syntactically-revealed semantics.
+The sequence $\varphi(t\filter r) = q_0 \cdot 5_{q_0}$ corresponds to a play of the standard semantics. The interaction play $\varphi(t^*)$ is represented below:
+\begin{center}
+\begin{tikzpicture}[style={anchor=base}]
+\matrix (m) [matrix of math nodes]
+{
+\textbf{1} & \stackrel{5}{\longrightarrow} & \nat & \stackrel{\pcfsucc}{\longrightarrow} & \nat \\
+&&&&  \node(q0){q_0}; \\
+&&  \node(q5){q_5}; \\
+&&  \node(a5){5_{q_5}}; \\
+&&&&  \node(a6){6_{q_0}}; \\
+};
+\path (q5) edge[tableptr] (q0);
+\draw[tableptr] (a5.west) .. controls +(160:0.2cm) and +(220:0.2cm) .. (q5.west);
+\draw (a6) edge[tableptr] (q0);
+\end{tikzpicture}
+\end{center}
+\end{example}
+
+\begin{example}[Conditional]
+\hfill
+
+\piccaption[Computation tree of $\lambda x y . \pcfcond\ 1\ x\ y$.]{Computation tree of the term $\lambda x y . \pcfcond\ 1\ x\ y$.\label{tree:conditional}}
+\parpic[l]{
+\begin{tikzpicture}[level distance=7mm,inner ysep=0.5mm,baseline=(root.base)]
+\path
+node (root) {$\lambda x y$}
+child {
+    node {\pcfcond}
+    child {
+        node {$\lambda^1$}
+        child{
+            node{$1$}
+        }
+    }
+    child{
+        node {$\lambda^2$}
+        child{
+            node{$x$}
+        }
+    }
+    child{
+        node {$\lambda^3$}
+        child{
+            node{$y$}
+        }
+    }
+};
+\end{tikzpicture}
+}
+\noindent Take the computation tree represented on the left (value-leaves are not shown). For every value $v \in\mathcal{D}$ we have the following traversal:
+$$\Pstr[27pt]{ t = (lxy){\lambda x y} \cdot (cond){\pcfcond} \cdot (l1-cond){\lambda^1} \cdot (1){1} \cdot (v11-1){1_1}
+    \cdot (l3){\lambda^3} \cdot (y-lxy){y} \cdot (vy-y){v_y}  \cdot (vl3-l3){v_{\lambda^3}} \cdot (vcond-cond,30){v_{\pcfcond}}
+    \cdot (vlxy-lxy,30){v_{\lambda x y}} \enspace .
+}
+$$
+The subsequence $t^*$ is given by:
+$$
+\Pstr[17pt]{ t^* =  (lxy){\lambda x y} \cdot
+        (l1-lxy){\lambda^1} \cdot
+        (l3-lxy){\lambda^3} \cdot
+        (y-lxy){y} \cdot
+        (vy-y){v_y}  \cdot
+        (vl3-l3){v_{\lambda^3}} \cdot
+        (vlxy-lxy,35){v_{\lambda x y}} }
+$$
+and the core of $t \filter\theroot$ is given by:
+$$t \filter\theroot =
+\Pstr[17pt]{
+(lxyb){\lambda x y} \cdot (yb-lxyb){y} \cdot (vyb-yb){v_y}
+\cdot (vlxyb-lxyb){v_{\lambda x y}}
+} \enspace .
+$$
+By the correspondence theorem, the sequence of moves $\varphi(t^*)$ (represented in the diagram below) is a play of the revealed semantics, and the sequence $\varphi(t\filter\theroot)$ is the play of the standard semantics obtained by hiding the internal moves from $\varphi(t^*)$.
+
+\begin{center}
+\begin{tikzpicture}[style={anchor=base}]
+  \matrix[matrix of math nodes]
+  {
+  \nat & \times & \nat & \stackrel{\sigcol{\langle \sem{1}, \pi_1, \pi_2\rangle}}\longrightarrow & \nat & \times & \nat & \times &
+\nat & \stackrel{\mucol\pcfcond}\longrightarrow & \nat \\
+&&&&&&&&&&  \node(q0){q_0^{(\lambda x y)}}; \\
+&&&&  \node(qa){q_a^{(\lambda^1)}}; \\
+&&&&  \node(1){1}; \\
+&&&&&&  \node(qb){q_b^{(\lambda^2)}}; \\
+&&  \node(qy){q_y^{(y)}}; \\
+&&  \node(vqy){v_{q_y}}; \\
+&&&&&&  \node(vqb){v_{q_b}}; \\
+&&&&&&&&&& \node(vq0){v_{q_0}}; \\
+};
+\path (vq0) edge[tableptr] (q0);
+\path (vqb) edge[tableptr] (qb);
+\draw[->] (vqy.west) .. controls +(160:0.2cm) and +(220:0.2cm) .. (qy.west);
+\path (qy) edge[tableptr] (qb);
+\path (qb) edge[tableptr] (q0);
+\draw[->] (1.west) .. controls +(160:0.2cm) and +(200:0.2cm) .. (qa.west);
+\path (qa) edge[tableptr] (q0);
+\end{tikzpicture}
+\end{center}
+\end{example}
+
+\begin{remark}[Finite representation of the computation tree]
+\label{rem:finite_pcftree}
+Due to the presence of the Y combinator, computation trees of \pcf\ terms are potentially infinite. It is possible to give an equivalent finite representation using computation \emph{graphs}. We briefly describe here how this can be achieved.
+
+\newcommand\genlambda{\lambda\kern -0.7ex\lambda}
+
+The idea is to replace Y-recursion by $\mu$-recursion: each subterm of the form $Y_A~M$ is replaced by $\mu f. M f$ for $f$ fresh. The computation graph is then obtained from the eta-long normal form of the term.
+The abstraction nodes are generalized to take into account $\mu$ binders: an abstraction node is of the form $\genlambda \overline{x}$
+where $\overline{x}$ is a list of $\mu$-bound and $\lambda$-bound variables where the $\mu$-bound variables are written in parenthesis to distinguish them from $\lambda$-bound variables.
+
+The computation graph of $Y_A (\lambda f^A. M)$ for
+$A=(A_1,\ldots, A_n,o)$ is then obtained from the syntax representation of $\genlambda (f) x_1 \ldots x_n. \elnf{M}$ by adding a child edge going from each occurrence of the recursion variable $f$ in $\elnf{M}$ to the root $\genlambda (f) x_1 \ldots x_n$.
+
+
+This presentation also accounts for ground type recursion, for instance the computation graph of the \iawhile\ operator of Idealized Algol defined as $\iawhile\ C\ \iado\ I \equiv Y( \lambda f. \pcfcond\ C\ \iaskip\ (\iaseq\ I f))$ is given by the graph of $\genlambda (f) . \pcfcond\ C\ \iaskip\ (\iaseq\ I f)$.
+
+
+The order of a generalized abstraction node is still defined as the order of the term represented by the subtree rooted at this node. In other word, the order of $\genlambda\overline x$ is defined as the order of $\genlambda\overline y$ where $\overline{y}$ is the sublist of $\overline x$  obtained by removing all the recursion variables (those in parenthesis).
+
+Bound variables in a generalized abstraction node $\genlambda \overline{x}$ are numbered as follows: The $i^{th}$ $\lambda$-bound variable in $\overline{x}$ is denoted by $i$ and the $i^{th}$ recursion variable is denoted by $(i)$. The links in a justified sequence of nodes are labelled accordingly.
+
+All the traversal rules are kept unmodified. The recursion variables in the $\lambda$-nodes are ignored by the rules since such variables are numbered differently from standard variables. In particular, the \rulenamet{Var} rule
+ only applies to non-recursion variables. We only need to add a rule to handle recursion variable: whenever a traversal meets a recursion variable $f$ in the subgraph $\tau(F)$, the traversal jumps to the root of the graph:
+\begin{center}
+\parbox{0.8\textwidth}{
+\rulenamet{Var_{rec}}
+If  \Pstr[0.6cm]{t' \cdot (n){n} \cdot (l){\genlambda \overline x} \ldots (f-l,50:{(i)}){f_i}} is a traversal for some \emph{recursion} variable $f_i$ bound by $\genlambda\overline x$ then so is \Pstr[0.6cm]{ t' \cdot (n){n} \cdot (l){\genlambda\overline x}  \ldots (f-l,50:{(i)}){f_i} \cdot (letai-f){\genlambda \overline x}}.
+}
+\end{center}
+The enabling relation $\enable$ needs to be adapted to allow the root to be justified by a recursion variable (as if it was a child of the recursion variable).
+Since a traversal can now visit the root multiple times, the definition of the traversal core also needs to be adapted: instead of keeping all the nodes hereditarily enabled by the root, it keeps the nodes that are hereditarily justified by an occurrence of the root with no justifier. The definition of the mapping $\psi$ from nodes to moves remains consistent with this notion of computation tree, and the game-semantic correspondence follows.
+\end{remark}
+
+
+\subsection{Idealized algol}
+
+We now consider the language Idealized Algol. The general idea is the same as for \pcf, however there are some difficulties caused by the presence of the two
+base types \iavar\ and \iacom. We briefly sketch how our framework can be adapted to \ialgol\ without going into the details of the proof of the Correspondence theorem.
+
+\subsubsection*{Computation hypertree}
+The languages that we have considered up to now (lambda calculus and \pcf) do not have product types. Consequently, the arenas involved in their game model only have a single initial move at most, and can therefore be regarded as trees. This property permitted us to represent the game denotation of term directly on some representation of its abstract syntax tree---the computation tree. This cannot be done in \ialgol\ because the base type \iavar\ is given by the product $\iacom^\omega \times \iaexp$ which corresponding game has infinitely many initial moves, whereas the AST of the term is a tree and therefore has a single root.
+
+The overcome this mismatch, we use hypertrees instead of trees. These hypertrees provide an abstract representation of the syntax of the term in which some nodes, called \emph{generalized lambda nodes}, are themselves constituted of (possibly infinitely many) subnodes. Furthermore each individual subnode can have its own children nodes.
+\smallskip
+
+\begin{notations} For every type $\mu$, we write
+$\mathcal{D}_\mu$ to denote the set of values of type $\mu$.
+We have $\mathcal{D}_{\iaexp} = \nat$,
+$\mathcal{D}_{\iacom} = \{ \iadone \}$
+and $\mathcal{D}_{\iavar} = \mathcal{D}_{\iaexp} \union \mathcal{D}_{\iacom}$. For every node $n$, if $\kappa(n)$ is of type $(A_1,\ldots A_n,B)$, we call $B$ the \emph{return type of $n$}. The set of value-leaves of a node $n$ is given by $\mathcal{D}_{\mu}$ where $\mu$ is the return type of $n$.
+For conciseness, when representing value-leaves in the hypertree, we merge all the value-leaves of a given node of type $\mu$ into a single leaf labelled $\mathcal{D}_\mu$. For instance we use the tree notation
+\begin{center}
+\begin{tikzpicture}[level distance=7mm,inner ysep=0.5mm,baseline=(root.base),sibling distance=5mm]
+\path
+node (root) {$n$}
+child {
+    node {$\mathcal{D}_\iaexp$}
+}
++(1.5,0) node {to mean}
++(3.2,0)
+node {$n$}
+    child {node {$0$} }
+    child {node {$1$}}
+    child {node {$2$}}
+    child {node {$\ldots$}}
++(6,0) node {and}
++(7,0)
+node {$n$}
+child{
+    node{$\mathcal{D}_\iacom$}
+}
++(8,0) node {for}
++(9,0)
+node {$n$}
+child{
+    node{\iadone}
+};
+\end{tikzpicture}.
+\end{center}
+
+The computation hypertree of a term with return type \iavar\ has infinitely many root lambda-nodes which are merged all-together into a single node called a \defname{generalized lambda-node}. The subnodes of a generalized lambda nodes are labelled $\lambda^r$, $\lambda^{w_0}$, $\lambda^{w_1}$, $\lambda^{w_2}$, \ldots Suppose that $M$ is a term of type \iavar, then the computation hypertree for $\lambda \overline{\xi} . M$ is obtained by relabelling the root $\lambda$-nodes $\lambda^r$,
+$\lambda^{w_0}$, $\lambda^{w_1}$, $\lambda^{w_2}$, \ldots into
+$\lambda^r \overline{\xi}$, $\lambda^{w_0} \overline{\xi}$,
+$\lambda^{w_1} \overline{\xi}$, $\lambda^{w_2} \overline{\xi}$,
+\ldots. For a term $M$  of type \iaexp\ or \iacom, the computation
+hypertree for $\lambda \overline{\xi} . M$ is computed the same way as for computation trees of lambda-terms.
+
+Table \ref{tab:ia_computationdag} defines the computation hypertree for each term-construct of \ialgol. A generalized lambda node is represented by a frame surrounding its subnodes ($2^{nd}$ and $6^{th}$ row in the table).
+\end{notations}
+
+\begin{table}
+\begin{center}
+\begin{tabular}{lc}
+$M$ & $\tau(M)$ \\ \hline \hline \\
+\parbox{3cm}{x $: \mu$ \\
+$\mu \in \{ \iacom, \iaexp \}$} &
+
+\begin{tikzpicture}[level distance=7mm,inner ysep=0.5mm,sibling distance=10mm,baseline=(root.base)]
+\node (root) {$\lambda$}
+child[missing]{}
+child {
+    node {$x$}
+    child[missing]{}
+    child[missing]{}
+    child {
+        node {$\mathcal{D}_\mu$}
+        edge from parent[dashed]
+    }
+}
+child{node{$\mathcal{D}_\mu$} edge from parent[dashed]}
+;
+\end{tikzpicture}
+\\ \\
+\parbox{3cm}{$\ianewin{x}{N} : \mu$ \\ $\mu \in \{ \iacom, \iaexp \} $} &
+\begin{tikzpicture}[level distance=7mm,inner ysep=0.5mm,sibling distance=15mm,baseline=(root.base)]
+\node (root){\ianew\ x}
+child[missing]{}
+child{node{$\tau(N:\mu)$}}
+child { node {$\mathcal{D}_\mu$} edge from parent[dashed]};
+\end{tikzpicture}
+\\ \\
+x : \iavar &
+\begin{tikzpicture}[baseline=(m-1-1.base)]
+\matrix (m) [matrix of math nodes, row sep=5mm]
+{
+\lambda^r & \lambda^{w_0} & \lambda^{w_1}  & \lambda^{w_2} & \lambda^{w_{\ldots}} \\
+    \mathcal{D}_\iaexp &  & x & & \iadone \\
+    &  &  & \mathcal{D}_\iaexp & \iadone \\
+};
+\draw[-] (m-1-1) -- (m-2-3)
+         (m-1-2) -- (m-2-3)
+         (m-1-3) -- (m-2-3)
+         (m-1-4) -- (m-2-3)
+         (m-1-5) -- (m-2-3);
+\draw[dashed] (m-2-3) -- (m-3-4)
+              (m-2-3) -- (m-3-5)
+              (m-1-1) -- (m-2-1)
+              (m-1-5) -- (m-2-5)
+              (m-1-4) -- (m-2-5)
+              (m-1-3) -- (m-2-5)
+              (m-1-2) -- (m-2-5);
+\draw[rounded corners=5pt] (m-1-1.north west) rectangle (m-1-5.south east);
+\end{tikzpicture}
+\\ \\
+\iaskip : \iacom &
+    \begin{tikzpicture}[level distance=7mm,inner ysep=0.5mm,sibling distance=10mm,baseline=(root.base)]
+\node (root) {$\lambda$}
+child[missing]{}
+child {
+    node {\iaskip}
+    child[missing]{}
+    child[missing]{}
+    child {
+        node {\iadone}
+        edge from parent[dashed]
+    }
+}
+child{node{\iadone} edge from parent[dashed]}
+;
+\end{tikzpicture}
+\\ \\
+$\iaderef\ L :\iaexp$ &
+\begin{tikzpicture}[level distance=7mm,inner ysep=0.5mm,sibling distance=15mm,baseline=(root.base)]
+\node (root){$\lambda$}
+child[missing]{}
+child {
+    node {\iaderef}
+    child[missing]{}
+    child{node{$\tau(L:\iavar)$}}
+    child {
+        node {\iadone}
+        edge from parent[dashed]
+    }
+}
+child{node{\iadone} edge from parent[dashed]}
+;
+\end{tikzpicture}
+\\ \\
+$\iaassign\ L\ N :\iacom$ &
+\begin{tikzpicture}[level distance=7mm,inner ysep=0.5mm,sibling distance=20mm,baseline=(root.base)]
+\node (root) {$\lambda$}
+child[missing]{}
+child {
+    node {\iaassign}
+    child{node{$\tau(N:\iaexp)$}}
+    child{node{$\tau(L:\iavar)$}}
+    child {
+        node {\iadone}
+        edge from parent[dashed]
+    }
+}
+child{node{\iadone} edge from parent[dashed]};
+\end{tikzpicture}
+\\ \\
+\parbox[t]{3cm}{$\iaseq_{\mu}\ N_1\ N_2 :\iacom$\\ $\mu\in\{\iaexp,\iacom\}$} &
+\begin{tikzpicture}[level distance=7mm,inner ysep=0.5mm,sibling distance=20mm,baseline=(root.base)]
+\node (root){$\lambda$}
+child[missing]{}
+child {
+    node {$\iaseq_\mu$}
+    child{node{$\tau(N_1:\iacom)$}}
+    child{node{$\tau(N_2:\mu)$}}
+    child { node {\iadone} edge from parent[dashed] }
+}
+child{node{$\mathcal{D}_\mu$} edge from parent[dashed]};
+\end{tikzpicture}
+\\ \\
+$\iamkvar\ N_w\ N_r :\iavar$ &
+\begin{tikzpicture}[baseline=(m-1-1.base)]
+\matrix (m) [matrix of math nodes, row sep=5mm]
+{
+  \lambda^r & \lambda^{w_0} & \lambda^{w_1}  & \lambda^{w_2} & \lambda^{w_{\ldots}} \\
+    \mathcal{D}_\iaexp &  & \iamkvar & & \iadone \\
+    & \tau(N_r) & \tau(N_w) & \mathcal{D}_\iaexp & \iadone \\
+};
+\draw[-] (m-1-1) -- (m-2-3)
+         (m-1-2) -- (m-2-3)
+         (m-1-3) -- (m-2-3)
+         (m-1-4) -- (m-2-3)
+         (m-1-5) -- (m-2-3)
+         (m-2-3) -- (m-3-2)
+         (m-2-3) -- (m-3-3);
+\draw[dashed] (m-2-3) -- (m-3-4)
+              (m-2-3) -- (m-3-5)
+              (m-1-1) -- (m-2-1)
+              (m-1-5) -- (m-2-5)
+              (m-1-4) -- (m-2-5)
+              (m-1-3) -- (m-2-5)
+              (m-1-2) -- (m-2-5);
+\draw[rounded corners=5pt] (m-1-1.north west) rectangle (m-1-5.south east);\end{tikzpicture}
+\end{tabular}
+\bigskip
+\end{center}
+  \caption{Computation hypertrees of \ialgol\ constructs.}
+  \label{tab:ia_computationdag}
+\end{table}
+
+
+\subsubsection*{Enabling relation, justified sequence}
+
+The notion of binder is redefined as follows: Given a variable node $x$, the binder of $x$ is the first node occurring in the path to the root that is a lambda node $\lambda \overline{x}$ with $x\in\overline{x}$ or a block-declaration node
+$\ianew\ x$.
+
+The enabling relation and the definition of justified sequence is modified so that occurrences of block-allocated variables are justified by nodes of type $\ianew\ x$ instead of lambda nodes.
+
+
+\subsubsection*{Children numbering convention}
+
+Let $p$ be a node and suppose that its $i^{th}$ child $n$ has return type \iavar. Then $n$ is a generalized lambda-node with subnodes
+$\lambda^r \overline{\xi}$, $\lambda^{w_0}
+\overline{\xi}$, \ldots. From the point of view of the parent node $p$, these subnodes are referenced as ``$i.\alpha$'' where $0\leq i \leq arity(p)$ and $\alpha \in \{ r\} \union\{ w_k \ | \ k \in \nat \}$. For instance  $i.r$ refers to the root labelled $\lambda^r \overline{\xi}$ of the $i^{th}$ child of $p$, and
+$i.w_k$ refers to the root labelled $\lambda^{w_k} \overline{\xi}$.
+
+
+\subsubsection*{Traversals}
+The following new rules are added on top of those defined in Sec.~\ref{subsec:traversal}:
+\begin{itemize}
+\item \emph{Application rules}
+
+The rule \rulenamet{app} is now split up in three
+rules \rulenamet{app_\iaexp}, \rulenamet{app_\iacom} and \rulenamet{app_\iavar} corresponding to traversals ending with an @-node of return type \iaexp, \iacom\ and \iavar\ respectively.
+The rules \rulenamet{app_\iaexp}, \rulenamet{app_\iacom}
+are defined identically to \rulenamet{app} (see Sec.~\ref{subsec:traversal}). The rule \rulenamet{app_\iavar} is
+$$\rulename{app_\iavar}\
+\Pstr{t \cdot (lHyp){\lambda^k \overline{\xi}} \cdot
+(appHyp-lHyp,35:0){@} \in \travset}
+\mbox{ and } k \in \{ r, w_0, w_1, \ldots \}
+ \implies \Pstr[10pt] {t \cdot (l){\lambda^k
+\overline{\xi}} \cdot (app-l,35:0){@} \cdot (l2-app,35:0.k){\lambda^k
+\overline{\eta}} \in \travset } \enspace .$$
+
+
+
+\item \emph{Input-variable rules}
+
+We define the rules \rulenamet{InputVal^\$} for $\$$ ranging in $\{\iacom,\iavar,\iaexp\}$. For $\iacom$ and $\iaexp$, the rules are defined identically to \rulenamet{InputVal} of Sec.~\ref{subsec:traversal}.
+The \iavar\ case is implemented by two rules:
+$$\rulename{InputValue^\iavar_r}\
+\rulef{t_1 \cdot \lambda^r \overline{\xi} \cdot x \cdot t_2 \in \travset}
+{\Pstr[19pt]{t_1 \cdot (x){x} \cdot t_2 \cdot (xv-x,38:v){v_x} \in\travset}}
+\ x \mbox{ pending node } \zand\  x \in N_{\sf var}^{\theroot\enable} \zand x:\iavar,\ v \in\mathcal{D} \enspace .$$
+
+$$\rulename{InputValue^\iavar_w}\
+\rulef{t_1 \cdot\lambda^w \overline{\xi} \cdot x \cdot t_2 \in\travset}
+{\Pstr[18pt]{t_1 \cdot (x){x} \cdot t_2 \cdot (xv-x,38:v){\iadone_x} \in\travset}}
+\ x \mbox{ pending node } \zand\  x \in N_{\sf var}^{\theroot\enable} \zand x:\iavar \enspace .$$
+
+\item \emph{IA constants rules}
+
+The rules for the constants of \ialgol\ are given in Table \ref{tab:ia_travrules}. These rules for \ianew\ are purely structural, they are defined similarly to \rulenamet{app_\iaexp}, \rulenamet{app_\iacom} and \rulenamet{app_\iadone}.
+
+\begin{table}[htbp]
+\centering
+$$
+\begin{array}{ll}
+\rulename{deref} \rulef{t \cdot \iaderef \in \travset}{\Pstr[15pt]{t \cdot (d){\iaderef} \cdot (n-d,35:1.r){n} \in \travset }}
+&
+\rulename{deref'}
+\rulef{t \cdot \iaderef \cdot n \cdot t_2 \cdot v_n \in \travset} {t
+\cdot \iaderef \cdot n \cdot t_2 \cdot v_n \cdot v_{\iaderef}\in
+\travset }
+\\[30pt]
+\rulename{assign} \rulef{t \cdot \iaassign \in \travset}{\Pstr[16pt]{t \cdot (ass){\iaassign} \cdot (n-ass,35:1){\lambda} \in \travset} }
+&
+\rulename{assign'}
+\rulef{\Pstr{t \cdot \iaassign \cdot (n)\lambda \cdot t_2 \cdot (vn-n){v_\lambda}} \in
+\travset} {\Pstr[25pt]{t \cdot (ass){\iaassign} \cdot (n){\lambda} \cdot
+t_2 \cdot (vn-n){v_\lambda} \cdot (m-ass,35:2.w_n){\lambda\overline\eta} \in \travset } }
+\end{array}
+$$
+\smallskip
+
+$$
+\rulename{assign''} \rulef{\Pstr[1.7cm]{t \cdot (assHyp){\iaassign} \cdot t_2 \cdot (mHyp-assHyp,35:2.w_k){\lambda\overline\eta} \cdot t_3 \cdot (vmHyp-mHyp){\iadone_{\lambda\overline\eta}} \in \travset}}
+{\Pstr[0.7cm]{t \cdot (ass)\iaassign \cdot t_2 \cdot (m){\lambda\overline\eta} \cdot t_3 \cdot (vm-m,25){\iadone_{\lambda\overline\eta}} \cdot
+(vass-ass,20){\iadone_\iaassign} \in \travset} }
+$$
+\smallskip
+
+$$
+\rulename{seq} \rulef{t \cdot \iaseq \in \travset}{\Pstr[13pt]{t \cdot (seq){\iaseq} \cdot (n-seq,35:1){n} \in \travset } }
+\qquad\qquad
+\rulename{seq'}
+\rulef{t \cdot \iaseq \cdot n \cdot t_2 \cdot v_n \in
+\travset} {\Pstr[18pt]{ t \cdot (seq){\iaseq} \cdot (n){n} \cdot t_2
+\cdot v_n \cdot (m-seq,25:2){m} \in \travset }}
+$$
+
+$$\rulename{seq''} \rulef{\Pstr{t \cdot (seqHyp){\iaseq} \cdot t_2 \cdot (mHyp-seqHyp,35:2){m} \cdot t_3 \cdot v_m \in \travset}}
+{t \cdot \iaseq \cdot t_2 \cdot m \cdot t_3 \cdot v_m \cdot
+v_{\iaseq} \in \travset }
+$$
+\smallskip
+
+$$
+\rulename{mkvar_r} \rulef{t \cdot \lambda^r \overline{\xi} \cdot \iamkvar \in \travset}{\Pstr[14pt]{t \cdot \lambda^r \overline{\xi} \cdot (d){\iamkvar} \cdot (n-d,35:1){\lambda} \in \travset} }
+\qquad
+\rulename{mkvar_r'}
+\rulef{\Pstr{t \cdot \iamkvar \cdot (n)\lambda \cdot t_2 \cdot (vn-n){v_\lambda} \in \travset}} {\Pstr[17pt]{t \cdot (mk)\iamkvar \cdot (n)\lambda \cdot t_2 \cdot (vn-n){v_\lambda} \cdot (vmk-mk,25){v_{\iamkvar}}\in
+\travset}}
+$$
+
+$$
+\rulename{mkvar_w} \rulef{t \cdot \lambda^{w_k} \overline{\xi} \cdot \iamkvar \in \travset}{\Pstr[15pt]{t \cdot \lambda^{w_k} \overline{\xi} \cdot (mk){\iamkvar} \cdot (n-mk,35:2){\lambda\overline\eta} \in \travset} }
+$$
+\smallskip
+
+$$
+{\rulename{mkvar_w''}  \rulef{\Pstr[25pt]{t \cdot \lambda^{w_k} \overline{\xi} \cdot \iamkvar \cdot (n){\lambda\overline\eta} \cdot t_2 \cdot (vn-n,25){\iadone_{\lambda\overline\eta}} \in \travset}}
+{\Pstr[17pt]{t \cdot \lambda^{w_k} \overline{\xi} \cdot (mk)\iamkvar \cdot (n){\lambda\overline\eta} \cdot
+t_2 \cdot (vn-n,25){\iadone_{\lambda\overline\eta}} \cdot (vmk-mk,20)\iadone_{\iamkvar} \in \travset}}
+}$$
+where $v$ denotes some value from $\mathcal{D}$.
+\caption{Traversal rules for \ialgol\ constants.}
+\label{tab:ia_travrules}
+\end{table}
+
+The rules from Table \ref{tab:ia_travrules} do not suffice to model \iamkvar\ however. We need to specify what happens when reaching a variable node that is hereditarily justified by the constant \iamkvar.
+Take for instance the term $\iaassign\ (\iamkvar\ (\lambda x . M) N)
+7$. The rule (\mbox{mkvar}$_w''$) permits one to pass the node
+\iamkvar\ and to continue with the traversal of the computation tree of $\lambda x . M$, which may subsequently lead to some occurrence of $x$. The behaviour of the traversal at this point is specified by the traversal rules defined in the next paragraph.
+
+
+\item \emph{Variable rules}
+
+
+Let $x$ be an internal variable node. Then by definition it is either hereditarily justified by an @-node or by a $\Sigma$-constant node.
+\begin{itemize}
+\item Suppose that $x$'s binder is a lambda-node $\lambda \overline{x}$ and $x \in N^{@\enable}$.
+
+This case is a generalization of the rule \rulenamet{Var} (Sec.~\ref{subsec:traversal}). The only difference is that for variables of type \iavar, the lambda nodes preceding $x$ in the traversal determines the lambda-node that is visited next:
+$$ \rulename{Var_\iavar}
+    \rulef{\Pstr[0.6cm]{t \cdot (n){n} \cdot (lx){\lambda \overline{x}}     \ldots \lambda^\alpha x_i \cdot (x-lx,40:i){x_i} } \in \travset}
+{\Pstr[25pt]{t \cdot (n){n} \cdot (lx){\lambda \overline{x}}
+\ldots \lambda^\alpha x_i \cdot  (x-lx,30:i){x_i} \cdot (letai-n,40:i.\alpha){\lambda\overline{\eta_i}}
+\in \travset}}
+\quad x_i \in N_{\sf var}^{@\enable} \zand \alpha \in \{r\} \union \{w_i \ | \ i \in \nat \}
+\enspace .
+$$
+
+\item Suppose that $x$'s binder is a lambda-node and $x \in N^{N_\Sigma\enable}$.
+Then $x$'s binder is necessarily the second child of a \iamkvar-node
+(since \iamkvar\ is the only constant of order greater than 0).
+$$ \rulename{\iamkvar\mbox{-}Var}  \rulef{\Pstr[17pt]{t \cdot \lambda^{w_k} \overline{\xi} \cdot \iamkvar \cdot (lx){\lambda x} \cdot t_2 \cdot (x-lx)x \in \travset}}
+{\Pstr[15pt]{t \cdot \lambda^{w_k}\overline{\xi} \cdot \iamkvar \cdot (lx){\lambda x} \cdot t_2 \cdot (x-lx)x \cdot (kx-x)k_x \in \travset }}
+\enspace .
+$$
+
+\item Suppose that $x$ is a block-allocated variable.
+
+Given a block-declaration $\ianew\ x$, we call \emph{assignment of $x$} any segment of traversal of the form $\lambda^{w_k}\overline\xi \cdot x$ for some $k\in \mathcal{D}_{\iaexp}$ and occurrence $x$ of a node bound by $\ianew\ x$. We call $k$ the \emph{value assigned} to $x$.
+$$
+\rulename{\ianew\mbox{-}Var_w} \
+\rulef{
+t \cdot \lambda^{w_k} \overline{\xi} \cdot x \in \travset }
+{\Pstr[15pt]{t \cdot \lambda^{w_k} \overline{\xi} \cdot (x)x \cdot (dx-x,35)\iadone_x \in \travset}}\ x \in N^{\ianew\enable}_{\sf var} \enspace .
+$$
+$$
+\rulename{\ianew\mbox{-}Var_r} \
+\rulef{ \Pstr[17pt]{t_1 \cdot (dec){\ianevar{x}} \cdot t_2 \cdot \lambda^r \overline{\xi} \cdot (x-dec,30)x \in \travset} }
+{\Pstr[17pt]{t_1 \cdot (dec){\ianevar{x}} \cdot t_2 \cdot \lambda^r \overline{\xi} \cdot (x-dec,30)x \cdot (kx-x,35)k_x \in \travset}}
+\qquad
+\parbox[t]{5.7cm}{where $k\in\nat$ is the last value assigned to $x$ in $t_2$, or $0$ if there is no such assignment.}
+$$
+\end{itemize}
+\end{itemize}
+
+\subsubsection{Game semantics correspondence}
+The properties that we proved for computation trees and traversals
+of the lambda calculus with constants can easily be lifted
+to computation hypertrees of \ialgol. In particular:
+\begin{itemize}
+\item Constant traversal rules are well-behaved (for order-$0$ and order-$1$ constants, this is a consequence
+of Lemma \ref{lem:sigma_order1_are_wellbehaved}; for $\iamkvar$
+and $\ianew$ this can be easily verified);
+\item P-view of traversals are paths in the computation hypertrees;
+\item For beta-normal terms, the P-view of a traversal core is the core of the P-view (Lemma \ref{lem:betanf_wellbehavedconst_trav_pview_red},
+and the O-view of a traversal is the O-view of its core
+(Lemma \ref{lem:oviewproj_wrt_theroot});
+\item There is a mapping from vertices of the computation hypertrees to moves in the interaction game semantics;
+\item There is a correspondence between traversals of the computation tree and plays in interaction game semantics;
+\item Consequently, there is a correspondence between the standard game semantics and
+the set of justified sequences of nodes $\travset(M)^{\filter \theroot}$.
+\end{itemize}

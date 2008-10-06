@@ -11,9 +11,11 @@
 \usepackage{bbm,latexsym}
 \usepackage{tabularx}
 \usepackage{ifpdf}
-\usepackage[off]{pdfsync}
+\usepackage{extarrows}
+
 %\ifpdf
-  \usepackage[breaklinks=true,colorlinks=true, linkcolor=blue]{hyperref}
+  \usepackage[colorlinks=true,linkcolor=blue,hyperindex]{hyperref}
+  \usepackage{breakurl}
 %\else
 %  \usepackage{url}
 %  \newcommand\texorpdfstring[2]{#1}
@@ -25,6 +27,14 @@
 \usepgflibrary{decorations.markings}
 \usetikzlibrary{decorations}
 \usetikzlibrary{positioning}
+
+\newcommand\sigcolor{blue} %{gray}
+\newcommand\mucolor{red} %{gray}
+\newcommand\sigcol[1]{{\color{\sigcolor} #1}}
+\newcommand\mucol[1]{{\color{\mucolor} #1}}
+\tikzstyle{tableptr}=[->,shorten <=1pt,>=latex',line width=0.5pt,bend left=10]
+
+
 
 % adjust todonotes options
 \tikzstyle{notestyle} += [text width=0.9\marginparwidth]
@@ -101,3 +111,12 @@
 
 % ignore notations declaration
 \def\indexnotation#1#2{}%
+
+
+% Approximation ordering for trees
+\newcommand\treeapprox{\sqsubseteq}
+
+% the system of the simply-typed lambda calculus a la Church
+\newcommand\chsystem{\Lambda_\rightarrow^{\rm Ch}}
+
+\newcommand\chentail{\vdash} % Church style typed lambda calculus entailment
