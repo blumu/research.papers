@@ -12,14 +12,9 @@
 \usepackage{tabularx}
 \usepackage{ifpdf}
 \usepackage{extarrows}
-
-%\ifpdf
-  \usepackage[colorlinks=true,linkcolor=blue,hyperindex]{hyperref}
-  \usepackage{breakurl}
-%\else
-%  \usepackage{url}
-%  \newcommand\texorpdfstring[2]{#1}
-%\fi
+\usepackage{url}
+\usepackage[colorlinks=true,linkcolor=blue,hyperindex]{hyperref}
+\usepackage{breakurl}
 \usetikzlibrary{arrows}
 \usetikzlibrary{matrix}
 \usetikzlibrary{shapes.geometric}
