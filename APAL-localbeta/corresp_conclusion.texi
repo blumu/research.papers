@@ -50,3 +50,7 @@ As pointed out by Luke Ong, Stirling's games are closely related to the innocent
 \subsubsection*{Analyzing syntactic constraints}
 
 The connection between syntax and semantics provided by the traversal theory enables us to analyze the effect of a given syntactic constraint on the game model. The next chapter is an example of such an application: By making simple observations about the computation tree of safe terms, the Correspondence Theorem allows us to show that their strategy denotations are of a particular kind: Their plays satisfy a certain property called \emph{incremental justification}.
+
+%%% Local Variables: 
+%%% TeX-master: "d:/my documents/latex/Current/APAL-localbeta/corresp_conclusion.texi"
+%%% End: 
