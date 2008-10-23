@@ -16,7 +16,7 @@ rule is said to be \emph{maximal}.
 \begin{itemize}[]
     \item \rulenamet{Lam} If $t \cdot \lambda \overline{\xi}$ is a traversal then so is
         $t \cdot \lambda \overline{\xi} \cdot n$ where $n$
-        denotes $\lambda \overline{\xi}$'s child and:
+        denotes $\lambda \overline{\xi}$'s child in $\tau(M)$ and:
         \begin{compactitem}
             \item If $n \in N_@ \union N_\Sigma$ then it has no justifier;
             \item if  $n \in N_{\sf var}\setminus N_{\sf fv}$ then it points to the only occurrence\footnote{Prop.~\ref{prop:pviewtrav_is_path} will show that P-views

@@ -80,6 +80,7 @@
 %\newcommand\textbfit[1]{{\bf\em #1}\index{#1}}
 \newcommand\defeq{\stackrel{\textsf{def}}{=}}
 
+
 % Safe lambda calculus
 \newcommand\funto{\longrightarrow}
 \newcommand\rank[1]{{\sf rank}(#1)}
@@ -102,7 +103,7 @@
 
 
 % Entailments for different kinds of judgments
-\newcommand\stentail{\vdash_{\sf st}} % entailment for simply-typed term
+\newcommand\stentail{\vdash} % entailment for simply-typed term
 
 % ignore notations declaration
 \def\indexnotation#1#2{}%
@@ -114,4 +115,3 @@
 % the system of the simply-typed lambda calculus a la Church
 \newcommand\chsystem{\Lambda_\rightarrow^{\rm Ch}}
 
-\newcommand\chentail{\vdash} % Church style typed lambda calculus entailment

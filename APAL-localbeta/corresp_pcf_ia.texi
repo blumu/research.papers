@@ -500,7 +500,7 @@ The overcome this mismatch, we use hypertrees instead of trees. These hypertrees
 $\mathcal{D}_\mu$ to denote the set of values of type $\mu$.
 We have $\mathcal{D}_{\iaexp} = \nat$,
 $\mathcal{D}_{\iacom} = \{ \iadone \}$
-and $\mathcal{D}_{\iavar} = \mathcal{D}_{\iaexp} \union \mathcal{D}_{\iacom}$. For every node $n$, if $\kappa(n)$ is of type $(A_1,\ldots A_n,B)$, we call $B$ the \emph{return type of $n$}. The set of value-leaves of a node $n$ is given by $\mathcal{D}_{\mu}$ where $\mu$ is the return type of $n$.
+and $\mathcal{D}_{\iavar} = \mathcal{D}_{\iaexp} \union \mathcal{D}_{\iacom}$. For every node $n$, if the tree rooted at $n$ (\ie, $M^{(n)}$) is of type $(A_1,\ldots A_n,B)$ then we call $B$ the \emph{return type of $n$}. The set of value-leaves of a node $n$ is given by $\mathcal{D}_{\mu}$ where $\mu$ is the return type of $n$.
 For conciseness, when representing value-leaves in the hypertree, we merge all the value-leaves of a given node of type $\mu$ into a single leaf labelled $\mathcal{D}_\mu$. For instance we use the tree notation
 \begin{center}
 \begin{tikzpicture}[level distance=7mm,inner ysep=0.5mm,baseline=(root.base),sibling distance=5mm]

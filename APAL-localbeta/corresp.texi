@@ -28,35 +28,53 @@ Asperti et~al.\ introduced \cite{DBLP:conf/lics/AspertiDLR94} a syntactic repres
 
 \section{Computation tree}
 We work in the general setting of the simply-typed lambda calculus extended with a fixed set $\Sigma$ of
-higher-order uninterpreted constants.\footnote{A constant $c \in \Sigma$ is
-  \emph{uninterpreted} if the small-step semantics of the language
-  does not contain any rule of the form $c~M_1\ldots M_k \dots \rightarrow f_c(M_1, \ldots, M_k)$ for some function $f_c$ over closed normal terms
-  $M_1, \ldots, M_k$. Think of such constant as a data constructor.} We fix a simply-typed term-in-context $\Gamma \entail M :T$ for the rest of the section.
+higher-order uninterpreted constants. We fix a simply-typed term-in-context $\Gamma \entail M :T$ for the rest of the section.
 
 %%% Section to include in the LMCS paper (not needed in the thesis because eta-long nf are already defined in the background chapter
 %\subsection{Eta-long normal form}
 
-
+\begin{notation}[Simple types]
+ For simplicity we assume that types are generated over a single atomic type $o$.
+  By convention, $\typear$ associates to the right. Thus every simple type can be written as $A_1 \typear \cdots \typear A_n \typear o$ which we shall abbreviate to $(A_1, \cdots, A_n, o)$ (in case $n = 0$, we identify $(o)$ with $o$).
+\end{notation}
 
 \subsection{Definition}
 
-We define the \emph{computation tree} of a simply-typed lambda-term as an abstract syntax tree representation of its \emph{$\eta$-long normal form} (Def.~\ref{dfn:etalongnf}). Our definition generalizes the notion of computation tree for higher-order recursion schemes \cite{OngLics2006}.
+We define the \emph{computation tree} of a simply-typed lambda-term as an abstract syntax tree representation of its \emph{$\eta$-long normal form}. Our definition generalizes the notion of computation tree for higher-order recursion schemes \cite{OngLics2006}.
 
-We recall that a term $M$ in $\eta$-long normal form is of the form $\lambda \overline{x} . s_0 s_1 \ldots s_m$ where $\overline{x} = x_1 \ldots x_n$ for $n\geq 0$ and $s_0 s_1 \ldots s_m$ is of ground type, each
-$s_j$ for $j\in 1..m$ is in $\eta$-long nf, and either
-$s_0$ is a variable or a constant and $m\geq0$; or $s_0$ is an
-abstraction $\lambda\overline{y}.s$ and $m\geq1$ where $s$ is in $\eta$-long nf. If $M$ is of ground type then its $\eta$-long nf is of the form  $\lambda . N$; although the symbol '$\lambda$' does not correspond to a real lambda-abstraction---we call it `dummy lambda'---it will still be convenient to keep it in expressions representing eta-long normal forms.
+\begin{definition}
+\label{dfn:etalongnf}
+The \defname[eta-long normal form]{$\eta$-long normal form}, written $\elnf{M}$ or sometimes $\etalnf{t}$, of an annotated term $M$ of type $(A_1,\ldots,A_n,o)$ with $n \geq 0$ is defined by cases according to
+the syntactic shape of $M$ (A simply-typed term is either an abstraction or it can be written uniquely as
+$s_0 s_1 \ldots s_m$ where $m\geq0$ and $s_0$ is a variable, a $\Sigma$-constant or an abstraction.):%
+\indexnotation{$\elnf{M}$}{Eta-long normal form of the term $M$}%
+\begin{eqnarray*}
+  \elnf{\lambda x^\tau . N } &\equiv& \lambda x^\tau . \elnf{N} \\
+  \elnf{\alpha N_1 \ldots N_m } &\equiv& \lambda \overline{\varphi}^{\overline{A}} . \alpha \elnf{N_1}\ldots \elnf{N_m} \elnf{\varphi_1} \ldots \elnf{\varphi_n} \\
+  \elnf{(\lambda x^\tau . N) N_1 \ldots N_p } &\equiv& \lambda \overline{\varphi}^{\overline{A}} . (\lambda x^\tau . \elnf{N}) \elnf{N_1} \ldots \elnf{N_p} \elnf{\varphi_1} \ldots \elnf{\varphi_n}
+\end{eqnarray*}
+where $m \geq 0$, $p\geq 1$, $x$ is a variable, $\overline{\varphi} = \varphi_1 \ldots \varphi_n$ and each $\varphi_i : A_i$ is a fresh variable, and $\alpha$ is either a variable or a constant.
+\end{definition}
+
+
+An $\eta$-long nf can therefore be written under the form $\lambda \overline{x} . s_0 s_1 \ldots s_m$ where
+\begin{inparaenum}[i.]
+\item $\overline{x} = x_1 \ldots x_n$ for $n\geq 0$ and $s_0 s_1 \ldots s_m$ is of ground type,
+\item each $s_j$ for $j\in 1..m$ is in $\eta$-long nf;
+\item either $s_0$ is a variable or a constant and $m\geq0$, or $s_0$ is an abstraction $\lambda\overline{y}.s$ and $m\geq1$ where $s$ is in $\eta$-long nf.
+\end{inparaenum}
+Note that for terms of ground type the $\eta$-long nf is of the form  $\lambda . N$; although the symbol '$\lambda$' does not correspond to a real lambda-abstraction---we call it `dummy lambda'---it will still be convenient to keep it in expressions representing eta-long normal forms.
 
 \begin{definition}
 Let $\Gamma \stentail M:T$ be a simply-typed term with variable names from $\mathcal{V}$ and constants from $\Sigma$.
 The \emphind{pre-computation} tree $\tau^-(M)$ with labels taken from $ \{ @ \} \union \Sigma \union \mathcal{V}
   \union \{ \lambda x_1 \ldots x_n \ | \ x_1 ,\ldots, x_n \in
-  \mathcal{V}, n\in\nat \}$, is defined inductively on its $\eta$-long normal form as follows.
+  \mathcal{V}, n\in\nat \}$, is defined inductively on its $\eta$-long normal form $\etalnf{M}$ as follows.
 \begin{eqnarray*}
-  \mbox{For $m\geq 0$, $z \in \mathcal{V}\union\Sigma$: } \tau^-(\lambda \overline{x} . z s_1 \ldots s_m : o) &=& \lambda \overline{x} \langle z \langle\tau^-(s_1),\ldots,\tau^-(s_m)\rangle\rangle \\
-  \mbox{for $m \geq 1$: } \tau^-(\lambda \overline{x} . (\lambda y.t) s_1 \ldots s_m :o) &=& \lambda \overline{x} \langle @ \langle \tau^-(\lambda y.t),\tau^-(s_1),\ldots,\tau^-(s_m) \rangle \rangle \enspace ,
+  \mbox{For $m\geq 0$, $\$ \in \mathcal{V}\union\Sigma$: } \tau^-(\lambda \overline{x} . \$ s_1 \ldots s_m : o) &\defeq& \lambda \overline{x} \langle \$ \langle\tau^-(s_1),\ldots,\tau^-(s_m)\rangle\rangle \\
+  \mbox{for $m \geq 1$: } \tau^-(\lambda \overline{x} . (\lambda y.t) s_1 \ldots s_m :o) &\defeq& \lambda \overline{x} \langle @ \langle \tau^-(\lambda y.t),\tau^-(s_1),\ldots,\tau^-(s_m) \rangle \rangle \enspace ,
 \end{eqnarray*}
-where we write $l\langle t_1, \ldots, t_n \rangle$ for $n \geq 0$ to denote the \emph{ordered tree} whose root is labelled $l$ and has $n$ child-subtrees $t_1$, \ldots, $t_n$. The trees from the equations above are illustrated in Table \ref{tab:defcomptree}.
+where we write $l\langle t_1, \ldots, t_n \rangle$, for $n \geq 0$, to denote the \emph{ordered tree} whose root is labelled $l$ and has $n$ child-subtrees $t_1$, \ldots, $t_n$. The trees from the equations above are illustrated in Table \ref{tab:defcomptree}.
 \end{definition}
 
 By convention the first level of a tree (where the root lies) is numbered 0.
@@ -96,7 +114,7 @@ $m \geq 1$
 \begin{definition}
 \label{dfn:comptree}
 Let $M$ be a simply-typed term not necessarily in $\eta$-long normal
-form. Let $\mathcal{D}$ denote the set of values of base type $o$.
+form. Let $\mathcal{D}$ denote the set of values of the base type $o$.
 The \defname{computation tree} of $M$, written $\tau(M)$ is the tree
 obtained from $\tau^-(\elnf{M})$ by attaching leaves to each node as follows: for every node $n \in \tau^-(M)$, the corresponding node in $\tau(\elnf{M})$ has a
 child leaf labelled $v_n$, called \defname{value-leaf}, for every
@@ -107,10 +125,11 @@ possible value $v \in \mathcal{D}$.
 Inner nodes of the tree are thus of three kinds:
 \begin{itemize}
 \item $\lambda$-nodes labelled $\lambda \overline{x}$ for some list of variables $\overline{x}$ (Note that a $\lambda$-node represents several consecutive variable abstractions),
-\item application nodes labelled @,
+\item long-application nodes labelled @,
 \item variable or constant nodes with labels in $\Sigma \union \mathcal{V}$.
 \end{itemize}
-A node is said to be \defname[prime!node]{prime} if it is the $0^{th}l$ child of an @-node. An inner node whose parent is a @-node or a $\Sigma$-node is called a \defname{spawn} node.
+The $0^{th}$ child of an @-node is called a \defname[prime!node]{prime node}.
+The children nodes of @-nodes and $\Sigma$-nodes are called \index{spawn node}\defname[node!spawn]{spawn nodes}.
 \bigskip
 
 \begin{example} \hfill
@@ -224,26 +243,23 @@ child {node {$@$}
 
 
 \begin{notations} \indexnotation{$\theroot$}{Root of the computation tree}%
-We write $\theroot$ to denote the root of
-$\tau(M)$. We write $E$ to denote the parent-child relation of the
-tree, $V$ for the set of vertices (\ie, leaves and inner nodes) of the
-tree, $N$ for the set of inner nodes and $L$ for the set of
-value-leaves. Thus $V = N \union L$.
+We write $\theroot$ to denote the root of $\tau(M)$. The set of nodes of the tree---also called vertices when viewing the tree as a graph---is denoted by $V$. The subset of \index{node!inner}\emphind{inner nodes} is denoted $N$ and the subset of \index{node!leaf}\emphind{leaf nodes} is denoted $L$ (Thus $V = N \union L$). We write $E \subseteq V\times V$ to denote
+the parent-child relation on the tree vertices.
 
 We write $N_\Sigma$ for the set of $\Sigma$-labelled nodes, $N_@$ for the set
 of @-labelled nodes, $N_{\sf var}$ for the set of variable nodes,
-$N_{\sf fv}$ for the subset of $N_{\sf var}$ consisting of free-variable nodes, $N_{\sf prime}$ for the set of prime nodes
-and $N_{\sf spawn}$ for the set of spawn nodes ($= N \inter E \relimg{N_@ \union N_\Sigma}$).
+$N_{\sf fv}$ for the subset of $N_{\sf var}$ consisting of free-variable nodes, $N_{\sf prime}$ for the set of prime nodes and $N_{\sf spawn}$ for the set of spawn nodes.
 
 For $\$$ ranging over $\{@, \lambda, {\sf var}, {\sf fv} \}$,
 we write $L_\$$ to denote the set of value-leaves which are children of nodes from $N_\$$; formally $L_\$ = \{ v_n \ | \ n \in N_\$, v \in \mathcal{D} \}$. We write $V_\$$ for $N_\$ \union L_\$ $.
 
-For every lambda node $n$ in $N_\lambda$ we write
-$M^{(n)}$ for the subterm rooted at $n$ and $V^{(n)}$ for the set of vertices of the sub-computation tree $\tau(M^{(n)})$; formally $V^{(n)} = E^*(\{n\})$ where $E^*$ denotes the transitive, reflexive closure of the parent-child relation $E$.
+We partition the set of nodes in two subsets: the \index{node!P-}\defname{P-nodes}
+$N_{\sf var} \union N_\Sigma \union N_@ \union L_\lambda$,
+and the \index{node!O-}\defname{O-nodes} $L_{\sf var} \union L_\Sigma \union L_@ \union N_\lambda$.
 
 Each subtree of the computation tree $\tau(M)$ represents a subterm of $\elnf{M}$.
-We define the function $\kappa : N \rightarrow \chsystem$ (where $\chsystem$ denotes the set of Church typed lambda-terms) that maps a node $n \in N$ to the subterm of $\elnf{M}$ corresponding to the subtree of $\tau(M)$ rooted at $n$.
-In particular $\kappa(\theroot) = \elnf{M}$.
+For every lambda node $n$ in $N_\lambda$ we write $M^{(n)}$ for the subterm of $\elnf{M}$ corresponding to the subtree of $\tau(M)$ rooted at $n$, and $V^{(n)}$ for the set of vertices of this subtree (which is isomorphic to $\tau(M^{(n)})$); formally $V^{(n)} = E^*(\{n\})$ where $E^*$ denotes the transitive, reflexive closure of the parent-child relation $E$.
+(In particular we have $M^{(\theroot)} = \elnf{M}$.)
 \end{notations}
 
 \begin{remark}
@@ -257,7 +273,7 @@ child {node {$n$}
     child{node {$\lambda\overline{\xi_p}$}
           child{node{$\ldots$}}}
     };
-\end{tikzpicture}, we have $\ord{\kappa(n)}=0$.
+\end{tikzpicture}, we have $\ord{M^{(n)}}=0$.
 \end{remark}
 
 \begin{definition}[Type and order of a node]
@@ -266,14 +282,14 @@ Suppose $\Gamma \entail M : T$.
 The \defname{type} of an inner-node $n \in N$ of $\tau(M)$ written $\typeof{n}$ is defined as follows:
 \begin{eqnarray*}
 \typeof{\theroot} &=& \Gamma \typear T, \\
-\hbox{for $n \in (N_\lambda \union N_@) \setminus \{\theroot \}$: } \typeof{n} &=& \hbox{type of the term $\kappa(n)$,} \\
+\hbox{for $n \in (N_\lambda \union N_@) \setminus \{\theroot \}$: } \typeof{n} &=& \hbox{type of the term $M^{(n)}$,} \\
 \hbox{ for $n\in N_{\sf var} \union N_\Sigma$: } \typeof{n} &=& \hbox{type of the variable labelling $n$}.
 \end{eqnarray*}
 where the notation $\Gamma \typear T$ is an abbreviation for
 $(A_1,\ldots,A_p, T)$ and $A_1,\ldots, A_p$ are the types of the variables in the context $\Gamma$.
 
-The \defname[order!node]{order} of a node $n$, written $\ord{n}$, is defined as follows: a value-leaf $v \in L$ has order $0$ and
-the order of an inner node $n \in N$ is defined as the order of its type. In particular, the type of a lambda node different from the root is the type of the term represented by the sub-tree rooted at that node, and the type of a variable-node is the type of the variable labelling it.
+The \defname[order!node]{order} of a vertex $u \in V$, written $\ord{u}$, is defined as follows: a value-leaf from $L$ has order $0$ and
+the order of an inner node from $N$ is defined as the order of its type.
 \end{definition}
 
 Since the computation tree is calculated from the $\eta$-long normal form, all the @-nodes have order $0$ ($\ord{@} = 0$);
@@ -290,7 +306,6 @@ labelled $\lambda \overline{\xi}$ with $x\in \overline{\xi}$.
 
 \subsection{Pointers and justified sequence of nodes}
 \subsubsection{Definitions}
-
 \begin{definition}[Enabling]
 The \defname{enabling relation} $\enable$ is defined on the set of
 nodes of the computation tree as follows. We write $m \enable n$ and we say that $m$ enables $n$ if and only if
@@ -299,40 +314,13 @@ and one of the following conditions holds:
 \begin{itemize}
 \item $n \in N_{\sf fv}$ and $m$ is the root $\theroot$;
 \item $n \in N_{\sf var} \setminus N_{\sf fv}$ and
-        $m$ is $n$'s binder, in which case we write $m \enable_i n$ to precise that $n$ is the $i^{\sf th}$ variable bound by $m$;
+        $m$ is $n$'s binder, in which case we write $m \enable_i n$ to indicate that $n$ is the $i^{\sf th}$ variable bound by $m$;
 \item $n\in N_\lambda$ and  $m$ is $n$'s parent;
 \item $n \in L$ and $m$ is $n$'s parent (\ie, $n=v_m$ for some $v\in\mathcal{D}$).
 \end{itemize}
-Formally:
-$$ \begin{array}{lcl}
-  \enable & = & \{ (\theroot,n) \ | n \in N_{\sf fv} \} \\
-&&\union\  \{ (\lambda \overline{x},x) \ | x \in N_{\sf var}\setminus N_{\sf fv} \zand \lambda\overline{x} \mbox{ is $x$'s binder} \} \\
-&& \union\ \{ (m,\lambda\overline\eta) \ | \ m \mbox{ is $\lambda\overline\eta$'s parent and } \lambda\overline\eta \in N_\lambda \} \\
-&& \union\ \{ (m,v_m) \ | \ v \in \mathcal{D}, m \in N  \}
-\end{array}$$
-Note that in particular, free variable nodes are enabled by the root.
-Table \ref{tab:enabler_type} recapitulates the possible node types for the enabler node depending on the type of $n$.
 \end{definition}
 
-
-\begin{table}[htbp]
-$$
-\begin{array}{ccl}
-\mbox{If } n\in \_  & \mbox{then} & m\in \_ \\ \hline
-N_\lambda & & N_{\sf var} \union N_\Sigma \union N_@ \\
-L_{\sf var} & & N_{\sf var} \\
-L_@ & &  N_@ \\
-L_\Sigma & & N_\Sigma\\
-\\
-N_{\sf var} & & N_\lambda\\
-N_\Sigma & & \mbox{n.a.} \\
-N_@ & & \mbox{n.a.} \\
-L_\lambda & & N_\lambda\\
-\end{array}
-$$
-\caption[Type of the enabler node.]{Type of the enabler node in ``$m\enable n$''.}
-\label{tab:enabler_type}
-\end{table}
+Nodes that are not in the image of the relation $\enable$ are called \index{node!initial}\defname{initial nodes}. The initial P-nodes are $N_@ \union N_\Sigma$; the only initial O-node is the root $\theroot$.
 
 We say that a node $n_0$ of the computation tree is \defname{hereditarily enabled} by $n_p \in N$ if there are nodes $n_1,\ldots, n_{p-1} \in N$ such that $n_{i+1}$ enables $n_{i}$
 for all $i\in 0..p-1$.
@@ -424,7 +412,7 @@ If $u$ is a well-bracketed sequences then $?(u)$ can be defined as follows:
 
 \begin{notations}\indexnotation{$s \prefixof s'$}{Prefix ordering for (justified) sequences}%
 We write $s = t$ to denote that the justified sequences $s$ and $t$
-have same nodes \emph{and} pointers. Justified sequence of nodes can
+have the same nodes \emph{and} pointers. Justified sequence of nodes can
 be ordered using the prefix ordering: $t \prefixof t'$ if and only
 if $t=t'$ or the sequence of nodes $t$ is a finite prefix of $t'$
 (and the pointers of $t$ are the same as the pointers of the
@@ -494,14 +482,13 @@ The P-view of a justified sequence of nodes $t$ of $\tau(M)$, written $\pview{t}
 $$\begin{array}{rcll}
  \pview{\epsilon} &=&  \epsilon \\
  \pview{s \cdot n }  &=&  \pview{s} \cdot n
-    & \mbox{for $n \in N_{\sf var} \union N_\Sigma \union N_@ \union L_\lambda$\enspace ;}
+    & \mbox{if $n$ is a P-node\enspace ;}
     \\
  \pview{\Pstr[10pt]{ s \cdot (m){m} \cdot \ldots \cdot (lmd-m,25){n}}} &=&
         \Pstr{ \pview{s} \cdot (m2){m} \cdot (lmd2-m2,60){n} }
-    & \mbox{for $n \in L_{\sf var} \union L_\Sigma \union L_@ \union N_\lambda$\enspace ;}
+    & \mbox{if $n$ is an O-node\enspace ;}
     \\
- \pview{s \cdot r }  &=&  r
-    & \mbox{if $r$ is an occurrence of $\theroot$ ($\tau(M)$'s root)\enspace . }
+ \pview{s \cdot \theroot }  &=&  \theroot \enspace .
 \end{array}$$
 The equalities in the definition determine pointers implicitly. For
 instance in the second clause, if in the left-hand side, $n$ points
@@ -517,25 +504,26 @@ $\tau(M)$, written $\oview{t}$, is defined as follows:
 $$\begin{array}{rcll}
  \oview{\epsilon} &=&  \epsilon \\
  \oview{s \cdot n }  &=&  \oview{s} \cdot n
-    & \mbox{for $n \in L_{\sf var} \union L_\Sigma \union L_@ \union N_\lambda$\enspace ;}
+    & \mbox{if $n$ is an O-node \enspace ;}
     \\
  \oview{\Pstr[10pt]{s \cdot (m){m} \cdot \ldots \cdot (x-m,30){n}}} &=&
     \Pstr{ \oview{s} \cdot (m2){m} \cdot (n2-m2,60){n} }
-    & \mbox{for $n \in N_{\sf var} \union L_\lambda$\enspace ;}
-%    (if $n \in N_{\sf var}$ then the pointer considered is its main link);}
+    & \mbox{if $n$ is a non-initial P-node \enspace ;}
     \\
  \oview{s \cdot n }  &=&  n
-    & \mbox{for $n \in N_@ \union N_\Sigma$\enspace .}
+    & \mbox{if $n$ is an initial P-node \enspace .}
 \end{array}$$
 \end{definition}
 
+
 We borrow some terminology from game semantics:
-\begin{definition} A justified sequence of nodes $s$ satisfies:
+\begin{definition} Let $s$ be a justified sequence of nodes. We list the following axioms:
 \begin{itemize}[-]
-\item \defname{Alternation} if for every two consecutive nodes in $s$, one is in $V_\lambda$ and not the other one;
-\item \defname[visibility]{P-visibility} if for every occurrence in $s$
-of a node in $N_{\sf var} \union L_\lambda$, its justifier occur in the P-view a that point;
-\item  \defname[visibility]{O-visibility} if the justifier of each lambda node in $s$ occurs in the O-view a that point.
+\item \defname{Alternation} for every pair of consecutive nodes in $s$, one is a P-node and the other is an O-node;
+\item \defname[visibility]{P-visibility} for every occurrence in $s$
+of a non-initial P-node, its justifier occurs in the P-view at that point;
+\item  \defname[visibility]{O-visibility} for every occurrence in $s$
+of a non-initial O-node, its justifier occurs in the O-view at that point;
 \end{itemize}
 \end{definition}
 
@@ -550,7 +538,7 @@ is a well-formed justified sequence satisfying P-visibility (resp.\ P-visibility
 \subsection{Traversal of the computation tree}
 \label{subsec:traversal}
 
-We now define the notion of \emph{traversal} over the computation tree $\tau(M)$.  We first consider the simply-typed lambda calculus without interpreted constants; everything remains valid in the presence of \emph{uninterpreted} constants as we can just consider them as free variables. In the second section, we extend the notion of traversal to a more general setting with interpreted constants.
+We now define the notion of \emph{traversal} over the computation tree $\tau(M)$.  We first consider the simply-typed lambda calculus without interpreted constants; everything remains valid in the presence of \emph{uninterpreted} constants as we can just consider them as free variables. In the next section, we extend the notion of traversal to a more general setting with interpreted constants.
 
 \subsubsection{Traversals for simply-typed \texorpdfstring{$\lambda$}{lambda}-terms}
 
@@ -705,7 +693,7 @@ child[dotted]{
     \item If it is a variable node $y$, then
     the node $\lambda \overline{x}$ was necessarily added to the traversal $t_{\leq y}$ using the \rulenamet{Var} rule.
     (Indeed, if it was visited using \rulenamet{InputVar} then $\lambda \overline{x}$ would be hereditarily justified by the root, but this is not possible since $x_i$, bound by $\lambda \overline{x}$, is not an input-variable.)
-    Therefore $y$ is substituted by the term $\kappa(\lambda \overline{x})$ during the evaluation of the term.
+    Therefore $y$ is substituted by the term rooted at $\lambda \overline{x}$ during the evaluation of the term.
 
     Consequently, during reduction, the variable $x$ will be substituted by the subterm represented by
     the $i^{th}$ child node of $y$. Hence the following justified sequence is also a traversal:
@@ -1012,9 +1000,7 @@ enabled by $\theroot$ and by some node in $N_\Sigma$.
 Let $t \in \travset(M)$.
 \begin{itemize}
 \item[(a)] If $t= \ldots \cdot m \cdot n$ where
-$m\in N_{\sf var} \union N_\Sigma \union N_@ \union
-L_\lambda$ and $n\in N_\lambda \union L_{\sf var}
-\union L_\Sigma \union L_@$ then
+$m$ is a P-node and $n$ is an O-node then
 $m$ and $n$ are in the same thread in $t$: they are hereditarily justified by the same initial occurrence (which is either $\tau(M)$'s root, a $\Sigma$-constant or an @-node);
 
 \item[(b)] All the nodes in $\oview{t}$ belong to the same thread.
@@ -1023,7 +1009,7 @@ $m$ and $n$ are in the same thread in $t$: they are hereditarily justified by th
 \begin{proof}
 Clearly (b) follows immediately from (a) due to the way the O-view is computed. We show (a) by induction on the last traversal rule used to form $t$. The results trivially hold for the base cases \rulenamet{Empty} and \rulenamet{Root}.
 Step case: Take $t = t' \cdot n$. If $n \in N_\lambda\union L_{\sf var} \union L_\Sigma \union L_@$ then we do not need to show (a).
-Otherwise $n \in  N_\lambda \union L_{\sf var} \union L_\Sigma \union L_@$. By O-visibility, $n$ points in $\oview{t'}$, thus by the I.H., it must belong to the same thread as all the nodes in $\oview{t'}$ and in particular to the thread of $t'^\omega$. Therefore both (i) and (ii) hold.
+Otherwise $n$ is an O-node. By O-visibility it points in $\oview{t'}$, thus by the I.H., it must belong to the same thread as all the nodes in $\oview{t'}$ and in particular to the thread of $t'^\omega$. Therefore both (i) and (ii) hold.
 \end{proof}
 
 
@@ -1217,7 +1203,7 @@ The subsequence $t \filterplus n_0$ of $t$ is defined inductively on $t$ as foll
 \indexnotation{$t \filterplus n$}{Subterm projection of a traversal $t$ with respect to occurrence $n$}%
 \begin{compactitem}
 \item $(t \cdot n_0) \filterplus n_0 = n_0$ ;
-\item If $n\in N_\lambda \union L_{\sf var} \union L_\Sigma \union L_@$ and $n\neq n_0$ then
+\item If $n$ is an O-node and $n\neq n_0$ then
 \begin{align*}
 (t \cdot n) \filterplus n_0 &= \left\{
                                   \begin{array}{ll}
@@ -1227,7 +1213,7 @@ The subsequence $t \filterplus n_0$ of $t$ is defined inductively on $t$ as foll
                                 \right.
 \end{align*}
 
-\item If $n \in N_{\sf var} \union N_\Sigma \union N_@ \union L_\lambda$ and $n\neq n_0$ then
+\item If $n$ is a P-node and $n\neq n_0$ then
 $$
 (t \cdot n) \filterplus n_0 = \left\{
                                   \begin{array}{ll}
@@ -1556,18 +1542,16 @@ The P-e-view of $\extension{t}$, written, $\oeview{\extension{t}}$ is defined by
 $$\begin{array}{rcll}
  \peview{\epsilon} &=&  \epsilon \\
  \peview{u \cdot n }  &=&  \peview{u} \cdot n
-    & \mbox{for $n \in L_{\sf var} \union L_\Sigma \union L_@ \union N_\lambda$\enspace ;}
+    & \mbox{if $n$ is an O-node;}
     \\
  \peview{\Pstr[15pt]{u \cdot (m){m} \cdot \ldots \cdot (x-m,30){n}}} &=&
     \Pstr{ \peview{u} \cdot (m2){m} \cdot (n2-m2,60){n} }
-    & \mbox{for $n \in N_{\sf var} \union L_\lambda \union N_@ \union N_\Sigma$ \enspace .}
+    & \mbox{if $n$ is a P-node.}
 \end{array}$$
 
 \end{definition}
 
-Inserting a dummy node $\diamond$ at the beginning of the traversal changes the parity of the alternation between nodes in $N_{\sf
-var} \union L_\lambda \union N_@ \union N_\Sigma$ and $N_\lambda
-\union L_{\sf var} \union L_\Sigma \union L_@$.
+Inserting a dummy node $\diamond$ at the beginning of the traversal changes the parity of the alternation between P-nodes and O-nodes.
 Thus the role of O and P is interchanged for traversal extensions. This explains why the O-e-view is calculated from the P-view.
 
 For the P-e-view, the definition is almost the same as the traversal O-view $\oview{\_}$ except that the computation does not stop when reaching a node in $N_@ \union N_\Sigma$---this is sometimes referred as the \emphind{long O-view} \cite{Harmer2005}. (The O-view contains only one thread whereas the long-O-view may contain several; the O-view is a suffix of the long O-view.)
@@ -1585,8 +1569,8 @@ Correspondence Theorem.) The following analogy is made:
 {\bf Traversal setting} & {\bf Game-semantic setting} \\
 \hline
 Extended traversal $\extension{t}$ & Play $s$ \\
-Nodes in $n \in N_{\sf var} \union L_\lambda \union N_@ \union N_\Sigma \union \{\diamond\}$ & O-moves $\omove$ \\
-Nodes in $n \in N_\lambda \union L_{\sf var} \union L_\Sigma \union L_@$ & P-moves $\pmove$\\
+Nodes ($N_{\sf var} \union N_\Sigma \union N_@ \union L_\lambda \union \{\diamond\}$) & O-moves $\omove$ \\
+O-nodes ($L_{\sf var} \union L_\Sigma \union L_@ \union N_\lambda$) & P-moves $\pmove$\\
 P-view $\peview{\extension{t}}$  & P-view $\pview{s}$\\
 O-view $\oeview{\extension{t}}$  & O-view $\oview{s}$\\
 Occurrence $n$ appearing in $t\filterplus r_0$ & Occurrence $n \in B$ \\
@@ -1601,9 +1585,7 @@ Finally, alternation (w3), well-bracketing (w4) and visibility (w5) of the trave
 notion of P-view and O-view).
 
 The property (w6) trivially holds: $n \in t\filterplus r_0$ iff $\neg ( n \not\in t\filterplus
-r_0)$. So does the switching condition (w7): if $t = \ldots \cdot m \cdot n$ where $n\in N_{\sf
-var} \union L_\lambda \union N_@ \union N_\Sigma$ and $m \in
-N_\lambda \union L_{\sf var} \union L_\Sigma \union L_@$ then, by definition of $t\filterplus r_0$, $m$ appears in $t\filterplus r_0$ if and only if $n$ does. For (w8): Using the analogy of the preceding table and since all nodes are considered ``non-initial'' in
+r_0)$. So does the switching condition (w7): if $t = \ldots \cdot m \cdot n$ where $n$ is a P-node and $m$ is an O-node then, by definition of $t\filterplus r_0$, $m$ appears in $t\filterplus r_0$ if and only if $n$ does. For (w8): Using the analogy of the preceding table and since all nodes are considered ``non-initial'' in
 $\extension{t}$, this condition can be stated as:
 \begin{quote}
  (w8) Suppose $m$ justifies $n$ in $\extension{t}$. Then $n \in t\filterplus r_0$ if and only if $m\in t\filterplus r_0$.
@@ -1663,10 +1645,8 @@ $\theta$ be a segment of $\extension{t}$ bounded by nodes $x$ and $y$ appearing 
 \begin{enumerate}[(i)]
   \item $ \peview{\theta \filterplus r_0} = \Pstr{ (p){p_r} \cdot (q-p){q_r} \ldots
 (p1){p_1} \cdot (q1-p1){q_1} }$ for some $r\geq 0$ where
-$p_i \in N_\lambda \union L_{\sf var} \union L_\Sigma \union
-L_@$ and $q_i \in N_{\sf var} \union L_\lambda \union N_@
-\union N_\Sigma$, for $1\leq i \leq r$.
-  \item For every node $m$ in $N_\lambda \union L_{\sf var} \union L_\Sigma \union L_@$ occurring in $\theta$ and appearing in
+$p_i$ is an O-node and $q_i$ is a P-node, for $1\leq i \leq r$.
+  \item For every node O-node $m$ occurring in $\theta$ and appearing in
 $\oeview{\extension{t}_{<y}}$, $m$ does not belong to any of the
 segments $p_i \ldots q_i$ for $1\leq i \leq r$.
 \end{enumerate}
@@ -1690,8 +1670,7 @@ we do a case analysis:
     \item $t =  t' \cdot r_0$. We have $\extension{t} \filterplus r_0 = r_0$ and
      $\peview{\extension{t}} \filterplus r_0 = r_0 = \peview{\extension{t} \filterplus r_0}$.
 
-    \item $t = t' \cdot n$ with $n \in N_\lambda \union L_{\sf var} \union
-    L_\Sigma \union L_@$ where $n$ is not the occurrence $r_0$.
+    \item $t = t' \cdot n$ where $n$ is an O-node and is not the occurrence $r_0$.
 
     There are two cases.
     \begin{itemize}
@@ -1712,7 +1691,7 @@ we do a case analysis:
         \begin{equation*}
         \peview{\extension{t}} = \peview{\extension{t}_{\prefixof \underline{m}}} \cdot \underbrace{\Pstr[0.2cm]{(xq){x_q} \cdot (yq-xq){y_q}\ \ldots\ (x1){x_1} \cdot (y1-x1){y_1}}}_{\mbox{all appear in $t\filterplus r_0 \cdot m$}}
         \end{equation*}
-        where the $x_i$s are in $ N_\lambda \union L_{\sf var} \union  L_\Sigma \union L_@$ and the $y_i$s are in $N_{\sf var} \union N_\Sigma \union N_@ \union L_\lambda$.
+        where the $x_i$s are all O-nodes and the $y_i$s are all P-nodes.
 
         Therefore the sequence $\extension{t}$ must be of the following form:
         $$\extension{t}_{\prefixof \underline{m}} \cdot \underbrace{x_q \ldots y_q}_{\theta_q} \ \cdots \ \underbrace{x_1 \cdots y_1}_{\theta_1} \cdot\ m $$
@@ -1734,8 +1713,7 @@ we do a case analysis:
     \end{itemize}
 
     \item $\Pstr{ t =  t' \cdot (m){m} \cdot u \cdot (lmd-m,30){n} }$
-    where $n \in N_{\sf var} \union N_\Sigma \union N_@ \union L_\lambda$. We have
-    $m\in N_\lambda \union L_{\sf var} \union L_\Sigma \union L_@$.
+    where $n$ is a P-node. Then $m$ is an O-node.
 
      Suppose that $r_0$ appears in $t' \cdot m$, then since $n$ appears in $t\filterplus r_0$, by Lemma \ref{lem:pviewproj_traversal}(i) so does $m$. Thus we can apply the I.H.\ on $t' \cdot m$:
 %
@@ -2156,8 +2134,8 @@ semantics:
 {\bf Traversal setting} & {\bf Game-semantic setting} \\
 \hline
 Traversal $t$ & Play $s$ \\
-Nodes in $n \in N_\lambda \union L_{\sf var} \union L_\Sigma \union L_@$ & O-moves $\omove$ \\
-Nodes in $n \in N_{\sf var} \union L_\lambda \union N_@ \union N_\Sigma \union \{\diamond\}$ & P-moves $\pmove$\\
+O-Nodes ($ L_{\sf var} \union L_\Sigma \union L_@ \union N_\lambda$) & O-moves $\omove$ \\
+Nodes in $n \in N_{\sf var} \union N_\Sigma \union N_@ \union L_\lambda \union \{\diamond\}$ & P-moves $\pmove$\\
 P-view $\pview{t}$  & P-view $\pview{s}$\\
 O-view $\oview{t}$  & O-view $\oview{s}$\\
 Occurrence $n$ her.\ just.\ by $r$ in $t$ & Occurrence $n \in B$ \\
@@ -3169,16 +3147,16 @@ The pointer-free function underlying $\psi_M$ is thus a monoid homomorphism.
     Let $I$ be the interaction game of the revealed strategy $\syntrevsem{\Gamma \entail M : T}$ and
     $M_I$ be the set of equivalence classes of moves from $\mathcal{M}_I$.
 
-    Let $r'$ be a lambda node in $N_{\sf spawn}$ (the children nodes of @/$\Sigma$-nodes). We write $\Gamma(r') \entail \kappa(r') : T(r')$ to denote the subterm of $\elnf{M}$ rooted at $r'$ (thus $\Gamma(r')\subseteq \Gamma$).
-    We consider the function $\psi_{\kappa(r')}$ which maps nodes of $V^{r'\enable}$
+    Let $r'$ be a lambda node in $N_{\sf spawn}$ (the children nodes of @/$\Sigma$-nodes). We write $\Gamma(r') \entail M^{(r')} : T(r')$ to denote the subterm of $\elnf{M}$ rooted at $r'$ (thus $\Gamma(r')\subseteq \Gamma$).
+    We consider the function $\psi_{M^{(r')}}$ which maps nodes of $V^{r'\enable}$
     to moves of $\sem{\Gamma(r') \gamear T(r')}$. Since $\mathcal{M}_I$ contains the
-    moves from the standard game $\sem{\Gamma(r') \gamear A(r')}$, we can consider $\psi_{\kappa(r')}$ as a function from $V^{r'\enable}$ to $\mathcal{M}_I$.
+    moves from the standard game $\sem{\Gamma(r') \gamear A(r')}$, we can consider $\psi_{M^{(r')}}$ as a function from $V^{r'\enable}$ to $\mathcal{M}_I$.
 
     Every node in $n \in V\setminus (V_@ \union V_\Sigma)$ is either hereditarily enabled by the root or by some $\lambda$-node in $N_{\sf spawn}$. Therefore we can define the following relation $\psi^*_M$ from
     $V\setminus (V_@ \union V_\Sigma)$ to $\mathcal{M}_I$:
-    $$ \psi^*_M = \psi_{M} \quad \union \Union_{r' \in N_{\sf spawn}} \psi_{\kappa(r')} \enspace .$$
+    $$ \psi^*_M = \psi_{M} \quad \union \Union_{r' \in N_{\sf spawn}} \psi_{M^{(r')}} \enspace .$$
     This relation is totally defined on $V\setminus (V_@ \union V_\Sigma)$ since those nodes are either hereditarily justified by the root, by an @-node or by a $\Sigma$-node. Moreover it is a relation and \emph{not} a function since for a given variable node $x$,
-for every spawn node $r'$ occurring in the path from $x$ to $\theroot$, $x$ is hereditarily enabled by $r'$ \emph{with respect to the computation tree $\tau(\kappa(r'))$}. Thus the domains of definition of the relations $\psi_{\kappa(r')}$ for such nodes $r'$ overlap.    It can be easily check, however, that for every node $n \in V\setminus (V_@ \union V_\Sigma)$,
+for every spawn node $r'$ occurring in the path from $x$ to $\theroot$, $x$ is hereditarily enabled by $r'$ \emph{with respect to the computation tree $\tau(M^{(r')})$}. Thus the domains of definition of the relations $\psi_{M^{(r')}}$ for such nodes $r'$ overlap.    It can be easily check, however, that for every node $n \in V\setminus (V_@ \union V_\Sigma)$,
     the moves in $\psi^*_M (n)$ are all $\sim$-equivalent, which leads us to the following definition:
 
 \begin{definition}[Mapping from nodes to moves of the syntactically-revealed semantics]
@@ -3287,11 +3265,11 @@ $\psi(M)$ which is precisely $V^{\theroot\enable}$. Conversely, suppose that a n
 $\varphi^*(M)$ to some move $m\in \mathcal{M}_I$ which is $\sim$-equivalent
 to some move in $\sem{\Gamma \gamear T}$.
  If $m = \psi_M(n)$ then $n\in V^{\theroot\enable}$. Otherwise,
-$m = \psi_{\kappa(\odot)}(n)$ for some $\odot \in N_{\sf spawn}$. There
-may be several node $\odot$ such that $n$ belongs to the domain of
-definition of $\psi_{\kappa(\odot)}$, w.l.o.g.\ we can take $\odot$ to be
+$m = \psi_{M^{(\odot)}}(n)$ for some $\odot \in N_{\sf spawn}$. There
+may be several nodes $\odot$ such that $n$ belongs to the domain of
+definition of $\psi_{M^{(\odot)}}$, w.l.o.g.\ we can take $\odot$ to be
 the one which is closest to the root. Let $\Gamma(\odot) \entail
-\kappa(\odot) : T(\odot)$. Suppose that $m$ is $\sim$-equivalent to a move from
+M^{(\odot)} : T(\odot)$. Suppose that $m$ is $\sim$-equivalent to a move from
     \begin{compactitem}[-]
     \item the subgame $\sem{\Gamma}$ of $\sem{\Gamma \gamear T}$,
     then this means that $n$ is hereditarily justified by a free variable node in $M$ and therefore $n \in V^{\theroot\enable}$.
@@ -3301,7 +3279,7 @@ the one which is closest to the root. Let $\Gamma(\odot) \entail
     Indeed, since $\odot$'s parent node is an application node, moves in the subgame $\sem{T(\odot)}$ correspond to internal moves of the application. By definition of
     the interaction strategy for the application case, such moves can only be $\sim$-equivalent to other internal  moves and thus cannot be equivalent to a move from $\sem{T}$.
 
-    Consequently, $n$ is hereditarily justified by a free variable node $z$ in $\kappa(\odot)$. By assumption, $\odot$ is the closest node to the root $\theroot$ (excluding $\theroot$ itself) for which $n$ belongs to $V^{\odot\enable}$ (the domain of definition of $\psi_{\kappa(\odot)}$). Hence $z$ is not bound by any $\lambda$-node occurring in the path to the root. Thus $z\in
+    Consequently, $n$ is hereditarily justified by a free variable node $z$ in $M^{(\odot)}$. By assumption, $\odot$ is the closest node to the root $\theroot$ (excluding $\theroot$ itself) for which $n$ belongs to $V^{\odot\enable}$ (the domain of definition of $\psi_{M^{(\odot)}}$). Hence $z$ is not bound by any $\lambda$-node occurring in the path to the root. Thus $z\in
     V^{\theroot\enable}$ and therefore $n \in V^{\theroot\enable}$.
     \end{compactitem}
 Hence $H = V^{\theroot\enable}$. Consequently, for every traversal $t$
