@@ -1563,7 +1563,7 @@ Correspondence Theorem.) The following analogy is made:
 {\bf Traversal setting} & {\bf Game-semantic setting} \\
 \hline
 Extended traversal $\extension{t}$ & Play $s$ \\
-Nodes ($\INodes_{\sf var} \union \INodes_\Sigma \union \INodes_@ \union \LNodes_\lambda \union \{\diamond\}$) & O-moves $\omove$ \\
+P-Nodes ($\INodes_{\sf var} \union \INodes_\Sigma \union \INodes_@ \union \LNodes_\lambda$) or $\diamond$ & O-moves $\omove$ \\
 O-nodes ($\LNodes_{\sf var} \union \LNodes_\Sigma \union \LNodes_@\union \INodes_\lambda$) & P-moves $\pmove$\\
 P-view $\peview{\extension{t}}$  & P-view $\pview{s}$\\
 O-view $\oeview{\extension{t}}$  & O-view $\oview{s}$\\
@@ -2129,7 +2129,7 @@ semantics:
 \hline
 Traversal $t$ & Play $s$ \\
 O-Nodes ($ \LNodes_{\sf var} \union \LNodes_\Sigma \union \LNodes_@\union \INodes_\lambda$) & O-moves $\omove$ \\
-Nodes in $n \in \INodes_{\sf var} \union \INodes_\Sigma \union \INodes_@ \union \LNodes_\lambda \union \{\diamond\}$ & P-moves $\pmove$\\
+P-Nodes ($\INodes_{\sf var} \union \INodes_\Sigma \union \INodes_@ \union \LNodes_\lambda$) or $\diamond$ & P-moves $\pmove$\\
 P-view $\pview{t}$  & P-view $\pview{s}$\\
 O-view $\oview{t}$  & O-view $\oview{s}$\\
 Occurrence $n$ her.\ just.\ by $r$ in $t$ & Occurrence $n \in B$ \\
@@ -2696,7 +2696,7 @@ The syntactically-revealed denotation differs from the fully-revealed one in tha
 
     where $k\in\{1..p\}$, $i,j \in \{1..n\}$ and $p\geq 1$.
     \end{center}
-    \caption{Flow-diagram for interaction plays of $\revsem{\Gamma \entail x_i N_1 \ldots N_p}$.}
+    \caption{Flow-diagram for interaction plays of $\revsem{\Gamma \entail x_i N_1 \ldots N_p : o}$.}
     \label{fig:flowdiag_moves_interplay_varcase}
     \end{figure}
 
