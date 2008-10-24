@@ -28,6 +28,10 @@
 \newcommand\orddec{{\sf orddec}}
 \newcommand\sig{{\sf sig}}
 
+\newcommand\Nodes{N}% set of nodes
+\newcommand\INodes{IN}% set of inner nodes
+\newcommand\LNodes{L}% set of leaf nodes
+
 \author{William Blum}
 \title{Encoding of a safe order-$n$ recursion scheme into a $n$-PDA}
 
@@ -68,14 +72,14 @@ Let $c$ be a configuration. The \defname{long O-view},
 \item Long O-view:
 \begin{align*}
   \longoview{s} &= \epsilon & \mbox{if $top_1 s$ is undefined;} \\
-      &=   \longoview{pop_1 s} \cdot top_1 s & \mbox{if $top_1\,s \in N_{\sf var}$, $top_1 s$ pointing to its immediate predecesor;} \\
-      &=   \longoview{pop_1 s} \cdot top_1 s & \mbox{if $top_1\,s \in N_@$, $@$ having no pointer;} \\
-      &=   \longoview{collapse\,s} \cdot top_1 s & \mbox{if $top_1\,s \in N_\lambda^{\sf prime}$, $top_1 s$ pointing to its immediate predecesor;} \\
-      &=   \longoview{collapse\,s} \cdot top_1 s & \mbox{if $top_1\,s \in N_\lambda\setminus N_\lambda^{\sf prime}$, $top_1 s$ pointing to $\ip(\jp(collapse\,s))$.} \\
+      &=   \longoview{pop_1 s} \cdot top_1 s & \mbox{if $top_1\,s \in \INodes_{\sf var}$, $top_1 s$ pointing to its immediate predecesor;} \\
+      &=   \longoview{pop_1 s} \cdot top_1 s & \mbox{if $top_1\,s \in \INodes_@$, $@$ having no pointer;} \\
+      &=   \longoview{collapse\,s} \cdot top_1 s & \mbox{if $top_1\,s \in \INodes_\lambda^{\sf prime}$, $top_1 s$ pointing to its immediate predecesor;} \\
+      &=   \longoview{collapse\,s} \cdot top_1 s & \mbox{if $top_1\,s \in \INodes_\lambda\setminus \INodes_\lambda^{\sf prime}$, $top_1 s$ pointing to $\ip(\jp(collapse\,s))$.} \\
 \end{align*}
 \item The O-view is defined similarly to the long-O-view except that the calculation stops when an @-node is reached:
 \begin{align*}
-  \oview{s}  &=   top_1 s & \mbox{if $top_1 s \in N_@$, $@$ having no pointer;}
+  \oview{s}  &=   top_1 s & \mbox{if $top_1 s \in \INodes_@$, $@$ having no pointer;}
 \end{align*}
 \item As shown in the original paper, the P-view $\pview{s}$ is given by $top_2\,c$.
 \end{compactitem}
@@ -171,8 +175,8 @@ $$
 %The \defname{signature} $\sig(s)$ of $s$ is defined as:
 %$$sig(s) = \left\{
 %           \begin{array}{ll}
-%             \orddec_{\ord(top_1\,s)}(s), & \hbox{if $top_1\,s \in N_@ \union N_{var}$;} \\
-%             \orddec_{-1}(s) = \orddec_{\ord(top_1\,s)}(pop_1\,s) \cdot (top_1\,s), & \hbox{if $top_1\,s \in N_\lambda$.}
+%             \orddec_{\ord(top_1\,s)}(s), & \hbox{if $top_1\,s \in \INodes_@ \union \INodes_{var}$;} \\
+%             \orddec_{-1}(s) = \orddec_{\ord(top_1\,s)}(pop_1\,s) \cdot (top_1\,s), & \hbox{if $top_1\,s \in \INodes_\lambda$.}
 %           \end{array}
 %         \right.$$
 %\end{definition}
@@ -186,7 +190,7 @@ where $\prefixof$ denotes the sequence-prefix ordering.
 
 \begin{lemma}
 \label{lem:push1pop1_orderdecompo} Let $s$ be a (possibly higher-order) stack
-such that $top_1\,s \in N_@ \union N_{var}$.
+such that $top_1\,s \in \INodes_@ \union \INodes_{var}$.
 \begin{enumerate}[i.]
 \item Suppose that the order-decomposition with respect to some $l\in\nat$ is $\orddec_l(s) = \langle \lambda
 \overline{\eta}_r^{k_r}, \ldots, \lambda \overline{\eta}_1^{k_1}

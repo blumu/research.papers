@@ -731,12 +731,12 @@ The \iavar\ case is implemented by two rules:
 $$\rulename{InputValue^\iavar_r}\
 \rulef{t_1 \cdot \lambda^r \overline{\xi} \cdot x \cdot t_2 \in \travset}
 {\Pstr[19pt]{t_1 \cdot (x){x} \cdot t_2 \cdot (xv-x,38:v){v_x} \in\travset}}
-\ x \mbox{ pending node } \zand\  x \in N_{\sf var}^{\theroot\enable} \zand x:\iavar,\ v \in\mathcal{D} \enspace .$$
+\ x \mbox{ pending node } \zand\  x \in \INodes_{\sf var}^{\theroot\enable} \zand x:\iavar,\ v \in\mathcal{D} \enspace .$$
 
 $$\rulename{InputValue^\iavar_w}\
 \rulef{t_1 \cdot\lambda^w \overline{\xi} \cdot x \cdot t_2 \in\travset}
 {\Pstr[18pt]{t_1 \cdot (x){x} \cdot t_2 \cdot (xv-x,38:v){\iadone_x} \in\travset}}
-\ x \mbox{ pending node } \zand\  x \in N_{\sf var}^{\theroot\enable} \zand x:\iavar \enspace .$$
+\ x \mbox{ pending node } \zand\  x \in \INodes_{\sf var}^{\theroot\enable} \zand x:\iavar \enspace .$$
 
 \item \emph{IA constants rules}
 
@@ -819,7 +819,7 @@ Take for instance the term $\iaassign\ (\iamkvar\ (\lambda x . M) N)
 
 Let $x$ be an internal variable node. Then by definition it is either hereditarily justified by an @-node or by a $\Sigma$-constant node.
 \begin{itemize}
-\item Suppose that $x$'s binder is a lambda-node $\lambda \overline{x}$ and $x \in N^{@\enable}$.
+\item Suppose that $x$'s binder is a lambda-node $\lambda \overline{x}$ and $x \in \INodes^{@\enable}$.
 
 This case is a generalization of the rule \rulenamet{Var} (Sec.~\ref{subsec:traversal}). The only difference is that for variables of type \iavar, the lambda nodes preceding $x$ in the traversal determines the lambda-node that is visited next:
 $$ \rulename{Var_\iavar}
@@ -827,11 +827,11 @@ $$ \rulename{Var_\iavar}
 {\Pstr[25pt]{t \cdot (n){n} \cdot (lx){\lambda \overline{x}}
 \ldots \lambda^\alpha x_i \cdot  (x-lx,30:i){x_i} \cdot (letai-n,40:i.\alpha){\lambda\overline{\eta_i}}
 \in \travset}}
-\quad x_i \in N_{\sf var}^{@\enable} \zand \alpha \in \{r\} \union \{w_i \ | \ i \in \nat \}
+\quad x_i \in \INodes_{\sf var}^{@\enable} \zand \alpha \in \{r\} \union \{w_i \ | \ i \in \nat \}
 \enspace .
 $$
 
-\item Suppose that $x$'s binder is a lambda-node and $x \in N^{N_\Sigma\enable}$.
+\item Suppose that $x$'s binder is a lambda-node and $x \in \INodes^{\INodes_\Sigma\enable}$.
 Then $x$'s binder is necessarily the second child of a \iamkvar-node
 (since \iamkvar\ is the only constant of order greater than 0).
 $$ \rulename{\iamkvar\mbox{-}Var}  \rulef{\Pstr[17pt]{t \cdot \lambda^{w_k} \overline{\xi} \cdot \iamkvar \cdot (lx){\lambda x} \cdot t_2 \cdot (x-lx)x \in \travset}}
@@ -846,7 +846,7 @@ $$
 \rulename{\ianew\mbox{-}Var_w} \
 \rulef{
 t \cdot \lambda^{w_k} \overline{\xi} \cdot x \in \travset }
-{\Pstr[15pt]{t \cdot \lambda^{w_k} \overline{\xi} \cdot (x)x \cdot (dx-x,35)\iadone_x \in \travset}}\ x \in N^{\ianew\enable}_{\sf var} \enspace .
+{\Pstr[15pt]{t \cdot \lambda^{w_k} \overline{\xi} \cdot (x)x \cdot (dx-x,35)\iadone_x \in \travset}}\ x \in \INodes^{\ianew\enable}_{\sf var} \enspace .
 $$
 $$
 \rulename{\ianew\mbox{-}Var_r} \
@@ -870,7 +870,7 @@ and $\ianew$ this can be easily verified);
 \item For beta-normal terms, the P-view of a traversal core is the core of the P-view (Lemma \ref{lem:betanf_wellbehavedconst_trav_pview_red},
 and the O-view of a traversal is the O-view of its core
 (Lemma \ref{lem:oviewproj_wrt_theroot});
-\item There is a mapping from vertices of the computation hypertrees to moves in the interaction game semantics;
+\item There is a mapping from nodes of the computation hypertrees to moves in the interaction game semantics;
 \item There is a correspondence between traversals of the computation tree and plays in interaction game semantics;
 \item Consequently, there is a correspondence between the standard game semantics and
 the set of justified sequences of nodes $\travset(M)^{\filter \theroot}$.

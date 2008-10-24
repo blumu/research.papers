@@ -18,12 +18,12 @@ rule is said to be \emph{maximal}.
         $t \cdot \lambda \overline{\xi} \cdot n$ where $n$
         denotes $\lambda \overline{\xi}$'s child in $\tau(M)$ and:
         \begin{compactitem}
-            \item If $n \in N_@ \union N_\Sigma$ then it has no justifier;
-            \item if  $n \in N_{\sf var}\setminus N_{\sf fv}$ then it points to the only occurrence\footnote{Prop.~\ref{prop:pviewtrav_is_path} will show that P-views
+            \item If $n \in \INodes_@ \union \INodes_\Sigma$ then it has no justifier;
+            \item if  $n \in \INodes_{\sf var}\setminus \INodes_{\sf fv}$ then it points to the only occurrence\footnote{Prop.~\ref{prop:pviewtrav_is_path} will show that P-views
             are paths in the tree thus $n$'s enabler occurs
             exactly once in the P-view.} of its binder in
             $\pview{t\cdot \lambda \overline{\xi}}$;
-            \item if  $n \in N_{\sf fv}$ then it points
+            \item if  $n \in \INodes_{\sf fv}$ then it points
             to the only occurrence of the root $\theroot$ in
             $\pview{t \cdot \lambda \overline{\xi}}$.
         \end{compactitem}
@@ -32,7 +32,7 @@ rule is said to be \emph{maximal}.
 
 \emph{\bf Input-variable rules}
 \begin{itemize}[]
-\item \rulenamet{InputVar} If $t$ is a traversal where $t^\omega \in N_{\sf var}^{\theroot\enable} \union L_\lambda^{\theroot\enable}$
+\item \rulenamet{InputVar} If $t$ is a traversal where $t^\omega \in \INodes_{\sf var}^{\theroot\enable} \union \LNodes_\lambda^{\theroot\enable}$
 and $x$ is an occurrence of a variable node in $\oview{t}$ then
 so is $t \cdot n$ for every child $\lambda$-node $n$ of $x$, $n$
 pointing to $x$.
@@ -41,7 +41,7 @@ pointing to $x$.
 
 \item \rulenamet{InputValue} If $t_1
 \cdot x \cdot t_2$ is a traversal with pending node $x \in
-N_{\sf var}^{\theroot\enable}$ then so is \Pstr[0.5cm]{t_1 \cdot
+\INodes_{\sf var}^{\theroot\enable}$ then so is \Pstr[0.5cm]{t_1 \cdot
 (x){x} \cdot t_2 \cdot (xv-x,38:v){v_x} } for all $v \in
 \mathcal{D}$.
 \end{itemize}
@@ -51,14 +51,14 @@ N_{\sf var}^{\theroot\enable}$ then so is \Pstr[0.5cm]{t_1 \cdot
 \item\rulenamet{Var}
 If \Pstr[0.5cm]{t \cdot (n){n} \cdot (lx){\lambda \overline{x}}
     \ldots (x-lx,50:i){x_i} } is a traversal where $x_i \in
-    N_{\sf var}^{@\enable}$ then so is \Pstr[0.5cm]{ t \cdot
+    \INodes_{\sf var}^{@\enable}$ then so is \Pstr[0.5cm]{ t \cdot
 (n){n} \cdot (lx){\lambda \overline{x}}  \ldots (x-lx,30:i){x_i}
     \cdot (letai-n,40:i){\lambda \overline{\eta_i}}
      }.
 
 \item\rulenamet{Value}
   If \Pstr{t \cdot (m){m} \cdot (n){n}  \ldots
-(vn-n,60:v){v}_{n} } is a traversal where $n\in N$ then so is
+(vn-n,60:v){v}_{n} } is a traversal where $n\in \INodes$ then so is
 \Pstr[0.6cm]{t \cdot (m){m} \cdot (n){n} \ldots
 (vn-n,60:v){v}_{n} \cdot (vm-m,45:v){v}_m}.
 \end{itemize}

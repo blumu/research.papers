@@ -243,22 +243,21 @@ child {node {$@$}
 
 
 \begin{notations} \indexnotation{$\theroot$}{Root of the computation tree}%
-We write $\theroot$ to denote the root of $\tau(M)$. The set of nodes of the tree---also called vertices when viewing the tree as a graph---is denoted by $V$. The subset of \index{node!inner}\emphind{inner nodes} is denoted $N$ and the subset of \index{node!leaf}\emphind{leaf nodes} is denoted $L$ (Thus $V = N \union L$). We write $E \subseteq V\times V$ to denote
-the parent-child relation on the tree vertices.
+We write $\theroot$ to denote the root of $\tau(M)$. The set of nodes of the tree is denoted by $\Nodes$. The subset of \index{node!inner}\emphind{inner nodes} is denoted $\INodes$ and the subset of \index{node!leaf}\emphind{leaf nodes} is denoted $\LNodes$ (Thus $\Nodes = \INodes \union \LNodes$). We write $E \subseteq \Nodes \times \Nodes$ to denote
+the parent-child relation on the tree nodes.
 
-We write $N_\Sigma$ for the set of $\Sigma$-labelled nodes, $N_@$ for the set
-of @-labelled nodes, $N_{\sf var}$ for the set of variable nodes,
-$N_{\sf fv}$ for the subset of $N_{\sf var}$ consisting of free-variable nodes, $N_{\sf prime}$ for the set of prime nodes and $N_{\sf spawn}$ for the set of spawn nodes.
+We write $\INodes_\Sigma$ for the set of $\Sigma$-labelled (inner) nodes, $\INodes_@$ for the set of @-labelled nodes, $\INodes_{\sf var}$ for the set of variable nodes,
+$\INodes_{\sf fv}$ for the subset of $\INodes_{\sf var}$ consisting of free-variable nodes, $\INodes_{\sf prime}$ for the set of prime nodes and $\INodes_{\sf spawn}$ for the set of spawn nodes.
 
 For $\$$ ranging over $\{@, \lambda, {\sf var}, {\sf fv} \}$,
-we write $L_\$$ to denote the set of value-leaves which are children of nodes from $N_\$$; formally $L_\$ = \{ v_n \ | \ n \in N_\$, v \in \mathcal{D} \}$. We write $V_\$$ for $N_\$ \union L_\$ $.
+we write $\LNodes_\$$ to denote the set of value-leaves which are children of nodes from $\INodes_\$$; formally $\LNodes_\$ = \{ v_n \ | \ n \in \INodes_\$, v \in \mathcal{D} \}$. We write $\Nodes_\$$ for $\INodes_\$ \union \LNodes_\$ $.
 
 We partition the set of nodes in two subsets: the \index{node!P-}\defname{P-nodes}
-$N_{\sf var} \union N_\Sigma \union N_@ \union L_\lambda$,
-and the \index{node!O-}\defname{O-nodes} $L_{\sf var} \union L_\Sigma \union L_@ \union N_\lambda$.
+$\INodes_{\sf var} \union \INodes_\Sigma \union \INodes_@ \union \LNodes_\lambda$,
+and the \index{node!O-}\defname{O-nodes} $\LNodes_{\sf var} \union \LNodes_\Sigma \union \LNodes_@\union \INodes_\lambda$.
 
 Each subtree of the computation tree $\tau(M)$ represents a subterm of $\elnf{M}$.
-For every lambda node $n$ in $N_\lambda$ we write $M^{(n)}$ for the subterm of $\elnf{M}$ corresponding to the subtree of $\tau(M)$ rooted at $n$, and $V^{(n)}$ for the set of vertices of this subtree (which is isomorphic to $\tau(M^{(n)})$); formally $V^{(n)} = E^*(\{n\})$ where $E^*$ denotes the transitive, reflexive closure of the parent-child relation $E$.
+For every lambda node $n$ in $\INodes_\lambda$ we write $M^{(n)}$ for the subterm of $\elnf{M}$ corresponding to the subtree of $\tau(M)$ rooted at $n$, and $\Nodes^{(n)}$ for the set of nodes of this subtree (which is isomorphic to $\tau(M^{(n)})$); formally $\Nodes^{(n)} = E^*(\{n\})$ where $E^*$ denotes the transitive, reflexive closure of the parent-child relation $E$.
 (In particular we have $M^{(\theroot)} = \elnf{M}$.)
 \end{notations}
 
@@ -279,17 +278,16 @@ child {node {$n$}
 \begin{definition}[Type and order of a node]
 \label{def:nodeorder}
 Suppose $\Gamma \entail M : T$.
-The \defname{type} of an inner-node $n \in N$ of $\tau(M)$ written $\typeof{n}$ is defined as follows:
+The \defname{type} of an inner-node $n \in \INodes$ of $\tau(M)$ written $\typeof{n}$ is defined as follows:
 \begin{eqnarray*}
 \typeof{\theroot} &=& \Gamma \typear T, \\
-\hbox{for $n \in (N_\lambda \union N_@) \setminus \{\theroot \}$: } \typeof{n} &=& \hbox{type of the term $M^{(n)}$,} \\
-\hbox{ for $n\in N_{\sf var} \union N_\Sigma$: } \typeof{n} &=& \hbox{type of the variable labelling $n$}.
+\hbox{for $n \in (\INodes_\lambda \union \INodes_@) \setminus \{\theroot \}$: } \typeof{n} &=& \hbox{type of the term $M^{(n)}$,} \\
+\hbox{ for $n\in \INodes_{\sf var} \union \INodes_\Sigma$: } \typeof{n} &=& \hbox{type of the variable labelling $n$}.
 \end{eqnarray*}
 where the notation $\Gamma \typear T$ is an abbreviation for
 $(A_1,\ldots,A_p, T)$ and $A_1,\ldots, A_p$ are the types of the variables in the context $\Gamma$.
 
-The \defname[order!node]{order} of a vertex $u \in V$, written $\ord{u}$, is defined as follows: a value-leaf from $L$ has order $0$ and
-the order of an inner node from $N$ is defined as the order of its type.
+The \defname[order!node]{order} of a node $n \in \Nodes$, written $\ord{n}$, is defined as follows: a value-leaf from $\LNodes$ has order $0$ and the order of an inner node from $\INodes$ is defined as the order of its type.
 \end{definition}
 
 Since the computation tree is calculated from the $\eta$-long normal form, all the @-nodes have order $0$ ($\ord{@} = 0$);
@@ -309,32 +307,30 @@ labelled $\lambda \overline{\xi}$ with $x\in \overline{\xi}$.
 \begin{definition}[Enabling]
 The \defname{enabling relation} $\enable$ is defined on the set of
 nodes of the computation tree as follows. We write $m \enable n$ and we say that $m$ enables $n$ if and only if
-$m \in L \union N_\lambda \union N_{\sf var}$
+$m \in \LNodes \union \INodes_\lambda \union \INodes_{\sf var}$
 and one of the following conditions holds:
 \begin{itemize}
-\item $n \in N_{\sf fv}$ and $m$ is the root $\theroot$;
-\item $n \in N_{\sf var} \setminus N_{\sf fv}$ and
+\item $n \in \INodes_{\sf fv}$ and $m$ is the root $\theroot$;
+\item $n \in \INodes_{\sf var} \setminus \INodes_{\sf fv}$ and
         $m$ is $n$'s binder, in which case we write $m \enable_i n$ to indicate that $n$ is the $i^{\sf th}$ variable bound by $m$;
-\item $n\in N_\lambda$ and  $m$ is $n$'s parent;
-\item $n \in L$ and $m$ is $n$'s parent (\ie, $n=v_m$ for some $v\in\mathcal{D}$).
+\item $n\in \INodes_\lambda$ and  $m$ is $n$'s parent;
+\item $n \in \LNodes$ and $m$ is $n$'s parent (\ie, $n=v_m$ for some $v\in\mathcal{D}$).
 \end{itemize}
 \end{definition}
 
-Nodes that are not in the image of the relation $\enable$ are called \index{node!initial}\defname{initial nodes}. The initial P-nodes are $N_@ \union N_\Sigma$; the only initial O-node is the root $\theroot$.
+Nodes that are not in the image of the relation $\enable$ are called \index{node!initial}\defname{initial nodes}; the initial P-nodes are $\INodes_@ \union \INodes_\Sigma$ and the only initial O-node is the root $\theroot$.
 
-We say that a node $n_0$ of the computation tree is \defname{hereditarily enabled} by $n_p \in N$ if there are nodes $n_1,\ldots, n_{p-1} \in N$ such that $n_{i+1}$ enables $n_{i}$
+We say that a node $n_0$ of the computation tree is \defname{hereditarily enabled} by $n_p \in \Nodes$ if there are nodes $n_1,\ldots, n_{p-1} \in \Nodes$ such that $n_{i+1}$ enables $n_{i}$
 for all $i\in 0..p-1$.
 
-For every sets of nodes $S, H \subseteq N$ we write $S^{H\enable}$ to denote
+For every sets of nodes $S, H \subseteq \Nodes$ we write $S^{H\enable}$ to denote
 the subset $S \inter \enable^*(H)$ of $S$ consisting of nodes hereditarily enabled by some node in $H$. Formally:
 $$S^{H\enable} = \{ n \in S \ | \exists n_0 \in H \mbox{ s.t. }n_0  \enable^* n \} \enspace .$$
 If $H$ is a singleton $\{n_0\}$ then we abbreviate $S^{\{n_0\}\enable}$ into $S^{n_0\enable}$.
 \indexnotation{$S^{H\enable}$}{Subset of $S$ consisting of the nodes hereditarily enabled by some node in $H$}%
 
-We have
-$V_{\sf var}^{\theroot\enable} = V \setminus ( V_{\sf var}^{N_@\enable}
-\union V_{\sf var}^{N_\Sigma\enable})$.
-The elements of $N_{\sf var}^{\theroot\enable}$ (\ie, variable nodes that are hereditarily enabled by the root of $\tau(M)$) are called
+It can be verified that a non-initial node is either hereditarily enabled by the root, an application node or a constant node; thus the subsets $\{\theroot \}$, $\INodes_@$, $\INodes_@$, $\Nodes^{\theroot\enable}$, $\Nodes^{\INodes_@\enable}$
+and $\Nodes^{\INodes_\Sigma\enable}$ form a partition of $N$. The elements of $\INodes_{\sf var}^{\theroot\enable}$ (\ie, variable nodes that are hereditarily enabled by the root of $\tau(M)$) are called
 \defname{input-variables nodes}.
 \smallskip
 
@@ -348,13 +344,13 @@ We write $n.i$ to denote the $i^{th}$ child of node $n$.
 \label{dfn:justseqnode} A \defname{justified sequence of nodes} is a
 sequence of nodes $s$ of the computation tree $\tau(M)$ with
 pointers. Each occurrence in $s$ of a node $n$
-in $L \union N_\lambda \union N_{\sf var}$ has a link pointing to some preceding occurrence of a node $m$ satisfying $m \enable n$;
-and occurrences of nodes in $N_@ \union N_\Sigma$ do not have pointer.
+in $\LNodes \union \INodes_\lambda \union \INodes_{\sf var}$ has a link pointing to some preceding occurrence of a node $m$ satisfying $m \enable n$;
+and occurrences of nodes in $\INodes_@ \union \INodes_\Sigma$ do not have pointer.
 
 If an occurrence $n$ points to an occurrence $m$ in $s$ then we say that $m$ \defname{justifies} $n$.
 If $n$ is an inner node then we represent this pointer in the sequence as \Pstr[0.4cm]{(m){m} \ldots (n-m,45:i) n } where the label indicates that either $n$ is labelled with the $i^{th}$ variable abstracted by the
 $\lambda$-node $m$ or that $n$ is the $i^{\sf th}$ child of $m$.
-The pointer associated to a leaf $v_m$, for some value $v\in\mathcal{D}$ and internal node $m\in N$, is represented as
+The pointer associated to a leaf $v_m$, for some value $v\in\mathcal{D}$ and internal node $m\in \INodes$, is represented as
 $\Pstr[0.5cm]{ (m){m} \cdot \ldots \cdot (vm-m,40:v){v_m} }$.
 \end{definition}
 
@@ -364,7 +360,7 @@ one of the following forms:
 
 \begin{tabular}{cll}
     & \Pstr[0.7cm]{ (m){r} \cdot \ldots \cdot (n-m,40){z} }
-    & for some occurrences $r$ of $\tau(M)$'s root and $z \in N_{\sf fv}$\enspace ;
+    & for some occurrences $r$ of $\tau(M)$'s root and $z \in \INodes_{\sf fv}$\enspace ;
 \\
     or
     & \Pstr[0.7cm]{ (m){\lambda \overline{\xi}} \cdot \ldots \cdot (n-m,40:i){\xi_i} }
@@ -376,11 +372,11 @@ one of the following forms:
 \\
     or
     & \Pstr[0.7cm]{ (m){\alpha } \cdot \ldots \cdot (n-m,40:k){\lambda \overline{\eta}} },
-    & for $\alpha \in N_{\Sigma} \union N_{\sf var}$,  $k \in \{ 1 ..arity(\alpha) \}$\enspace ;
+    & for $\alpha \in \INodes_{\Sigma} \union \INodes_{\sf var}$,  $k \in \{ 1 ..arity(\alpha) \}$\enspace ;
 \\
     or
     & $\Pstr[0.7cm]{ (m){m} \cdot \ldots \cdot (vm-m,40:v){v_m} }$
-    & for some value $v\in \mathcal{D}$ and internal node $m \in N$\enspace .
+    & for some value $v\in \mathcal{D}$ and inner node $m \in \Nodes$\enspace .
 \end{tabular}
 \bigskip
 
@@ -398,7 +394,7 @@ nodes. Formally:
 \begin{align*}
   ?(\Pstr[0.4cm]{u_1 \cdot (n){n} \cdot u_2 \cdot (nv-n){v_n} }  ) &= ?(u_1 \cdot n \cdot u_2) \setminus \{ n \}
         & \mbox{for some value $v\in\mathcal{D}$ \enspace ,} \\
-  ?(u \cdot n)   &= ?(u)\cdot n    & \mbox{for $n\not\in L$ \enspace ,}
+  ?(u \cdot n)   &= ?(u)\cdot n    & \mbox{for $n\not\in \LNodes$ \enspace ,}
 \end{align*}
 where $u \setminus \{ n \}$ denotes the subsequence of $u$ obtained by removing the occurrence $n$.
 
@@ -406,7 +402,7 @@ If $u$ is a well-bracketed sequences then $?(u)$ can be defined as follows:
 \begin{align*}
   ?(\Pstr[0.4cm]{u \cdot (n){n} \ldots (nv-n){v_n} }  ) &= ?(u)
           & \mbox{for some value $v\in\mathcal{D}$\enspace ,}  \\
-    ?(u \cdot n) &= ?(u)\cdot n    & \mbox{where $n\not\in L$} \enspace .
+    ?(u \cdot n) &= ?(u)\cdot n    & \mbox{where $n\not\in \LNodes$} \enspace .
 \end{align*}
 
 
@@ -434,8 +430,8 @@ We define two different projection operations on justified sequences
 of nodes.
 
 \begin{definition}[Projection on a set of nodes]
-Let $A$ be a subset of $V$, the set of vertices of
-$\tau(M)$, and $t$ be  a justified sequence of nodes then we write
+Let $A$ be a subset of $\Nodes$, the set of nodes of
+$\tau(M)$, and $t$ be a justified sequence of nodes then we write
 $t\filter A$ for the subsequence of $t$ consisting of nodes in $A$.
 This operation can cause a node $n$ to lose its pointer. In that
 case we reassign the target of the pointer to the last node in
@@ -593,13 +589,13 @@ $$\Pstr[1.3cm]{ t= (n0){\lambda f z}
 
     \item[\rulenamet{Value^{\lambda\mapsto{\sf var}}}] If \Pstr[0.4cm]{t \cdot y \cdot (lmd){\lambda \overline{\xi}}
     \ldots (lmdv-lmd,50:v){v_{\lambda\overline\xi}} } is a
-    traversal with $y\in N_{\sf var}^{@\enable}$ then so is
+    traversal with $y\in \INodes_{\sf var}^{@\enable}$ then so is
     \Pstr[0.5cm]{t \cdot (y){y} \cdot (lmd){\lambda \overline{\xi}}
     \ldots (lmdv-lmd,30:v){v}_{\lambda \overline{\xi}}  \cdot
     (vy-y,50:v){v}_y }.
 
     \item[\rulenamet{Value^{var\mapsto\lambda}}] If \Pstr[0.4cm]{t \cdot \lambda \overline{\xi} \cdot (x){x}  \ldots   (xv-x,50:v){v}_x}
-    is a traversal where $x\in N_{\sf var}$ then so is
+    is a traversal where $x\in \INodes_{\sf var}$ then so is
     \Pstr[0.5cm]{t \cdot (lmd){\lambda \overline{\xi}} \cdot (x){x}
     \ldots  (xv-x,50:v){v}_x  \cdot (lmdv-lmd,30:v){v}_{\lambda
     \overline{\xi}} }.
@@ -610,11 +606,11 @@ $$\Pstr[1.3cm]{ t= (n0){\lambda f z}
     these proofs will rely on the above-defined reformulation of
     \rulenamet{Value} instead of its original definition.
 
-    \item In the rule \rulenamet{InputValue}, the last node in the traversal $t_1 \cdot x \cdot t_2$ necessarily belongs to $N_{\sf var} \union L_\lambda$. Indeed, since the pending node $x$ is a variable node, the traversal is of the form
+    \item In the rule \rulenamet{InputValue}, the last node in the traversal $t_1 \cdot x \cdot t_2$ necessarily belongs to $\INodes_{\sf var} \union \LNodes_\lambda$. Indeed, since the pending node $x$ is a variable node, the traversal is of the form
 $$\Pstr[0.5cm]{\ldots \cdot x \cdot  (l){\lambda \overline{\eta}_1}\ldots (v-l){v^1_{\lambda \overline{\eta}_1}}
 (l2){\lambda \overline{\eta}_2}\ldots (v2-l2){v^2_{\lambda \overline{\eta}_2}}
 \ldots (lk){\lambda \overline{\eta}_k}\ldots (vk-lk){v^k_{\lambda \overline{\eta}_k}}
-}$$ for some nodes $\lambda \overline{\eta}_k$, values $v^k \in \mathcal{D}$ and $k\geq 0$; thus the last occurrence belongs to $N_{\sf var}$ if $k=0$ and to $L_\lambda$ if $k\geq1$.
+}$$ for some nodes $\lambda \overline{\eta}_k$, values $v^k \in \mathcal{D}$ and $k\geq 0$; thus the last occurrence belongs to $\INodes_{\sf var}$ if $k=0$ and to $\LNodes_\lambda$ if $k\geq1$.
 
     Furthermore, the pending node appears necessarily in the O-view.
 
@@ -623,7 +619,7 @@ $$\Pstr[0.5cm]{\ldots \cdot x \cdot  (l){\lambda \overline{\eta}_1}\ldots (v-l){
     to be justified by the pending node (which necessarily occurs in the O-view). This restriction is here to ensure that traversals are well-bracketed.
 
 \item In the rule
-\rulenamet{Value}, it is possible to replace the condition ``$n\in N$'' by the stronger ``$n\in N\setminus N_{\sf \lambda}^{\theroot\enable}$''. Indeed a later result (Lemma \ref{lem:trav_oview_single_threaded}) will show that if $n$ belongs to $N_{\lambda}^{\theroot\enable}$ then the preceding occurrence $m$ is necessarily an input-variable.
+\rulenamet{Value}, it is possible to replace the condition ``$n\in \INodes$'' by the stronger ``$n\in \INodes\setminus \INodes_{\sf \lambda}^{\theroot\enable}$''. Indeed a later result (Lemma \ref{lem:trav_oview_single_threaded}) will show that if $n$ belongs to $\INodes_{\lambda}^{\theroot\enable}$ then the preceding occurrence $m$ is necessarily an input-variable.
 Furthermore, another result (Prop.~\ref{prop:pviewtrav_is_path}) shows that traversals are well-bracketed, therefore $m$ is necessarily the pending node. Hence the rule \rulenamet{InputValue} can be use in place of
 \rulenamet{Value} to visit $v_m$.
 
@@ -805,8 +801,8 @@ Then for every $j\in \{1.. k\}$, $x_j$ and $\lambda \overline{\xi}_j$ must belon
 some occurrence of $\lambda \overline{\eta}_i$ in $t$ and
 $\lambda \overline{\xi}_j$ is hereditarily justified by
 some occurrence of $\lambda \overline{\eta}_{i'}$ in $t$
-(and therefore $\lambda \overline{\xi}_j \in V^{\lambda \overline{\eta}_{i} \enable}$
-and $x_j \in V^{\lambda \overline{\eta}_{i'} \enable}$).
+(and therefore $\lambda \overline{\xi}_j \in \Nodes^{\lambda \overline{\eta}_{i} \enable}$
+and $x_j \in \Nodes^{\lambda \overline{\eta}_{i'} \enable}$).
 \end{lemma}
 \begin{proof} The proof is by an easy induction. \end{proof}
 
@@ -840,7 +836,7 @@ We can thus derive a prototype for constant traversal rules by generalizing the 
 \begin{definition}[Constant traversal rule]
     \label{def:constant_traversal} A \defname{constant traversal} has
     one of the following two forms:
-        $$\rulename{\Sigma\mbox{-Value}}\ \rulef{t = t_1\cdot \alpha \cdot t_2 \in \travset(M) \quad \alpha \in N_\Sigma \union N^{N_\Sigma\enable}_{\sf var} \quad ?(t)^\omega = \alpha \quad P(t)}
+        $$\rulename{\Sigma\mbox{-Value}}\ \rulef{t = t_1\cdot \alpha \cdot t_2 \in \travset(M) \quad \alpha \in \INodes_\Sigma \union \INodes^{\INodes_\Sigma\enable}_{\sf var} \quad ?(t)^\omega = \alpha \quad P(t)}
           {
             \stackrel{\rule{0pt}{3pt} }{
                 \Pstr[8pt]{ t' = t_1\cdot (alpha){\alpha} \cdot t_2 \cdot (v-alpha,35){v(t)} \in {\travset(M)}}
@@ -848,7 +844,7 @@ We can thus derive a prototype for constant traversal rules by generalizing the 
            }
            $$
     or
-    $$\rulename{\Sigma}/\rulename{\Sigma\mbox{-Var}}\ \rulef{t \in \travset(M) \quad t^\omega\in N_\Sigma \union N^{N_\Sigma\enable}\union L_\lambda \quad P(t)}
+    $$\rulename{\Sigma}/\rulename{\Sigma\mbox{-Var}}\ \rulef{t \in \travset(M) \quad t^\omega\in \INodes_\Sigma \union \INodes^{\INodes_\Sigma\enable}\union \LNodes_\lambda \quad P(t)}
       { \stackrel{  \rule{0pt}{3pt} }{\Pstr[5pt]{ t \cdot {n(t)} \in {\travset(M)}}}
        }$$
         where:
@@ -950,7 +946,7 @@ Hence $?(u)=\epsilon$.
 Let $t$ be a traversal. Then:
 \begin{enumerate}[(i)]
 \item $t$ is a well-defined justified sequence satisfying alternation, well-bracketing, P-visibility and O-visibility;
-\item If the last element of $t$ is not a value-leaf whose parent-node is a lambda node (\ie, $t^\omega \not\in L_\lambda$) then $\pview{t}$ is the path in the computation tree going from the root to the node $t^\omega$.
+\item If the last element of $t$ is not a value-leaf whose parent-node is a lambda node (\ie, $t^\omega \not\in \LNodes_\lambda$) then $\pview{t}$ is the path in the computation tree going from the root to the node $t^\omega$.
 \end{enumerate}
 \end{proposition}
 \begin{proof}
@@ -969,29 +965,29 @@ We detail the case \rulenamet{Lam} only. We need to show that $n$'s binder occur
 
 \begin{lemma}
 \label{lem:trav_last_not_leaf} If $t \cdot n $ is a traversal with
-$n \in N_{\sf var} \union N_\Sigma \union N_@$ then $t\neq\epsilon$ and $t^\omega$ is $n$'s parent in $\tau(M)$ (and is thus a lambda node).
+$n \in \INodes_{\sf var} \union \INodes_\Sigma \union \INodes_@$ then $t\neq\epsilon$ and $t^\omega$ is $n$'s parent in $\tau(M)$ (and is thus a lambda node).
 \end{lemma}
 \begin{proof}
 By inspecting the traversal rules, we observe that \rulenamet{Lam}
-is the only rule  which can visit a node in $N_{\sf var} \union
-N_\Sigma \union N_@$. Hence $t$ is not empty and $t^\omega$ is $n$'s parent in $\tau(M)$.
+is the only rule  which can visit a node in $\INodes_{\sf var} \union
+\INodes_\Sigma \union \INodes_@$. Hence $t$ is not empty and $t^\omega$ is $n$'s parent in $\tau(M)$.
 \end{proof}
 
 
 \begin{lemma}
 \label{lem:betanorm_enabling}
 Suppose that $M$ is $\beta$-normal. Let $t$ be a traversal of $\tau(M)$
-and $n$ be a node occurring in $t$. Then the root $\theroot$ does not hereditarily enable $n$ if and only if $n$ is hereditarily enabled by some node in $N_\Sigma$. Formally:
-$$ n \not\in N^{\theroot\enable} \quad \iff \quad n \in N^{N_{\Sigma}\enable} \enspace .$$
+and $n$ be a node occurring in $t$. Then the root $\theroot$ does not hereditarily enable $n$ if and only if $n$ is hereditarily enabled by some node in $\INodes_\Sigma$. Formally:
+$$ n \not\in \INodes^{\theroot\enable} \quad \iff \quad n \in \INodes^{\INodes_{\Sigma}\enable} \enspace .$$
 \end{lemma}
 \begin{proof}
  In a computation tree, the only nodes that do not have justification pointer are:
 the root $\theroot$, @-nodes and $\Sigma$-constant nodes. But since $M$ is
 in $\beta$-normal form, there is no @-node in the computation tree.
 Hence nodes are either hereditarily enabled by $\theroot$ or hereditarily
-enabled by some node in $N_\Sigma$. Moreover $\theroot$ is not in $N_\Sigma$
+enabled by some node in $\INodes_\Sigma$. Moreover $\theroot$ is not in $\INodes_\Sigma$
 therefore the ``or'' is exclusive: a node cannot be both hereditarily
-enabled by $\theroot$ and by some node in $N_\Sigma$.
+enabled by $\theroot$ and by some node in $\INodes_\Sigma$.
 \end{proof}
 
 
@@ -1008,7 +1004,7 @@ $m$ and $n$ are in the same thread in $t$: they are hereditarily justified by th
 \end{lemma}
 \begin{proof}
 Clearly (b) follows immediately from (a) due to the way the O-view is computed. We show (a) by induction on the last traversal rule used to form $t$. The results trivially hold for the base cases \rulenamet{Empty} and \rulenamet{Root}.
-Step case: Take $t = t' \cdot n$. If $n \in N_\lambda\union L_{\sf var} \union L_\Sigma \union L_@$ then we do not need to show (a).
+Step case: Take $t = t' \cdot n$. If $n \in \INodes_\lambda\union \LNodes_{\sf var} \union \LNodes_\Sigma \union \LNodes_@$ then we do not need to show (a).
 Otherwise $n$ is an O-node. By O-visibility it points in $\oview{t'}$, thus by the I.H., it must belong to the same thread as all the nodes in $\oview{t'}$ and in particular to the thread of $t'^\omega$. Therefore both (i) and (ii) hold.
 \end{proof}
 
@@ -1020,7 +1016,7 @@ Otherwise $n$ is an O-node. By O-visibility it points in $\oview{t'}$, thus by t
 Occurrences of input-variable nodes correspond to point of the computation at which the term interacts with its context.
 At these points, a traversal can be extended in a non-deterministic way. In contrast, after a node that is hereditarily enabled by an @-node or by a constant node, the next visited node is uniquely determined. We can therefore think of such nodes as being ``internal'' to the computation: their semantics is predefined and cannot be altered by the context in which the term appears. If we want to extract the essence of the computation from a traversal, a natural way to proceed thus consists in keeping only occurrences of nodes that are hereditarily enabled by the root:
 \begin{definition}
-The \defname{core of a traversal} $t$, written $t\filter \theroot$, is defined as $t\filter V^{\theroot \enable}$ (\ie, the subsequence of $t$ consisting of the occurrences of nodes that are hereditarily enabled by the root $\theroot$ of the computation tree). The set of traversal cores of $M$ is denoted by $\travset(M)^{\filter \theroot}$:
+The \defname{core of a traversal} $t$, written $t\filter \theroot$, is defined as $t\filter \Nodes^{\theroot \enable}$ (\ie, the subsequence of $t$ consisting of the occurrences of nodes that are hereditarily enabled by the root $\theroot$ of the computation tree). The set of traversal cores of $M$ is denoted by $\travset(M)^{\filter \theroot}$:
 $$\travset(M)^{\filter \theroot} \defeq \{ t \filter \theroot \ :\  t  \in \travset(M) \} \enspace . $$
 \end{definition}
 
@@ -1035,7 +1031,7 @@ $$ \Pstr[0.7cm]{t \filter \lambda f z = (n0){\lambda f z} \cdot (n1-n0){f}\cdot 
     \item The root occurs at most once in a traversal, therefore if $t$ is a non-empty traversal then its core is given by $t\filter r$ where $r$ denotes the only occurrence of $\theroot$ in $t$. Thus we have:
         $$\travset(M)^{\filter \theroot} = \{ t \filter r\ :\  t  \in \travset(M) \hbox{ and $r$ is the only occurrence of $\theroot$ in $t$}\} \enspace . $$
 
-    \item Since @-nodes and $\Sigma$-constants do not have pointers, the traversal cores contains only nodes in $V_\lambda \union V_{\sf var}$.
+    \item Since @-nodes and $\Sigma$-constants do not have pointers, the traversal cores contains only nodes in $\Nodes_\lambda \union \Nodes_{\sf var}$.
 \end{itemize}
 \end{remark}
 
@@ -1109,15 +1105,15 @@ For every non-empty traversal $t = t' \cdot t^\omega$ in $\travset(M)$:
 \begin{align*}
 (t-@)+@ = \left\{
             \begin{array}{ll}
-              t, & \hbox{if $t^\omega \not\in V_@$\ ;} \\
-              t', & \hbox{if $t^\omega \in V_@$\ ;}
+              t, & \hbox{if $t^\omega \not\in \Nodes_@$\ ;} \\
+              t', & \hbox{if $t^\omega \in \Nodes_@$\ ;}
             \end{array}
           \right.
 \\
 (t-\Sigma)+\Sigma = \left\{
             \begin{array}{ll}
-              t, & \hbox{if $t^\omega \not\in V_\Sigma$\ ;} \\
-              t', & \hbox{if $t^\omega \in V_\Sigma$\enspace .}
+              t, & \hbox{if $t^\omega \not\in \Nodes_Sigma$\ ;} \\
+              t', & \hbox{if $t^\omega \in \Nodes_Sigma$\enspace .}
             \end{array}
           \right.
 \end{align*}
@@ -1158,7 +1154,7 @@ nodes are hereditarily enabled by $\theroot$ and we have $\travset(M) =
 
 \begin{lemma}
 \label{lem:he_proj_root_is_hj_proj_r} For every traversal
-$t$ we have  $t^\star\filter V^{\theroot\enable} = t\filter \theroot$.
+$t$ we have  $t^\star\filter \Nodes^{\theroot\enable} = t\filter \theroot$.
 \end{lemma}
 \begin{proof}
  This is because nodes removed by the operation $\_^\star$ are not hereditarily enabled by the root of the tree.
@@ -1166,26 +1162,26 @@ $t$ we have  $t^\star\filter V^{\theroot\enable} = t\filter \theroot$.
 
 
 The notion of P-view extends naturally to sequences of the form $t^\star$: it is defined by the same induction as for P-views of traversals. It is then easy to check
-that if $t^\omega$ is not in $L_@ \union L_\Sigma$ then the P-view
+that if $t^\omega$ is not in $\LNodes_@\union \LNodes_\Sigma$ then the P-view
 of $t^\star$ is obtained from $\pview{t}$ by keeping only the non
 @/$\Sigma$-nodes:
 \begin{equation}
- \pview{t^\star} = \pview{t} \setminus (V_@ \union V_\Sigma) \enspace . \label{eqn:pview_tstar}
+ \pview{t^\star} = \pview{t} \setminus (\Nodes_@ \union \Nodes_Sigma) \enspace . \label{eqn:pview_tstar}
 \end{equation}
 
 We define a projection operation for sequences of the form $t^\star$
 as follows:
 \begin{definition}
 \label{def:subterm_trav_projection}
-  Let $t$ be a traversal such that $t^\omega\not\in L_@ \union L_\Sigma$ and $r_0$ be an occurrence of some
-lambda-node $n$. Then the projection $t^\star \filter V^{(n)}$ is
+  Let $t$ be a traversal such that $t^\omega\not\in \LNodes_@\union \LNodes_\Sigma$ and $r_0$ be an occurrence of some
+lambda-node $n$. Then the projection $t^\star \filter \Nodes^{(n)}$ is
 defined as the subsequence of $t^\star$ consisting of nodes of
-$V^{(n)}$ only. If a variable node loses its pointer in $t^\star
-\filter V^{(n)}$ then its justifier is reassigned to the only
+$\Nodes^{(n)}$ only. If a variable node loses its pointer in $t^\star
+\filter \Nodes^{(n)}$ then its justifier is reassigned to the only
 occurrence of $n$ in $\pview{t^\star}$.
 \end{definition}
 Note that this operation is well-defined. Indeed if a variable $x$
-loses its pointer in $t^\star \filter V^{(n)}$ then it means that
+loses its pointer in $t^\star \filter \Nodes^{(n)}$ then it means that
 $x$ is free in $M^{(n)}$. But then $n$ must occur in the path to
 the root $\theroot$ which is precisely $\pview{t_{\prefixof x}}$.
 Thus by (\ref{eqn:pview_tstar}), $n$ must occur in
@@ -1227,7 +1223,7 @@ $t\filterplus r_0$ then it is reassigned to $r_0$.
 \end{compactitem}
 \end{definition}
 
-We call this transformation the \emph{subterm projection with respect to a node occurrence} because it keeps only nodes that appear in the sub-tree rooted at some reference node. If $n_0$ is an occurrence of a lambda node $n \in N_\lambda$ then we say that $t \filterplus n_0$ a \defname{sub-traversal of the
+We call this transformation the \emph{subterm projection with respect to a node occurrence} because it keeps only nodes that appear in the sub-tree rooted at some reference node. If $n_0$ is an occurrence of a lambda node $n \in \INodes_\lambda$ then we say that $t \filterplus n_0$ a \defname{sub-traversal of the
 computation tree} $\tau(M)$. This name is suggestive of the
 forthcoming Proposition \ref{prop:trav_projection} stating that $t
 \filterplus n_0$ is a traversal of the sub-computation tree of
@@ -1251,23 +1247,21 @@ $t\filterplus r_0$:
 \label{lem:ifin_projplus_so_does_justifier} Let $t$ be a traversal
 and  $r_0$ be an occurrence of a lambda node $r'$ in $t$.
 \begin{enumerate}[(a)]
-  \item Suppose that \Pstr[0.5cm]{t = \ldots (m){m} \ldots (n-m){n}} with $n \in N_\lambda \union L_@ \union L_\Sigma \union L_{\sf
-var}$ and $n \neq r_0$. Then $n$ appears in $t\filterplus r_0$ if
+  \item Suppose that \Pstr[0.5cm]{t = \ldots (m){m} \ldots (n-m){n}} with $n \in \INodes_\lambda \union \LNodes_@\union \LNodes_\Sigma \union \LNodes_{\sf var}$ and $n \neq r_0$. Then $n$ appears in $t\filterplus r_0$ if
 and only if $m$ appears in $t\filterplus r_0$.
 
-  \item Suppose that $t = \ldots \cdot n$ where $n\in N_{\sf var}\union N_@\union
-N_\Sigma\union L_\lambda$.
+  \item Suppose that $t = \ldots \cdot n$ where $n\in \INodes_{\sf var}\union \INodes_@\union
+\INodes_\Sigma\union \LNodes_\lambda$.
     Then $n$ appears in $t\filterplus r_0$ if and only if the
     last lambda node in $\pview{t}$ does.
 
-    \item Suppose that \Pstr[0.4cm]{t = \ldots (m){m} \ldots (vm-m){v_m}} with $v_m \in L = L_\lambda \union L_@ \union L_\Sigma \union L_{\sf
-var}$. Then $v_m$ appears in $t\filterplus r_0$ if and only if
+    \item Suppose that \Pstr[0.4cm]{t = \ldots (m){m} \ldots (vm-m){v_m}} with $v_m \in \LNodes = \LNodes_\lambda \union \LNodes_@ \union \LNodes_\Sigma \union \LNodes_{\sf var}$. Then $v_m$ appears in $t\filterplus r_0$ if and only if
 $m$ does.
 \end{enumerate}
 \end{lemma}
 \begin{proof} (a) holds by definition of $t\filterplus r_0$. (b) is proved by induction on $t$: It follows easily from the fact that in the definition of $t\filterplus r_0$, the inductive cases follow those from the definition of traversal P-views.
-(c) If $v_m \in L_@ \union L_\Sigma \union L_{\sf var}$ then it
-falls back to (a). Otherwise $v_m \in L_\lambda$ and by (b), $v_m$
+(c) If $v_m \in \LNodes_@\union \LNodes_\Sigma \union \LNodes_{\sf var}$ then it
+falls back to (a). Otherwise $v_m \in \LNodes_\lambda$ and by (b), $v_m$
 appears in $t\filterplus r_0$ if and only if the last lambda node in
 $\pview{t}$ does. But the last node in $\pview{t}$ is necessarily
 $m$ (since $v_m$ is necessarily visited with a copy-cat rule).
@@ -1294,7 +1288,7 @@ $n$.
 
 \begin{lemma}[P-view Projection for traversals]
 \label{lem:pviewproj_traversal} Let $t$ be a traversal and
-$r_0$ be an occurrence in $t$ of a lambda node $r' \in N_\lambda$. Then:
+$r_0$ be an occurrence in $t$ of a lambda node $r' \in \INodes_\lambda$. Then:
 \begin{itemize}
 \item[(i)] If $t^\omega$ appears in $t\filterplus r_0$ then:
     \begin{itemize}
@@ -1327,10 +1321,10 @@ Thus $m$ occurs before $r_0$ in the P-view $\pview{t}$. In other words, $r_0$ li
 $n$ to its binder $m$. Consequently, $n$ is a free variable node in
 $\tau(M^{(r')})$.
 
-(ii) The case $n\not\in  N_{\sf var}$ is handled by Lemma
+(ii) The case $n\not\in  \INodes_{\sf var}$ is handled by Lemma
 \ref{lem:ifin_projplus_so_does_justifier}(a) and (c).
 
-Suppose that $n\in  N_{\sf var}$. If $n$ appears in $t\filterplus r_0$ then by
+Suppose that $n\in  \INodes_{\sf var}$. If $n$ appears in $t\filterplus r_0$ then by
 (i) all the nodes occurring in $\pview{t}$ up to $r_0$ appear in
 $t\filterplus r_0$. By P-visibility, $m$ appears in $\pview{t}$ and
 since $r_0$ precedes it by assumption, $m$ also appears in
@@ -1342,9 +1336,9 @@ $t\filterplus r_0$, $x$ must also appear in $t\filterplus r_0$.
 
 \begin{lemma}
 \label{lem:insubterm_equ_inprojplus}
-   Let $t \in \travset(M)$ such that $t^\omega \not\in L_\lambda$. Let $r'$ be some lambda node in $N_\lambda$.
+   Let $t \in \travset(M)$ such that $t^\omega \not\in \LNodes_\lambda$. Let $r'$ be some lambda node in $\INodes_\lambda$.
 
-   The node $t^\omega$ belongs to the subtree of $\tau(M)$ rooted at $r'$ (\ie, $t^\omega \in V^{(r')}$) if and only if
+   The node $t^\omega$ belongs to the subtree of $\tau(M)$ rooted at $r'$ (\ie, $t^\omega \in \Nodes^{(r')}$) if and only if
    $t^\omega$ appears in $t\filterplus r_0$ for some occurrence $r_0$ of $r'$ in $t$.
 \end{lemma}
 
@@ -1364,25 +1358,25 @@ tree $\tau(M)$. Consequently, $t^\omega$ necessarily belongs to the subtree of $
 \begin{lemma}
 \label{lem:intfilterstar_iff_hjintstarfiltersubtree}
  Let $t$ be a traversal and $r_0$ be an occurrence in $t$ of some lambda node $r'$. Then an
-occurrence $n \not\in V_@ \union V_\Sigma$ of $t$ is hereditarily justified by $n_0$ in $t^\star\filter V^{(r')}$ if and only if $n$ appears in $t\filterplus r_0$.
+occurrence $n \not\in \Nodes_@ \union \Nodes_Sigma$ of $t$ is hereditarily justified by $n_0$ in $t^\star\filter \Nodes^{(r')}$ if and only if $n$ appears in $t\filterplus r_0$.
 \end{lemma}
 \begin{proof}
 We proceed by induction on $t_{\prefixof n}$.
 If $n=r_0$ or if $r_0$ does not occur in $t_{\prefixof n}$ then
 the result holds trivially. Suppose that $r_0$ occurs in $t_{<n}$.
 Let $m$ be $n$'s justifier in $t$. We do a case analysis on $n$.
-The case $n\in L_@ \union L_\Sigma \union N_@ \union N_\Sigma$
+The case $n\in \LNodes_@\union \LNodes_\Sigma \union \INodes_@ \union \INodes_\Sigma$
 is excluded by assumption.
 
-Suppose $n \in L_\lambda \union L_{\sf var} \union N_\lambda$ then
+Suppose $n \in \LNodes_\lambda \union \LNodes_{\sf var} \union \INodes_\lambda$ then
 \begin{align*}
 \mbox{$n$ appears in $t\filterplus r_0$} &\iff \mbox{$m$ appears in $t\filterplus r_0$} & \mbox{by Lemma
 \ref{lem:ifin_projplus_so_does_justifier}(a)} \\
-&\iff \mbox{$m$ her.\ just.\ by $n_0$ in $t^\star\filter V^{(r')}$} & \mbox{by I.H.\ on $t_{\prefixof m}$} \\
-&\iff \mbox{$n$ her.\ just.\ by $n_0$ in $t^\star\filter V^{(r')}$} & \mbox{since $m$ is $n$'s parent in $\tau(M^{(r')})$.}
+&\iff \mbox{$m$ her.\ just.\ by $n_0$ in $t^\star\filter \Nodes^{(r')}$} & \mbox{by I.H.\ on $t_{\prefixof m}$} \\
+&\iff \mbox{$n$ her.\ just.\ by $n_0$ in $t^\star\filter \Nodes^{(r')}$} & \mbox{since $m$ is $n$'s parent in $\tau(M^{(r')})$.}
 \end{align*}
 
-Suppose that $n \in N_{\sf var}$ then
+Suppose that $n \in \INodes_{\sf var}$ then
 \begin{align*}
 \mbox{$n$ appears in $t\filterplus r_0$} &\iff \parbox{11cm}{$r_0$ appears in $\pview{t}$ \hfill
 \quad by Lemma \ref{lem:insubterm_equ_inprojplus} and \ref{lem:pviewproj_traversal}(i)} \\
@@ -1395,30 +1389,30 @@ Suppose that $n \in N_{\sf var}$ then
 &\iff \left\{
         \begin{array}{l}
           \parbox{11cm}{$m$ appears in $t\filterplus r_0$ \hfill by Lemma \ref{lem:pviewproj_traversal}(i)} \\
-          \parbox{11cm}{or $n$ points to $r_0$ in $t^\star\filter V^{(r')}$ \hfill by def.\ of $\_ \filter V^{(r')}$}
+          \parbox{11cm}{or $n$ points to $r_0$ in $t^\star\filter \Nodes^{(r')}$ \hfill by def.\ of $\_ \filter \Nodes^{(r')}$}
         \end{array}
       \right. \\
 &\iff \left\{
         \begin{array}{l}
-          \parbox{11cm}{$m$ her.\ just.\ by $n_0$ in $t^\star\filter V^{(r')}$ \hfill by I.H.\ on $t_{\prefixof m}$} \\
-          \hbox{or $n$ points to $r_0$ in $t^\star\filter V^{(r')}$}
+          \parbox{11cm}{$m$ her.\ just.\ by $n_0$ in $t^\star\filter \Nodes^{(r')}$ \hfill by I.H.\ on $t_{\prefixof m}$} \\
+          \hbox{or $n$ points to $r_0$ in $t^\star\filter \Nodes^{(r')}$}
         \end{array}
       \right. \\
 &\iff \left\{
         \begin{array}{l}
-          \parbox{11cm}{$n$ her.\ just.\ by $n_0$ in $t^\star\filter V^{(r')}$ \hfill $n$ is in $V^{(r')}$ iff its binder $m$ is} \\
-          \hbox{or $n$ points to $r_0$ in $t^\star\filter V^{(r')}$}
+          \parbox{11cm}{$n$ her.\ just.\ by $n_0$ in $t^\star\filter \Nodes^{(r')}$ \hfill $n$ is in $\Nodes^{(r')}$ iff its binder $m$ is} \\
+          \hbox{or $n$ points to $r_0$ in $t^\star\filter \Nodes^{(r')}$}
         \end{array}
       \right.\\
-&\iff \hbox{$n$ is her.\ just.\ by $n_0$ in $t^\star\filter V^{(r')}$ \enspace .}  \qedhere
+&\iff \hbox{$n$ is her.\ just.\ by $n_0$ in $t^\star\filter \Nodes^{(r')}$ \enspace .}  \qedhere
 \end{align*}
 \end{proof}
 
 \begin{lemma}
 \label{lem:thread_projplus} Take a traversal $t$.  Let $r'$ be a
-node in $N_\lambda$ and $r_0$ an occurrence of $r'$ in $t$. Suppose
+node in $\INodes_\lambda$ and $r_0$ an occurrence of $r'$ in $t$. Suppose
 that $t^\omega$ appears in $t\filterplus r_0$ and that the thread of
-$t^\omega$ is initiated by $\alpha \in N_@ \union N_\Sigma$.
+$t^\omega$ is initiated by $\alpha \in \INodes_@ \union \INodes_\Sigma$.
 
 (i) If $r_0$ precedes $\alpha$ in $t$ then all the nodes occurring in the thread appear in $t\filterplus r_0$.
 
@@ -1435,14 +1429,14 @@ Let $q$ be the first node in $t$ that hereditarily justifies
 $t^\omega$ in $t$ and that appears in $t\filterplus r_0$.
 
 
-If $q \in N_\lambda$ then necessarily $q = r_0$. Otherwise by definition of $\_\filterplus r_0$,
+If $q \in \INodes_\lambda$ then necessarily $q = r_0$. Otherwise by definition of $\_\filterplus r_0$,
 $q$'s justifier also appears in $t\filterplus r_0$ which contradicts
 the definition of $q$. Hence the result holds trivially.
 
-If $q\in N_@\union N_\Sigma$ then necessarily $q=\alpha$, since
-links always point inside the current thread and since a thread contains by definition only one node in $N_@\union N_\Sigma$. But $\alpha$ precedes $r_0$ therefore $\alpha$ cannot be hereditarily justified by $r_0$ hence this case is not possible.
+If $q\in \INodes_@\union \INodes_\Sigma$ then necessarily $q=\alpha$, since
+links always point inside the current thread and since a thread contains by definition only one node in $\INodes_@\union \INodes_\Sigma$. But $\alpha$ precedes $r_0$ therefore $\alpha$ cannot be hereditarily justified by $r_0$ hence this case is not possible.
 
-If $q \in N_{\sf var}$ then by Lemma \ref{lem:pviewproj_traversal}(i.d),
+If $q \in \INodes_{\sf var}$ then by Lemma \ref{lem:pviewproj_traversal}(i.d),
 $q$ is an free variable in $\tau(M^{(r')})$ and therefore
 it is enabled by $r'$ in $\tau(M^{(r')})$. Hence since $t^\omega$ is hereditarily justified by $r_0$, it must be hereditarily enabled
 by $r'$ in $\tau(M^{(r')})$.
@@ -1453,7 +1447,7 @@ In this paragraph we will spend some time proving the following Proposition:
 \begin{proposition}[O-view projection for traversals]
 \label{prop:oview_trav_projection}
    Let $t$ be a traversal of $\travset(M)$ such that its last node
-   appears in $t \filterplus r_0$ for some occurrence $r_0$ in $t$ of a lambda node $r'$ in $N_\lambda$.
+   appears in $t \filterplus r_0$ for some occurrence $r_0$ in $t$ of a lambda node $r'$ in $\INodes_\lambda$.
    Then $ \oview{t}_M\filterplus r_0 \subseqof \oview{t\filterplus r_0}_{M^{(r')}}$.
 \end{proposition}
 One may recognize that this result bears resemblance with another
@@ -1554,8 +1548,8 @@ $$\begin{array}{rcll}
 Inserting a dummy node $\diamond$ at the beginning of the traversal changes the parity of the alternation between P-nodes and O-nodes.
 Thus the role of O and P is interchanged for traversal extensions. This explains why the O-e-view is calculated from the P-view.
 
-For the P-e-view, the definition is almost the same as the traversal O-view $\oview{\_}$ except that the computation does not stop when reaching a node in $N_@ \union N_\Sigma$---this is sometimes referred as the \emphind{long O-view} \cite{Harmer2005}. (The O-view contains only one thread whereas the long-O-view may contain several; the O-view is a suffix of the long O-view.)
-This is possible because occurrences of nodes from $N_@ \union N_\Sigma$ in a traversal extension all have a justification pointer.
+For the P-e-view, the definition is almost the same as the traversal O-view $\oview{\_}$ except that the computation does not stop when reaching a node in $\INodes_@ \union \INodes_\Sigma$---this is sometimes referred as the \emphind{long O-view} \cite{Harmer2005}. (The O-view contains only one thread whereas the long-O-view may contain several; the O-view is a suffix of the long O-view.)
+This is possible because occurrences of nodes from $\INodes_@ \union \INodes_\Sigma$ in a traversal extension all have a justification pointer.
 The O-view of $t$ is a suffix of its P-e-view:
 \begin{equation}
   \peview{t} = w \cdot \oview{t} \quad \mbox{for some sequence $w$.} \label{eqn:oview_suffix_preview}
@@ -1569,8 +1563,8 @@ Correspondence Theorem.) The following analogy is made:
 {\bf Traversal setting} & {\bf Game-semantic setting} \\
 \hline
 Extended traversal $\extension{t}$ & Play $s$ \\
-Nodes ($N_{\sf var} \union N_\Sigma \union N_@ \union L_\lambda \union \{\diamond\}$) & O-moves $\omove$ \\
-O-nodes ($L_{\sf var} \union L_\Sigma \union L_@ \union N_\lambda$) & P-moves $\pmove$\\
+Nodes ($\INodes_{\sf var} \union \INodes_\Sigma \union \INodes_@ \union \LNodes_\lambda \union \{\diamond\}$) & O-moves $\omove$ \\
+O-nodes ($\LNodes_{\sf var} \union \LNodes_\Sigma \union \LNodes_@\union \INodes_\lambda$) & P-moves $\pmove$\\
 P-view $\peview{\extension{t}}$  & P-view $\pview{s}$\\
 O-view $\oeview{\extension{t}}$  & O-view $\oview{s}$\\
 Occurrence $n$ appearing in $t\filterplus r_0$ & Occurrence $n \in B$ \\
@@ -1680,7 +1674,7 @@ we do a case analysis:
             \peview{\extension{t}} \filterplus r_0
                 &=  \peview{\extension{t'}} \filterplus r_0 \cdot n  & \parbox[t]{7cm}{(\raggedleft P-view for extended justified\\sequences of nodes of $M$)} \\
                 &\subseqof  \peview{\extension{t'} \filterplus  r_0} \cdot n            & (\mbox{induction hypothesis}) \\
-                &=  \peview{\extension{t'} \filterplus  r_0 \cdot n} & \parbox[t]{7cm}{\raggedleft (P-view for extended justified sequences of nodes of $M^{(r')}$, $n$ belongs to $V^{(r')}$
+                &=  \peview{\extension{t'} \filterplus  r_0 \cdot n} & \parbox[t]{7cm}{\raggedleft (P-view for extended justified sequences of nodes of $M^{(r')}$, $n$ belongs to $\Nodes^{(r')}$
                 by Lemma \ref{lem:insubterm_equ_inprojplus})} \\
                 &=  \peview{\extension{t' \cdot n} \filterplus  r_0  }   & (\mbox{$n$ occurs in $t\filterplus r_0$}) \\
                 &= \peview{\extension{t} \filterplus  r_0  }     & (\mbox{definition of } t).
@@ -1734,7 +1728,7 @@ we do a case analysis:
         &= \pstr[0.4cm]{ \peview{\extension{t'}\filterplus r_0 \cdot \nd(m){m}} \cdot \nd(lmd-m,45){n} }
                 & \mbox{($m$ appears in $t \filterplus r_0$)} \\
         &= \peview{ \Pstr[0.4cm]{\extension{t'} \filterplus r_0 \cdot (m){m} \cdot {(\extension{u} \filterplus r_0)} \cdot (lmd-m,30){n}}}
-                & \parbox[t]{6cm}{\raggedleft(P-eview in $M^{(r')}$, nodes in $m\cdot (\extension{u} \filterplus r_0) \cdot n$ are all in $V^{(r')}$)} \\
+                & \parbox[t]{6cm}{\raggedleft(P-eview in $M^{(r')}$, nodes in $m\cdot (\extension{u} \filterplus r_0) \cdot n$ are all in $\Nodes^{(r')}$)} \\
         &= \peview{ (\Pstr{\extension{t'} \cdot (m){m} \cdot \extension{u} \cdot (lmd-m,35){n}}) \filterplus r_0 }
                 & \mbox{($m$ and $n$ both appear in } t \filterplus r_0) \\
         &= \peview{ \extension{t} \filterplus r_0 }
@@ -1925,7 +1919,7 @@ We now show an important result that relies on all the lemmas and propositions f
 \begin{proposition}[Subterm projections are sub-traversals]
     \label{prop:trav_projection}
     Let $t \in \travset(M)$. For every occurrence $r_0$ in $t$ of some lambda node
-    $r'\in N_\lambda$ we have $t\filterplus r_0 \in \travset(M^{(r')})$.
+    $r'\in \INodes_\lambda$ we have $t\filterplus r_0 \in \travset(M^{(r')})$.
 \end{proposition}
 \begin{proof}
     We proceed by induction on the traversal rules. The base cases \rulenamet{Empty} and
@@ -1943,7 +1937,7 @@ We now show an important result that relies on all the lemmas and propositions f
 
         We have $t \filterplus r_0 = (t'\filterplus r_0) \cdot n$, but in order to state that $u = t \filterplus r_0$ it remains to prove that $n$ has the same link in $t \filterplus r_0$ and in $u$.
 
-        Suppose $n \in N_@ \union N_\Sigma$ then $n$ has no justifier in both $u$ and $t\filterplus r_0$. Otherwise $n \in N_{\sf var}$. Let $m_u$ denote the occurrence in $t$ of $n$'s justifier in $u$, $m_t$ for the occurrence in $t$ of $n$'s justifier in $t$, and $m$ for the occurrence in $t$ of $n$'s justifier in $t \filterplus r_0$. We want to show that $m_u = m$.
+        Suppose $n \in \INodes_@ \union \INodes_\Sigma$ then $n$ has no justifier in both $u$ and $t\filterplus r_0$. Otherwise $n \in \INodes_{\sf var}$. Let $m_u$ denote the occurrence in $t$ of $n$'s justifier in $u$, $m_t$ for the occurrence in $t$ of $n$'s justifier in $t$, and $m$ for the occurrence in $t$ of $n$'s justifier in $t \filterplus r_0$. We want to show that $m_u = m$.
         By the rule \rulenamet{Var}, $m_u$ is defined as the only occurrence of $n$'s enabler in $\pview{t'\filterplus r_0}$ and $m_t$ is the only occurrence of $n$'s enabler in $\pview{t'}$.
 
         If $r_0$ occurs before $m_t$ then by Lemma \ref{lem:pviewproj_traversal}(ii), $m_t$ appears in $t \filterplus r_0$ thus by definition of $\_ \filterplus$ we have $m = m_t$. Moreover, since $m_t$ appears in $t\filterplus r_0$, it must appear
@@ -1995,7 +1989,7 @@ We now show an important result that relies on all the lemmas and propositions f
 
    \item \rulenamet{InputValue} Take \Pstr[0.4cm]{t =
     t_1 \cdot (x){x} \cdot t_2 \cdot (xv-x,38:v){v_x} } for some
-    $v \in \mathcal{D}$ where $x$ is the pending node in $t_1 \cdot x \cdot t_2$ and $x \in N_{\sf var}^{\theroot\enable}$.
+    $v \in \mathcal{D}$ where $x$ is the pending node in $t_1 \cdot x \cdot t_2$ and $x \in \INodes_{\sf var}^{\theroot\enable}$.
     Since $v_x$ appears in $t\filterplus r_0$, so does $x$ hence
     by Lemma \ref{lem:projplus_pendingnode}, $x$ is also the
     pending node in $(t_1 \cdot x \cdot t_2)\filterplus r_0$.
@@ -2004,7 +1998,7 @@ We now show an important result that relies on all the lemmas and propositions f
     Hence we can conclude using the I.H.\ and the rule
     \rulenamet{InputValue}.
 
-    \item \rulenamet{InputVar}  Take $t =  t' \cdot n$ where $n \in N_\lambda$ points to an occurrence of its parent node $y \in N_{\sf var}^{\theroot\enable}$ in $\oview{t}$.
+    \item \rulenamet{InputVar}  Take $t =  t' \cdot n$ where $n \in \INodes_\lambda$ points to an occurrence of its parent node $y \in \INodes_{\sf var}^{\theroot\enable}$ in $\oview{t}$.
     By Lemma \ref{lem:ifin_projplus_so_does_justifier}(a), $y$
     must also appear in $t\filterplus r_0$, therefore $y$ also
     occurs in $\oview{t\filterplus r_0} \subseqof
@@ -2016,7 +2010,7 @@ We now show an important result that relies on all the lemmas and propositions f
     Take \Pstr[0.7cm]{ t = t' \cdot (p){p} \cdot (lx){\lambda
         \overline{x}} \ldots (x-lx,30:i){x_i}  \cdot
         (letai-p,40:i){\lambda \overline{\eta_i}} } for some
-        variable $x_i$ in $N_{\sf var}^{@\enable}$.
+        variable $x_i$ in $\INodes_{\sf var}^{@\enable}$.
     If $\lambda \overline{\eta_i}$ is the occurrence $r_0$ then
     the traversal $t\filterplus r_0 = r_0$ can be formed using
     the rule \rulenamet{Root}.
@@ -2033,16 +2027,16 @@ We now show an important result that relies on all the lemmas and propositions f
     well as @ all appear in $t\filterplus r_0$. Moreover since @
     appear in $t\filterplus r_0$, it must be an occurrence of an
     application node that appear in the subtree rooted at $r'$
-    thus $@ \in N_{\sf var}^{r'\enable}$.  Hence we can use the
+    thus $@ \in \INodes_{\sf var}^{r'\enable}$.  Hence we can use the
     use the rule \rulenamet{Var} in $M^{(r')}$ to form the
     traversal $t \filterplus r_0$ of $M^{(r')}$.
 
     \item Suppose that @ precedes $r_0$ in $t$ then
     by Lemma \ref{lem:thread_projplus}(ii), $p$ is necessarily
-    an input variable node in $\tau(M^{(r')})$.  We have $p \in \oview{t} \filterplus r_0 \subseqof \oview{t\filterplus r_0}$ by Proposition \ref{prop:oview_trav_projection}. Furthermore we can easily check (by alternation and using the fact that if an occurrence in $N_\lambda \union L_{\sf var} \union L_@ \union L_\Sigma \union N_@ \union N_\Sigma$ appears in $t\filterplus r_0$ then so does its immediate successor) that the penultimate node in $t\filterplus r_0$ is necessarily in $N_{\sf var} \union L_\lambda$. Hence we can make use of the rule \rulenamet{InputVar} in $M^{(r')}$ (in its alternative form) to produce the traversal $t \filterplus r_0$ of $M^{(r')}$.
+    an input variable node in $\tau(M^{(r')})$.  We have $p \in \oview{t} \filterplus r_0 \subseqof \oview{t\filterplus r_0}$ by Proposition \ref{prop:oview_trav_projection}. Furthermore we can easily check (by alternation and using the fact that if an occurrence in $\INodes_\lambda \union \LNodes_{\sf var} \union \LNodes_@ \union \LNodes_\Sigma \union \INodes_@ \union \INodes_\Sigma$ appears in $t\filterplus r_0$ then so does its immediate successor) that the penultimate node in $t\filterplus r_0$ is necessarily in $\INodes_{\sf var} \union \LNodes_\lambda$. Hence we can make use of the rule \rulenamet{InputVar} in $M^{(r')}$ (in its alternative form) to produce the traversal $t \filterplus r_0$ of $M^{(r')}$.
     \end{compactitem}
 
-    \item \rulenamet{Value^{\lambda\mapsto{\sf var}}} Take \Pstr[0.8cm]{t = t' \cdot (y){y} \cdot (lmd){\lambda \overline{\xi}} \ldots (lmdv-lmd,30:v){v}_{\lambda \overline{\xi}}  \cdot (vy-y,50:v){v}_y } for some variable $y$ in $N_{\sf var}^{@\enable}$.
+    \item \rulenamet{Value^{\lambda\mapsto{\sf var}}} Take \Pstr[0.8cm]{t = t' \cdot (y){y} \cdot (lmd){\lambda \overline{\xi}} \ldots (lmdv-lmd,30:v){v}_{\lambda \overline{\xi}}  \cdot (vy-y,50:v){v}_y } for some variable $y$ in $\INodes_{\sf var}^{@\enable}$.
     The proof is similar to the previous case using the rule \rulenamet{InputValue} instead of \rulenamet{InputVar} in the second subcase.
 
     \item \rulenamet{\Sigma}/\rulenamet{\Sigma\mbox{\sf-var}} The proof is similar to the case \rulenamet{App} and \rulenamet{Var}.
@@ -2055,7 +2049,7 @@ The following Lemma will be useful to prove the Correspondence Theorem:
 \begin{lemma} \label{lem:tstarproj_eq_tprojplusstar} Let $t$ be a traversal and $r_0$ be an occurrence of a
 lambda node $r'$. We have
 \begin{equation*}
-(t\filterplus r_0)^\star = t^\star \filter V^{(r')} \filter r_0\enspace .
+(t\filterplus r_0)^\star = t^\star \filter \Nodes^{(r')} \filter r_0\enspace .
 \end{equation*}
 \end{lemma}
 \begin{proof}
@@ -2064,7 +2058,7 @@ traversal (of $\tau(M^{(r')})$) thus the expression ``$(t\filterplus
 r_0)^\star$'' is well-defined. We show the result by induction on
 $t$: It is true for the empty traversal. Take $t=t'\cdot n$.
 
-If $n$ belongs to $V_@ \union V_\Sigma$ then
+If $n$ belongs to $\Nodes_@ \union \Nodes_Sigma$ then
 \begin{align*}
 ((t' \cdot n) \filterplus n_0)^\star &= (t' \filterplus n_0)^\star \cdot
                 \left\{
@@ -2074,33 +2068,33 @@ If $n$ belongs to $V_@ \union V_\Sigma$ then
                   \end{array}
                 \right.
  \\
-\mbox{and } ((t' \cdot n)^\star \filter V^{(r')}) \filter n_0 &=
-(t'^\star \filter V^{(r')}) \filter n_0
+\mbox{and } ((t' \cdot n)^\star \filter \Nodes^{(r')}) \filter n_0 &=
+(t'^\star \filter \Nodes^{(r')}) \filter n_0
 \cdot
                 \left\{
                   \begin{array}{ll}
-                    n, & \hbox{if $n$ is her.\ just.\ by $n_0$ in $t^\star\filter V^{(r')}$;} \\
+                    n, & \hbox{if $n$ is her.\ just.\ by $n_0$ in $t^\star\filter \Nodes^{(r')}$;} \\
                     \epsilon, & \hbox{otherwise.}
                   \end{array}
                 \right.
 \end{align*}
-Since $t^\omega \not\in V_@ \union V_\Sigma$, by Lemma
+Since $t^\omega \not\in \Nodes_@ \union \Nodes_Sigma$, by Lemma
 \ref{lem:intfilterstar_iff_hjintstarfiltersubtree} we have that $n$
-is hereditarily justified by $n_0$ in $t^\star\filter V^{(r')}$ if and only if
+is hereditarily justified by $n_0$ in $t^\star\filter \Nodes^{(r')}$ if and only if
 $n$ appears in $t\filterplus n_0$. Hence we can conclude using the
 I.H.\ on $t'$.
 
 
-If $n$ does not belong to $V_@ \union V_\Sigma$ then
+If $n$ does not belong to $\Nodes_@ \union \Nodes_Sigma$ then
 \begin{align*}
 ((t' \cdot n) \filterplus n_0)^\star &= (t' \filterplus n_0)^\star \\
-&= (t'^\star \filter V^{(r')}) \filter n_0 & \mbox{by the I.H.\ on $t'$} \\
-&= ((t' \cdot n)^\star \filter V^{(r')}) \filter n_0  \qedhere
+&= (t'^\star \filter \Nodes^{(r')}) \filter n_0 & \mbox{by the I.H.\ on $t'$} \\
+&= ((t' \cdot n)^\star \filter \Nodes^{(r')}) \filter n_0  \qedhere
 \end{align*}
 \end{proof}
 
 Consequently, by Lemma \ref{lem:minus_at_plus_at}, if $t^\omega
-\not\in V_@ \union V_\Sigma$ then $t \filterplus r_0 =
+\not\in \Nodes_@ \union \Nodes_Sigma$ then $t \filterplus r_0 =
 (t^\star\filter r_0) +\Sigma+@$.
 
 
@@ -2134,8 +2128,8 @@ semantics:
 {\bf Traversal setting} & {\bf Game-semantic setting} \\
 \hline
 Traversal $t$ & Play $s$ \\
-O-Nodes ($ L_{\sf var} \union L_\Sigma \union L_@ \union N_\lambda$) & O-moves $\omove$ \\
-Nodes in $n \in N_{\sf var} \union N_\Sigma \union N_@ \union L_\lambda \union \{\diamond\}$ & P-moves $\pmove$\\
+O-Nodes ($ \LNodes_{\sf var} \union \LNodes_\Sigma \union \LNodes_@\union \INodes_\lambda$) & O-moves $\omove$ \\
+Nodes in $n \in \INodes_{\sf var} \union \INodes_\Sigma \union \INodes_@ \union \LNodes_\lambda \union \{\diamond\}$ & P-moves $\pmove$\\
 P-view $\pview{t}$  & P-view $\pview{s}$\\
 O-view $\oview{t}$  & O-view $\oview{s}$\\
 Occurrence $n$ her.\ just.\ by $r$ in $t$ & Occurrence $n \in B$ \\
@@ -2169,11 +2163,11 @@ We show the first equality by induction. The base case $t=\epsilon$ is trivial. 
 $\theroot$, an occurrence $n$ in $t$ is hereditarily justified by
 $r$ if and only if the corresponding node in $\tau(M)$ is
 hereditarily enabled by $\theroot$. Thus $t\filter r = t \filter
-N^{\theroot \enable}$. We do a case analysis on $t$'s last node:
+\INodes^{\theroot \enable}$. We do a case analysis on $t$'s last node:
 \begin{itemize}
-\item $t^\omega \in N_@$. This case does not happen since $M$ is $\beta$-normal.
+\item $t^\omega \in \INodes_@$. This case does not happen since $M$ is $\beta$-normal.
 
-\item $t = t' \cdot n$ with $n \in N_{\sf var} \union N_\Sigma$ then $t'^\omega$ is not a leaf (otherwise $n$ would also be a leaf by rule \rulenamet{Value}) thus we can use the I.H.\ on $t'$ which, by an easy calculation, gives the desired equality.
+\item $t = t' \cdot n$ with $n \in \INodes_{\sf var} \union \INodes_\Sigma$ then $t'^\omega$ is not a leaf (otherwise $n$ would also be a leaf by rule \rulenamet{Value}) thus we can use the I.H.\ on $t'$ which, by an easy calculation, gives the desired equality.
 %%%% DETAILS OF THE PROOF
 %    \begin{align*}
 %    \pview{t} \filter  r
@@ -2181,7 +2175,7 @@ N^{\theroot \enable}$. We do a case analysis on $t$'s last node:
 %        &= \pview{t'} \cdot n \filter  r  & (\mbox{P-view computation}) \\
 %        &= \pview{t'} \filter  r  \cdot (n \filter  r)            & (\mbox{def. of projection $\filter$}) \\
 %        &= \pview{?(t') \filter r} \cdot (n \filter  r)           & (\mbox{induction hypothesis}) \\
-%        &= \pview{?(t') \filter  r \cdot (n \filter  r) } & (\mbox{P-view computation, $n \in N_{\sf var} \union N_{\Sigma}$}) \\
+%        &= \pview{?(t') \filter  r \cdot (n \filter  r) } & (\mbox{P-view computation, $n \in \INodes_{\sf var} \union \INodes_{\Sigma}$}) \\
 %        &= \pview{(?(t') \cdot n ) \filter  r }           & (\mbox{def. of projection $\filter$}) \\
 %        &= \pview{?(t) \filter  r  }
 % & (\mbox{definition of } t).
@@ -2189,12 +2183,12 @@ N^{\theroot \enable}$. We do a case analysis on $t$'s last node:
 \end{itemize}
 Suppose that $t^\omega$ is a lambda node. There are three subcases:
 \begin{itemize}
-\item $t^\omega \in N^{@\enable}_\lambda$. Since the term is in $\beta$-normal form, there is no
+\item $t^\omega \in \INodes^{@\enable}_\lambda$. Since the term is in $\beta$-normal form, there is no
     @-node in $\tau(M)$ so the rules \rulenamet{App} and
     \rulenamet{Var} are unused, hence this case does not happen.
 
-\item $t^\omega \in N^{N_\Sigma\enable}_\lambda$. We have $t = \Pstr{t' \cdot (m){m} \cdot  u \cdot (lmd-m){n}}$ with $n\in N^{N_\Sigma
-    \enable}_\lambda$ and $m \in N_{\sf var} \union N_\Sigma$.
+\item $t^\omega \in \INodes^{\INodes_\Sigma\enable}_\lambda$. We have $t = \Pstr{t' \cdot (m){m} \cdot  u \cdot (lmd-m){n}}$ with $n\in \INodes^{\INodes_\Sigma
+    \enable}_\lambda$ and $m \in \INodes_{\sf var} \union \INodes_\Sigma$.
     The occurrence $n$ is necessarily visited with a
     \rulenamet{\Sigma}-rule. Since, by assumption, these rules
     are well-behaved we have $?(u) = \epsilon$. Hence:
@@ -2202,16 +2196,16 @@ Suppose that $t^\omega$ is a lambda node. There are three subcases:
         \pview{t} \filter  r
         &= \pview{\Pstr{t' \cdot (m){m} \cdot u \cdot (n-m){n}}} \filter  r  & (\mbox{def. of $t$})\\
         &= (\Pstr{\pview{t'} \cdot (m){m} \cdot (lmd-m){n}}) \filter  r & (\mbox{P-view computation}) \\
-        &= \pview{t'} \filter  r                & (m, n \not\in N^{\theroot \enable}) \\
+        &= \pview{t'} \filter  r                & (m, n \not\in \INodes^{\theroot \enable}) \\
         &= \pview{?(t') \filter  r }               & \mbox{(induction hypothesis)} \\
         &= \pview{ ?(\Pstr{t' \cdot (m){m} \cdot (lmd-m){n}}) \filter r }
-        & (m, n \not\in N^{\theroot \enable}) \\
+        & (m, n \not\in \INodes^{\theroot \enable}) \\
         &= \pview{ ?(\Pstr{t' \cdot (m){m} \cdot u \cdot (lmd-m){n}}) \filter r }
         & (?(u)=\epsilon) \\
         &= \pview{ ?(t) \filter r }                & \mbox{(since $u = \epsilon$).}
         \end{align*}
 
-\item $t^\omega \in N^{\theroot\enable}_\lambda$. If $t=r$ then the result holds trivially.
+\item $t^\omega \in \INodes^{\theroot\enable}_\lambda$. If $t=r$ then the result holds trivially.
 %%%% THE PREVIOUS CASE MUST BE REPLACED BY THE FOLLOWING COMMENTED LINES IF THE CALCULUS
 %%%% CONSIDERED ALLOWS THE USE OF THE TENSOR PRODUCT IN THE SYNTAX (in which case the traversals need to be redefined
 %%%% to allow the root to be visited several times).
@@ -2226,18 +2220,18 @@ Suppose that $t^\omega$ is a lambda node. There are three subcases:
 %    \end{align*}
 Otherwise $t =  \Pstr{t' \cdot (m){m} \cdot u \cdot
 (lmd-m){n}}$ for some $n\in
-    N^{\theroot \enable}_\lambda$. An easy calculation using the induction hypothesis on $t'\cdot m$ shows the desired equality.
+    \INodes^{\theroot \enable}_\lambda$. An easy calculation using the induction hypothesis on $t'\cdot m$ shows the desired equality.
 %%%% DETAILS OF THE PROOF:
 %%        \begin{align*}
 %%        \pview{t} \filter  r
 %%        &= \pview{\Pstr{t' \cdot (m){m} \cdot u \cdot (n-m){n}}} \filter  r & (\mbox{definition of } t)\\
 %%        &= (\Pstr{\pview{t'} \cdot (m){m} \cdot  (lmd-m){n}} ) \filter  r & (\mbox{P-view computation}) \\
-%%        &= \Pstr{\pview{t'} \filter  r \cdot (m){m} \cdot  (lmd-m){n}} & (m, n \in N^{\theroot \enable}) \\
+%%        &= \Pstr{\pview{t'} \filter  r \cdot (m){m} \cdot  (lmd-m){n}} & (m, n \in \INodes^{\theroot \enable}) \\
 %%        &= \pview{?(t')\filter r}  \cdot \Pstr{(m){m} \cdot  (lmd-m){n}} & \mbox{(induction hypothesis)} \\
 %%        &= \pview{ ?(t') \filter r \cdot \Pstr{(m){m} \cdot {(?(u) \filter r)} \cdot (lmd-m,20){n}}}
 %%& (\mbox{P-view computation}) \\
 %%        &= \pview{ (?(t') \cdot \Pstr{(m){m} \cdot\ {?(u)} \cdot (lmd-m,20){n}}) \filter r }
-%%& (m, n \in N^{\theroot \enable}) \\
+%%& (m, n \in \INodes^{\theroot \enable}) \\
 %%        &= \pview{ ?(t' \cdot \Pstr{(m){m} \cdot u \cdot (lmd-m){n}}) \filter r }
 %%& \mbox{($m$ and $n$ are unanswered)} \\
 %%        &= \pview{ ?(t) \filter r }                & \mbox{(def. of $t$).}
@@ -2941,11 +2935,11 @@ computation trees. We assume that a term $\Gamma \entail M : T$ in $\eta$-long
 normal form is given.
 
 \begin{notations} We suppose that computation tree $\tau(M)$ is given by
-a pair $(V,E)$ where $V$ is the set of vertices and $E \subseteq
-V \times V$ is the parent-child relation. We have $V = N \union L$
-where $N$ and $L$ are the set of nodes and value-leaves respectively.
+a pair $(\Nodes,E)$ where $\Nodes$ is the set of nodes and $E \subseteq
+\Nodes \times \Nodes$ is the parent-child relation. We have $\Nodes = \INodes \union \LNodes$
+where $\INodes$ and $\LNodes$ are the set of inner nodes and leaf nodes respectively.
 Let $\mathcal{D}$ be the set of values of the base type $o$. If $n$
-is a node in $N$ then the value-leaves attached to the node $n$ are
+is an inner node in $\INodes$ then the value-leaves attached to the node $n$ are
 written $v_n$ where $v$ ranges in $\mathcal{D}$. Similarly, if $q$
 is a question in $A$ then the answer moves enabled by $q$ are
 written $v_q$ where $v$ ranges in $\mathcal{D}$.
@@ -2955,19 +2949,19 @@ written $v_q$ where $v$ ranges in $\mathcal{D}$.
 \label{def:psi mapping}
 
     \begin{itemize}
-    \item Let $n$ be a node in $N_\lambda \union N_{\sf var}$ and $q$ be a question move of some game $A$
+    \item Let $n$ be a node in $\INodes_\lambda \union \INodes_{\sf var}$ and $q$ be a question move of some game $A$
 such that $n$ and $q$ are of type $(A_1,\ldots,A_p,o)$ for some
 $p\geq 0$. Let $\{ q^1, \ldots, q^p \}$ (resp.\  $\{ v_q \ | \ v \in \mathcal{D} \}$)
 be the set of question-moves (resp.\ answer-moves) enabled by $q$ in $A$ (each $q^i$ being of type $A_i$).
 
-We define the function $\psi^{n,q}_A$ from $V^{n \enable}$---
+We define the function $\psi^{n,q}_A$ from $\Nodes^{n \enable}$---
 nodes that are hereditarily enabled by $n$---to moves of $A$ as:
         \begin{eqnarray*}
         \psi^{n,q}_A &=& \{ n \mapsto q \} \union  \{ v_n \mapsto v_q \ | \ v \in \mathcal{D} \}\\
          &&\union \left\{
                         \begin{array}{ll}
-                          \Union_{m \in N_{\sf var} | n \enable_i m} \psi^{m, q^i}_A, & \hbox{if $n\in N_{\lambda}$\ ;} \\
-                          \Union_{i=1..p} \psi^{n.i, q^i}_A, & \hbox{if $n\in N_{\sf var}$\enspace .}
+                          \Union_{m \in \INodes_{\sf var} | n \enable_i m} \psi^{m, q^i}_A, & \hbox{if $n\in \INodes_{\lambda}$\ ;} \\
+                          \Union_{i=1..p} \psi^{n.i, q^i}_A, & \hbox{if $n\in \INodes_{\sf var}$\enspace .}
                         \end{array}
                       \right.
         \end{eqnarray*}
@@ -2982,13 +2976,13 @@ nodes that are hereditarily enabled by $n$---to moves of $A$ as:
     v_q \ | \ v \in \mathcal{D} \}$ where each $q^i$ is of type
     $A_i$ and $q_{x_j}$ of type $X_j$.
 
-    We define $\psi_M : V^{\theroot\enable} \rightarrow
+    We define $\psi_M : \Nodes^{\theroot\enable} \rightarrow
     \sem{\Gamma\gamear T}$ (or just $\psi$ if there is
     no ambiguity) as:
     \begin{eqnarray*}
      \psi_M = && \{ r \mapsto q_0 \}  \union  \{ v_r \mapsto v_{q_0} \ | \ v \in \mathcal{D} \}\\
-& \union& \Union_{n \in N_{\sf var} | \theroot\enable_i n} \psi^{n, q^i}_\sem{\Gamma\gamear T} \\
-& \union& \Union_{n \in N_{\sf fv} | n \mbox{ \small labelled } x_j, j \in \{ 1..k \} } \psi^{n, q_{x_j}}_\sem{\Gamma\gamear T} \enspace .
+& \union& \Union_{n \in \INodes_{\sf var} | \theroot\enable_i n} \psi^{n, q^i}_\sem{\Gamma\gamear T} \\
+& \union& \Union_{n \in \INodes_{\sf fv} | n \mbox{ \small labelled } x_j, j \in \{ 1..k \} } \psi^{n, q_{x_j}}_\sem{\Gamma\gamear T} \enspace .
     \end{eqnarray*}
     \end{itemize}
 \end{definition}
@@ -3004,7 +2998,7 @@ The construction of the function $\psi^{n,q}_A$, defined above, goes as follows.
 \begin{itemize}
 \item If $p=0$ then $n$ is a dummy $\lambda$-node or a ground type variable: $\psi^{n,q}_A$ maps $n$ to the initial move $q$.
 
-\item  If $p\geq 1$ and $n \in N_{\lambda}$ with $n$ labelled $\lambda \overline{\xi} = \lambda \xi_1 \ldots \xi_p$ then the sub-computation tree rooted at $n$ and the
+\item  If $p\geq 1$ and $n \in \INodes_{\lambda}$ with $n$ labelled $\lambda \overline{\xi} = \lambda \xi_1 \ldots \xi_p$ then the sub-computation tree rooted at $n$ and the
  arena $A$ have the following forms (value-leaves and answer
  moves are not represented for simplicity):
 \begin{center}
@@ -3020,7 +3014,7 @@ node (qlx){$q$} child{node{$q^1$} child[dotted]{node{}}child[dotted]{node{}}} ch
     arena. The function $\psi^{n,q}_A$ maps each free occurrence of $\xi_i$
     in the computation tree to the move $q^i$.
 
-\item If $p\geq 1$ and $n\in N_{\sf var}$ then $n$ is labelled with a variable $x:(A_1,\ldots,A_p,o)$
+\item If $p\geq 1$ and $n\in \INodes_{\sf var}$ then $n$ is labelled with a variable $x:(A_1,\ldots,A_p,o)$
 with children nodes $\lambda \overline{\eta}_1$, \ldots,
 $\lambda \overline{\eta}_p$. The computation tree $\tau(M)$
 rooted at $n$ and the arena $A$ have the following forms:
@@ -3113,8 +3107,8 @@ child{node(qx){$q_x$}};
 P-questions, value-leaves of $\lambda$-nodes to P-answers and
 value-leaves of variable nodes to O-answers;
 
-\item $\psi_M$ preserves hereditary enabling: a node $n \in V^{\theroot\enable}$ is hereditarily
- enabled by some node $n' \in V^{\theroot\enable}$ in $\tau(M)$ if and only if
+\item $\psi_M$ preserves hereditary enabling: a node $n \in \Nodes^{\theroot\enable}$ is hereditarily
+ enabled by some node $n' \in \Nodes^{\theroot\enable}$ in $\tau(M)$ if and only if
 the move $\psi_M(n)$ is hereditarily enabled by $\psi_M(n')$ in $\sem{\Gamma \gamear T}$;
 
 \item $\psi_M$ maps a node of a given order to a move of the same order;
@@ -3147,22 +3141,22 @@ The pointer-free function underlying $\psi_M$ is thus a monoid homomorphism.
     Let $I$ be the interaction game of the revealed strategy $\syntrevsem{\Gamma \entail M : T}$ and
     $M_I$ be the set of equivalence classes of moves from $\mathcal{M}_I$.
 
-    Let $r'$ be a lambda node in $N_{\sf spawn}$ (the children nodes of @/$\Sigma$-nodes). We write $\Gamma(r') \entail M^{(r')} : T(r')$ to denote the subterm of $\elnf{M}$ rooted at $r'$ (thus $\Gamma(r')\subseteq \Gamma$).
-    We consider the function $\psi_{M^{(r')}}$ which maps nodes of $V^{r'\enable}$
+    Let $r'$ be a lambda node in $\INodes_{\sf spawn}$ (the children nodes of @/$\Sigma$-nodes). We write $\Gamma(r') \entail M^{(r')} : T(r')$ to denote the subterm of $\elnf{M}$ rooted at $r'$ (thus $\Gamma(r')\subseteq \Gamma$).
+    We consider the function $\psi_{M^{(r')}}$ which maps nodes of $\Nodes^{r'\enable}$
     to moves of $\sem{\Gamma(r') \gamear T(r')}$. Since $\mathcal{M}_I$ contains the
-    moves from the standard game $\sem{\Gamma(r') \gamear A(r')}$, we can consider $\psi_{M^{(r')}}$ as a function from $V^{r'\enable}$ to $\mathcal{M}_I$.
+    moves from the standard game $\sem{\Gamma(r') \gamear A(r')}$, we can consider $\psi_{M^{(r')}}$ as a function from $\Nodes^{r'\enable}$ to $\mathcal{M}_I$.
 
-    Every node in $n \in V\setminus (V_@ \union V_\Sigma)$ is either hereditarily enabled by the root or by some $\lambda$-node in $N_{\sf spawn}$. Therefore we can define the following relation $\psi^*_M$ from
-    $V\setminus (V_@ \union V_\Sigma)$ to $\mathcal{M}_I$:
-    $$ \psi^*_M = \psi_{M} \quad \union \Union_{r' \in N_{\sf spawn}} \psi_{M^{(r')}} \enspace .$$
-    This relation is totally defined on $V\setminus (V_@ \union V_\Sigma)$ since those nodes are either hereditarily justified by the root, by an @-node or by a $\Sigma$-node. Moreover it is a relation and \emph{not} a function since for a given variable node $x$,
-for every spawn node $r'$ occurring in the path from $x$ to $\theroot$, $x$ is hereditarily enabled by $r'$ \emph{with respect to the computation tree $\tau(M^{(r')})$}. Thus the domains of definition of the relations $\psi_{M^{(r')}}$ for such nodes $r'$ overlap.    It can be easily check, however, that for every node $n \in V\setminus (V_@ \union V_\Sigma)$,
+    Every node in $n \in \Nodes\setminus (\Nodes_@ \union \Nodes_Sigma)$ is either hereditarily enabled by the root or by some $\lambda$-node in $\INodes_{\sf spawn}$. Therefore we can define the following relation $\psi^*_M$ from
+    $\Nodes\setminus (\Nodes_@ \union \Nodes_Sigma)$ to $\mathcal{M}_I$:
+    $$ \psi^*_M = \psi_{M} \quad \union \Union_{r' \in \INodes_{\sf spawn}} \psi_{M^{(r')}} \enspace .$$
+    This relation is totally defined on $\Nodes\setminus (\Nodes_@ \union \Nodes_Sigma)$ since those nodes are either hereditarily justified by the root, by an @-node or by a $\Sigma$-node. Moreover it is a relation and \emph{not} a function since for a given variable node $x$,
+for every spawn node $r'$ occurring in the path from $x$ to $\theroot$, $x$ is hereditarily enabled by $r'$ \emph{with respect to the computation tree $\tau(M^{(r')})$}. Thus the domains of definition of the relations $\psi_{M^{(r')}}$ for such nodes $r'$ overlap.    It can be easily check, however, that for every node $n \in \Nodes\setminus (\Nodes_@ \union \Nodes_Sigma)$,
     the moves in $\psi^*_M (n)$ are all $\sim$-equivalent, which leads us to the following definition:
 
 \begin{definition}[Mapping from nodes to moves of the syntactically-revealed semantics]
     \label{def:phi mapping}
     We define the \emph{function}
-    $\varphi_M:V\setminus (V_@ \union V_\Sigma) \rightarrow M_I$ as follows: For $n \in V\setminus (V_@ \union V_\Sigma)$, $\varphi_M(n)$ is defined as the $\sim$-equivalence class containing the set $\psi^*_M (n)$. We omit the subscript in $\varphi_M$ if there is no ambiguity.
+    $\varphi_M:\Nodes\setminus (\Nodes_@ \union \Nodes_Sigma) \rightarrow M_I$ as follows: For $n \in \Nodes\setminus (\Nodes_@ \union \Nodes_Sigma)$, $\varphi_M(n)$ is defined as the $\sim$-equivalence class containing the set $\psi^*_M (n)$. We omit the subscript in $\varphi_M$ if there is no ambiguity.
 \end{definition}
 
 \begin{definition}[Mapping sequences of nodes to sequences of moves]
@@ -3220,33 +3214,33 @@ $q_{g_1}\sim q_y$ and $q_{\lambda g}\sim q_{\lambda x}$.
 \label{lem:varphi_proj}
 Let $\Delta \entail Q : A$ be a subterm of $\elnf{M}$ and $\theroot_Q$ denote the root lambda node of the subtree of $\tau(M)$ corresponding to the term $Q$. Let $t\in\travset(M)$, $r_0$ be an occurrence of $\theroot_Q$ in $t$ and $m_0$ be the occurrence of the initial $A$-move $\varphi_M(r_0)$ in $\varphi_M(t^\star)$.  Then:
 $$
-\varphi_{Q}(t^\star \filter V^{(\theroot_Q)} \filter r_0) = \varphi_M(t^\star) \filter \revsem{\Delta \typear A} \filter m_0 \enspace .
+\varphi_{Q}(t^\star \filter \Nodes^{(\theroot_Q)} \filter r_0) = \varphi_M(t^\star) \filter \revsem{\Delta \typear A} \filter m_0 \enspace .
 $$
 \end{lemma}
 \begin{proof}
-Firstly we observe that the expression ``$\varphi_{Q}(t^\star \filter V^{(\theroot_Q)} \filter r_0)$'' is well-defined. Indeed, by Proposition \ref{prop:trav_projection} $t\filterplus r_0$ is a traversal of $\travset(Q)$ therefore the sequence $t^\star \filter V^{(\theroot_Q)} \filter r_0$, which is equal to $(t\filterplus r_0)^\star$ by Lemma \ref{lem:tstarproj_eq_tprojplusstar}, does belong to $\travset(Q)^\star$.
+Firstly we observe that the expression ``$\varphi_{Q}(t^\star \filter \Nodes^{(\theroot_Q)} \filter r_0)$'' is well-defined. Indeed, by Proposition \ref{prop:trav_projection} $t\filterplus r_0$ is a traversal of $\travset(Q)$ therefore the sequence $t^\star \filter \Nodes^{(\theroot_Q)} \filter r_0$, which is equal to $(t\filterplus r_0)^\star$ by Lemma \ref{lem:tstarproj_eq_tprojplusstar}, does belong to $\travset(Q)^\star$.
 
 We now make the assumption that $\theroot_Q$ is a level-$2$ lambda nodes (\ie, a grand-child of the root $\theroot$). The proof easily
 generalizes to other lambda nodes by iterating the argument at every lambda nodes occurring in the path from $\theroot_Q$ to $\theroot$.
 
-\emph{Claim:} (i) The set of occurrence positions of $t^\star$ that are removed by the operation $\_ \filter V^{(\theroot_Q)}$ is the same as the set of positions of $\varphi_M(t^\star)$ removed by the operation  $\_ \filter \revsem{\Delta \typear A }$. (ii) The justification pointers in the sequences of nodes $t^\star \filter V^{(\theroot_Q)}$ are the same as those
+\emph{Claim:} (i) The set of occurrence positions of $t^\star$ that are removed by the operation $\_ \filter \Nodes^{(\theroot_Q)}$ is the same as the set of positions of $\varphi_M(t^\star)$ removed by the operation  $\_ \filter \revsem{\Delta \typear A }$. (ii) The justification pointers in the sequences of nodes $t^\star \filter \Nodes^{(\theroot_Q)}$ are the same as those
 of the sequence of moves $\varphi_M(t^\star) \filter \revsem{\Delta \typear A }$.
 
-Indeed: (i) follows from the fact that, by definition, the range of the function $\varphi_M$ restricted to $V^{(\theroot_Q)}$ is included in
+Indeed: (i) follows from the fact that, by definition, the range of the function $\varphi_M$ restricted to $\Nodes^{(\theroot_Q)}$ is included in
 $M_{\revsem{\Delta \typear A }}$ (the set of moves of the interaction game of $Q$).
 
 (ii) By Def.~\ref{dfn:phi_for_justsequ}, the sequences $\varphi_M(t^\star)$ and $t^\star$ have the same justification pointers.
-The projections $\_ \filter V^{(\theroot_Q)}$
+The projections $\_ \filter \Nodes^{(\theroot_Q)}$
 and $\_ \filter \revsem{\Delta \typear A}$ both alter the
-pointers in the sequences $\varphi_M(t^\star)$ and $t^\star$, but they do so identically: the operation $\_ \filter V^{(\theroot_Q)}$ (Def.~\ref{def:subterm_trav_projection}) alters pointers only for variable nodes that are free in $V^{(\theroot_Q)}$; it makes them point to
+pointers in the sequences $\varphi_M(t^\star)$ and $t^\star$, but they do so identically: the operation $\_ \filter \Nodes^{(\theroot_Q)}$ (Def.~\ref{def:subterm_trav_projection}) alters pointers only for variable nodes that are free in $\Nodes^{(\theroot_Q)}$; it makes them point to
 the only occurrence of $\theroot_Q$ in the P-view at that point (which is also the only occurrence of a level-2 lambda node in the P-view).
-Similarly, the operation $\_ \filter \revsem{\Delta \typear A}$ (Def.~\ref{def:sub_interstrat_projection}) alters pointers only for initial A-moves: it makes them point to the only occurrence of an initial B-move in  the P-view at that point. Further $\varphi_M$ maps free variables in $V^{(\theroot_Q)}$ to initial A-moves, and level-2 lambda nodes to initial B-moves.
+Similarly, the operation $\_ \filter \revsem{\Delta \typear A}$ (Def.~\ref{def:sub_interstrat_projection}) alters pointers only for initial A-moves: it makes them point to the only occurrence of an initial B-move in  the P-view at that point. Further $\varphi_M$ maps free variables in $\Nodes^{(\theroot_Q)}$ to initial A-moves, and level-2 lambda nodes to initial B-moves.
 
 Hence the claim holds which subsequently implies
-$\varphi_M(t^\star) \filter \revsem{\Delta \typear A} = \varphi_M(t^\star \filter V^{(\theroot_Q)})$.
-Thus $\varphi_M(t^\star) \filter \revsem{\Delta \typear A} \filter m_0 = \varphi_M(t^\star \filter V^{(\theroot_Q)}) \filter m_0
-= \varphi_M(t^\star \filter V^{(\theroot_Q)} \filter r_0)$.
-Finally, since the function $\varphi$ is defined inductively on the structure of the computation tree, the restriction of $\varphi_M$ to $V^{\theroot_Q}$ coincides with $\varphi_Q$.
+$\varphi_M(t^\star) \filter \revsem{\Delta \typear A} = \varphi_M(t^\star \filter \Nodes^{(\theroot_Q)})$.
+Thus $\varphi_M(t^\star) \filter \revsem{\Delta \typear A} \filter m_0 = \varphi_M(t^\star \filter \Nodes^{(\theroot_Q)}) \filter m_0
+= \varphi_M(t^\star \filter \Nodes^{(\theroot_Q)} \filter r_0)$.
+Finally, since the function $\varphi$ is defined inductively on the structure of the computation tree, the restriction of $\varphi_M$ to $\Nodes^{\theroot_Q}$ coincides with $\varphi_Q$.
 \end{proof}
 
 The following lemma states that projecting the image of a traversal by $\varphi$ gives the image of the traversal's core:
@@ -3257,33 +3251,33 @@ $$ \varphi_M(\travset(M)^\star) \filter \sem{\Gamma \gamear T} = \psi_M(\travset
 \begin{proof}
 Let $H$ be the set of nodes of $\tau(M)$ which are mapped by
 $\psi^*(M)$ to moves that are $\sim$-equivalent to moves in
-$\sem{\Gamma \gamear T}$. We need to show that $H = V^{\theroot\enable}$.
+$\sem{\Gamma \gamear T}$. We need to show that $H = \Nodes^{\theroot\enable}$.
 
 Since $\psi_M \subseteq \psi^*(M)$ and the image of $\psi(M)$ is
 $\sem{\Gamma \gamear T}$, $H$ must contain the domain of
-$\psi(M)$ which is precisely $V^{\theroot\enable}$. Conversely, suppose that a node $n \in V\setminus (V_@\union V_\Sigma)$ is mapped by
+$\psi(M)$ which is precisely $\Nodes^{\theroot\enable}$. Conversely, suppose that a node $n \in \Nodes\setminus (\Nodes_@\union \Nodes_Sigma)$ is mapped by
 $\varphi^*(M)$ to some move $m\in \mathcal{M}_I$ which is $\sim$-equivalent
 to some move in $\sem{\Gamma \gamear T}$.
- If $m = \psi_M(n)$ then $n\in V^{\theroot\enable}$. Otherwise,
-$m = \psi_{M^{(\odot)}}(n)$ for some $\odot \in N_{\sf spawn}$. There
+ If $m = \psi_M(n)$ then $n\in \Nodes^{\theroot\enable}$. Otherwise,
+$m = \psi_{M^{(\odot)}}(n)$ for some $\odot \in \INodes_{\sf spawn}$. There
 may be several nodes $\odot$ such that $n$ belongs to the domain of
 definition of $\psi_{M^{(\odot)}}$, w.l.o.g.\ we can take $\odot$ to be
 the one which is closest to the root. Let $\Gamma(\odot) \entail
 M^{(\odot)} : T(\odot)$. Suppose that $m$ is $\sim$-equivalent to a move from
     \begin{compactitem}[-]
     \item the subgame $\sem{\Gamma}$ of $\sem{\Gamma \gamear T}$,
-    then this means that $n$ is hereditarily justified by a free variable node in $M$ and therefore $n \in V^{\theroot\enable}$.
+    then this means that $n$ is hereditarily justified by a free variable node in $M$ and therefore $n \in \Nodes^{\theroot\enable}$.
 
     \item the subgame $\sem{T}$ of $\sem{\Gamma \gamear T}$
     then $m$ must belong to the subgame $\Gamma(\odot)$ of $\sem{\Gamma(\odot)\gamear T(\odot)}$.
     Indeed, since $\odot$'s parent node is an application node, moves in the subgame $\sem{T(\odot)}$ correspond to internal moves of the application. By definition of
     the interaction strategy for the application case, such moves can only be $\sim$-equivalent to other internal  moves and thus cannot be equivalent to a move from $\sem{T}$.
 
-    Consequently, $n$ is hereditarily justified by a free variable node $z$ in $M^{(\odot)}$. By assumption, $\odot$ is the closest node to the root $\theroot$ (excluding $\theroot$ itself) for which $n$ belongs to $V^{\odot\enable}$ (the domain of definition of $\psi_{M^{(\odot)}}$). Hence $z$ is not bound by any $\lambda$-node occurring in the path to the root. Thus $z\in
-    V^{\theroot\enable}$ and therefore $n \in V^{\theroot\enable}$.
+    Consequently, $n$ is hereditarily justified by a free variable node $z$ in $M^{(\odot)}$. By assumption, $\odot$ is the closest node to the root $\theroot$ (excluding $\theroot$ itself) for which $n$ belongs to $\Nodes^{\odot\enable}$ (the domain of definition of $\psi_{M^{(\odot)}}$). Hence $z$ is not bound by any $\lambda$-node occurring in the path to the root. Thus $z\in
+    \Nodes^{\theroot\enable}$ and therefore $n \in \Nodes^{\theroot\enable}$.
     \end{compactitem}
-Hence $H = V^{\theroot\enable}$. Consequently, for every traversal $t$
-we have $\varphi_M(t^\star) \filter \sem{\Gamma \gamear T} = \varphi_M(t^\star\filter V^{\theroot\enable})$ which equals
+Hence $H = \Nodes^{\theroot\enable}$. Consequently, for every traversal $t$
+we have $\varphi_M(t^\star) \filter \sem{\Gamma \gamear T} = \varphi_M(t^\star\filter \Nodes^{\theroot\enable})$ which equals
 $\varphi_M(t\filter \theroot)$ by Lemma
 \ref{lem:he_proj_root_is_hj_proj_r}.
 \end{proof}
@@ -3315,12 +3309,11 @@ otherwise.
     \zand\ n_1 \neq n_2
   \end{array}
 \right)
- \implies n_1,n_2 \in V^{\theroot\enable}_{\lambda} \zand ( \psi(n_1) \neq \psi(n_2) \zor \ptrdist(n_1) \neq \ptrdist(n_2) ) \ .
+ \implies n_1,n_2 \in \Nodes^{\theroot\enable}_{\lambda} \zand ( \psi(n_1) \neq \psi(n_2) \zor \ptrdist(n_1) \neq \ptrdist(n_2) ) \ .
  \end{equation*}
 \end{lemma}
 \begin{proof} Take $t \cdot n_1, t \cdot n_2 \in \travset(M)$. Suppose that
-$n_1$ and $n_2$ belong to two distinct categories of nodes ($N_{\sf
-var}$, $N_@$, $N_\lambda$, $N_\Sigma$, $L_{\sf var}$, $L_@$, $L_\lambda$, or $L_\Sigma$)
+$n_1$ and $n_2$ belong to two distinct categories of nodes ($\INodes_{\sf var}$, $\INodes_@$, $\INodes_\lambda$, $\INodes_\Sigma$, $\LNodes_{\sf var}$, $\LNodes_@$, $\LNodes_\lambda$, or $\LNodes_\Sigma$)
 then necessarily one must be visited with the rule
 \rulenamet{InputVar} and the other by \rulenamet{InputVal}---they are
 the only rules with a common domain of definition---thus one is
@@ -3329,33 +3322,33 @@ $\psi(n_1) \neq \psi(n_2)$.
 
 Otherwise $n_1$ and $n_2$ belong to the same category of nodes and we proceed by case analysis:
 \begin{compactitem}
-\item If $n_1, n_2 \in N_@$ then $t
+\item If $n_1, n_2 \in \INodes_@$ then $t
 \cdot n_1$ and $t \cdot n_2$ are formed using the \rulenamet{App}
 rule. Since this rule is deterministic we must have $n_1=n_2$ which
 violates the second hypothesis.
 
-\item If $n_1, n_2 \in L_@$ then the traversals are formed using the deterministic rule
+\item If $n_1, n_2 \in \LNodes_@$ then the traversals are formed using the deterministic rule
 \rulenamet{Value^{@\mapsto\lambda}} which again violates the
 second hypothesis.
 
-\item If $n_1, n_2 \in N_\Sigma$ then they are formed using a deterministic constant rule (see Def.~\ref{def:constant_traversal}).
+\item If $n_1, n_2 \in \INodes_\Sigma$ then they are formed using a deterministic constant rule (see Def.~\ref{def:constant_traversal}).
 
-\item If $n_1, n_2 \in L_\Sigma$  then they are formed using a deterministic value-constant rule.
+\item If $n_1, n_2 \in \LNodes_\Sigma$  then they are formed using a deterministic value-constant rule.
 
-\item If $n_1,n_2\in N_{\sf var}$ then
+\item If $n_1,n_2\in \INodes_{\sf var}$ then
      $t \cdot n_1$ and $t \cdot n_2$ were formed using either rule \rulenamet{Lam} or \rulenamet{App}.
      But these two rules are deterministic and their domains of definition are disjoint. Hence again the second
      hypothesis is violated.
 
-\item If  $n_1, n_2 \in L_{\sf var}$ then either the traversals were both formed using the deterministic rule
+\item If  $n_1, n_2 \in \LNodes_{\sf var}$ then either the traversals were both formed using the deterministic rule
 \rulenamet{Value^{{\sf var}\mapsto\lambda}} in which case the
 second hypothesis is violated; or they were formed with
 \rulenamet{InputValue} in which case $n_1$ and $n_2$ are two
-different value leaves belonging to $V^{\theroot\enable}_\lambda$ and
+different value leaves belonging to $\Nodes^{\theroot\enable}_\lambda$ and
 justified by the same input variable node. Thus by definition of
 $\psi$, $\psi(n_1)\neq\psi(n_2)$.
 
-\item If  $n_1,n_2\in N_\lambda$ then the traversals $t \cdot n_1$
+\item If  $n_1,n_2\in \INodes_\lambda$ then the traversals $t \cdot n_1$
     and $t \cdot n_2$ must have been formed using either rule
     \rulenamet{Root}, \rulenamet{App}, \rulenamet{Var} or \rulenamet{InputVar}. Since all these rules have
     disjoint domains of definition, the same rule must have been use to
@@ -3363,14 +3356,14 @@ $\psi$, $\psi(n_1)\neq\psi(n_2)$.
     But since the rules \rulenamet{Root}, \rulenamet{App} and \rulenamet{Var} are all deterministic,
     the rule used is necessarily \rulenamet{InputVar}.
 
-    By definition of \rulenamet{InputVar}, $n_1,n_2\in N_\lambda^{\theroot\enable}$, the parent node of $n_1$ and the parent node of $n_2$ all occur in  $\oview{t_{\prefixof x}}$ where $x \in N^{\theroot\enable}_{\sf var}$
+    By definition of \rulenamet{InputVar}, $n_1,n_2\in \INodes_\lambda^{\theroot\enable}$, the parent node of $n_1$ and the parent node of $n_2$ all occur in  $\oview{t_{\prefixof x}}$ where $x \in \INodes^{\theroot\enable}_{\sf var}$
     denotes the pending node at $t$. If $n_1$ and $n_2$ have the same
     parent node in $\tau(M)$ then since $n_1\neq n_2$, by definition of
     $\psi$, $\psi(n_1)\neq \psi(n_2)$. If their parent node is
     different, then $n_1$ and $n_2$ are necessarily justified by two different
     occurrences in $t$ therefore $\ptrdist(n_1) \neq \ptrdist(n_2)$.
 
-\item If  $n_1,n_2\in L_\lambda$ then either the traversals $t \cdot n_1$
+\item If  $n_1,n_2\in \LNodes_\lambda$ then either the traversals $t \cdot n_1$
     and $t \cdot n_2$ were formed using
     \rulenamet{Value^{\lambda\mapsto{\sf var}}} or they were formed with
     \rulenamet{Value^{\lambda\mapsto @}} but this is impossible since these two rules are
@@ -3382,7 +3375,7 @@ $\psi$, $\psi(n_1)\neq\psi(n_2)$.
 
 
 The function $\varphi_M$ regarded as a function from the set of
-vertices $V \setminus V_@$ of the computation tree to moves in
+nodes $\Nodes \setminus \Nodes_@$ of the computation tree to moves in
 arenas is not injective. (For instance the two occurrences of $x$ in
 the computation tree of $\lambda f x. f x x$ are mapped to the same
 question move.) However the function $\varphi_M$ defined on the set
@@ -3412,7 +3405,7 @@ have $\ptrdist(n_1) = 0 = \ptrdist(n_2)$). By definition of the
 sequence $\varphi(t_1)$ we have $\ptrdist(\varphi(n_1)) =
 \ptrdist(n_1)$ and similarly $\ptrdist(\varphi(n_2)) =
 \ptrdist(n_2)$ thus $\varphi(t' \cdot n_1) \neq \varphi(t' \cdot
-n_2)$. Finally since $n_1,n_2 \not\in (N_@ \union N_\Sigma)$ we also
+n_2)$. Finally since $n_1,n_2 \not\in (\INodes_@ \union \INodes_\Sigma)$ we also
 have $\varphi((t' \cdot n_1)^\star) \neq \varphi((t' \cdot
 n_2)^\star)$. Hence $\varphi(t_1^\star) \neq \varphi(t_2^\star)$.
 
@@ -3435,7 +3428,7 @@ If $n_1 \neq n_2$ then Lemma \ref{lem:varphiinjective:prelem} gives
 $\psi( t_1\filter \theroot ) \neq \psi( t_2\filter \theroot )$.
 Otherwise $n_1 = n_2$ and $\ptrdist(n_1) \neq \ptrdist(n_2)$.
 The only rules that can visit the same node with two different pointers are \rulenamet{InputVar} and \rulenamet{InputValue}, thus $n_1$
-and $n_2$ must be in $V_\lambda^{\theroot\enable}$. Hence:
+and $n_2$ must be in $\Nodes_\lambda^{\theroot\enable}$. Hence:
 \begin{equation*}
 \psi(t_i\filter \theroot) = \psi(t\filter \theroot) \cdot \psi(n_i) \mbox{ for $i
 \in \{1..2\}$}
@@ -3530,14 +3523,14 @@ are necessarily consecutive in $t$.
     \Pstr[0.7cm]{ t_j = \ldots \cdot (p){p} \cdot (lx){\lambda
         \overline{x}} \ldots (x-lx,30:i){x_i}  \cdot
         (letai-p,40:i){\lambda \overline{\eta_i}} } for some
-        variable $x_i \in N_{\sf var}^{@\enable}$.
+        variable $x_i \in \INodes_{\sf var}^{@\enable}$.
 
 In general, two nodes $p$ and $\lambda \overline{x}$ appearing consecutively in $t_j$ are not necessarily consecutive in $t$. For in $M$, $t$ can ``jump'' from $p$ to a node that do not belong to the subterm $M^{(\theroot_j)}$, and thus not appearing in $t_j = t\filterplus r_j$.
 This situation cannot happen here, however. Indeed, suppose that $t_{\prefixof p}$ extends to $t_{\prefixof p} \cdot m$ in $\tau(M)$.
  All the nodes in the thread of $\lambda \overline{\eta_i}$, in
 $t_j$, are hereditarily justified by the same initial @-node $\alpha$
 which necessarily occurs after $r_j$ (the first node of $t_j$).
-Consequently $p$ belongs to $N_{\sf var}^{@\enable}$ and
+Consequently $p$ belongs to $\INodes_{\sf var}^{@\enable}$ and
 therefore the traversal $t_{\prefixof p}\cdot m$ must have been
 formed using the rule \rulenamet{Var} in $\tau(M)$. Since $p$
 appears in $t\filterplus r_j$, by Lemma
@@ -3790,9 +3783,9 @@ $\varphi_M(t^\star) = u$.
         \begin{equation}
         u \filter T^{0k} \filter b = \varphi_{N_k}(t_k^\star)  \label{eqn:corresp_outmost_ih}
         \end{equation}
-        for some traversal $t_k \in \travset(N_k)$ where w.l.o.g.\ we can assume that $t_k^\omega \not\in V_@$. We have:
+        for some traversal $t_k \in \travset(N_k)$ where w.l.o.g.\ we can assume that $t_k^\omega \not\in \Nodes_@$. We have:
         \begin{align*}
-            \varphi_M (t_k^\omega) &= (\varphi_M (t_k^\star))^\omega & \mbox{since $t_k^\omega \not\in V_@$}\\
+            \varphi_M (t_k^\omega) &= (\varphi_M (t_k^\star))^\omega & \mbox{since $t_k^\omega \not\in \Nodes_@$}\\
                                    &= ((u' \cdot m) \filter T^{0k}\filter b)^\omega & \mbox{by (\ref{eqn:corresp_outmost_ih})}\\
                                    &= ((u' \filter T^{0k}\filter b) \cdot m))^\omega & \mbox{since $m$ is h.j. by $b$ and belongs to $T^{0k}$}\\
                                    &= m \enspace .
@@ -3820,10 +3813,10 @@ $\varphi_M(t^\star) = u$.
             & \mbox{by (\ref{eqn:corresp_outmost_ih})} \\
          &= \varphi_{M}(t^\star) \filter T^{0k}\filter b
             & \mbox{by (\ref{eqn:corresp_phi_t_minu_at_eq_u})} \\
-         &= \varphi_{N_k}(t^\star \filter V^{(\theroot_k)} \filter r_k )
+         &= \varphi_{N_k}(t^\star \filter \Nodes^{(\theroot_k)} \filter r_k )
             & \mbox{by Lemma \ref{lem:varphi_proj}.}
         \end{align*}
-        Since $\varphi_{N_k}$ is a bijection from  $\travset(N_k)^\star$ to $\varphi_{N_k}(\travset(N_k)^\star )$ (by Corollary \ref{cor:varphi_bij}) this implies that  $t_k^\star = t^\star \filter V^{(\theroot_k)} \filter r_k$ which in turn equals $(t\filterplus r_k)^\star$ by Lemma \ref{lem:tstarproj_eq_tprojplusstar} from Sec.~\ref{sec:tstar}. But since $t_k$ and $t$ do not end with an @-node, this implies equality (\ref{equ:claim_tk}).
+        Since $\varphi_{N_k}$ is a bijection from  $\travset(N_k)^\star$ to $\varphi_{N_k}(\travset(N_k)^\star )$ (by Corollary \ref{cor:varphi_bij}) this implies that  $t_k^\star = t^\star \filter \Nodes^{(\theroot_k)} \filter r_k$ which in turn equals $(t\filterplus r_k)^\star$ by Lemma \ref{lem:tstarproj_eq_tprojplusstar} from Sec.~\ref{sec:tstar}. But since $t_k$ and $t$ do not end with an @-node, this implies equality (\ref{equ:claim_tk}).
     \smallskip
 
     We now show that $t$ is indeed a traversal by a case analysis of the rule used to visit the last occurrence of $t_k$ in the tree $\tau(N_k)$:
@@ -3834,8 +3827,8 @@ $\varphi_M(t^\star) = u$.
     \item Suppose $t_k^\omega$ is visited with \rulenamet{InputVar}. Then $t_k$ is of the form
         $$\Pstr[17pt]{ t_k = \ldots \cdot (z)z \cdot \ldots \cdot (n-z){t_k^\omega}}$$
         for some input-variable $z \in
-        N^{\theroot_k\enable}_{\sf var}$ occurring in
-        $\oview{t_k}$ and where $t_k^\omega \in N_\lambda^{\theroot_k\enable}$.
+        \INodes^{\theroot_k\enable}_{\sf var}$ occurring in
+        $\oview{t_k}$ and where $t_k^\omega \in \INodes_\lambda^{\theroot_k\enable}$.
 
 
         Thus:
@@ -3869,7 +3862,7 @@ $\varphi_M(t^\star) = u$.
         \end{align*}
 
         The first equation implies that $t_k^\omega$ is the $i^{th}$ child of $z$ in the computation tree,
-        thus since $z\not\in N^{\theroot\enable}$, we can apply the (Var) rule to the second equation which produces the traversal of $\tau(M)$:
+        thus since $z\not\in \INodes^{\theroot\enable}$, we can apply the (Var) rule to the second equation which produces the traversal of $\tau(M)$:
         \begin{eqnarray*}
             t' \cdot t_k^\omega = \Pstr[0.5cm]{ \ldots \cdot (n3){z} \cdot (n2){\lambda \overline{y}} \cdot \ldots \cdot (n1-n2,30:i){y} \cdot (n-n3,35:i){t_k^\omega} }
         \end{eqnarray*}
@@ -3920,7 +3913,7 @@ $\varphi_M(t^\star) = u$.
     Moreover:
     \begin{align*}
         u \filter T^{0k}\filter b &= \varphi_{M}(t^\star) \filter T^{0k}\filter b \\
-         &= \varphi_{M}(t^\star \filter V^{(\theroot_k)} \filter r_k ) & \mbox{by Lemma \ref{lem:varphi_proj}} \\
+         &= \varphi_{M}(t^\star \filter \Nodes^{(\theroot_k)} \filter r_k ) & \mbox{by Lemma \ref{lem:varphi_proj}} \\
          &= \varphi_{M}((t\filterplus r_k)^\star) & \mbox{by Lemma \ref{lem:tstarproj_eq_tprojplusstar}} \\
          &= \varphi_{N_k}((t\filterplus r_k)^\star) & \mbox{since $t\filterplus r_k$ is a traversal of $N_k$ by Prop.~ \ref{prop:trav_projection}} \\
          &\in \varphi_{N_k}(\travset(N_k)^\star) \\
@@ -4006,7 +3999,7 @@ child {node {$x_i$}
                        Suppose $m$ is the $i^{th}$ move enabled by $m'$ in the arena and let $\alpha$ be the $i^{th}$ child node of $\alpha'$ in $\tau(M)$. By definition of $\varphi_M$ we have $\varphi_M(\alpha) = m$.
                        We want to show that we can use the rule \rulenamet{InputVar} to append $\alpha$ to the traversal $t'$. Since we have $v\filter A,C \in \sem{M}$, by O-visibility $m'$ appears in $\oview{v'\filter A,C}$, and by the induction hypothesis we have $v'\filter A,C = \psi_M (t'\filter r)$. Hence \begin{align*}
                        m' \in \oview{\psi_M (t'\filter r)} &= \psi_M ( \oview{t'\filter r}) \\
-                          &= \varphi_M ( \oview{t' \filter r}) & \mbox{since $\varphi_M$ and $\psi_M$ coincide on $V^{\theroot \enable}$,} \\
+                          &= \varphi_M ( \oview{t' \filter r}) & \mbox{since $\varphi_M$ and $\psi_M$ coincide on $\Nodes^{\theroot \enable}$,} \\
                         &= \varphi_M ( \oview{t'}) & \mbox{by Lemma \ref{lem:oviewproj_wrt_theroot}.} \end{align*}
                This implies that $\alpha'$ appears in $\oview{t'}$ which allows us to use the rule \rulenamet{InputVar} to form the traversal $t = t'\cdot \alpha$ satisfying $\varphi_M(t^\star) =               \hide(v,\{0..p\},\{0\})$.
 

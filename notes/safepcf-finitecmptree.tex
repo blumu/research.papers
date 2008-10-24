@@ -73,12 +73,12 @@ where $\travset_{\widetilde\tau}(M)^{\filter \theroot}$ denotes the set of reduc
 
 \section*{An alternative finite representation}
 
-In order to handle the Y combinators, we introduce a new kind of abstraction node. Such node is labelled $\lambda \overline{x}$ where each variable occurring in $\overline{x}$ is either a standard variable or a ``recursion variable''. Recursion variables are put into parenthesis in order to distinguish them from standard ones. The set $L$ of node labels  is given by the grammar:
+In order to handle the Y combinators, we introduce a new kind of abstraction node. Such node is labelled $\lambda \overline{x}$ where each variable occurring in $\overline{x}$ is either a standard variable or a ``recursion variable''. Recursion variables are put into parenthesis in order to distinguish them from standard ones. The set $L$ of node labels is given by the grammar:
 \begin{eqnarray*}
 L &::=& \lambda\ V_{abs}^*\ |\ @\ |\ \mathcal{V} \\
 V_{abs} &::=& \mathcal{V}\ |\ (\mathcal{V})
 \end{eqnarray*}
-for some countable set  $\mathcal{V}$ of variables.
+for some countable set $\mathcal{V}$ of variables.
 
 
 A term of the form $Y_A (\lambda f :A. M)$ where $M:A$ will be written  $\lambda (f) . M$. This notation also accounts for ground type recursion, for instance the \iawhile\ operator of Idealized Algol defined as $\iawhile\ C\ \iado\ I \equiv Y( \lambda f. \pcfcond\ C\ \iaskip\ (\iaseq\ I f))$ is rewritten as $\lambda (f) . \pcfcond\ C\ \iaskip\ (\iaseq\ I f)$.
