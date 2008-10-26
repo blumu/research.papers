@@ -3,10 +3,19 @@
 %Daemon> afterjob=dvipspdf
 %Daemon> filter=err+warn
 %Daemon> custom_args="-synctex=-1 --include-directory=../thesis/"
-\documentclass[preprint,12pt,draft]{elsarticle}
+\documentclass[preprint,11pt,draft]{elsarticle}
 \input{preamble.texi}
 %\usepackage{lineno}
 %\linenumbers
+
+\newcommand\rem[1]{\marginpar{\tiny #1}}
+%\newcommand\todo[1]{\marginpar{\tiny \fbox{{{\bf ToDo}~#1}}}}
+
+% For the final versions of a paper use:
+% --------------------------------------
+% \def\rem#1{{}}
+% \def\TODO{{}}
+\renewcommand\defeq{\mathbin{:=}}
 
 \begin{document}
 \begin{keyword}
@@ -14,8 +23,8 @@ Lambda calculus \sep beta-reduction
 traversal theory
 \end{keyword}
 \begin{frontmatter}
-\title{Local computation of $\beta$-reduction\\A concrete presentation of Game Semantics}
-\author{William Blum and C.H. Luke Ong}
+\title{Local computation of $\beta$-reduction:\\A concrete presentation of Game Semantics}
+\author{William Blum and C.-H.~Luke Ong}
 \address{Oxford University Computing Laboratory}
 %\thanks[EPSRC]{Supported by EPSRC}
 \begin{abstract}

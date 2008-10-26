@@ -27,49 +27,46 @@ A notion of local computation of $\beta$-reduction has also been investigated th
 Asperti et~al.\ introduced \cite{DBLP:conf/lics/AspertiDLR94} a syntactic representation of lambda-terms based on Lamping's graphs \citep{lamping}. They unified various notions of paths (regular, legal, consistent and persistent paths) that have appeared in the literature as ways to implement graph-based reduction of lambda-expressions. We can regard a traversal as an alternative notion of path adapted to the graph representation of lambda-expressions given by computation trees.
 
 \section{Computation tree}
-We work in the general setting of the simply-typed lambda calculus extended with a fixed set $\Sigma$ of
-higher-order uninterpreted constants. We fix a simply-typed term-in-context $\Gamma \entail M :T$ for the rest of the section.
+We work in the general setting of the simply-typed lambda calculus extended with a fixed set $\Sigma$ of (higher-order) uninterpreted constants. We fix a simply-typed term-in-context $\Gamma \entail M :T$ for the rest of the section.
 
 %%% Section to include in the LMCS paper (not needed in the thesis because eta-long nf are already defined in the background chapter
 %\subsection{Eta-long normal form}
 
 \begin{notation}[Simple types]
  For simplicity we assume that types are generated over a single atomic type $o$.
-  By convention, $\typear$ associates to the right. Thus every simple type can be written as $A_1 \typear \cdots \typear A_n \typear o$ which we shall abbreviate to $(A_1, \cdots, A_n, o)$ (in case $n = 0$, we identify $(o)$ with $o$).
+  By convention, $\typear$ associates to the right. Thus every simple type can be written as $A_1 \typear \cdots \typear A_n \typear o$ which we abbreviate to $(A_1, \cdots, A_n, o)$; in case $n = 0$, we identify $(o)$ with $o$.
 \end{notation}
 
 \subsection{Definition}
 
-We define the \emph{computation tree} of a simply-typed lambda-term as an abstract syntax tree representation of its \emph{$\eta$-long normal form}. Our definition generalizes the notion of computation tree for higher-order recursion schemes \cite{OngLics2006}.
+We define the \emph{computation tree} of a simply-typed lambda-term as a tree representation of its \emph{$\eta$-long normal form}. Our definition generalizes the notion of computation tree for higher-order recursion schemes \cite{OngLics2006}.
 
 \begin{definition}
 \label{dfn:etalongnf}
-The \defname[eta-long normal form]{$\eta$-long normal form}, written $\elnf{M}$ or sometimes $\etalnf{t}$, of an annotated term $M$ of type $(A_1,\ldots,A_n,o)$ with $n \geq 0$ is defined by cases according to
-the syntactic shape of $M$ (A simply-typed term is either an abstraction or it can be written uniquely as
-$s_0 s_1 \ldots s_m$ where $m\geq0$ and $s_0$ is a variable, a $\Sigma$-constant or an abstraction.):%
+The \defname[eta-long normal form]{$\eta$-long normal form}, written $\elnf{M}$ or sometimes $\etalnf{t}$, \rem{Do you mean $\etalnf{M}$?} of a term $M$ of type $(A_1,\ldots,A_n,o)$ with $n \geq 0$ is defined as follows:%
 \indexnotation{$\elnf{M}$}{Eta-long normal form of the term $M$}%
 \begin{eqnarray*}
-  \elnf{\lambda x^\tau . N } &\equiv& \lambda x^\tau . \elnf{N} \\
-  \elnf{\alpha N_1 \ldots N_m } &\equiv& \lambda \overline{\varphi}^{\overline{A}} . \alpha \elnf{N_1}\ldots \elnf{N_m} \elnf{\varphi_1} \ldots \elnf{\varphi_n} \\
-  \elnf{(\lambda x^\tau . N) N_1 \ldots N_p } &\equiv& \lambda \overline{\varphi}^{\overline{A}} . (\lambda x^\tau . \elnf{N}) \elnf{N_1} \ldots \elnf{N_p} \elnf{\varphi_1} \ldots \elnf{\varphi_n}
+  \elnf{\lambda x^\tau . N } & \defeq & \lambda x^\tau . \elnf{N} \\
+  \elnf{\alpha N_1 \ldots N_m } & \defeq & \lambda \overline{\varphi}^{\overline{A}} . \alpha \elnf{N_1}\ldots \elnf{N_m} \elnf{\varphi_1} \ldots \elnf{\varphi_n} \\
+  \elnf{(\lambda x^\tau . N) N_1 \ldots N_p } & \defeq & \lambda \overline{\varphi}^{\overline{A}} . (\lambda x^\tau . \elnf{N}) \elnf{N_1} \ldots \elnf{N_p} \elnf{\varphi_1} \ldots \elnf{\varphi_n}
 \end{eqnarray*}
 where $m \geq 0$, $p\geq 1$, $x$ is a variable, $\overline{\varphi} = \varphi_1 \ldots \varphi_n$ and each $\varphi_i : A_i$ is a fresh variable, and $\alpha$ is either a variable or a constant.
 \end{definition}
 
 
-An $\eta$-long nf can therefore be written under the form $\lambda \overline{x} . s_0 s_1 \ldots s_m$ where
+Thus an $\eta$-long nf has the shape $\lambda x_1 \ldots x_n . s_0 s_1 \ldots s_m$ where $m, n \geq 0$ such that:
 \begin{inparaenum}[i.]
-\item $\overline{x} = x_1 \ldots x_n$ for $n\geq 0$ and $s_0 s_1 \ldots s_m$ is of ground type,
-\item each $s_j$ for $j\in 1..m$ is in $\eta$-long nf;
-\item either $s_0$ is a variable or a constant and $m\geq0$, or $s_0$ is an abstraction $\lambda\overline{y}.s$ and $m\geq1$ where $s$ is in $\eta$-long nf.
+\item $s_0 s_1 \ldots s_m$ is of ground type,
+\item each $s_j$ for $j \in 1..m$ is in $\eta$-long nf,
+\item either $s_0$ is a variable or a constant and $m\geq0$, or $s_0$ is an abstraction in $\eta$-long nf and $m\geq1$.
 \end{inparaenum}
-Note that for terms of ground type the $\eta$-long nf is of the form  $\lambda . N$; although the symbol '$\lambda$' does not correspond to a real lambda-abstraction---we call it `dummy lambda'---it will still be convenient to keep it in expressions representing eta-long normal forms.
+Note that $\eta$-long normal forms of ground type have the form  $\lambda . N$ with a `dummy lambda'.
 
 \begin{definition}
 Let $\Gamma \stentail M:T$ be a simply-typed term with variable names from $\mathcal{V}$ and constants from $\Sigma$.
 The \emphind{pre-computation} tree $\tau^-(M)$ with labels taken from $ \{ @ \} \union \Sigma \union \mathcal{V}
   \union \{ \lambda x_1 \ldots x_n \ | \ x_1 ,\ldots, x_n \in
-  \mathcal{V}, n\in\nat \}$, is defined inductively on its $\eta$-long normal form $\etalnf{M}$ as follows.
+  \mathcal{V}, n \geq 0 \}$, is defined inductively on its $\eta$-long normal form $\etalnf{M}$ as follows.
 \begin{eqnarray*}
   \mbox{For $m\geq 0$, $\$ \in \mathcal{V}\union\Sigma$: } \tau^-(\lambda \overline{x} . \$ s_1 \ldots s_m : o) &\defeq& \lambda \overline{x} \langle \$ \langle\tau^-(s_1),\ldots,\tau^-(s_m)\rangle\rangle \\
   \mbox{for $m \geq 1$: } \tau^-(\lambda \overline{x} . (\lambda y.t) s_1 \ldots s_m :o) &\defeq& \lambda \overline{x} \langle @ \langle \tau^-(\lambda y.t),\tau^-(s_1),\ldots,\tau^-(s_m) \rangle \rangle \enspace ,
@@ -77,9 +74,7 @@ The \emphind{pre-computation} tree $\tau^-(M)$ with labels taken from $ \{ @ \} 
 where we write $l\langle t_1, \ldots, t_n \rangle$, for $n \geq 0$, to denote the \emph{ordered tree} whose root is labelled $l$ and has $n$ child-subtrees $t_1$, \ldots, $t_n$. The trees from the equations above are illustrated in Table \ref{tab:defcomptree}.
 \end{definition}
 
-By convention the first level of a tree (where the root lies) is numbered 0.
-In the tree $\tau^-(M)$, nodes at odd-levels are
-variable, constant or application nodes; and at even-levels lies the $\lambda$-nodes. A single $\lambda$-node can represent several consecutive abstractions or it can just be a \emphind{dummy lambda} (if the corresponding subterm is of ground type).
+In the tree $\tau^-(M)$, nodes at levels 0, 2, 4, etc.~are labelled by lambdas, whereas nodes at levels 1, 3, 5, etc.~are labelled by variables, constants or application nodes. Note that a lambda label $\lambda\overline x$ can represent several consecutive abstractions or it can just be a \emphind{dummy lambda} i.e.~$|x| = 0$ (if the corresponding subterm is of ground type).
 
 \begin{table}
   \centering
@@ -114,18 +109,17 @@ $m \geq 1$
 \begin{definition}
 \label{dfn:comptree}
 Let $M$ be a simply-typed term not necessarily in $\eta$-long normal
-form. Let $\mathcal{D}$ denote the set of values of the base type $o$.
-The \defname{computation tree} of $M$, written $\tau(M)$ is the tree
-obtained from $\tau^-(\elnf{M})$ by attaching leaves to each node as follows: for every node $n \in \tau^-(M)$, the corresponding node in $\tau(\elnf{M})$ has a
-child leaf labelled $v_n$, called \defname{value-leaf}, for every
-possible value $v \in \mathcal{D}$.
+form. Let $\mathcal{D}$ be the set of values of the base type $o$.
+The \defname{computation tree} of $M$, written $\tau(M)$, is the tree
+obtained from $\tau^-(\elnf{M})$ by attaching leaves to each node: for every node $n \in \tau^-(M)$, the corresponding node in $\tau(\elnf{M})$ has a
+child leaf labelled $v_n$, called \defname{value-leaf}, for every value $v \in \mathcal{D}$.
 \indexnotation{$\tau(M)$}{Computation tree of the term $M$}%
 \end{definition}
 
-Inner nodes of the tree are thus of three kinds:
+\emph{Inner nodes} of the tree are thus of three kinds:
 \begin{itemize}
-\item $\lambda$-nodes labelled $\lambda \overline{x}$ for some list of variables $\overline{x}$ (Note that a $\lambda$-node represents several consecutive variable abstractions),
-\item long-application nodes labelled @,
+\item $\lambda$-nodes labelled $\lambda \overline{x}$ for a list of variables $\overline{x}$
+\item long-application nodes labelled @
 \item variable or constant nodes with labels in $\Sigma \union \mathcal{V}$.
 \end{itemize}
 The $0^{th}$ child of an @-node is called a \defname[prime!node]{prime node}.
@@ -138,7 +132,7 @@ The children nodes of @-nodes and $\Sigma$-nodes are called \index{spawn node}\d
 \begin{tikzpicture}[baseline=(root.base),level distance=5ex,inner ysep=0.5mm,sibling distance=10mm]
 \node (root) {$\lambda$}
 child {node {$\alpha$} };
-\end{tikzpicture};
+\end{tikzpicture}
 
 \item The computation tree of a higher-order variable or constant $\alpha : (A_1,\ldots,A_p,o)$ has the following form:
 \begin{tikzpicture}[baseline=(root.base),level distance=3ex,sibling distance=15mm]
@@ -150,7 +144,7 @@ child {node {$\alpha$}
     child{node {$\lambda\overline{\xi_p}$}
           child{node{$\ldots$}}}
     };
-\end{tikzpicture};
+\end{tikzpicture}
 \end{itemize}
 \end{example}
 
@@ -261,19 +255,19 @@ For every lambda node $n$ in $\INodes_\lambda$ we write $M^{(n)}$ for the subter
 (In particular we have $M^{(\theroot)} = \elnf{M}$.)
 \end{notations}
 
-\begin{remark}
-Since the computation tree is computed from the eta-long normal form, for every subtree of $\tau(M)$ of the form
-\begin{tikzpicture}[baseline=(root.base),level distance=3ex,sibling distance=15mm]
-\node (root) {$\lambda\overline\varphi$}
-child {node {$n$}
-    child{node {$\lambda\overline{\xi_1}$}
-          child{node{$\ldots$}}}
-    child{node{$\ldots$}}
-    child{node {$\lambda\overline{\xi_p}$}
-          child{node{$\ldots$}}}
-    };
-\end{tikzpicture}, we have $\ord{M^{(n)}}=0$.
-\end{remark}
+%\begin{remark}
+%Since the computation tree is computed from the eta-long normal form, for every subtree of $\tau(M)$ of the form
+%\begin{tikzpicture}[baseline=(root.base),level distance=3ex,sibling distance=15mm]
+%\node (root) {$\lambda\overline\varphi$}
+%child {node {$n$}
+%    child{node {$\lambda\overline{\xi_1}$}
+%          child{node{$\ldots$}}}
+%    child{node{$\ldots$}}
+%    child{node {$\lambda\overline{\xi_p}$}
+%          child{node{$\ldots$}}}
+%    };
+%\end{tikzpicture}, we have $\ord{M^{(n)}}=0$.
+%\end{remark}
 
 \begin{definition}[Type and order of a node]
 \label{def:nodeorder}
