@@ -43,7 +43,7 @@ We define the \emph{computation tree} of a simply-typed lambda-term as a tree re
 
 \begin{definition}
 \label{dfn:etalongnf}
-The \defname[eta-long normal form]{$\eta$-long normal form}, written $\elnf{M}$ or sometimes $\etalnf{t}$, \rem{Do you mean $\etalnf{M}$?} of a term $M$ of type $(A_1,\ldots,A_n,o)$ with $n \geq 0$ is defined as follows:%
+The \defname[eta-long normal form]{$\eta$-long normal form}, written $\elnf{M}$ or sometimes $\etalnf{M}$, of a term $M$ of type $(A_1,\ldots,A_n,o)$ with $n \geq 0$ is defined as follows:%
 \indexnotation{$\elnf{M}$}{Eta-long normal form of the term $M$}%
 \begin{eqnarray*}
   \elnf{\lambda x^\tau . N } & \defeq & \lambda x^\tau . \elnf{N} \\
@@ -1106,8 +1106,8 @@ For every non-empty traversal $t = t' \cdot t^\omega$ in $\travset(M)$:
 \\
 (t-\Sigma)+\Sigma = \left\{
             \begin{array}{ll}
-              t, & \hbox{if $t^\omega \not\in \Nodes_Sigma$\ ;} \\
-              t', & \hbox{if $t^\omega \in \Nodes_Sigma$\enspace .}
+              t, & \hbox{if $t^\omega \not\in \Nodes_\Sigma$\ ;} \\
+              t', & \hbox{if $t^\omega \in \Nodes_\Sigma$\enspace .}
             \end{array}
           \right.
 \end{align*}
@@ -1160,7 +1160,7 @@ that if $t^\omega$ is not in $\LNodes_@\union \LNodes_\Sigma$ then the P-view
 of $t^\star$ is obtained from $\pview{t}$ by keeping only the non
 @/$\Sigma$-nodes:
 \begin{equation}
- \pview{t^\star} = \pview{t} \setminus (\Nodes_@ \union \Nodes_Sigma) \enspace . \label{eqn:pview_tstar}
+ \pview{t^\star} = \pview{t} \setminus (\Nodes_@ \union \Nodes_\Sigma) \enspace . \label{eqn:pview_tstar}
 \end{equation}
 
 We define a projection operation for sequences of the form $t^\star$
@@ -1352,7 +1352,7 @@ tree $\tau(M)$. Consequently, $t^\omega$ necessarily belongs to the subtree of $
 \begin{lemma}
 \label{lem:intfilterstar_iff_hjintstarfiltersubtree}
  Let $t$ be a traversal and $r_0$ be an occurrence in $t$ of some lambda node $r'$. Then an
-occurrence $n \not\in \Nodes_@ \union \Nodes_Sigma$ of $t$ is hereditarily justified by $n_0$ in $t^\star\filter \Nodes^{(r')}$ if and only if $n$ appears in $t\filterplus r_0$.
+occurrence $n \not\in \Nodes_@ \union \Nodes_\Sigma$ of $t$ is hereditarily justified by $n_0$ in $t^\star\filter \Nodes^{(r')}$ if and only if $n$ appears in $t\filterplus r_0$.
 \end{lemma}
 \begin{proof}
 We proceed by induction on $t_{\prefixof n}$.
@@ -2052,7 +2052,7 @@ traversal (of $\tau(M^{(r')})$) thus the expression ``$(t\filterplus
 r_0)^\star$'' is well-defined. We show the result by induction on
 $t$: It is true for the empty traversal. Take $t=t'\cdot n$.
 
-If $n$ belongs to $\Nodes_@ \union \Nodes_Sigma$ then
+If $n$ belongs to $\Nodes_@ \union \Nodes_\Sigma$ then
 \begin{align*}
 ((t' \cdot n) \filterplus n_0)^\star &= (t' \filterplus n_0)^\star \cdot
                 \left\{
@@ -2072,14 +2072,14 @@ If $n$ belongs to $\Nodes_@ \union \Nodes_Sigma$ then
                   \end{array}
                 \right.
 \end{align*}
-Since $t^\omega \not\in \Nodes_@ \union \Nodes_Sigma$, by Lemma
+Since $t^\omega \not\in \Nodes_@ \union \Nodes_\Sigma$, by Lemma
 \ref{lem:intfilterstar_iff_hjintstarfiltersubtree} we have that $n$
 is hereditarily justified by $n_0$ in $t^\star\filter \Nodes^{(r')}$ if and only if
 $n$ appears in $t\filterplus n_0$. Hence we can conclude using the
 I.H.\ on $t'$.
 
 
-If $n$ does not belong to $\Nodes_@ \union \Nodes_Sigma$ then
+If $n$ does not belong to $\Nodes_@ \union \Nodes_\Sigma$ then
 \begin{align*}
 ((t' \cdot n) \filterplus n_0)^\star &= (t' \filterplus n_0)^\star \\
 &= (t'^\star \filter \Nodes^{(r')}) \filter n_0 & \mbox{by the I.H.\ on $t'$} \\
@@ -2088,7 +2088,7 @@ If $n$ does not belong to $\Nodes_@ \union \Nodes_Sigma$ then
 \end{proof}
 
 Consequently, by Lemma \ref{lem:minus_at_plus_at}, if $t^\omega
-\not\in \Nodes_@ \union \Nodes_Sigma$ then $t \filterplus r_0 =
+\not\in \Nodes_@ \union \Nodes_\Sigma$ then $t \filterplus r_0 =
 (t^\star\filter r_0) +\Sigma+@$.
 
 
@@ -3140,17 +3140,17 @@ The pointer-free function underlying $\psi_M$ is thus a monoid homomorphism.
     to moves of $\sem{\Gamma(r') \gamear T(r')}$. Since $\mathcal{M}_I$ contains the
     moves from the standard game $\sem{\Gamma(r') \gamear A(r')}$, we can consider $\psi_{M^{(r')}}$ as a function from $\Nodes^{r'\enable}$ to $\mathcal{M}_I$.
 
-    Every node in $n \in \Nodes\setminus (\Nodes_@ \union \Nodes_Sigma)$ is either hereditarily enabled by the root or by some $\lambda$-node in $\INodes_{\sf spawn}$. Therefore we can define the following relation $\psi^*_M$ from
-    $\Nodes\setminus (\Nodes_@ \union \Nodes_Sigma)$ to $\mathcal{M}_I$:
+    Every node in $n \in \Nodes\setminus (\Nodes_@ \union \Nodes_\Sigma)$ is either hereditarily enabled by the root or by some $\lambda$-node in $\INodes_{\sf spawn}$. Therefore we can define the following relation $\psi^*_M$ from
+    $\Nodes\setminus (\Nodes_@ \union \Nodes_\Sigma)$ to $\mathcal{M}_I$:
     $$ \psi^*_M = \psi_{M} \quad \union \Union_{r' \in \INodes_{\sf spawn}} \psi_{M^{(r')}} \enspace .$$
-    This relation is totally defined on $\Nodes\setminus (\Nodes_@ \union \Nodes_Sigma)$ since those nodes are either hereditarily justified by the root, by an @-node or by a $\Sigma$-node. Moreover it is a relation and \emph{not} a function since for a given variable node $x$,
-for every spawn node $r'$ occurring in the path from $x$ to $\theroot$, $x$ is hereditarily enabled by $r'$ \emph{with respect to the computation tree $\tau(M^{(r')})$}. Thus the domains of definition of the relations $\psi_{M^{(r')}}$ for such nodes $r'$ overlap.    It can be easily check, however, that for every node $n \in \Nodes\setminus (\Nodes_@ \union \Nodes_Sigma)$,
+    This relation is totally defined on $\Nodes\setminus (\Nodes_@ \union \Nodes_\Sigma)$ since those nodes are either hereditarily justified by the root, by an @-node or by a $\Sigma$-node. Moreover it is a relation and \emph{not} a function since for a given variable node $x$,
+for every spawn node $r'$ occurring in the path from $x$ to $\theroot$, $x$ is hereditarily enabled by $r'$ \emph{with respect to the computation tree $\tau(M^{(r')})$}. Thus the domains of definition of the relations $\psi_{M^{(r')}}$ for such nodes $r'$ overlap.    It can be easily check, however, that for every node $n \in \Nodes\setminus (\Nodes_@ \union \Nodes_\Sigma)$,
     the moves in $\psi^*_M (n)$ are all $\sim$-equivalent, which leads us to the following definition:
 
 \begin{definition}[Mapping from nodes to moves of the syntactically-revealed semantics]
     \label{def:phi mapping}
     We define the \emph{function}
-    $\varphi_M:\Nodes\setminus (\Nodes_@ \union \Nodes_Sigma) \rightarrow M_I$ as follows: For $n \in \Nodes\setminus (\Nodes_@ \union \Nodes_Sigma)$, $\varphi_M(n)$ is defined as the $\sim$-equivalence class containing the set $\psi^*_M (n)$. We omit the subscript in $\varphi_M$ if there is no ambiguity.
+    $\varphi_M:\Nodes\setminus (\Nodes_@ \union \Nodes_\Sigma) \rightarrow M_I$ as follows: For $n \in \Nodes\setminus (\Nodes_@ \union \Nodes_\Sigma)$, $\varphi_M(n)$ is defined as the $\sim$-equivalence class containing the set $\psi^*_M (n)$. We omit the subscript in $\varphi_M$ if there is no ambiguity.
 \end{definition}
 
 \begin{definition}[Mapping sequences of nodes to sequences of moves]
@@ -3249,7 +3249,7 @@ $\sem{\Gamma \gamear T}$. We need to show that $H = \Nodes^{\theroot\enable}$.
 
 Since $\psi_M \subseteq \psi^*(M)$ and the image of $\psi(M)$ is
 $\sem{\Gamma \gamear T}$, $H$ must contain the domain of
-$\psi(M)$ which is precisely $\Nodes^{\theroot\enable}$. Conversely, suppose that a node $n \in \Nodes\setminus (\Nodes_@\union \Nodes_Sigma)$ is mapped by
+$\psi(M)$ which is precisely $\Nodes^{\theroot\enable}$. Conversely, suppose that a node $n \in \Nodes\setminus (\Nodes_@\union \Nodes_\Sigma)$ is mapped by
 $\varphi^*(M)$ to some move $m\in \mathcal{M}_I$ which is $\sim$-equivalent
 to some move in $\sem{\Gamma \gamear T}$.
  If $m = \psi_M(n)$ then $n\in \Nodes^{\theroot\enable}$. Otherwise,
