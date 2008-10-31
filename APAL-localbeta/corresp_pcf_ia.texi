@@ -402,7 +402,7 @@ child {
 }
 \noindent Take the computation tree represented on the left (value-leaves are not shown). For every value $v \in\mathcal{D}$ we have the following traversal:
 $$\Pstr[27pt]{ t = (lxy){\lambda x y} \cdot (cond){\pcfcond} \cdot (l1-cond){\lambda^1} \cdot (1){1} \cdot (v11-1){1_1}
-    \cdot (l3){\lambda^3} \cdot (y-lxy){y} \cdot (vy-y){v_y}  \cdot (vl3-l3){v_{\lambda^3}} \cdot (vcond-cond,30){v_{\pcfcond}}
+    \cdot (l1v1-l1){\lambda^1_{1}} \cdot (l3){\lambda^3} \cdot (y-lxy){y} \cdot (vy-y){v_y}  \cdot (vl3-l3){v_{\lambda^3}} \cdot (vcond-cond,30){v_{\pcfcond}}
     \cdot (vlxy-lxy,30){v_{\lambda x y}} \enspace .
 }
 $$
@@ -410,6 +410,7 @@ The subsequence $t^*$ is given by:
 $$
 \Pstr[17pt]{ t^* =  (lxy){\lambda x y} \cdot
         (l1-lxy){\lambda^1} \cdot
+        (l1v1-l1){\lambda^1_{1}} \cdot 
         (l3-lxy){\lambda^3} \cdot
         (y-lxy){y} \cdot
         (vy-y){v_y}  \cdot
