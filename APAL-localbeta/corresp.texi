@@ -43,14 +43,16 @@ We define the \emph{computation tree} of a simply-typed lambda-term as a tree re
 
 \begin{definition}
 \label{dfn:etalongnf}
-The \defname[eta-long normal form]{$\eta$-long normal form}, written $\elnf{M}$ or sometimes $\etalnf{M}$, of a term $M$ of type $(A_1,\ldots,A_n,o)$ with $n \geq 0$ is defined as follows:%
+The \defname[eta-long normal form]{$\eta$-long normal form}, written $\elnf{M}$ or sometimes $\etalnf{M}$, of a (type-annotated)
+ term $M$ of type $(A_1,\ldots,A_n,o)$ with $n \geq 0$ is defined as follows:%
 \indexnotation{$\elnf{M}$}{Eta-long normal form of the term $M$}%
 \begin{eqnarray*}
   \elnf{\lambda x^\tau . N } & \defeq & \lambda x^\tau . \elnf{N} \\
   \elnf{\alpha N_1 \ldots N_m } & \defeq & \lambda \overline{\varphi}^{\overline{A}} . \alpha \elnf{N_1}\ldots \elnf{N_m} \elnf{\varphi_1} \ldots \elnf{\varphi_n} \\
   \elnf{(\lambda x^\tau . N) N_1 \ldots N_p } & \defeq & \lambda \overline{\varphi}^{\overline{A}} . (\lambda x^\tau . \elnf{N}) \elnf{N_1} \ldots \elnf{N_p} \elnf{\varphi_1} \ldots \elnf{\varphi_n}
 \end{eqnarray*}
-where $m \geq 0$, $p\geq 1$, $x$ is a variable, $\overline{\varphi} = \varphi_1 \ldots \varphi_n$ and each $\varphi_i : A_i$ is a fresh variable, and $\alpha$ is either a variable or a constant.
+where $m \geq 0$, $p\geq 1$, $x$ is a variable, $\overline{\varphi} = \varphi_1 \ldots \varphi_n$ and each $\varphi_i : A_i$ is a fresh variable, and $\alpha$ is either a variable or a constant. The binder notation `$\lambda \overline{\varphi}^{\overline A}$' stands for
+`$\lambda \varphi_1^{A_1} \ldots \varphi_n^{A_n}$' if $n\geq 1$, and for `$\lambda$' (called the \emph{dummy lambda}) in the case $n=0$.
 \end{definition}
 
 
