@@ -367,7 +367,7 @@ Base case: $s$ is the initial stack and the result holds trivially.
 Step case: Since $s$ is safe we have
 $\orddec(s) = \langle \lambda \overline{\eta}_r^1
 , \ldots, \lambda \overline{\eta}_1^1   \rangle$.
-By Eq.\ \ref{eqn_safe_prefix}, $\orddec_l(s)$ is a prefix of $\orddec(s)$.
+By (\ref{eqn_safe_prefix}), $\orddec_l(s)$ is a prefix of $\orddec(s)$.
 Let $b$ be the index in $\orddec(s)$ of the last node of $\orddec_l(s)$
 (thus $\lambda\overline\eta_b$ is the last node in $top_2\, s$ with order $>l$).
 
@@ -391,7 +391,7 @@ for all $b\leq j \leq r$ such that $n-\ord{\lambda \overline{\eta}_{j}} +1 \leq 
 
 Suppose that $|s_{\prefixof \lambda\overline\eta_j}|<|s|$.
 The stack $s_{\prefixof \lambda\overline\eta_j}$ is safe by Lemma \ref{lem:safe_imp_incprefixsafe}. Thus since $s_{\prefixof \lambda\overline\eta_j}$ is smaller than $s$ we can apply the induction hypothesis on $s_{\prefixof \lambda\overline\eta_j}$ which gives that $s_{\prefixof \lambda\overline\eta_j}^{\langle n-l+1\rangle}$ is $l$-safe. But by
-Eq.\ \ref{eqn_ordec_l},  $\orddec_l(s_{\prefixof \lambda\overline\eta_j}^{\langle n-l+1\rangle})
+(\ref{eqn_ordec_l}),  $\orddec_l(s_{\prefixof \lambda\overline\eta_j}^{\langle n-l+1\rangle})
 = \orddec(s_{\prefixof \lambda\overline\eta_j}^{\langle n-l+1\rangle})$
 therefore $s_{\prefixof \lambda\overline\eta_j}^{\langle n-l+1\rangle}$
 is safe. Hence $collapse\, s_{\prefixof \lambda\overline\eta_j}^{\langle n-l+1\rangle}$ is safe.
