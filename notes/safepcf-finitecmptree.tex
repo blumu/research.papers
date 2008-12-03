@@ -98,7 +98,7 @@ The definition of the  order of an abstraction node does not change:
 it is the order of the term represented by the subtree rooted at
 this node. In other word, the order of $\lambda \overline{x}$ is defined as the order of $\lambda \overline{y}$ where $\overline{y}$ is the sublist of $\overline{x}$  obtained by removing all the recursion variables in parenthesis.
 
-The numbering of variables bound in a $\lambda$-node labelled $\lambda \overline{x}$ is as follows: The $i^{\sf th}$ standard variable in $\overline{x}$ is denoted by $i$ and the the $i^{\sf th}$ recursion variable in $\overline{x}$ is denoted by $(i)$. The links in a justified sequence of nodes are labelled accordingly.
+The numbering of variables bound in a $\lambda$-node labelled $\lambda \overline{x}$ is as follows: The $i^{\sf th}$ standard variable in $\overline{x}$ is denoted by $i$ and the $i^{\sf th}$ recursion variable in $\overline{x}$ is denoted by $(i)$. The links in a justified sequence of nodes are labelled accordingly.
 
 We can now define a notion of traversals adapted to this new kind of computation tree as follows. All the traversal rules are kept unmodified. The recursion variables in the $\lambda$-nodes are automatically ignored by the rules since such variables are numbered differently from standard variables. In particular, the (Var) rules only applies to non-recursion variables.
 We add a new rule to handle recursion variable:
