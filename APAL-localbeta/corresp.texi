@@ -1091,7 +1091,7 @@ Let $t$ be the traversal given in example \ref{examp:trav}, we have:
 \end{example}
 
 
-We also want to remove $\Sigma$-nodes form the traversals. To that end we define the operation $-\Sigma$ and $+\Sigma$ in the exact same way as $-@$ and $+@$. Again these transformations are well-defined since in a traversal, a $\Sigma$-node $f$ is always immediately preceded by its parent node $p$, and a value-node $v_p$ is always immediately preceded by a value-node $v_f$.
+We also want to remove $\Sigma$-nodes from the traversals. To that end we define the operation $-\Sigma$ and $+\Sigma$ in the exact same way as $-@$ and $+@$. Again these transformations are well-defined since in a traversal, a $\Sigma$-node $f$ is always immediately preceded by its parent node $p$, and a value-node $v_p$ is always immediately preceded by a value-node $v_f$.
 
 Note that the operations $-@$ and $-\Sigma$ are commutative:
 $(t-@)-\Sigma = (t-\Sigma)-@$.
@@ -2503,7 +2503,7 @@ Observe that in particular $\Sigma_1 \| \Sigma_2 = \Sigma_1;^{\{0..l\},\{0..l\}}
 \end{itemize}
 \end{definition}
 In words, the \emph{uncovered composition}
-of $\Sigma_1 \|\ \Sigma_2$ is the set of uncovered plays obtained by performing the usual composition of the standard strategies underlying $\Sigma_1$ and $\Sigma_2$ while preserving the internal moves already in $\Sigma_1$ and $\Sigma_2$ as well as the internal movea produced by the composition.
+of $\Sigma_1 \|\ \Sigma_2$ is the set of uncovered plays obtained by performing the usual composition of the standard strategies underlying $\Sigma_1$ and $\Sigma_2$ while preserving the internal moves already in $\Sigma_1$ and $\Sigma_2$ as well as the internal moves produced by the composition itself.
 
 On the other hand, given a product game $B = B_0
 \gameprod \ldots \gameprod B_l$,  the \emph{partially covered composition}
@@ -3031,7 +3031,7 @@ node (qlx){$q$} child{node{$q^1$} child[dotted]{node{}}child[dotted]{node{}}} ch
 computation tree $\tau(M)$, the arena of the game  $\sem{\Gamma \gamear T}$, and
 the function $\psi_M$ (in dashed lines):
 \begin{compactitem}
-\item $M = \lambda x^o . x$
+\item $M \equiv \lambda x^o . x$
 \begin{center}
 \begin{tikzpicture}[baseline=(root.base),level distance=5ex,sibling distance=15mm]
 \node (root){$\lambda x$} child{node(x){$x$}}
@@ -3042,7 +3042,7 @@ node (qlx){$q_{\lambda x}$} child{node(qx){$q_x$}};
 \end{tikzpicture}
 \end{center}
 
-\item $M = \lambda f^{(o,o,o)} . f x y$
+\item $M \equiv \lambda f^{(o,o,o)} . f x y$
 \begin{center}
 \begin{tikzpicture}[baseline=(root.base),level distance=5ex,inner ysep=0.5mm,sibling distance=15mm]
 \path
@@ -3069,7 +3069,7 @@ child{node(qy){$q_y$}};
 \end{center}
 
 
-\item $M = \lambda f^{(o,o)} . (\lambda g^{(o,o,o)} . g (f x) z) (\lambda y^o w^o . y)$
+\item $M \equiv \lambda f^{(o,o)} . (\lambda g^{(o,o,o)} . g (f x) z) (\lambda y^o w^o . y)$
 \begin{center}
 \begin{tikzpicture}[baseline=(root.base),level distance=4ex,inner ysep=0.5mm,sibling distance=15mm]
 \path
@@ -3164,7 +3164,7 @@ where $\varphi_M(u)$ is equipped with $u$'s pointers.
 \end{definition}
 
 \begin{example}
-Take $M = \lambda x^o . (\lambda g^{(o,o)} . g x z) (\lambda y^o .
+Take $M \equiv \lambda x^o . (\lambda g^{(o,o)} . g x z) (\lambda y^o .
 y)$. The diagram below represents the computation tree (middle) and
 the relation $\psi^*_M = \psi_{\lambda x}\union \psi_{\lambda g. g x}
 \union \psi_{\lambda y.y}$ (dashed-lines).
@@ -3551,7 +3551,7 @@ with the two nodes $p$ and $\lambda \overline{x}$ appearing consecutively. We ca
 
 We now state and prove the correspondence theorem for the
 simply-typed lambda calculus without interpreted constants
-($\Sigma = \emptyset$). This theorem establishes a correspondence between the denotation of a term in the \emph{intentional} game model and the set of traversals of its computation tree. The result extends immediately to the
+($\Sigma = \emptyset$). This theorem establishes a correspondence between the denotation of a term in the \emph{intensional} game model and the set of traversals of its computation tree. The result extends immediately to the
 simply-typed lambda calculus with \emph{uninterpreted} constants since we can regard constants as being free variables.
 
 \begin{theorem}[The Correspondence Theorem]
@@ -3659,7 +3659,7 @@ child {node {$q_n$}
         $$
 
 
-    \item (@-application) $M = N_0 N_1 \ldots N_p :o$ where $N_0$ is not a variable.
+    \item (@-application) $M \equiv N_0 N_1 \ldots N_p :o$ where $N_0$ is not a variable.
     We have the typing judgments $\Gamma \entail N_0 N_1 \ldots
     N_p : o$ and $\Gamma \entail N_i : B_i$ for $i\in 0..p$ where
     $B_0 = (B_1,\ldots,B_p,o)$ and $p\geq 1$.
@@ -3921,7 +3921,7 @@ $\varphi_M(t^\star) = u$.
 \end{enumerate}
 
 
-    \item (Var-application) $M = x_i N_1 \ldots N_p :o$.
+    \item (Var-application) $M \equiv x_i N_1 \ldots N_p :o$.
 
     The revealed denotation is
     $\syntrevsem{\Gamma \entail M : o} =  \underbrace{\langle
@@ -4094,7 +4094,7 @@ $f(A) = B$.
 
 
 \begin{example}
-Take $M = \lambda f z . (\lambda g x . f x) (\lambda y. y) (f z) :
+Take $M \equiv \lambda f z . (\lambda g x . f x) (\lambda y. y) (f z) :
 ((o,o),o, o)$.  The figure below represents the computation tree
 (left tree), the arena $\sem{((o,o),o, o)}$ (right tree) and
 $\psi_M$ (dashed line). (Only question moves are shown for clarity.)

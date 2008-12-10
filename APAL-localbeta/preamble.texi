@@ -121,3 +121,5 @@
 \newcommand\Nodes{N}% set of nodes
 \newcommand\INodes{IN}% set of inner nodes
 \newcommand\LNodes{L}% set of leaf nodes
+
+\newcommand\ycomb{\textsf{Y}}

@@ -143,7 +143,7 @@ Can we encode the set of traversals of a Safe $PCF_2$ term into a 2-DPDA?
 that of 2-DPDA equivalence?}
 
 The simply-typed $\lambda$-calculus augmented with the
-$Y$-combinator written $\lambda^\rightarrow + Y$ is as expressive as
+$\ycomb$-combinator written $\lambda^\rightarrow + Y$ is as expressive as
 recursion schemes in the sense that any \emph{ground type} term of
 $\lambda^\rightarrow + Y$ with redexes of order $n$ at most can be
 encoded into an order-$n$ recursion scheme (furthermore, the
@@ -179,9 +179,9 @@ substraction function is not definable in $\lambda^\rightarrow$
 = y {\sf\ then\ } u {\sf\ else\ } v$ is not definable)
 \cite{DBLP:journals/jacm/FortuneLO83}. Hence we know that \pcf\
 cannot be simulated into the simply-typed $\lambda$-calculus without
-the $Y$ combinator.
+the $\ycomb$ combinator.
 
-Would the $Y$ combinator help to simulate the \pcf\ constructs? It
+Would the $\ycomb$ combinator help to simulate the \pcf\ constructs? It
 does not seem so. Indeed, as we have just seen, substraction --
 which is definable in $\pcf$ using recursion and the conditional
 operator -- is not definable in $\lambda^\rightarrow$. Throwing in

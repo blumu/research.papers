@@ -3,8 +3,8 @@ established for the lambda calculus to other languages such as \pcf\ and \ialgol
 
 \subsection{\pcf\ fragment}
 
-The $Y$ combinator needs a special treatment. In order to deal with
-it, we use an idea from Abramsky and McCusker's tutorial on game semantics \cite{abramsky:game-semantics-tutorial}: we consider the sublanguage \pcf$_1$ of \pcf\ in which the only allowed use of the $Y$ combinator is in terms of the form $Y(
+The $\ycomb$ combinator needs a special treatment. In order to deal with
+it, we use an idea from Abramsky and McCusker's tutorial on game semantics \cite{abramsky:game-semantics-tutorial}: we consider the sublanguage \pcf$_1$ of \pcf\ in which the only allowed use of the $\ycomb$ combinator is in terms of the form $Y(
 \lambda x^A .x )$ for some type $A$. We will write $\Omega_A$ to
 denote the non-terminating term $Y(\lambda x^A .x)$ for a given type
 $A$.
@@ -59,8 +59,8 @@ above. Clearly $(CT, \treeapprox)$ is also a complete partial order.
 \bigskip
 
 \begin{example}
-Take  $M = Y (\lambda f x. f x)$ where $f:(o,o)$ and $x:o$. Its computation tree $\tau(M)$, is the tree
-representation of the $\eta$-long nf of the infinite term $(\lambda f x. f x) ((\lambda f x. f x) ((\lambda f x. f x)  ( \ldots$. It is the unique (up to alpha conversion) solution of the following equation on trees:
+Take  $M \equiv Y (\lambda f^{(o,o)} x^o. f x)$. Its computation tree $\tau(M)$, is the tree
+representation of the $\eta$-long nf of the infinite term $(\lambda f^{(o,o)} x^o. f x) ((\lambda f^{(o,o)} x^o. f x) ((\lambda f^{(o,o)} x^o. f x)  ( \ldots$. It is the unique (up to alpha conversion) solution of the following equation on trees:
 $$\tau(M) =
 \begin{tikzpicture}[level distance=7mm,inner ysep=0.5mm,baseline=(root.base)]
 \node (root) {$\lambda y$}
@@ -267,7 +267,7 @@ $\tau(M)$. Then:
 \end{proposition}
 \begin{proof}
 We first show the result for \pcf$_1$: For (i), the proof is an
-induction identical to the proof of Theorem \ref{thm:correspondence}; we just need to complete it with the new constants cases. The cases \pcfsucc, \pcfpred, \pcfcond\ and numeral constants are straightforward. Case $M = \Omega_o$: We have $\travset(\Omega_o) = \prefset ( \{ \lambda \cdot \bot \} )$ therefore
+induction identical to the proof of Theorem \ref{thm:correspondence}; we just need to complete it with the new constants cases. The cases \pcfsucc, \pcfpred, \pcfcond\ and numeral constants are straightforward. Case $M \equiv \Omega_o$: We have $\travset(\Omega_o) = \prefset ( \{ \lambda \cdot \bot \} )$ therefore
 $\travset(\Omega_o)^{\filter \theroot} = \prefset( \{ \lambda \}
 )$ and $\sem{\Omega_o} = \prefset( \{ q \})$ with
 $\varphi(\lambda) = q$. Hence $\sem{\Omega_o} = \varphi
@@ -293,7 +293,7 @@ bijection from $\travset(M)^{\filter \theroot}$ to $\sem{M}$:
 $$\varphi : \travset(M)^{\filter \theroot} \stackrel{\cong}{\longrightarrow} \sem{M} \enspace .$$
 
 \begin{example}[Successor operator]
-Consider the term $M = \pcfsucc\ 5$ whose computation tree is
+Consider the term $M \equiv \pcfsucc\ 5$ whose computation tree is
 represented below. Vertices attached to their parent node with a dashed line represent the value-leaves.
 \begin{center}
 \begin{tikzpicture}[level distance=7mm,inner ysep=0.5mm,sibling distance=10mm]
@@ -410,7 +410,7 @@ The subsequence $t^*$ is given by:
 $$
 \Pstr[17pt]{ t^* =  (lxy){\lambda x y} \cdot
         (l1-lxy){\lambda^1} \cdot
-        (l1v1-l1){\lambda^1_{1}} \cdot 
+        (l1v1-l1){\lambda^1_{1}} \cdot
         (l3-lxy){\lambda^3} \cdot
         (y-lxy){y} \cdot
         (vy-y){v_y}  \cdot
@@ -454,11 +454,11 @@ By the correspondence theorem, the sequence of moves $\varphi(t^*)$ (represented
 
 \begin{remark}[Finite representation of the computation tree]
 \label{rem:finite_pcftree}
-Due to the presence of the Y combinator, computation trees of \pcf\ terms are potentially infinite. It is possible to give an equivalent finite representation using computation \emph{graphs}. We briefly describe here how this can be achieved.
+Due to the presence of the $\ycomb$ combinator, computation trees of \pcf\ terms are potentially infinite. It is possible to give an equivalent finite representation using computation \emph{graphs}. We briefly describe here how this can be achieved.
 
 \newcommand\genlambda{\lambda\kern -0.7ex\lambda}
 
-The idea is to replace Y-recursion by $\mu$-recursion: each subterm of the form $Y_A~M$ is replaced by $\mu f. M f$ for $f$ fresh. The computation graph is then obtained from the eta-long normal form of the term.
+The idea is to replace $\ycomb$-recursion by $\mu$-recursion: each subterm of the form $Y_A~M$ is replaced by $\mu f. M f$ for $f$ fresh. The computation graph is then obtained from the eta-long normal form of the term.
 The abstraction nodes are generalized to take into account $\mu$ binders: an abstraction node is of the form $\genlambda \overline{x}$
 where $\overline{x}$ is a list of $\mu$-bound and $\lambda$-bound variables where the $\mu$-bound variables are written in parenthesis to distinguish them from $\lambda$-bound variables.
 

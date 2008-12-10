@@ -17,7 +17,7 @@
 \begin{abstract}
 It would be nice if we could have a finite transition system (such as a
 higher-order DPDA) that recognizes the set of traversals of the
-compuation tree for some fragment of \pcf. The idea would be to have an automaton whose states are the nodes of the computation tree. The problem with PCF is that computation tree are infinite due to the presence of the Y combinator. Here we present an alternative definition of computation tree for PCF.
+compuation tree for some fragment of \pcf. The idea would be to have an automaton whose states are the nodes of the computation tree. The problem with PCF is that computation tree are infinite due to the presence of the $\ycomb$ combinator. Here we present an alternative definition of computation tree for PCF.
 \end{abstract}
 
 
@@ -73,7 +73,7 @@ where $\travset_{\widetilde\tau}(M)^{\filter \theroot}$ denotes the set of reduc
 
 \section*{An alternative finite representation}
 
-In order to handle the Y combinators, we introduce a new kind of abstraction node. Such node is labelled $\lambda \overline{x}$ where each variable occurring in $\overline{x}$ is either a standard variable or a ``recursion variable''. Recursion variables are put into parenthesis in order to distinguish them from standard ones. The set $L$ of node labels is given by the grammar:
+In order to handle the $\ycomb$ combinators, we introduce a new kind of abstraction node. Such node is labelled $\lambda \overline{x}$ where each variable occurring in $\overline{x}$ is either a standard variable or a ``recursion variable''. Recursion variables are put into parenthesis in order to distinguish them from standard ones. The set $L$ of node labels is given by the grammar:
 \begin{eqnarray*}
 L &::=& \lambda\ V_{abs}^*\ |\ @\ |\ \mathcal{V} \\
 V_{abs} &::=& \mathcal{V}\ |\ (\mathcal{V})
@@ -81,9 +81,9 @@ V_{abs} &::=& \mathcal{V}\ |\ (\mathcal{V})
 for some countable set $\mathcal{V}$ of variables.
 
 
-A term of the form $Y_A (\lambda f :A. M)$ where $M:A$ will be written  $\lambda (f) . M$. This notation also accounts for ground type recursion, for instance the \iawhile\ operator of Idealized Algol defined as $\iawhile\ C\ \iado\ I \equiv Y( \lambda f. \pcfcond\ C\ \iaskip\ (\iaseq\ I f))$ is rewritten as $\lambda (f) . \pcfcond\ C\ \iaskip\ (\iaseq\ I f)$.
+A term of the form $Y_A (\lambda f :A. M)$ where $M:A$ will be written  $\lambda (f) . M$. This notation also accounts for ground type recursion, for instance the \iawhile\ operator of Idealized Algol defined as $\iawhile\ C\ \iado\ I \equiv \ycomb ( \lambda f. \pcfcond\ C\ \iaskip\ (\iaseq\ I f))$ is rewritten as $\lambda (f) . \pcfcond\ C\ \iaskip\ (\iaseq\ I f)$.
 
-To construct the computation tree of a PCF term, we first compute the $\eta$-long normal form as usual except for the Y combinator case which is treated as follows.
+To construct the computation tree of a PCF term, we first compute the $\eta$-long normal form as usual except for the $\ycomb$ combinator case which is treated as follows.
 For each term $Y_A F$ where $F:A\rightarrow A$, let  $\elnf{F} = \lambda f \overline{x}. M$ where $f:A$ and $M:o$. The \emph{finite eta-normal form} of $Y_A F$ is defined to be
 $\elnf{Y_A F} = \lambda (f) \overline{x} . M$.
 The \defname{finite computation tree} is then obtained from the finite eta-normal form in the standard way:
