@@ -436,7 +436,7 @@ $t_{\prefixof n}\filter A$ that hereditarily justifies $n$ (This node can be fou
 
 
 \begin{definition}[Hereditary projection]
-Let $t$ be a justified sequence of nodes of $\travset(M)$ and $n$ be
+Let $t$ be a justified sequence of nodes of $\tau(M)$ and $n$ be
 some occurrence in $t$. We define the justified sequence $t \filter
 n$ as  the subsequence of $t$ consisting of nodes hereditarily
 justified by $n$ in $t$.
@@ -461,7 +461,7 @@ The nodes occurrences that do not have pointers in a justified
 sequence are called \defname{initial occurrences}. An initial
 occurrence is either the root of the computation tree,
 an @-node or a $\Sigma$-node. Let $n$ be occurrence in a justified
-sequence of nodes $t$. The subsequence of $t$ consisting of occurrences that are hereditarily justified by the same \emph{initial occurrence} as $n$ is called \defname[thread!in a traversal]{thread} of $n$. Thus each thread in a traversal contains a single initial occurrence. The thread of $n$ is given by $n \filter i$ where $i$ is the first node in $t$ hereditarily justifying $n$; $i$ is
+sequence of nodes $t$. The subsequence of $t$ consisting of occurrences that are hereditarily justified by the same \emph{initial occurrence} as $n$ is called \defname[thread!of a justified sequence]{thread} of $n$. Thus each thread in a justified sequence contains a single initial occurrence. The thread of $n$ is given by $n \filter i$ where $i$ is the first node in $t$ hereditarily justifying $n$; $i$ is
 called the \defname{initial occurrence of the thread of $n$}.
 
 \subsubsection{Views}
@@ -1009,8 +1009,8 @@ Otherwise $n$ is an O-node. By O-visibility it points in $\oview{t'}$, thus by t
 
 
 
-Occurrences of input-variable nodes correspond to point of the computation at which the term interacts with its context.
-At these points, a traversal can be extended in a non-deterministic way. In contrast, after a node that is hereditarily enabled by an @-node or by a constant node, the next visited node is uniquely determined. We can therefore think of such nodes as being ``internal'' to the computation: their semantics is predefined and cannot be altered by the context in which the term appears. If we want to extract the essence of the computation from a traversal, a natural way to proceed thus consists in keeping only occurrences of nodes that are hereditarily enabled by the root:
+Occurrences of input-variable nodes correspond to points in the computation where the term interacts with its context.
+At these points, a traversal can be extended in a non-deterministic way. In contrast, at a node that is hereditarily enabled by an @-node or by a constant node, the next visited node is uniquely determined. We can therefore think of such nodes as being ``internal'' to the computation: their semantics is predefined and cannot be altered by the context in which the term appears. If we want to extract the essence of the computation from a traversal, a natural way to proceed thus consists in keeping only occurrences of nodes that are hereditarily enabled by the root:
 \begin{definition}
 The \defname{core of a traversal} $t$, written $t\filter \theroot$, is defined as $t\filter \Nodes^{\theroot \enable}$ (\ie, the subsequence of $t$ consisting of the occurrences of nodes that are hereditarily enabled by the root $\theroot$ of the computation tree). The set of traversal cores of $M$ is denoted by $\travset(M)^{\filter \theroot}$:
 $$\travset(M)^{\filter \theroot} \defeq \{ t \filter \theroot \ :\  t  \in \travset(M) \} \enspace . $$
