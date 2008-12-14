@@ -11,8 +11,8 @@ $A$.
 
 We introduce the \emphind{syntactic approximants} to $Y_A M$:
 \begin{eqnarray*}
-Y^0_A M &=& \Gamma \entail \Omega_A : A\\
-Y^{n+1}_A M &=& M( Y^n M ) \enspace .
+Y^0_A M &\defeq& \Gamma \entail \Omega_A : A\\
+Y^{n+1}_A M &\defeq& M( Y^n M ) \enspace .
 \end{eqnarray*}
 For every \pcf\ term $M$ and natural number $n$, we define $M_n$ to be
 the \pcf$_1$ term obtained from $M$ by replacing each subterm of the
@@ -700,7 +700,7 @@ The enabling relation and the definition of justified sequence is modified so th
 
 \subsubsection*{Children numbering convention}
 
-Let $p$ be a node and suppose that its $i^{th}$ child $n$ has return type \iavar. Then $n$ is a generalized lambda-node with subnodes
+Let $p$ be a node and suppose that its $i^{th}$ child $n$ has return type \iavar. Then $n$ is a generalized lambda node with subnodes
 $\lambda^r \overline{\xi}$, $\lambda^{w_0}
 \overline{\xi}$, \ldots. From the point of view of the parent node $p$, these subnodes are referenced as ``$i.\alpha$'' where $0\leq i \leq arity(p)$ and $\alpha \in \{ r\} \union\{ w_k \ | \ k \in \nat \}$. For instance  $i.r$ refers to the root labelled $\lambda^r \overline{\xi}$ of the $i^{th}$ child of $p$, and
 $i.w_k$ refers to the root labelled $\lambda^{w_k} \overline{\xi}$.
@@ -820,9 +820,9 @@ Take for instance the term $\iaassign\ (\iamkvar\ (\lambda x . M) N)
 
 Let $x$ be an internal variable node. Then by definition it is either hereditarily justified by an @-node or by a $\Sigma$-constant node.
 \begin{itemize}
-\item Suppose that $x$'s binder is a lambda-node $\lambda \overline{x}$ and $x \in \INodes^{@\enable}$.
+\item Suppose that $x$'s binder is a lambda node $\lambda \overline{x}$ and $x \in \INodes^{@\enable}$.
 
-This case is a generalization of the rule \rulenamet{Var} (Sec.~\ref{subsec:traversal}). The only difference is that for variables of type \iavar, the lambda nodes preceding $x$ in the traversal determines the lambda-node that is visited next:
+This case is a generalization of the rule \rulenamet{Var} (Sec.~\ref{subsec:traversal}). The only difference is that for variables of type \iavar, the lambda nodes preceding $x$ in the traversal determines the lambda node that is visited next:
 $$ \rulename{Var_\iavar}
     \rulef{\Pstr[0.6cm]{t \cdot (n){n} \cdot (lx){\lambda \overline{x}}     \ldots \lambda^\alpha x_i \cdot (x-lx,40:i){x_i} } \in \travset}
 {\Pstr[25pt]{t \cdot (n){n} \cdot (lx){\lambda \overline{x}}
@@ -832,7 +832,7 @@ $$ \rulename{Var_\iavar}
 \enspace .
 $$
 
-\item Suppose that $x$'s binder is a lambda-node and $x \in \INodes^{\INodes_\Sigma\enable}$.
+\item Suppose that $x$'s binder is a lambda node and $x \in \INodes^{\INodes_\Sigma\enable}$.
 Then $x$'s binder is necessarily the second child of a \iamkvar-node
 (since \iamkvar\ is the only constant of order greater than 0).
 $$ \rulename{\iamkvar\mbox{-}Var}  \rulef{\Pstr[17pt]{t \cdot \lambda^{w_k} \overline{\xi} \cdot \iamkvar \cdot (lx){\lambda x} \cdot t_2 \cdot (x-lx)x \in \travset}}

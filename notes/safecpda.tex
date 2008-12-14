@@ -106,7 +106,7 @@ A configuration is said to be \defname{reachable} if it is $\rightarrow$-reachab
 within a step (A), (S), (L), $(V_1)$ or $(V_0)$ of $CPDA(G)$.
 
 An element of the CPDA stack is usually written $a^{(j,k)}$ where $a\in \Gamma$ and the exponent $(j,k)$
-encodes the pointer associated to the stack symbol. We observe that in $CPDA(G)$ when pushing a lambda-node $\lambda \overline{\xi}$ on the stack, the associated link is always of the form $(n-\ord{\lambda \overline{\xi}}+1, k)$, therefore the first component of the link is recoverable from the node itself. Because the $j$-component of a link cannot be changed once the element is pushed onto the stack, for any reachable stack of $CPDA(G)$, all the lambda nodes will have a $j$-component of the form given above.
+encodes the pointer associated to the stack symbol. We observe that in $CPDA(G)$ when pushing a lambda node $\lambda \overline{\xi}$ on the stack, the associated link is always of the form $(n-\ord{\lambda \overline{\xi}}+1, k)$, therefore the first component of the link is recoverable from the node itself. Because the $j$-component of a link cannot be changed once the element is pushed onto the stack, for any reachable stack of $CPDA(G)$, all the lambda nodes will have a $j$-component of the form given above.
 Furthermore, since the collapse operation is only executed on stack whose top element is a lambda node, the $j$-component is in fact never used for non-lambda nodes.
 Hence we can omit the $j$-component altogether when representing stack symbols:  we will write $\lambda \overline{\xi}^{k}$ to mean $\lambda \overline{\xi}^{(n-\ord{\lambda \overline{\xi}}+1,k)}$.
 
@@ -134,7 +134,7 @@ greater than $\ord{\lambda \overline{\eta}_{l-1}^{k_{l-1}}}$,
 
 \item  $r$ is defined as the smallest number such that
 $s_{\prefixof \lambda \overline{\eta}_{r}^{k_{r}}}$ does not contain
-any lambda-node of order strictly greater than $\lambda
+any lambda node of order strictly greater than $\lambda
 \overline{\eta}_{r}^{k_{r}}$.
 \end{compactitem}
 
@@ -220,7 +220,7 @@ such that $top_1\,s \in \INodes_@ \union \INodes_{var}$.
 \item For any non-lambda node $a \in \Gamma$ and link $(j,k)$ we have
 $$ \orddec(push_1\,a^{(j,k)}\,s) = \orddec(s) \ .$$
 
-\item If $top_1 s$ is not a lambda-node then
+\item If $top_1 s$ is not a lambda node then
 $$ \orddec(pop_1\,s) = \orddec(s) \ .$$
 \end{enumerate}
 \end{lemma}
@@ -291,7 +291,7 @@ Then $s$ is safe iff
 
 \item An order-$1$ stack $s$ is safe if and only if $\orddec(s) = \langle \lambda \overline{\eta}_r^1, \ldots , \lambda \overline{\eta}_1^1 \rangle$ with $r\geq 1$;
 a higher-order stack $s$ is safe iff $top_2\,s$ is safe and
-for any lambda-node $\lambda\overline\eta \in \orddec(s)$ such that $n-\ord{\lambda \overline{\eta}}+1 \leq \ord{s}$, $collapse\, s_{\prefixof\lambda\overline\eta}$ is safe.
+for any lambda node $\lambda\overline\eta \in \orddec(s)$ such that $n-\ord{\lambda \overline{\eta}}+1 \leq \ord{s}$, $collapse\, s_{\prefixof\lambda\overline\eta}$ is safe.
 
 \end{enumerate}
 
@@ -332,9 +332,9 @@ stack. Then:
 \begin{enumerate}
     \item $top_{\ord{s}}\,s$ is safe;
 
-  \item if $top_1\,s$ is not a lambda-node then $pop\,s$ is safe;
+  \item if $top_1\,s$ is not a lambda node then $pop\,s$ is safe;
   \item for any non-lambda node symbol $a$, $1 \leq j \leq n$, $k \geq 1$, $push_1\,a^{(j,k)}\,s$ is safe;
-  \item for any lambda-node symbol $a$, $push_1\,a^{(n-\ord{a}+1,1)}\,s$ is safe.
+  \item for any lambda node symbol $a$, $push_1\,a^{(n-\ord{a}+1,1)}\,s$ is safe.
 \end{enumerate}
 \end{lemma}
 \begin{proof}
@@ -429,11 +429,11 @@ then $s$ is safe.
 Let $s = [s_1 \ldots s_l~s_{l+1}]$ for some $l\geq0$.
 We proceed by induction on  $top_{\ord{s}}\,s=s_{l+1}$.
 The base case $s_{l+1} = \bot_{\ord{s}-1}$ is trivial.
-Suppose that $s_{l+1}$ is not the empty stack. We show that $s$ is safe using the inductive definition of stack-safety \ie we show that $top_2\,s$ is safe and that for all lambda-node $\lambda \overline{\eta} \in \orddec(s)$ such that $n-\ord{\lambda \overline{\eta}}+1 \leq \ord{s}$, $collapse\,s_{\prefixof \lambda \overline{\eta}}$ is safe:
+Suppose that $s_{l+1}$ is not the empty stack. We show that $s$ is safe using the inductive definition of stack-safety \ie we show that $top_2\,s$ is safe and that for all lambda node $\lambda \overline{\eta} \in \orddec(s)$ such that $n-\ord{\lambda \overline{\eta}}+1 \leq \ord{s}$, $collapse\,s_{\prefixof \lambda \overline{\eta}}$ is safe:
 \begin{itemize}
 \item First condition: If $\ord{s}=2$ then $top_2\,s = top_{\ord s}\,s$ which is safe by the second assumption. Otherwise $\ord{s}>2$ and since $top_{\ord{s}} s$ is safe, so is $top_2(top_{\ord{s}} s)$. By definition of $top_2$ we have $top_2\,s = top_2(top_{\ord{s}}\, s)$ hence $top_2\,s$ is safe.
 
-\item Second condition: Let $\lambda \overline{\eta}$ be a lambda-node in $\orddec(s) = \orddec(s_{l+1})$ such that $n-\ord{\lambda \overline{\eta}}+1 \leq \ord{s}$.
+\item Second condition: Let $\lambda \overline{\eta}$ be a lambda node in $\orddec(s) = \orddec(s_{l+1})$ such that $n-\ord{\lambda \overline{\eta}}+1 \leq \ord{s}$.
 Since $top_2\,s$ is safe, by Lemma \ref{lem:safecollapsesimulation} we have
 $collapse~s_{\prefixof \lambda \overline{\eta}} = pop_{n-\ord{\lambda \overline{\eta}}+1}~s_{\prefixof \lambda \overline{\eta}}$.
 
