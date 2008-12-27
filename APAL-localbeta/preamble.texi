@@ -103,7 +103,7 @@
 \def\stkt#1#2#3{\stk{#1}{\stk{#2}{#3}}}
 
 
-% Entailments for different kinds of judgments
+% Entailments for different kinds of judgements
 \newcommand\stentail{\vdash} % entailment for simply-typed term
 
 % ignore notations declaration

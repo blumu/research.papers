@@ -57,7 +57,7 @@ $$\tau
 \cong (((o,o),o), (o^n\typear o), o, o) \ . $$
 
 For any $n\in\nat$ the following beta normal term:
-$$ M \cong \lambda f g x . f (\lambda x_1.f(\lambda x_2.f(\lambda \ldots f(\lambda \ldots f(\lambda x_{n-1}.g x_1 \ldots x_{n-1}) \ldots )$$
+$$ M \equiv \lambda f g x . f (\lambda x_1.f(\lambda x_2.f(\lambda \ldots f(\lambda \ldots f(\lambda x_{n-1}.g x_1 \ldots x_{n-1}) \ldots )$$
 is of type $\tau$ and uses $n$ distinct variable names. It is easy to see that
 any other $\beta$-normal form using less that $n$ distinct names cannot be alpha converted to $M$
 since the function $g$ expect as argument $n$ variables bound at $n$ different places.
@@ -89,7 +89,7 @@ as follows: $\tau(0,a) = a$ and $\tau(n+1,a) = \tau(n,a) \typear a$.
 It is easy to see that for all $k\in\nat$ and atom $a$, $\tau(2k,a)$ is not inhabited by any term (even unsafe) and $\tau(2k+1,a)$ is safely inhabited.
 
 Take three distinct atoms $a$, $b$ and $c$. For any $i,j,k\in\nat$, we write $\sigma(i,j,k)$ to denote the type
-$$\sigma(i,j,k) \cong (\tau(i,a) \typear \tau(j,b)) \typear (\tau(j,b) \typear \tau(k,c)) \typear \tau(i,a) \typear
+$$\sigma(i,j,k) \equiv (\tau(i,a) \typear \tau(j,b)) \typear (\tau(j,b) \typear \tau(k,c)) \typear \tau(i,a) \typear
 \tau(k,c) \ .$$
 We now give examples of types together with some inhabitant (safe if one is known):
 \begin{enumerate}

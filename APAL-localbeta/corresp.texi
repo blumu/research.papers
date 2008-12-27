@@ -3659,7 +3659,7 @@ child {node {$q_n$}
 
 
     \item (@-application) $M \equiv N_0 N_1 \ldots N_p :o$ where $N_0$ is not a variable.
-    We have the typing judgments $\Gamma \entail N_0 N_1 \ldots
+    We have the typing judgements $\Gamma \entail N_0 N_1 \ldots
     N_p : o$ and $\Gamma \entail N_i : B_i$ for $i\in 0..p$ where
     $B_0 = (B_1,\ldots,B_p,o)$ and $p\geq 1$.
 
