@@ -113,7 +113,7 @@ $m \geq 1$
 Let $M$ be a simply-typed term not necessarily in $\eta$-long normal
 form. Let $\mathcal{D}$ be the set of values of the base type $o$.
 The \defname{computation tree} of $M$, written $\tau(M)$, is the tree
-obtained from $\tau^-(\elnf{M})$ by attaching leaves to each node: for every node $n \in \tau^-(M)$, the corresponding node in $\tau(\elnf{M})$ has a
+obtained from $\tau^-(M)$ by attaching leaves to each node: for every node $n \in \tau^-(M)$, the corresponding node in $\tau(M)$ has a
 child leaf labelled $v_n$, called \defname{value-leaf}, for every value $v \in \mathcal{D}$.
 \indexnotation{$\tau(M)$}{Computation tree of the term $M$}%
 \end{definition}
@@ -1043,7 +1043,7 @@ certain form of alternation between lambda nodes and non-lambda
 nodes. Application nodes are however redundant in the sense that
 they do not play any role in the computation of the term. In fact it
 will be necessary to filter them out in order to establish the
-correspondence with interaction game semantics.
+correspondence with game semantics.
 
 \begin{definition}[@-free traversal]
 \label{dfn:appnode_filter} Let $t$ be a traversal of $\tau(M)$. We
@@ -1172,7 +1172,7 @@ as follows:
 \begin{definition}
 \label{def:subterm_trav_projection}
   Let $t$ be a traversal such that $t^\omega\not\in \LNodes_@\union \LNodes_\Sigma$ and
-  $n \Nodes_\lambda$ be a lambda-node. The projection $t^\star \filter \Nodes^{(n)}$ is
+  $n \in \Nodes_\lambda$ be a lambda-node. The projection $t^\star \filter \Nodes^{(n)}$ is
 defined as the subsequence of $t^\star$ consisting of nodes of
 $\Nodes^{(n)}$ only. If a variable node loses its pointer in $t^\star
 \filter \Nodes^{(n)}$ then its justifier is reassigned to the only

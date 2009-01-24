@@ -871,8 +871,8 @@ and $\ianew$ this can be easily verified);
 \item For beta-normal terms, the P-view of a traversal core is the core of the P-view (Lemma \ref{lem:betanf_wellbehavedconst_trav_pview_red},
 and the O-view of a traversal is the O-view of its core
 (Lemma \ref{lem:oviewproj_wrt_theroot});
-\item There is a mapping from nodes of the computation hypertrees to moves in the interaction game semantics;
-\item There is a correspondence between traversals of the computation tree and plays in interaction game semantics;
+\item There is a mapping from nodes of the computation hypertrees to moves in the revealed game semantics;
+\item There is a correspondence between traversals of the computation tree and plays in revealed game semantics;
 \item Consequently, there is a correspondence between the standard game semantics and
 the set of justified sequences of nodes $\travset(M)^{\filter \theroot}$.
 \end{itemize}
