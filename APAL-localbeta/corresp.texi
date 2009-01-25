@@ -1518,7 +1518,7 @@ defined in Def.~\ref{dfn:justseqnode}. Nevertheless, the basic transformations t
                           \right. \label{eqn:pview_exttrav_trav}
 \end{align}
 
-The transformations $\pview{\_}$ and $\oview{\_}$, however, do not convey the appropriate notion
+The transformations $\pview{\cdot}$ and $\oview{\cdot}$, however, do not convey the appropriate notion
 of view for extended traversals. We define an alternative notion of
 view more appropriate to traversal extensions, called O-e-view and P-e-view, as follows:
 \begin{definition}
@@ -1545,7 +1545,7 @@ $$\begin{array}{rcll}
 Inserting a dummy node $\diamond$ at the beginning of the traversal changes the parity of the alternation between P-nodes and O-nodes.
 Thus the role of O and P is interchanged for traversal extensions. This explains why the O-e-view is calculated from the P-view.
 
-For the P-e-view, the definition is almost the same as the traversal O-view $\oview{\_}$ except that the computation does not stop when reaching a node in $\INodes_@ \union \INodes_\Sigma$---this is sometimes referred as the \emphind{long O-view} \cite{Harmer2005}. (The O-view contains only one thread whereas the long-O-view may contain several; the O-view is a suffix of the long O-view.)
+For the P-e-view, the definition is almost the same as the traversal O-view $\oview{\cdot}$ except that the computation does not stop when reaching a node in $\INodes_@ \union \INodes_\Sigma$---this is sometimes referred as the \emphind{long O-view} \cite{Harmer2005}. (The O-view contains only one thread whereas the long-O-view may contain several; the O-view is a suffix of the long O-view.)
 This is possible because occurrences of nodes from $\INodes_@ \union \INodes_\Sigma$ in a traversal extension all have a justification pointer.
 The O-view of $t$ is a suffix of its P-e-view:
 \begin{equation}
@@ -2899,7 +2899,7 @@ Consider the justified sequence of moves:
  $$s = \Pstr[12pt][5pt]{(q1){q}^1\ (q3-q1,60){q}^3\ (q4-q3,60){q}^4\ (q3b-q1){q}^3\ (q4b-q3b,60){q}^4\ (q2-q1,30){q}^2 }
 \in \sem{M} \enspace .$$
 
-Its image by $\psi(r_i)$ gives a justified sequence of nodes of the computation tree:
+Its image by $\psi$ gives a justified sequence of nodes of the computation tree:
 $$r = \Pstr[0.8cm]{
         (q1){\lambda f z} \cdot
         (q3-q1,60){f}^{[6]} \cdot
