@@ -488,8 +488,7 @@ Since a traversal can now visit the root multiple times, the definition of the t
 
 \subsection{Idealized algol}
 
-We now consider the language Idealized Algol. The general idea is the same as for \pcf, however there are some difficulties caused by the presence of the two
-base types \iavar\ and \iacom. We briefly sketch how our framework can be adapted to \ialgol\ without going into the details of the proof of the Correspondence theorem.
+We now consider the language Idealized Algol. The general idea is the same as for \pcf, however there are some difficulties caused by the presence of the two base types \iavar\ and \iacom. We briefly sketch how the framework can be adapted to \ialgol\ without detailing the proof of the Correspondence Theorem.
 
 \subsubsection*{Computation hypertree}
 The languages that we have considered up to now (lambda calculus and \pcf) do not have product types. Consequently, the arenas involved in their game model only have a single initial move at most, and can therefore be regarded as trees. This property permitted us to represent the game denotation of term directly on some representation of its abstract syntax tree---the computation tree. This cannot be done in \ialgol\ because the base type \iavar\ is given by the product $\iacom^\omega \times \iaexp$ which corresponding game has infinitely many initial moves, whereas the AST of the term is a tree and therefore has a single root.
@@ -539,7 +538,7 @@ $\lambda^{w_1} \overline{\xi}$, $\lambda^{w_2} \overline{\xi}$,
 \ldots. For a term $M$  of type \iaexp\ or \iacom, the computation
 hypertree for $\lambda \overline{\xi} . M$ is computed the same way as for computation trees of lambda-terms.
 
-Table \ref{tab:ia_computationdag} defines the computation hypertree for each term-construct of \ialgol. A generalized lambda node is represented by a frame surrounding its subnodes ($2^{nd}$ and $6^{th}$ row in the table).
+Table \ref{tab:ia_computationdag} defines the computation hypertree for each term-construct of \ialgol. A generalized lambda node is represented by a frame surrounding its subnodes ($3^{nd}$ and $8^{th}$ row in the table).
 \end{notations}
 
 \begin{table}
@@ -812,7 +811,7 @@ where $v$ denotes some value from $\mathcal{D}$.
 The rules from Table \ref{tab:ia_travrules} do not suffice to model \iamkvar\ however. We need to specify what happens when reaching a variable node that is hereditarily justified by the constant \iamkvar.
 Take for instance the term $\iaassign\ (\iamkvar\ (\lambda x . M) N)
 7$. The rule (\mbox{mkvar}$_w''$) permits one to pass the node
-\iamkvar\ and to continue with the traversal of the computation tree of $\lambda x . M$, which may subsequently lead to some occurrence of $x$. The behaviour of the traversal at this point is specified by the traversal rules defined in the next paragraph.
+\iamkvar\ and to continue with the traversal of the computation tree of $\lambda x . M$, which may subsequently lead to some occurrence of $x$. The behaviour of the traversal at this point is specified by the rules defined in the next paragraph.
 
 
 \item \emph{Variable rules}

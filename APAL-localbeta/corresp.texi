@@ -3982,7 +3982,7 @@ child {node {$x_i$}
                    \begin{itemize}
                      \item Suppose $m$ is an occurrence of the initial $o''$-move $q_0''$. Then $m$ is played by $\pi_i$ and therefore is the copy of $q_0'$ itself the copy of the initial move $q_0$ of $v$. Thus $v = q_0 \cdot q_0' \cdot q_0''$ and $u = q_0 \cdot q_0''$. The traversal $t = \lambda^{[\theroot]} \cdot x_i$ formed using the rules \rulenamet{Root} and \rulenamet{Lam} meets the requirement.
 
-                   \item Otherwise since $v \filter b \in \pi_i$ we have $ v \filter b \filter X_i = v \filter b \filter B_0$ therefore $m$ must necessarily be hereditarily justified by the \emph{first} occurrence of $q_0''$ in $v$.
+                   \item Otherwise since $v \filter b \in \pi_i$ we have $ v \filter b \filter X_i = v \filter b \filter B_0$ therefore $m$ is necessarily hereditarily justified by the \emph{first} occurrence of $q_0''$ in $v$.
 
                        \begin{itemize}
                          \item Suppose $m$ is an $\omove$-question.
