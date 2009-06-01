@@ -1,3 +1,6 @@
+%Daemon> ini=pdflatex
+%Daemon> filter=err+warn
+%Daemon> custom_args="-synctex=1"
 \documentclass[a4paper]{article}
 \usepackage{gamesem}
 \usepackage{todonotes}
@@ -268,7 +271,7 @@ We say that $s$ is \defname{safe} if it is $(-1)$-safe,
 and $s$ is \defname{$l$-safe} iff
     \begin{enumerate}[1.]
     \item $\orddec_l(s) = \langle \lambda \overline\eta_r^1, \ldots ,
-    \lambda \overline{\eta}_1^1 \rangle$ \ie the $k$-components in $\orddec_l(s)$ are all equal to $1$;
+    \lambda \overline{\eta}_1^1 \rangle$ \ie, the $k$-components in $\orddec_l(s)$ are all equal to $1$;
 
     \item for all $1 \leq q \leq r$ such that $n-\ord{\lambda \overline\eta_q}+1 \leq \ord{s}$,
     $collapse~s_{\prefixof \lambda\overline\eta_q}$ is safe.
@@ -408,9 +411,9 @@ We have
   &= (pop_{n-\ord(top_1\, s)+1} s)^{\langle n-l+1\rangle} \\
   &= (collapse\, s)^{\langle n-l+1\rangle}
 \end{align*}
-Since $s$ is safe, so is $collapse s$ and therefore by the I.H.,
+Since $s$ is safe, so is $collapse\, s$ and therefore by the I.H.,
 $(collapse\, s)^{\langle n-l+1\rangle}$ is $l$-safe.
-\unfinished{But this is not enough: We want to show that $(collapse s)^{\langle n-l+1\rangle}$ is safe, and not only $l$-safe!!!
+\unfinished{But this is not enough: We want to show that $(collapse\, s)^{\langle n-l+1\rangle}$ is safe, and not only $l$-safe!!!
 }
 
 Hence $s^{\langle n-l+1 \rangle}$ is $l$-safe.
