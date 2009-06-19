@@ -46,15 +46,18 @@
 Hague, Murawski, Ong and Serre \cite{hmos-lics08} introduced
 higher-order collapsible pushdown automata (CPDA) and showed their
 equivalence with higher-order recursion scheme. They proposed an
-algorithm that transforms a given order-$n$ recursive  scheme G to
-an equivalent order-$n$ CPDA. Here we show that if the recursion
+algorithm that transforms a given order-$n$ recursive scheme G to
+an equivalent (in the sense that they generate the same tree) order-$n$ CPDA. Here we show that if the recursion
 scheme is safe then the generated automaton can in fact be simulated by an order
 $n$ (non-collapsible) push-down automaton (PDA). The proof does not make
 use of the type-homogeneity constraint. This contrasts with the original proof
-of equi-expressivity (in term of generated trees) of PDAs and safe recursion schemes \cite{KNU02}.
+of equi-expressivity of PDAs and safe recursion schemes \cite{KNU02}.
 \end{abstract}
 
-\todo{A proof attempt was presented in a previous version of this note. Since then Broadbent has obtained a working proof based on the same idea but using a different notion of stack-safety \cite{Broadbent2009}. This note fixes the hole in my original attempt by introducing yet another definition of stack safety inspired by Broadbent's one.}
+\todo{A proof attempt was presented in a previous version of this note. Broadbent has then
+obtained a working proof based on the same idea but using a different notion of stack-safety \cite{Broadbent2009}. 
+This note fixes the hole in my original proof by introducing yet another definition of stack safety inspired 
+by Broadbent's one.}
 
 
 
@@ -64,10 +67,11 @@ We fix a higher-order recursion scheme $G$ of order $n$.
 We consider the $n$-CPDA $CPDA(G)$ constructed from $G$ as defined in Hague et al.'s paper \cite[Definition 5.2]{hague-collaps-full}.
 Recall that the stack-alphabet $\Gamma$ is defined as the set of nodes of the computation graph $Gr(G)$ of $G$.
 
-The purpose of the CPDA $CPDA(G)$ is to compute the set of traversals of the computation tree of $G$. One can easily transform $CPDA(G)$ into an automaton that ``prints out'' the traversal that is being computed. This can be done by changing the behaviour of the $push_1$ operation to make it print out the input element before pushing it on the stack. The justification pointers can then be recovered inductively using the node labels: To recover the justifier of a variable node, we just need to look for the only node-occurrence that binds it in the P-view at that point (which is computable by the induction hypothesis).
+The automaton $CPDA(G)$ proceeds by computing the set of traversals of the computation tree of $G$. One can easily transform $CPDA(G)$ into an automaton that ``prints out'' the traversal that is being computed. This can be done by changing the behaviour of the $push_1$ operation to make it print out the input element before pushing it on the stack. The justification pointers can then be recovered inductively using the node labels: To recover the justifier of a variable node, we just need to look for the only node-occurrence that binds it in the P-view at that point (which is computable by the induction hypothesis).
 Prime lambda nodes always point to their immediate predecessor. For non-prime lambda nodes, the justifier is always the occurrence preceding the justifier of the variable node preceding the lambda node.
 
-Since some of the transitions of the CPDA, such as $collapse$, are destructive, the current content of stack does not contain sufficient information in order to reconstruct the traversal that is being computed.
+Since some of the transitions of the CPDA, such as $collapse$, are destructive, the current configruation stack
+is not sufficient in itself to reconstruct the traversal that is being computed.
 Nevertheless, two very useful pieces of information can be recovered from the configuration-stack: namely the O-view and the P-view of the traversal.
 
 Let $c$ be a configuration. The \defname{long O-view},
@@ -92,13 +96,13 @@ Let $c$ be a configuration. The \defname{long O-view},
 We call \defname{configuration} any order-$n$ stack where $n$ is the order
 of $CPDA(G)$ (which is also the order of the recursion scheme $G$).
 
-The initial configuration of $CPDA(G)$ is $c_0 = push_1 \theroot \bot_n$
-where $\theroot$ denote the root dummy lambda node $\lambda$ of the computation graph.
+The initial configuration of $CPDA(G)$ is $c_0 = push_1 \lambda \bot_n$
+where $\lambda$ refers to the root (dummy) lambda node of the computation graph.
 
 \section{Safe HORS to HOPDA encoding}
 
-We now fix a {\bf safe} higher-order recursion scheme $G$ of order $n$.
-By analysing the $n$-CPDA $CPDA(G)$, we show that it is possible to construct a higher-order PDA of order $n$ that is equivalent to $CPDA(G)$.
+We fix a {\bf safe} higher-order recursion scheme $G$ of order $n$.
+By analysing the $CPDA(G)$, we show that it is possible to construct a higher-order PDA of order $n$ that is equivalent to $CPDA(G)$.
 
 
 \subsection{Basic definitions}
@@ -107,19 +111,26 @@ By analysing the $n$-CPDA $CPDA(G)$, we show that it is possible to construct a 
 We use the notion of reachability with respect to the $\rightarrow$-step relation introduced in the original paper:
 $c\rightarrow c'$ just if $c' = \delta(top_1 c)(c)$ where $\delta$ is the transition
 function defined Hague et al.'s paper \cite[Figure 2]{hague-collaps-full}.
-In other words, a configuration is $\rightarrow$-reachable if it can be attained starting from the initial configuration $c_0$ by performing one or more applications of the steps (A), (S), (L), $(V_1)$, $(V_0)$ from the algorithm defining $CPDA(G)$.
+In other words, a configuration is \defname{$\rightarrow$-reachable} if it can be attained starting from the initial configuration $c_0$ by performing
+one or more applications of the steps (A), (S), (L), $(V_1)$, $(V_0)$ from the algorithm defining $CPDA(G)$.
 The intermediate configurations visited by the internal transitions within a step are therefore not $\rightarrow$-reachable.
-A configuration is said to be \defname{reachable} if it is $\rightarrow$-reachable or if it is visited by an internal transitions
-within a step (A), (S), (L), $(V_1)$ or $(V_0)$ of $CPDA(G)$.
+A configuration is said to be \defname{reachable} if it is $\rightarrow$-reachable or if it 
+an intermediate configuration computed during a $\rightarrow$-step
+(\ie, if it can be written $(op_1;\ldots;op_k)(c)$ where $c$ is $\rightarrow$-reachable and 
+$op_1, \ldots, op_k$ are the first $k$ instructions of some $\rightarrow$-step).
 
 \paragraph{Link convention}
 An element of the CPDA stack is written $a^{(j,k)}$ where $a\in \Gamma$ and the exponent $(j,k)$
-encodes the pointer associated to the stack symbol. The value $j$ is called the order of the link, and $k$ is called the height of the link. We observe that in $CPDA(G)$ when pushing a lambda node $\lambda \overline{\xi}$ on the stack, the associated link is always of the form $(n-\ord{\lambda \overline{\xi}}+1, k)$, therefore the order component of the link is recoverable from the node itself. Because the order component cannot be changed once the element is pushed onto the stack, the order component of the links associated to lambda nodes in the configuration stack of $CPDA(G)$ will always have an order-component of the form given above.
-Furthermore, the order-component is of no use for non-lambda nodes since the collapse operation is only executed on stack whose top element is a lambda node. From now on we will only work with stacks occurring as sub-stack of configurations of $CPDA(G)$
+encodes the pointer associated to the stack symbol. The value $j$ is called the order of the link, and $k$ is called the height of the link. We observe that when $CPDA(G)$ pushes 
+a lambda node $\lambda \overline{\xi}$ on the stack, the associated link is always of the form $(n-\ord{\lambda \overline{\xi}}+1, k)$, therefore the order component of the link is 
+recoverable from the node itself. Because the order component cannot be changed once the element is pushed onto the stack, the order component of the links associated to lambda nodes 
+in the configuration stack of $CPDA(G)$ will always be of the form given above.
+Furthermore, the order-component of a link is of no use for non-lambda nodes since the collapse operation is only executed on stack whose top element is a lambda node. 
+From now on we will only work with stacks occurring as sub-stack of reachable configurations of $CPDA(G)$
 therefore we will omit the order-component altogether when representing stack symbols: we write $\lambda \overline{\xi}^{k}$ to mean $\lambda \overline{\xi}^{(n-\ord{\lambda \overline{\xi}}+1,k)}$.
 
 
-\todo{Add definition of stack prefix ``$s_{\prefixof m}$'' \cite{hmos-lics08}.}
+\todo{Add definition of stack prefix ``$s_{\prefixof m}$'' and ``$s_{<m}$'' \cite{hmos-lics08}.}
 
 
 \begin{definition}
@@ -149,7 +160,8 @@ $$
 
 \begin{convention}[Top stack convention]
 \label{conv:top_preserve_links}
-In the original definition, the operation $top_i$ that returns the top $(i-1)$-stack of a higher-order stack, removes any dangling pointer resulting from the operation. Here, we suppose that $top_i$ is defined in such a way that all pointers are preserved. From an implementation viewpoint, since links are encoded as pairs of integers, this means that $top_i$ just returns an unmodified copy of the top $(i-1)$-stack.
+In the original definition, the operation $top_i$, that returns the top $(i-1)$-stack of a higher-order stack,
+ removes any dangling pointer resulting from the operation. Here, we suppose that $top_i$ is defined in such a way that all pointers are preserved. From an implementation viewpoint, since links are encoded as pairs of integers, this means that $top_i$ just returns an unmodified copy of the top $(i-1)$-stack.
 \end{convention}
 
 \subsection{Succinct definition of CPDA(G)}
@@ -158,8 +170,8 @@ It is possible to redefine the collapsible pushdown automaton $CPDA(G)$ from Hag
 $(V_1)$ and $(V_0)$. This is done as follows: In case (A), when
 pushing the prime child of an application node $@$ on the stack, we
 associate a link to it that points to the preceding stack symbol in
-the top $1$-stack \ie the $@$-node itself.
- This modification permits us to avoid the consideration on $j$ (the child-index of $u$'s binder) in the
+the top $1$-stack (\ie, the $@$-node itself).
+ This modification avoids the case analysis on the value of $j$---the child-index of $u$'s binder---in the
  cases ($V_0$) and ($V_1$). The sequences of instruction $pop_1^{p+1}$ can now be replaced by
  $pop_1^p ; collapse$. The resulting CPDA is denoted by $CPDA'(G)$ and is described in
 Figure \ref{fig:cpdaprime}.
@@ -187,10 +199,13 @@ $$\delta(u) = pop_1^p ; collapse;push_1 E_i(top_1)$$
 }
 \end{center}
 \end{figure}
-Contrary to $CPDA(G)$, in a configuration of this CPDA the link associated to a lambda node $\lambda\overline\eta$ is not necessarily of the form
-$(n-\ord{\lambda\overline\eta}+1,k)$. Instead the first component of the link pair $(j,k)$ associated to a lambda node is defined as follows:
-$j = 1$ if $\lambda\overline\eta$ is a prime node and $j=n-\ord{\lambda\overline\eta}+1$ otherwise. Therefore we can simulate the collapse operation
-using transitions performing $pop_1$ if $top_1\, s$ is prime and $pop_{n-\ord{top_1(s)}+1}$ otherwise.
+
+\begin{remark}
+\label{rem:linkorder_cpdaprime}
+Note that contrary to $CPDA(G)$ in this automaton the link associated to a lambda node $\lambda\overline\eta$ is not necessarily of the form
+$(n-\ord{\lambda\overline\eta}+1,k)$. Instead the order of the link associated to a lambda node is 
+$1$ if $\lambda\overline\eta$ is a prime node, and $n-\ord{\lambda\overline\eta}+1$ otherwise. 
+\end{remark}
 
 
 \subsection{Incremental order-decomposition}
@@ -418,7 +433,7 @@ The stack-operation $(\cdot)^{\langle n-l+1 \rangle}$ updates the pointers as fo
 the $k$-component of each link is incremented if the order of the stack symbol is $l$ and is kept unchanged otherwise.
 Hence we have:
 \begin{equation*}
-\orddec(s^{\langle n-l+1 \rangle}) = \langle
+\orddec_q(s^{\langle n-l+1 \rangle}) = \langle
 \lambda \overline{\eta}_r^1, \ldots,  \lambda \overline{\eta}_{b}^1, \lambda \overline{\eta}_{b-1}^{k}, \lambda \overline{\eta}_{b-2}^1 \ldots,
  \lambda \overline{\eta}_1^{1} \rangle
 \end{equation*}
@@ -448,7 +463,7 @@ similarly for $j=b$ we have $\ord(\lambda\overline\eta_{j-1}) \leq l$.
 Hence $(collapse\,s_{\prefixof \lambda\overline\eta_j})^{\langle n-l+1\rangle}$ is
 \begin{enumerate}[(i)]
 \item $\max(q,l)$-safe for $j=b=1$,
-\item $l$-safe for $j=b>1$, and therefore $\max(q,l)$-safe by Lemma \ref{lem:stacksafety_immediate results}.
+\item $l$-safe for $j=b>1$, and therefore $\max(q,l)$-safe by Lemma \ref{lem:stacksafety_immediate results},
 \item $\lambda\overline\eta_{j-1}$-safe for $j>b$.
 \end{enumerate}
 This shows that $(collapse\,s_{\prefixof \lambda\overline\eta_j})^{\langle n-l+1\rangle}$ is $\max(l,q)$-safe, and therefore by (\ref{eqn:commutecollapse})
@@ -457,44 +472,52 @@ so is $collapse\, s^{\langle n-l+1 \rangle}_{\prefixof \lambda \overline{\eta}_{
 
 
 \begin{lemma}
-\label{lem:cons_qsafety} Let $s$ be a higher-order stack of level $\geq 2$. If
+\label{lem:cons_qsafety} Let $s$ be a higher-order stack of level $\geq 2$ and $l\geq0$.
+ If
 \begin{enumerate}[1.]
-\item $pop_{\ord{s}}\,s$ is safe;
-\item and $top_{\ord{s}}\,s$ (of order $(\ord s-1)$) is safe,
+\item $pop_{\ord{s}}\,s$ is safe,
+\item and $top_{\ord{s}}\,s$ is $l$-safe,
 \end{enumerate}
-then $s$ is safe.
+then $s$ is $l$-safe.
 \end{lemma}
 \begin{proof}
-Let $s = [s_1 \ldots s_l~s_{l+1}]$ for some $l\geq0$.
-We proceed by induction on  $top_{\ord{s}}\,s=s_{l+1}$.
-The base case $s_{l+1} = \bot_{\ord{s}-1}$ is trivial.
-Suppose that $s_{l+1}$ is not the empty stack. We show that $s$ is safe using the inductive definition of stack-safety \ie we show that $top_2\,s$ is safe and that for all lambda node $\lambda \overline{\eta} \in \orddec(s)$ such that $n-\ord{\lambda \overline{\eta}}+1 \leq \ord{s}$, $collapse\,s_{\prefixof \lambda \overline{\eta}}$ is safe:
-\begin{itemize}
-\item First condition: If $\ord{s}=2$ then $top_2\,s = top_{\ord s}\,s$ which is safe by the second assumption. Otherwise $\ord{s}>2$ and since $top_{\ord{s}} s$ is safe, so is $top_2(top_{\ord{s}} s)$. By definition of $top_2$ we have $top_2\,s = top_2(top_{\ord{s}}\, s)$ hence $top_2\,s$ is safe.
+Let $s = [s_1 \ldots s_r~s_{r+1}]$ for some $l\geq0$.
+We proceed by induction on  $top_{\ord{s}}\,s=s_{r+1}$.
+The base case $s_{r+1} = \bot_{\ord{s}-1}$ is trivial.
+Suppose that $s_{r+1}$ is not the empty stack.
 
-\item Second condition: Let $\lambda \overline{\eta}$ be a lambda node in $\orddec(s) = \orddec(s_{l+1})$ such that $n-\ord{\lambda \overline{\eta}}+1 \leq \ord{s}$.
-Since $top_2\,s$ is safe, by Lemma \ref{lem:safecollapsesimulation} we have
+\begin{enumerate}[(i)]
+\item Clearly $\orddec_l\, s = \orddec_l\, s_{r+1}$, hence since $s_{r+1}$ is $l$-safe the lambda nodes in $\orddec_l\, s$ have all a link of height $1$.
+ 
+\item Let $\lambda \overline{\eta}$ be a lambda node in $\orddec_l(s) = \orddec_l(s_{r+1})$ such that $n-\ord{\lambda \overline{\eta}}+1 \leq \ord{s}$.
+Since its link is of height 1 we have
 $collapse~s_{\prefixof \lambda \overline{\eta}} = pop_{n-\ord{\lambda \overline{\eta}}+1}~s_{\prefixof \lambda \overline{\eta}}$.
 
 If $n-\ord{\lambda \overline{\eta}}+1 = \ord{s}$ then
-$pop_{n-\ord{\lambda \overline{\eta}}+1}~s_{\prefixof \lambda \overline{\eta}} = pop_{\ord{s}}~s_{\prefixof\lambda\overline\eta} = pop_{\ord{s}}~s$ which is safe by the first assumption.
+$pop_{n-\ord{\lambda \overline{\eta}}+1}~s_{\prefixof \lambda \overline{\eta}} = pop_{\ord{s}}~s_{\prefixof\lambda\overline\eta} = pop_{\ord{s}}~s$ which is $l$-safe by the first assumption
+and Lemma \ref{lem:stacksafety_immediate results}.
 
 Otherwise $n-\ord{\lambda \overline{\eta}}+1 < \ord{s}$ and we have:
 \begin{align*}
-  collapse~s_{\prefixof\lambda\overline\eta}
+  collapse\,s_{\prefixof\lambda\overline\eta}
       &= pop_{n-\ord{\lambda \overline{\eta}}+1}~s_{\prefixof\lambda\overline\eta}
-      & \mbox{by Lemma \ref{lem:safecollapsesimulation}, since $s_{\prefixof\lambda\overline\eta}$ is safe} \\
-  &= [ s_1 \ldots s_l\ (pop_{n-\ord{\lambda\overline\eta}+1}~ {s_{l+1}}_{\prefixof\lambda\overline\eta}) ]
+      & \mbox{since $\lambda\overline\eta$'s link has height 1} \\
+  &= [ s_1 \ldots s_l\ (pop_{n-\ord{\lambda\overline\eta}+1}~ {s_{r+1}}_{\prefixof\lambda\overline\eta}) ]
    & \mbox{$n-\ord{\lambda \overline{\eta}}+1<\ord{s}$}  \\
-  &= [s_1 \ldots s_p\ (collapse\, {s_{l+1}}_{\prefixof\lambda\overline\eta}) ]
-  & \mbox{by Lemma \ref{lem:safecollapsesimulation}, since $s_{l+1}$ is safe}
+  &= [s_1 \ldots s_p\ (collapse\, {s_{r+1}}_{\prefixof\lambda\overline\eta}) ]
+  & \mbox{since $\lambda\overline\eta$'s link has height 1.}
 \end{align*}
 
-By the second assumption, $s_{l+1} = top_{\ord{s}}\,s$ is safe therefore by definition
-of safety so is $collapse~{s_{l+1}}_{\prefixof\lambda\overline\eta}$, thus
-since $|collapse~{s_{l+1}}_{\prefixof\lambda\overline\eta}| < |s_{l+1}|$ we can use the induction hypothesis which shows that $[s_1 \ldots s_p\ (collapse\, {s_{l+1}}_{\prefixof\lambda\overline\eta}) ]$ is safe.
+% we haver to show that  $collapse\,s_{\prefixof \lambda \overline{\eta}}$ is $k$-safe where ...
+By the second assumption, $s_{r+1}$ is $l$-safe therefore $collapse~{s_{r+1}}_{\prefixof\lambda\overline\eta}$
+is $l$-safe if $\lambda\overline\eta$ is the last node in the $l$-order decomposition,
+and $k$-safe where $k$ is the order of the following node in $\orddec_l(s_{r+1})$ otherwise.
+
+Since $|collapse~{s_{r+1}}_{\prefixof\lambda\overline\eta}| < |s_{r+1}|$ we can use the induction hypothesis 
+to show that the same hold for $[s_1 \ldots s_p\ (collapse\, {s_{r+1}}_{\prefixof\lambda\overline\eta}) ]$. Therefore it is $l$-safe and so is
+$collapse\,s_{\prefixof\lambda\overline\eta}$ by the previous equality.
 \qedhere
-\end{itemize}
+\end{enumerate}
 \end{proof}
 
 
@@ -594,7 +617,7 @@ By the previous proposition, $c$ is safe therefore by Lemma \ref{lem:pushj_safe_
 by Lemma \ref{lem:binder_in_ordecompos}, $x$'s binder belongs to $\orddec_l(c)$, therefore 
 by Lemma \ref{lem:safecollapsesimulation} we have:
 \begin{eqnarray*}
-collapse(pop_1^p(push_{n-l+1}~c)) &=&  collapse((push_{n-l+1}~c)_{\leq binder(x)}) \\
+collapse(pop_1^p(push_{n-l+1}~c)) &=&  collapse((push_{n-l+1}~c)_{\prefixof binder(x)}) \\
 &=& pop_{n-\ord binder(x) +1} ( pop_1^p(push_{n-l+1}~c) ) \\
 &=& pop_{n-\ord(top_1\,s) +1} ( pop_1^p(push_{n-l+1}~c) ) \ .
 \end{eqnarray*}
@@ -602,7 +625,11 @@ collapse(pop_1^p(push_{n-l+1}~c)) &=&  collapse((push_{n-l+1}~c)_{\leq binder(x)
 The case ($V_0$) is similar.
 \end{proof}
 
+Note: If the alternative definition $CPDA'(G)$ is used instead of $CPDA(G)$ then 
+the simulation differs slighlty: The collapse operation is replaced by $pop_1$ if $top_1\, s$ is prime and $pop_{n-\ord{top_1(s)}+1}$ otherwise.
+ (See Remark \ref{rem:linkorder_cpdaprime}.)
 
+ 
 \bibliographystyle{abbrv}
 \bibliography{../bib/dphil-all}
 
