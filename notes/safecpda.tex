@@ -612,16 +612,17 @@ in $\overline\eta_b$.
 We have $c'= push_1\,E_i(top_1)^{(n-l+1,1)}\, t$ where
 $t$ is given by $(push_{n-l+1};pop_1^p;collapse)(c) = collapse ((push_{n-l+1}\,c)_{\prefixof \lambda
 \overline{\eta}_{b}} )$.
-By Lemma \ref{lem:pushj_safe_implies_l-safe} $push_{n-l+1}\, c$ is $l$-safe therefore
-since $\lambda\overline\eta_b$ is the last node in $\orddec_l(c)$, by definition of $l$-safety we have that $t$ is $l$-safe. Finally the lambda node $E_i(top_1)$ pushed by the last operation has precisely order $l =\ord(x)$ therefore
+By Lemma \ref{lem:pushj_safe_implies_l-safe} $push_{n-l+1}\, c$ is $l$-safe therefore, since $\lambda\overline\eta_b$ is the last node in $\orddec_l(c)$, by definition of $l$-safety we have that $t$ is $l$-safe. Finally the lambda node $E_i(top_1)$ pushed by the last operation has precisely order $l =\ord(x)$ therefore
 \begin{align*}
-\orddec_0 (c') &= \orddec_l (c') \cdot E_i(top_1(t))^1 \\
-&= \orddec_l (t) \cdot E_i(top_1(t))^1 & \mbox{by Lemma \ref{lem:push1pop1_orderdecompo}(i).}
+\orddec_0 (c') &= \langle \lambda\overline\eta_r^1 , \ldots, \lambda\overline\eta_b^1, E_i(top_1(t))^1\rangle \ .
 \end{align*}
+Thus all the lambda nodes in $\orddec_0 (c')$ have a link of height $1$.
 
-Thus since $t$ is $l$-safe we have that all the lambda nodes in $\orddec_0 (c')$ have a link of height $1$.
-To obtain that $c'$ is safe it remains to show that $collapse(c'_{\prefixof{E_i(top_1(t))}}) = collapse\, c'$ is safe.
-Since we have $i\geq 1$ the node $top_1(c') = E_i(top_1(t))$ is not a prime lambda node, thus by Lemma \ref{lem:safecollapsesimulation} we have:
+We now need to show that safety is preserved when collapsing at nodes of $\orddec_0 (c')$. Let $b\leq j \leq r$, we have $c'_{\prefixof \lambda\overline\eta_j} =
+t_{\prefixof \lambda\overline\eta_j}$. For $j>b$, the l-safety of $t$ implies that $collaspse\, c'_{\prefixof \lambda\overline\eta_j}$ is $\ord{\lambda\overline\eta_{j-1}}$-safe as required. For $j=b$ it gives that $collaspse\, c'_{\prefixof \lambda\overline\eta_b}$ is $l$-safe as required since $l = \ord{E_i(top_1(t))}$.
+
+Now it remains to show that $collapse(c'_{\prefixof{E_i(top_1(t))}}) = collapse\, c'$ is safe.
+Since we have $i\geq 1$ the node $top_1(c') = E_i(top_1(t))$ is not a prime lambda node, thus by the counterpart of Lemma \ref{lem:safecollapsesimulation} for $CPDA(G')$ we can simulate the $collapse$ by a $pop$:
 \begin{align*}
 collapse\, c' &=  pop_{n-\ord{E_i(top_1(t))}+1}\,c'  \\
                &= pop_{n-l+1}\, c' \\
