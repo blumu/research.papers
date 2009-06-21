@@ -242,14 +242,14 @@ any lambda node of order strictly greater than $\lambda
 
 \noindent In other words:
 \begin{itemize}
-\item for $1 \leq k \leq r$, all the lambda-nodes occurring in $u_l$ have order
+\item for $1 \leq k \leq r$, all the lambda nodes occurring in $u_l$ have order
 strictly smaller than $\ord{\lambda \overline{\eta}_l}$;
 \item for $1\leq l<l'\leq r$ we have $\ord{\lambda \overline{\eta}_l^{k_l}}
 < \ord{\lambda \overline{\eta}_{l'}^{k_{l'}}}$;
 \item $r=0$ if and only if all the lambda node in $s$ have order $\geq l$.
 \end{itemize}
 
-The subsequence $\lambda \overline{\eta}_r^{k_r} \ldots \lambda\overline{\eta}_1^{k_1}$ of $s$ consisting of the lambda-nodes $\lambda
+The subsequence $\lambda \overline{\eta}_r^{k_r} \ldots \lambda\overline{\eta}_1^{k_1}$ of $s$ consisting of the lambda nodes $\lambda
 \overline{\eta}_l^{k_l}$ defined above is called the \defname{incremental order-decomposition of the $1$-stack} $s$ {\bf with respect to} $l\in\nat$.
 This sequence is uniquely determined for any given $l\in \nat$.
 
@@ -410,7 +410,7 @@ $$collapse\,s_{\prefixof\lambda\overline\eta} = pop_{n-\ord \lambda\overline\eta
 \begin{proof}
 The $collapse$ operation is defined as  $collapse\,s = pop_j^k\,s$ where $(j,k)\in\nat\times\nat$ is the link attached to $top_1\,s$.
 Since $s$ is a sub-stack of a reachable configuration, we have $j = n-\ord \lambda\overline\eta +1$, and since
-$top_2\,s$ is safe and $\lambda\overline\eta$ belongs to the order-decomposition, the $k$-component is necessarily equal to $1$.
+$top_2\,s$ is safe and $\lambda\overline\eta$ belongs to the order-decomposition, the height component is necessarily equal to $1$.
 \end{proof}
 Similarly, by Remark \ref{rem:linkorder_cpdaprime}, for configurations $s$ of the automaton $CPDA'(G)$ we have:
 $$collapse\,s_{\prefixof\lambda\overline\eta} = 
@@ -577,29 +577,26 @@ We show that $push_{n-l+1}~s$ is $l$-safe by finite induction on the order of $s
 
 
 \section{Simulation and proof of correctness}
-We now consider the automaton $CPDA(G)$. For the purpose of the proof we assume that 
-the operation ``$push_1^a$'' is implemented as $push_1\,a^{(1,1)}$.
 \begin{proposition}
 The $\rightarrow$-reachable configurations of CPDA(G) are safe.
 \end{proposition}
 \begin{proof}
 If $n =\ord{c} =1$ then the result holds trivially since $CPDA(G)$ does not contain
-any transition of the form $push_j$ for $j>1$ and therefore all the links associated to symbols in a configuration have a $k$-component equal to $1$.
+any transition of the form $push_j$ for $j>1$ and therefore the links in a reachable configuration all have a height component equal to $1$.
 
 Take $n\geq 2$. Note that $CPDA(G)$ has the same set of $\rightarrow$-reachable configurations
-as $CPDA'(G)$, so for simplicity we use this alternative definition. We prove the result by induction on the number of
-$\rightarrow$-steps. The initial configuration is trivially safe.
+as $CPDA'(G)$, so for simplicity we prove the result for this alternative definition. We proceed by induction on the $\rightarrow$-step relation. The initial configuration is clearly safe.
 Suppose that $c$ is a safe $\rightarrow$-reachable configuration and that
-$c \rightarrow c'$.
-We show that $c'$ is safe by case analysis on $top_1\,c$:
+$c \rightarrow c'$. We do a case analysis on $top_1\,c$:
 \begin{itemize}
 \item (A): We have $c'=push_1^{E_0(u),1}\,c =push_1\,E_0(u)^{(1,1)}\,c$ where $E_0(u)$ denotes a lambda node. It is safe by Lemma \ref{lem:push1pop1_preserves_safety}(iv).
 
 \item (S):
-We have $c' = push_1^{a}\,c = push_1\,a^{(1,1)}\,c$ for some dummy lambda-node $a$. It is safe by Lemma \ref{lem:push1pop1_preserves_safety}(iv).
+We have $c' = push_1^{a}\,c = push_1\,a^{(j,k)}\,c$ for some dummy lambda node $a$
+and undetermined link $(j,k)$. It is safe by Lemma \ref{lem:push1pop1_preserves_safety}(iv) since $\ord a = 0$.
 
-\item (L): We have $c' = push_1^{E_1(u)} = push_1 E_1(u)^{(1,1)}$ 
-where $E_1(u)$ is not a lambda node. Thus it is safe by Lemma \ref{lem:push1pop1_preserves_safety}(iii).
+\item (L): We have $c' = push_1^{E_1(u)} = push_1 E_1(u)^{(j,k)}$ where $E_1(u)$ is not a lambda node
+ and $j,k\geq1$ are undetermined. It is safe by Lemma \ref{lem:push1pop1_preserves_safety}(iii).
 
 \item ($V_1$) \& ($V_0$): Suppose $u$ is labelled by a variable $x$ of order $l$.
 Since $c$ is safe we have $\orddec(c) = \langle \lambda\overline\eta_r^1 , \ldots, \lambda\overline\eta_1^1
@@ -631,7 +628,7 @@ collapse\, c' &=  pop_{n-\ord{E_i(top_1(t))}+1}\,c'  \\
 The operation $pop_1$ and $push_1$ only affects the top $1$-stack.
 Furthermore, since $x$'s binder has order $>l$, its link has order $<n-l+1$ therefore
 the collapse operation following the $pop_1^p$ only affects the
-top $(n-l)$-stack. Consequently, the operation $pop_{n-l+1}$ effectively restores the stack 
+top $(n-l)$-stack. Consequently, the operation $pop_{n-l+1}$ effectively restores the configuration
 to its value prior to performing the $push_{n-l+1}$ operation:
 $$collapse\, c' = c \ .$$
 Hence $c'$ is safe.
@@ -658,11 +655,11 @@ every $collapse$ operation by $pop_1$ if $top_1\, s$ is prime, and by $pop_{n-\o
 $PDA(G)$ and $CPDA(G)$ are equivalent.
 \end{theorem}
 \begin{proof}
-In $CPDA(G)$, the only occurrences of the collapse operation are in the steps ($V_1$) and ($V_0$). For ($V_1$) it is of the form:
+In $CPDA(G)$, the collapse operation occurs only in the steps ($V_1$) and ($V_0$). For ($V_1$) it is of the form:
 $$collapse(pop_1^p(push_{n-l+1}~c))$$
-for some $\rightarrow$-reachable configuration $c$, where $top_1\,u$ is a variable $x$ of order $l$ and of span $p$.
-By the previous proposition, $c$ is safe therefore by Lemma \ref{lem:pushj_safe_implies_l-safe} $push_{n-l+1}\, c$ is $l$-safe. Since $x$ has span $p$, after the operation $pop_1^p$, the top stack symbol is precisely $x$'s binder. Further by Lemma \ref{lem:binder_in_ordecompos}, $x$'s binder belongs to $\orddec_l(c)$, therefore
-by Lemma \ref{lem:safecollapsesimulation} we can simulate the collapse by a $pop$ of order
+for some $\rightarrow$-reachable configuration $c$, where $top_1\,c$ is a variable $x$ of order $l$ and span $p$.
+By the previous proposition, $c$ is safe and by Lemma \ref{lem:pushj_safe_implies_l-safe} $push_{n-l+1}\, c$ is $l$-safe. Since $x$ has span $p$, after the operation $pop_1^p$ the top stack symbol is precisely $x$'s binder, which by Lemma \ref{lem:binder_in_ordecompos}, belongs to $\orddec_l(c)$, therefore
+by Lemma \ref{lem:safecollapsesimulation} the collapse can be soundly simulated by a $pop$ of order
 $n-\ord(top_1(pop_1^p(push_{n-l+1}\,c))) +1$.
 
 The case ($V_0$) is proved similarly.
