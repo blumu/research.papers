@@ -52,14 +52,12 @@ scheme is safe then the generated automaton can in fact be simulated by an order
 $n$ (non-collapsible) push-down automaton (PDA). The proof does not make
 use of the type-homogeneity constraint. This contrasts with the original proof
 of equi-expressivity of PDAs and safe recursion schemes \cite{KNU02}.
-\end{abstract}
 
-\todo{A proof attempt was presented in a previous version of this note. Broadbent has then
+NB: A proof attempt was presented in a previous version of this note. Broadbent has then
 obtained a working proof based on the same idea but using a different notion of stack-safety \cite{Broadbent2009}.
 This note fixes the hole in my original proof by introducing yet another definition of stack safety inspired
-by Broadbent's one.}
-
-
+by Broadbent's one.
+\end{abstract}
 
 \section{The HORS to HOCPDA encoding}
 
@@ -484,7 +482,7 @@ Since $collapse\,s_{\prefixof \lambda\overline\eta_j}$ is strictly smaller than 
 $(collapse\,s_{\prefixof \lambda\overline\eta_j})^{\langle n-l+1\rangle}$ is $\max(q,l)$-safe
 if $j=b=1$, and $\max(\ord(\lambda\overline\eta_{j-1}),l)$-safe if $j\geq b>1$.
 
-For $j>b$, $\lambda\overline\eta_{j-1}$ occurs in $\orddec_l s$ therefore $\ord(\lambda\overline\eta_{j-1}) > l$,
+For $j>b$, $\lambda\overline\eta_{j-1}$ occurs in $\orddec_l\, s$ therefore $\ord(\lambda\overline\eta_{j-1}) > l$,
 similarly for $j=b$ we have $\ord(\lambda\overline\eta_{j-1}) \leq l$.
 Hence $(collapse\,s_{\prefixof \lambda\overline\eta_j})^{\langle n-l+1\rangle}$ is
 \begin{enumerate}[(i)]
