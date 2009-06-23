@@ -401,16 +401,8 @@ Immediate consequence of the definition.
 
 \begin{lemma}[Collapse simulation]
 \label{lem:safecollapsesimulation}
-Let $s$ be a sub-stack of a reachable configuration of $CPDA(G)$ and $l\geq 0$.
+Let $s$ be a sub-stack of a reachable configuration of $CPDA'(G)$ and $l\geq 0$.
 If $\ord s \geq 2$ and $top_2\,s$ is $l$-safe or if $\ord s = 1$ and $s$ is $l$-safe then for any lambda node $\lambda\overline\eta$ in $\orddec_l(s)$ we have:
-$$collapse\,s_{\prefixof\lambda\overline\eta} = pop_{n-\ord \lambda\overline\eta +1}\,s_{\prefixof\lambda\overline\eta} \ . $$
-\end{lemma}
-\begin{proof}
-The $collapse$ operation is defined as  $collapse\,s = pop_j^k\,s$ where $(j,k)\in\nat\times\nat$ is the link attached to $top_1\,s$.
-Since $s$ is a sub-stack of a reachable configuration, we have $j = n-\ord \lambda\overline\eta +1$, and since
-$top_2\,s$ is safe and $\lambda\overline\eta$ belongs to the order-decomposition, the height component is necessarily equal to $1$.
-\end{proof}
-Similarly, by Remark \ref{rem:linkorder_cpdaprime}, for configurations $s$ of the automaton $CPDA'(G)$ we have:
 $$collapse\,s_{\prefixof\lambda\overline\eta} = 
 \left\{
 \begin{array}{ll}
@@ -419,7 +411,12 @@ pop_{n-\ord \lambda\overline\eta +1}\,s_{\prefixof\lambda\overline\eta} & \mbox{
 \end{array}
 \right.
 $$
-
+\end{lemma}
+\begin{proof}
+The $collapse$ operation is defined as  $collapse\,s = pop_j^k\,s$ where $(j,k)\in\nat\times\nat$ is the link attached to $top_1\,s$.
+Since $s$ is a sub-stack of a reachable configuration, by Remark \ref{rem:linkorder_cpdaprime} we have $j=1$ if $\lambda\overline\eta$ is prime and $j = n-\ord \lambda\overline\eta +1$ otherwise. Furthermore, since
+$top_2\,s$ is safe and $\lambda\overline\eta$ belongs to the order-decomposition, the height component necessarily equals $1$.
+\end{proof}
 
 \subsubsection*{Operations preserving stack safety}
 \begin{lemma}
@@ -576,14 +573,14 @@ We show that $push_{n-l+1}~s$ is $l$-safe by finite induction on the order of $s
 
 \section{Simulation and proof of correctness}
 \begin{proposition}
-The $\rightarrow$-reachable configurations of CPDA(G) are safe.
+\label{prop:reachconf_safe}
+The $\rightarrow$-reachable configurations of $CPDA'(G)$ are safe.
 \end{proposition}
 \begin{proof}
-If $n =\ord{c} =1$ then the result holds trivially since $CPDA(G)$ does not contain
+If $n =\ord{c} =1$ then the result holds trivially since $CPDA'(G)$ does not contain
 any transition of the form $push_j$ for $j>1$ and therefore the links in a reachable configuration all have a height component equal to $1$.
 
-Take $n\geq 2$. Note that $CPDA(G)$ has the same set of $\rightarrow$-reachable configurations
-as $CPDA'(G)$, so for simplicity we prove the result for this alternative definition. We proceed by induction on the $\rightarrow$-step relation. The initial configuration is clearly safe.
+Take $n\geq 2$. We proceed by induction on the $\rightarrow$-step relation. The initial configuration is clearly safe.
 Suppose that $c$ is a safe $\rightarrow$-reachable configuration and that
 $c \rightarrow c'$. We do a case analysis on $top_1\,c$:
 \begin{itemize}
@@ -617,7 +614,7 @@ We now need to show that safety is preserved when collapsing at nodes of $\ordde
 t_{\prefixof \lambda\overline\eta_j}$. For $j>b$, the l-safety of $t$ implies that $collaspse\, c'_{\prefixof \lambda\overline\eta_j}$ is $\ord{\lambda\overline\eta_{j-1}}$-safe as required. For $j=b$ it gives that $collaspse\, c'_{\prefixof \lambda\overline\eta_b}$ is $l$-safe as required since $l = \ord{E_i(top_1(t))}$.
 
 Now it remains to show that $collapse(c'_{\prefixof{E_i(top_1(t))}}) = collapse\, c'$ is safe.
-Since we have $i\geq 1$ the node $top_1(c') = E_i(top_1(t))$ is not a prime lambda node, thus by the counterpart of Lemma \ref{lem:safecollapsesimulation} for $CPDA(G')$ we can simulate the $collapse$ by a $pop$:
+Since we have $i\geq 1$ the node $top_1(c') = E_i(top_1(t))$ is not a prime lambda node, thus by Lemma \ref{lem:safecollapsesimulation} we can simulate the $collapse$ by a $pop$ of order $n-\ord{E_i(top_1(t))}+1$:
 \begin{align*}
 collapse\, c' &=  pop_{n-\ord{E_i(top_1(t))}+1}\,c'  \\
                &= pop_{n-l+1}\, c' \\
@@ -642,26 +639,37 @@ Lemma \ref{lem:push1pop1_preserves_safety}(iv) $c'$ is safe.
 \end{proof}
 
 \begin{definition}[Simulating PDA]
+\label{simulating_pda}
 Let $G$ be a safe recursion scheme.
 We define $PDA(G)$ as the higher-order PDA obtained from
-$CPDA(G)$ by replacing 
-every $collapse$ operation by $pop_{n-\ord{top_1(s)}+1}$.
+$CPDA'(G)$ by replacing every $collapse$ operation by $pop_1$ if $top_1\, s$ is prime, and by $pop_{n-\ord{top_1(s)}+1}$ otherwise. 
 \end{definition}
-Equivalently this PDA can be obtained from $CPDA'(G)$ by replacing 
-every $collapse$ operation by $pop_1$ if $top_1\, s$ is prime, and by $pop_{n-\ord{top_1(s)}+1}$ otherwise. (See Remark \ref{rem:linkorder_cpdaprime}.)
+
+
 \begin{theorem}[Correctness of the simulation]
-$PDA(G)$ and $CPDA(G)$ are equivalent.
+$PDA(G)$ and $CPDA'(G)$ are equivalent.
 \end{theorem}
 \begin{proof}
-In $CPDA(G)$, the collapse operation occurs only in the steps ($V_1$) and ($V_0$). For ($V_1$) it is of the form:
+In $CPDA'(G)$, the collapse operation occurs only in the steps ($V_1$) and ($V_0$). For ($V_1$) it is of the form:
 $$collapse(pop_1^p(push_{n-l+1}~c))$$
 for some $\rightarrow$-reachable configuration $c$, where $top_1\,c$ is a variable $x$ of order $l$ and span $p$.
 By the previous proposition, $c$ is safe and by Lemma \ref{lem:pushj_safe_implies_l-safe} $push_{n-l+1}\, c$ is $l$-safe. Since $x$ has span $p$, after the operation $pop_1^p$ the top stack symbol is precisely $x$'s binder, which by Lemma \ref{lem:binder_in_ordecompos}, belongs to $\orddec_l(c)$, therefore
 by Lemma \ref{lem:safecollapsesimulation} the collapse can be soundly simulated by a $pop$ of order
-$n-\ord(top_1(pop_1^p(push_{n-l+1}\,c))) +1$.
+$1$ if $x$'s binder is a prime node, and a pop of order $n-\ord(top_1(pop_1^p(push_{n-l+1}\,c))) +1$ otherwise.
 
 The case ($V_0$) is proved similarly.
 \end{proof}
+
+\begin{remark}
+The same result holds for the original CPDA from Hague \emph{et al.}:
+Clearly $CPDA(G)$ and $CPDA'(G)$, have the same set of $\rightarrow$-reachable configurations
+so Proposition \ref{prop:reachconf_safe} clearly holds for $CPDA(G)$.
+The simulating PDA from \ref{simulating_pda} is obtained from
+from $CPDA(G)$ by replacing every $collapse$ operation by $pop_{n-\ord{top_1(s)}+1}$;
+and the equality in Lemma \ref{lem:safecollapsesimulation} should be replaced by:
+$$collapse\,s_{\prefixof\lambda\overline\eta} = pop_{n-\ord \lambda\overline\eta +1}\,s_{\prefixof\lambda\overline\eta} \ .$$
+The correctness of the simulation follows similarly.
+\end{remark}
 
 \bibliographystyle{abbrv}
 \bibliography{../bib/dphil-all}
