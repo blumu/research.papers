@@ -1,0 +1,8 @@
+*.log
+*.aux
+safecpda/safecpda.pdf
+*.synctex.gz
+*-pdflatex.fmt
+*-preamble.dep
+*.dep
+*/TeXAux/*

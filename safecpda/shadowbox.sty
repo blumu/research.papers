@@ -1,0 +1,130 @@
+%
+% File:     shadowbox.sty
+%
+% Author:   Wai Wong (ww@eng.warwick.ac.uk)
+% Date:     9 Aug 1991
+%
+% History:  (adapted from the file dropshadow.tex by drstrip@cd.sandia.gov)
+%           (adapted from the file shadow.tex by  Mauro Orlandini
+%           dated 6 June 1990
+%           International School for Advanced Studies - Trieste - Italy
+%           ORLANDIN@ITSSISSA
+%           38007::ORLANDINI)
+%
+% Changes made to previous versions by ww:
+%  1) change the name \sbox to shbox to avoid conflict with LaTeX's \sbox
+%  2) use LaTeX parameters (fboxrule, fboxsep) instead of seperate ones
+%  3) add the shadowbox environment and parameters associated with it.
+%
+% Abstract:
+%   1) The command \shbox has the similar meaning of the LaTeX command
+%           \fbox except for the fact that a "shadow" is added to the
+%           bottom and the right side of the box.
+%           It computes the right dimension of the box, also if the text
+%           spans over more than one line; in this case a warning message
+%           is given.
+%           There are three parameters governing:
+%        1. the width of the frame of the box -> \fboxrule
+%        2. the separation between the edge of the box
+%           and its contents -> \fboxsep
+%        3. the dimension of the shadow -> \shadowwidth
+%
+%     Syntax:  \shbox{<text>}
+%              where <text> is the text to be put in the framed box
+%     Example: \shbox{This is an example.}
+%
+%  2) The environment shadowbox produces a box with shadow like \shbox,
+%	but it can take more substantial contents the the \shbox.  The 
+%	appearance of this environment is governed by the same paramenters
+%	as \shbox. An extra paramenter is the width of the box. This is
+% 	specified by the user via the optional argument to the environment.
+%	The default is \textwidth-2\shadowwidth.
+%     Syntax:  \begin{shadowbox}[<width>]
+%		  <box contents>
+%	       \end{shadowbox}
+%
+%
+\newdimen\shb@xwd % width of the shadow box
+\newdimen\shb@@ht
+\newdimen\shb@@wd % the width of box including the frame
+\newdimen\sh@llht % height of shadow box including the shadow
+\newbox\shb@x	% box containing the contents of the shadow box
+
+\newdimen\shadowwidth % WIDTH OF THE SHADOW
+
+%
+% shadow box command
+%
+\def\shbox#1{\setbox\@tempboxa=\hbox{#1}
+\shb@@wd=\wd\@tempboxa
+\ifdim\shb@@wd<\textwidth
+  \leavevmode\setbox\@tempboxa=\hbox{#1}
+\else
+  \typeout{Warning. Box dimension greater than textwidth.}
+  \setbox\@tempboxa=\vbox{\hsize\textwidth\advance\hsize-2\fboxsep
+    \advance\hsize-2\fboxrule \advance\hsize-\shadowwidth#1}
+\fi
+ \setbox\shb@x=\hbox{\@tempdima\fboxrule
+     \advance\@tempdima \fboxsep \advance\@tempdima \dp\@tempboxa
+    \hbox{\lower \@tempdima\hbox
+   {\vbox{\hrule \@height \fboxrule
+           \hbox{\vrule \@width \fboxrule \hskip\fboxsep
+            \vbox{\vskip\fboxsep \box\@tempboxa\vskip\fboxsep}\hskip
+                         \fboxsep\vrule \@width \fboxrule}
+                   \hrule \@height \fboxrule}}}}
+\shb@@ht=\ht\shb@x \advance\shb@@ht-\shadowwidth
+\leavevmode\vbox{\baselineskip0pt\lineskip0pt
+       \hbox{\copy\shb@x\vrule \@width\shadowwidth \@height\shb@@ht}
+       \hbox{\kern\shadowwidth\vrule \@height\shadowwidth \@width\wd\shb@x}}}
+
+%
+% the shadowbox environment
+%
+\def\shadowbox{\@ifnextchar[{\setsh@wd}{\shadowb@x}}
+\def\setsh@wd[#1]{\shb@xwd=#1 \shadowb@x}
+\def\shadowb@x{%
+\setbox\shb@x \vbox\bgroup % start of outermost vbox/vtop/vcenter
+    \hsize \shb@xwd
+    \hrule\@height\fboxrule
+    \hbox\bgroup % inner hbox
+      \vrule\@width\fboxrule \hskip\fboxsep \vbox\bgroup % innermost vbox
+	\vskip\fboxsep %WW
+	\advance\hsize -2\fboxrule \advance\hsize-2\fboxsep
+	\textwidth\hsize \columnwidth\hsize
+	\@parboxrestore
+	\def\@mpfn{mpfootnote}\def\thempfn{\thempfootnote}\c@mpfootnote\z@
+	\let\@footnotetext\@mpfootnotetext
+	\let\@listdepth\@mplistdepth \@mplistdepth\z@
+	\@minipagerestore\@minipagetrue
+	\everypar{\global\@minipagefalse\everypar{}}}
+
+\def\endshadowbox{%
+	\par\vskip-\lastskip
+	\ifvoid\@mpfootins\else
+	  \vskip\skip\@mpfootins\footnoterule\unvbox\@mpfootins\fi
+	\vskip\fboxsep
+      \egroup % ends the innermost \vbox
+      \hskip\fboxsep \vrule\@width\fboxrule 
+    \egroup % ends the \hbox
+    \hrule\@height\fboxrule
+  \egroup% ends the vbox/vtop/vcenter
+ \shb@@ht\ht\shb@x \shb@@wd\wd\shb@x
+ \sh@llht\ht\shb@x \advance\sh@llht \shadowwidth
+ \advance\shb@@ht -\shadowwidth
+ \vbox{\nointerlineskip \lineskiplimit=0pt\lineskip=0pt\baselineskip=0pt%
+   \hbox{\box\shb@x \hbox to\shadowwidth{%
+      \vbox{\vskip \shadowwidth \hrule\@height\shb@@ht\@width\shadowwidth}}}%
+   \moveright \shadowwidth \hbox{\vrule\@height\shadowwidth\@width\shb@@wd}}
+}
+
+% set the defaul width of the box and shadow
+\shadowwidth=4pt
+\shb@xwd\textwidth \advance\shb@xwd -2\shadowwidth
+\fboxsep  = 10pt
+\fboxrule = .4pt
+
+
+%
+% end of shadowbox.sty
+%
+
