@@ -6,3 +6,4 @@ safecpda/safecpda.pdf
 *-preamble.dep
 *.dep
 */TeXAux/*
+safecpda/pstring.pro
