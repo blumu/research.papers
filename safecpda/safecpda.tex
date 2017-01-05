@@ -36,31 +36,51 @@
 \newcommand\LNodes{L}% set of leaf nodes
 
 \author{William Blum}
-\title{Type homogeneity does not limit expressivity of safe recursion schemes}
+\title{Type homogeneity is not a restriction for safe recursion schemes}
 
 \begin{document}
 \maketitle
 \begin{abstract}
 
-Knapik \emph{et al.} introduced the \emph{safety restriction} for higher-order recursion schemes which constrains both the types and syntax of rules of the recursion scheme \cite{KNU02}. This constraint gives rise to an equi-expressivity between 
-order-$n$ pushdown automata and order-$n$ safe recursion schemes, when used as tree-generating devices.
+Knapik \emph{et al.} introduced the \emph{safety restriction} for higher-order recursion schemes which constrains both the types and the syntax of the production rules defining a recursion scheme \cite{KNU02}. This constraint gives rise to an equi-expressivity between 
+order-$n$ pushdown automata and order-$n$ safe recursion schemes, when such devices are used to generate trees.
 
-We show that the type constraint, called \it{homogeneity}, is unnecessary. In other words, the syntactic restriction itself, 
-that we call \emph{incrementally-binding}, is sufficient to obtain the equi-expressivity result.
+We show that the type constraint, called \emph{homogeneity}, is unnecessary in the sense that the syntactic restriction itself is sufficient to obtain the
+equi-expressivity result.
 \end{abstract}
 
 \section{Introduction}
-The concept of \emph{safety} was introduced by Knapik \emph{et al.} in the context of higher-order recursion schemes and studied further in \cite{KNU02, demirandathesis}. In the original paper they show that, when used as tree generators, safe recursion schemes are equivalent to safe pushdown automata \cite{KNU02}. 
+The concept of \emph{safety} was introduced by Knapik \emph{et al.} in the
+context of higher-order recursion schemes and studied further in \cite{KNU02,
+demirandathesis}. In the original paper they show that, when used as tree
+generators, safe recursion schemes are equivalent to safe pushdown automata
+\cite{KNU02}. 
 In its original definition, safety consists of two fairly technical constraints:
 \begin{enumerate}
-\item \textbf{Type-Homogeneity}: This imposes a type constraint on the rules of the recursion scheme;
-\item \textbf{A syntactic restriction} on the relative order of subexpressions in terms occurring in the right hand side of the recursion scheme rules.
+\item \textbf{Type-Homogeneity}: This imposes a type constraint on the rules of
+the recursion scheme;
+\item \textbf{A syntactic restriction} on the relative order of subexpressions
+in terms occurring in the right hand side of the recursion scheme rules.
 \end{enumerate}
 
-Knapik \emph{et al.}'s result begged a question: what is the automaton equivalent of `unsafe` recursion schemes?
-This question was answered a few years later in a paper introducing a new kind of automata called Higher-Order Collapsible Pushdown Automata (CPDA), which is shown to be equivalent to higher-order recursion schemes (whether safe or not) \cite{hmos-lics08}. More specifically they describe an algorithm that, given an order-$n$ recursive schemes $G$, construct an equivalent order-$n$ CPDA (in the sense that they generate the same tree), and conversely. We will refer to the them as the HMOS conversion procedures.
+Knapik \emph{et al.}'s result begged a question: what is the automaton
+equivalent of `unsafe` recursion schemes?
+This question was answered a few years later in a paper introducing a new kind
+of automata called Higher-Order Collapsible Pushdown Automata (CPDA), which is
+shown to be equivalent to higher-order recursion schemes (whether safe or not)
+\cite{hmos-lics08}. More specifically they describe an algorithm that, given an
+order-$n$ recursive schemes $G$, construct an equivalent order-$n$ CPDA (in the
+sense that they generate the same tree), and conversely. We will refer to the
+them as the HMOS conversion procedures.
 
-The safety restriction was further studied in the context of the lambda calculus in the author's D.Phil thesis \cite{BlumPhd}. Somewhat surprisingly, in the lambda calculus setting, the type-homogeneity constraint is not necessary to define a useful calculus. One can define a notion of safe simply-typed lambda calculus by imposing solely the syntactic constraint above, that we call \textbf{incremental-binding}, onto the standard simply-typed lambda calculus. The author's thesis gives expressivity results and present a fully-abstract game model for this calculus \cite{BlumPhd}. 
+The safety restriction was further studied in the context of the lambda calculus
+in the author's D.Phil thesis \cite{BlumPhd}. Somewhat surprisingly, in the
+lambda calculus setting, the type-homogeneity constraint is not necessary to
+define a useful calculus. One can define a notion of safe simply-typed lambda
+calculus by imposing solely the syntactic constraint above, that we call
+\textbf{incremental-binding}, onto the standard simply-typed lambda calculus.
+The author's thesis gives expressivity results and present a fully-abstract game
+model for this calculus \cite{BlumPhd}. 
 
 This paper reconciles the above observation made in the lambda calculus with the setting of higher-order recursion schemes: we show that if a recursion scheme meets the syntactic criteria of the safety restriction, then regardless of whether the type homogenity is met, the automaton constructed using the HMOS procedure from \cite{hmos-lics08} can be converted into an equivalent order-$n$ (non-collapsible) push-down automaton (PDA). Conversely, given an order-$n$ PDA, the recursion scheme generated by the HMOS transformation induces an equivalent incrementally-bound and homogeneously-typed recursion scheme. 
 Consequently, for generating trees, pushdown automata are just as expressive as incrementally-bound recursion schemes.
@@ -70,24 +90,63 @@ Further, composing the above two transformations yield a methods to
 convert any incrementally-bound recursion scheme into an equivalent \emph{safe} one (in the original sense: incrementally-bound and type-homogeneous). Type-homogeneity is therefore not a proper restriction for safe recursion schemes. This generalizes Knapik \emph{et al.}'s results about  equi-expressivity of pushdown automata and \emph{safe} recursion schemes \cite{KNU02}.
 \vspace{1em}
 
-\emph{Note: The result present in this paper was first conjectured in the author's thesis in \cite{BlumPhd}. A sketch of a proof was privately shared by the author in a 2008 note with an incomplete proof for one of the Lemma. Broadbent was the first to observe how to fix the proof and derived a similar argument based on the same idea but using a different notion of stack-safety \cite{Broadbent2009}. This paper fixes the hole in the author's original proof by introducing yet another definition of stack safety.}
+\emph{Note: The result present in this paper was first conjectured in the author's thesis in \cite{BlumPhd}. A partial proof was privately shared by the author in a 2008 note with an incomplete proof for one of the Lemma. Broadbent \cite{Broadbent2009} was the first to observe how to fill the gap by slightly adjusting the definition of stack safety so as to make the inductive proof work. The present paper introduces yet another definition of stack safety which is closer to the original attempt.}
 
 \section{Notations}
+We first recall some standard definitions used from the higher-order automaton literature from \cite{KNU02,hague-collaps-full}.
 
-\paragraph{Stack}
-An element of the CPDA stack is written $a^{(j,k)}$ where $a\in \Gamma$ and the exponent $(j,k)$
-encodes the pointer associated to the stack symbol. The value $j$ is called the order of the link, and $k$ is called the height of the link.
-We use the following abbreviations:
-\begin{itemize}
-\item ``$push_1^{a,j}$'' for the operation $push_1\,a^{(j,1)}$;
-\item ``$push_1^a$'' for the operation $push_1\,a^{(j,k)}$ where the components $j$ and $k$ are undetermined.
-\end{itemize}
+\paragraph{Higher-order stacks}
+The notion of higher-order stacks is defined inductively. We first fix the base alphabet as a possibly infinite set $\Gamma$. An \emph{order-$1$} stack over $\Gamma$ is a sequence of elements of $\gamma \in \Gamma^*$. For $n \in \mathbb{N}$ an \emph{order-$(n+1)$}-stack is defined as a stack of order-$n$ stacks.
+The order of a stack $s$ is written $\ord(s)$. The $i^th$ elements in a stack $s$, for $i\geq 0$, is denoted $s_i$ so that a stack $s$ consists of elements in order $s_1$, $\dots$ $s_k$ where $k\geq0$ is called the length of the stack. The stack can then be represented by the notation $[s_1, \cdots s_k]$. The first element $s_1$ and last element $s_k$ are respectively called the `bottom'; and `top' elements of the stack.
+The empty stack of order $1$ is denoted $\bot_1$ and represent the stack consisting of no element. We then define the empty $(n+1)$-stack $\bot_{n+1}$ as the singleton sequence $[ \bot_n ]$.
 
-Given an order-$n$ CPDA, we call \defname{configuration} an order-$n$ stack.
+The following operations are defined for an order-$1$ stack $s$:
+\begin{eqnarray*}
+	push_1^{a} [ \; s_1 \cdots s_m \; ] & := & [ \; s_1 \cdots s_m\, a \; ] \\
+	pop_1 [ \; s_1 \cdots s_m s_{m+1} \; ] & : = & [ \; s_1 \cdots s_m \; ] \\
+\end{eqnarray*}
+and for an order-$(n+1)$ stacks $t$:
+\begin{eqnarray*}
+	push_{n+1} [ \; t_1 \cdots t_m \; ] & := & [ \; t_1 \cdots t_m\; t_m \; ] \\
+	pop_{n+1} [ \; t_1 \cdots t_m t_{m+1} \; ] & : = & [ \; t_1 \cdots t_m \; ] \\
+\end{eqnarray*}
+
+The $top_i$ of a stack for $i\geq 1$ is defined as the top $(i-1)$-stack of $s$ (so that $pop_i$ returns $s$ with its top $(i-1)$-stack removed).
+Formally, for $s=[ \; s_1 \cdots s_{l+1} \; ]$, $l\geq0$ and $1 \leq i\leq \ord(s)$:
+\begin{eqnarray*}
+	top_{i} [ \; s_1 \cdots s_{l+1} \; ] & := &  
+	\begin{cases}
+		s_{l+1} & \mbox{if $i = \ord(s)$} \\
+		top_i s_{l+1} & \mbox{if $i < \ord(s)$}
+	\end{cases}
+\end{eqnarray*}
 
 
-\todo{Add definition of stack prefix ``$s_{\prefixof m}$'' and ``$s_{<m}$'' \cite{hmos-lics08}.}
+Following \cite{hmos-lics08}, we define the natural notion of stack prefix: for a given $n$-stack $s$, for any lower-level stack $m$ occurring in $s$, the prefix $s_{\prefixof m}$ of $s$ at $m$ consists of the stack obtained from $s$ by removing all the elements `above' $m$ using a succession of `pop` operations. 
 
+Formally:
+\begin{definition}[Stack prefix]
+Let $s = [s_1 \cdots s_m]$ be a higher-order stack. Then $s_{\prefixof s_i}$ is defined as $[s_1 \cdots s_i]$ for $1 \leq i \leq m$; and for a stack $t$ occurring in $s_i$ we define $s_{\prefixof t}$ as $[s_1 \cdots {s_i}_{\prefixof t}]$.
+
+Similarly we define the strict stack prefix ${s}{< s_i}$ and $s_{<t}$ respectively as
+ $[s_1 \cdots s_{i-1}]$ and $[s_1 \cdots t_{< s_{i}}]$.
+\end{definition}
+
+For any operation $\phi$ operating on a higher-order stack and $k\geq1$ we denote by $Phi^k$ the repeated application of $\phi$ $k$ times: $\phi^k = \phi ; \cdots; \phi s$.
+
+
+\paragraph{Higher-order stacks with links}
+
+Collapsible Pushdown Automata (CPDA) operate on special higher-order stacks where each order-$1$ element is equipped with a link to another stack. We reproduce here the definition of stack equiped with links from \cite{hague-collaps-full}:
+
+\begin{definition}[CPDA stack]
+For an stack alphabet $\Gamma$ and a distinguished bottom-of-stack symbol $\bottom\in \Gamma$. An order $0$ CPDA stack is just a stack symbol. An order-$n+1$ CPDA stack $s$ is a non-empty sequence (written $[s_1 \cdots s_l]$) of order $n$ CPDA stacks such that every non-$\bottom$ symbol $a$ that occurs in $s$ has a link to a stack of some order $k$ (where $0 \leq k \leq n$) situated below it in $s$; we call the link a $(k + 1)$-link.
+\end{definition}
+
+An element of a higher order CPDA stack is written $a^{(j,k)}$ where $a\in \Gamma$ and the exponent $(j,k)$ encodes the pointer associated to the stack symbol. Think of it as a shorthand for the iterated stack operation $pop_j^k$ ($k$ applications of $pop_j$).
+The value $j$ is called the order of the link, and $k$ is called the height of the link for $1 \leq j \leq n$ and $k \geq 1$, such that if $j = 1$ then $k = 1$.
+
+Given an order-$n$ CPDA, we call \defname{configuration} an order-$n$ CPDA stack.
 
 \begin{definition}
 Let $s$ be a higher-order stack. We define $s^{\langle j \rangle}$ as the operation that replaces
@@ -103,16 +162,35 @@ $(s^{\langle j\rangle})_{\prefixof m} = (s_{\prefixof m})^{\langle j\rangle}$,
 for all stack $s$ and stack-symbol $m$ occurring in $s$.
 
 
-We reproduce here the definition of the CPDA operation $push_j$ \cite{hmos-lics08}:
-$$ push_j \underbrace{[ s_1 \ldots s_{l+1} ]}_{s} =
+The $top$ and $pop$ operations are defined identically to standard higher-order stacks.
+The $push$ operation is defined similarly to the higher-order stacks case except that the push operation now needs to assign a pointer to every element pushed onto the stack. 
+
+In addition to the standard push and pop operations, the CPDA introduces a new $collapse$ operation that reduces the stack to the target of the pointer associated with the top order-$1$ element in the stack. The idea is that if the top-$1$ element is a link from a symbol $a$ to some $(j - 1)$-stack, then the stack can be `collapsed' to the target of the link by successively performing $k$ times the $pop_j$ operation.
+
+We reproduce here the definition of the $push$ and $collpase$ operations from \cite{hmos-lics08}:
+
+\begin{definition}[Higher-order CPDA operations]
+We define CPDA operations in terms of the standard stack operations of an order-$n$ PDA with an adequately defined alphabet encoding elements of the form $b^{(o,h)$ where $b\in\Gamma$ and link indices $o,h \geq 0$. For $1 \leq i  \leq \ord(s)$ and $2  \leq j  \leq ord(s)$:
+\begin{align*}
+push_1^{b,i}\ s &= push_1^{b^{(i,1)}}\ s \\
+collapse\ s &= pop_o^h s  \hbox{\ where } top_1\ s = a^{(o,h)} \\
+push_j \underbrace{[ s_1 \ldots s_{l+1} ]}_{s} &=
 \left\{
-  \begin{array}{ll}
+\begin{array}{ll}
 \    [s_1\ \ldots\ s_{l+1}\ s_{l+1}^{\langle j \rangle}]  &\hbox{if $j = \ord{s}$;}\\
 \    [s_1\ \ldots\ s_{l+1}\ push_j\ s_{l+1}]  &\hbox{if $j<\ord{s}$.}
- \end{array}
+\end{array}
 \right.
-$$
+\end{align*} 
+\end{definition}
 
+\begin{convention}
+	In the rest of the paper we will adopt the following abbreviations:
+\begin{itemize}
+	\item ``$push_1^{a,j}$'' for the operation $push_1\,a^{(j,1)}$;
+	\item ``$push_1^a$'' for the operation $push_1\,a^{(j,k)}$ where the components $j$ and $k$ are undetermined.
+\end{itemize}
+\end{convention}
 
 \begin{convention}[Top stack convention]
 \label{conv:top_preserve_links}
@@ -121,6 +199,8 @@ In the original definition, the operation $top_i$, that returns the top $(i-1)$-
 \end{convention}
 
 \paragraph{Recursion schemes} \hfill
+
+We now recall the definition of recursion schemes
 
 \todo{Add definition of recursion scheme, \defname{type-homogeneity}, and \defname{incremental bound computation tree/graph}\cite{blumong:safelambdacalculus}.}
 
@@ -133,8 +213,9 @@ A recursion scheme is \defname{safe} if it is incrementally-bound and homogeneou
 We fix a higher-order recursion scheme $G$ of order $n$.
 
 \paragraph{Presentation}
-An order $n$ collapsible pushdown automaton, as defined in \cite{hmos-lics08}, denoted $CPDA(G)$, constructed from the recursion scheme $G$ \cite[Definition 5.2]{hague-collaps-full}. They show that this automaton is equivalent to $G$ in the sense that it generates the same tree.
-The stack-alphabet $\Gamma$ is given by the set of nodes of the computation graph of $G$ (derived from the long eta-expansion of its rules). The automaton proceeds by computing the set of traversals of the computation tree of $G$. One can easily transform $CPDA(G)$ into an automaton that ``prints out'' the traversal that is being computed. This can be done by changing the behaviour of the $push_1$ operation to make it print out the input element before pushing it on the stack. The justification pointers can then be recovered inductively using the node labels: For a variable node, it is the only node-occurrence that binds it in the P-view at that point (which is computable by the induction hypothesis); prime lambda nodes always point to their immediate predecessor; and a non-prime lambda node is always justified by the predecessor of the justifier of the variable node preceding it.
+We consider the order $n$ collapsible pushdown automaton, obtained from the transformation defined in \cite{hmos-lics08} and denoted $CPDA(G)$, that is constructed from the recursion scheme $G$ \cite[Definition 5.2]{hague-collaps-full}. This automaton is equivalent to $G$ in the sense that they both generate the same tree \cite{hmos-lics08}.
+
+The stack-alphabet $\Gamma$ is given by the set of nodes of the computation graph of $G$ (a tree derived from the long eta-expansion of $G$'s production rules). The automaton proceeds by inductively computing some set of traversals of the computation tree of $G$. One can easily transform $CPDA(G)$ into an automaton that ``prints out'' the traversal that is being computed. This can be done by changing the behaviour of the $push_1$ operation to make it print out the input element before pushing it on the stack. The justification pointers can then be recovered inductively using the node labels: For a variable node, it is the only node-occurrence that binds it in the P-view at that point (which is computable by the induction hypothesis); prime lambda nodes always point to their immediate predecessor; and a non-prime lambda node is always justified by the predecessor of the justifier of the variable node preceding it.
 
 The stack of the current configuration does not suffice in itself to reconstruct the traversal that is being computed
 due to the use of some ``destructive'' operations in the CPDA such as $collapse$. Nevertheless, two very useful pieces of information are recoverable from the configuration-stack: the O-view and the P-view of the traversal.
@@ -166,7 +247,7 @@ Let $c$ be a configuration. The \defname{long O-view},
 
 
 \paragraph{Definition}
-We now give the formal definition of the collapsible pushdown automaton from 
+We now give the formal definition of the collapsible pushdown automaton from the HMOS  construction
 \cite{hmos-lics08}. The presentation here differs slightly from the original one: In the case (A), when pushing the prime child of an application node $@$ on the stack, we assign it a link pointing to the preceding stack symbol in the top $1$-stack (\ie, the $@$-node itself).
  This modification avoids the case analysis on the value of $j$---the child-index of $u$'s binder---in the
  cases ($V_0$) and ($V_1$), and the sequence of instructions $pop_1^{p+1}$ can just be replaced by
