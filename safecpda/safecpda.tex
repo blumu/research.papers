@@ -35,6 +35,11 @@
 \newcommand\INodes{IN}% set of inner nodes
 \newcommand\LNodes{L}% set of leaf nodes
 
+% lambda calculus
+\newcommand\typeof[1]{{\sf type}(#1)}
+\newcommand\arity{\mathop{\mathrm{arity}}}
+
+
 \author{William Blum}
 \title{Type homogeneity is not a restriction for safe recursion schemes}
 
@@ -92,11 +97,19 @@ convert any incrementally-bound recursion scheme into an equivalent \emph{safe} 
 
 \emph{Note: The result present in this paper was first conjectured in the author's thesis in \cite{BlumPhd}. A partial proof was privately shared by the author in a 2008 note with an incomplete proof for one of the Lemma. Broadbent \cite{Broadbent2009} was the first to observe how to fill the gap by slightly adjusting the definition of stack safety so as to make the inductive proof work. The present paper introduces yet another definition of stack safety which is closer to the original attempt.}
 
-\section{Notations}
-We first recall some standard definitions used from the higher-order automaton literature from \cite{KNU02,hague-collaps-full}.
+\section{Background}
+We first recall some basic notations and recall the definition of higher-order automata and higher-order recursion schemes from the literature \cite{KNU02,hague-collaps-full}.
 
+We consider simple types over a single atom $o$. We call $\Sigma$ a \defname{ranked alphabet} if each symbol $f \in \Sigma$ is assigned a type of the form $o \longrightarrow  \cdots \longrightarrow o \longrightarrow  o$. We write $\arity(f)$ for any typed-term $f$ to denote the arity of its type.
+
+Given a set of typed symbols $S$, the set of \defname{applicative terms} generated from $S$, is defined as the closure of $S$ under the application rule: if $m$ and $n$ are two applicative terms of respective type $A\rightarrow B$ and $A$ then $(m n)$ is also an applicative term of type $B$.
+
+A \defname{$\Sigma$-labelled tree} is a possibly infinite tree where each nodes of the tree is labelled with a symbol in $\Sigma$ with arity matching the number of children nodes in the tree.
+
+
+\subsection{Higher-order pushdown automata}
 \paragraph{Higher-order stacks}
-The notion of higher-order stacks is defined inductively. We first fix the base alphabet as a possibly infinite set $\Gamma$. An \emph{order-$1$} stack over $\Gamma$ is a sequence of elements of $\gamma \in \Gamma^*$. For $n \in \mathbb{N}$ an \emph{order-$(n+1)$}-stack is defined as a stack of order-$n$ stacks.
+The notion of higher-order stacks is defined inductively. We first fix the base alphabet as a finite set $\Gamma$. An \emph{order-$1$} stack over $\Gamma$ is a sequence of elements of $\gamma \in \Gamma^*$. For $n \in \mathbb{N}$ an \emph{order-$(n+1)$}-stack is defined as a stack of order-$n$ stacks.
 The order of a stack $s$ is written $\ord(s)$. The $i^th$ elements in a stack $s$, for $i\geq 0$, is denoted $s_i$ so that a stack $s$ consists of elements in order $s_1$, $\dots$ $s_k$ where $k\geq0$ is called the length of the stack. The stack can then be represented by the notation $[s_1, \cdots s_k]$. The first element $s_1$ and last element $s_k$ are respectively called the `bottom'; and `top' elements of the stack.
 The empty stack of order $1$ is denoted $\bot_1$ and represent the stack consisting of no element. We then define the empty $(n+1)$-stack $\bot_{n+1}$ as the singleton sequence $[ \bot_n ]$.
 
@@ -137,16 +150,14 @@ For any operation $\phi$ operating on a higher-order stack and $k\geq1$ we denot
 
 \paragraph{Higher-order stacks with links}
 
-Collapsible Pushdown Automata (CPDA) operate on special higher-order stacks where each order-$1$ element is equipped with a link to another stack. We reproduce here the definition of stack equiped with links from \cite{hague-collaps-full}:
+We recall the notion of higher-order stack with links where each order-$1$ element is equipped with a link to another stack \cite{hague-collaps-full}:
 
-\begin{definition}[CPDA stack]
-For an stack alphabet $\Gamma$ and a distinguished bottom-of-stack symbol $\bottom\in \Gamma$. An order $0$ CPDA stack is just a stack symbol. An order-$n+1$ CPDA stack $s$ is a non-empty sequence (written $[s_1 \cdots s_l]$) of order $n$ CPDA stacks such that every non-$\bottom$ symbol $a$ that occurs in $s$ has a link to a stack of some order $k$ (where $0 \leq k \leq n$) situated below it in $s$; we call the link a $(k + 1)$-link.
+\begin{definition}[Higher order stack with links (or CPDA stack)]
+For a stack alphabet $\Gamma$ and a distinguished bottom-of-stack symbol $\bot\in \Gamma$. An order-$0$ CPDA stack is just a stack symbol. An order-$(n+1)$ CPDA stack $s$ is a non-empty sequence (written $[s_1 \cdots s_l]$) of order $n$ CPDA stacks such that every non-$\bot$ symbol $a$ that occurs in $s$ has a link to a stack of some order $k$ (where $0 \leq k \leq n$) situated below it in $s$; we call the link a $(k + 1)$-link.
 \end{definition}
 
 An element of a higher order CPDA stack is written $a^{(j,k)}$ where $a\in \Gamma$ and the exponent $(j,k)$ encodes the pointer associated to the stack symbol. Think of it as a shorthand for the iterated stack operation $pop_j^k$ ($k$ applications of $pop_j$).
 The value $j$ is called the order of the link, and $k$ is called the height of the link for $1 \leq j \leq n$ and $k \geq 1$, such that if $j = 1$ then $k = 1$.
-
-Given an order-$n$ CPDA, we call \defname{configuration} an order-$n$ CPDA stack.
 
 \begin{definition}
 Let $s$ be a higher-order stack. We define $s^{\langle j \rangle}$ as the operation that replaces
@@ -165,12 +176,13 @@ for all stack $s$ and stack-symbol $m$ occurring in $s$.
 The $top$ and $pop$ operations are defined identically to standard higher-order stacks.
 The $push$ operation is defined similarly to the higher-order stacks case except that the push operation now needs to assign a pointer to every element pushed onto the stack. 
 
-In addition to the standard push and pop operations, the CPDA introduces a new $collapse$ operation that reduces the stack to the target of the pointer associated with the top order-$1$ element in the stack. The idea is that if the top-$1$ element is a link from a symbol $a$ to some $(j - 1)$-stack, then the stack can be `collapsed' to the target of the link by successively performing $k$ times the $pop_j$ operation.
+In addition to the standard push and pop operations, the CPDA introduces a new $collapse$ operation that `collapses' a given stack to the target of the pointer associated with the top order-$1$ element in the stack. The idea is that if the top-$1$ element is a link from a symbol $a$ to some $(j - 1)$-stack, then the stack can be collapsed to the target of the link by successively performing $k$ times the $pop_j$ operation.
 
 We reproduce here the definition of the $push$ and $collpase$ operations from \cite{hmos-lics08}:
 
 \begin{definition}[Higher-order CPDA operations]
-We define CPDA operations in terms of the standard stack operations of an order-$n$ PDA with an adequately defined alphabet encoding elements of the form $b^{(o,h)$ where $b\in\Gamma$ and link indices $o,h \geq 0$. For $1 \leq i  \leq \ord(s)$ and $2  \leq j  \leq ord(s)$:
+	\label{cpdastackopearations}
+We define CPDA operations in terms of the standard stack operations of an order-$n$ PDA with an adequately defined alphabet encoding elements of the form $b^{(o,h)}$ where $b\in\Gamma$ and link indices $o,h \geq 0$. For $1 \leq i  \leq \ord(s)$ and $2  \leq j  \leq ord(s)$:
 \begin{align*}
 push_1^{b,i}\ s &= push_1^{b^{(i,1)}}\ s \\
 collapse\ s &= pop_o^h s  \hbox{\ where } top_1\ s = a^{(o,h)} \\
@@ -198,14 +210,137 @@ In the original definition, the operation $top_i$, that returns the top $(i-1)$-
  removes any dangling pointer resulting from the operation. Here, we suppose that $top_i$ is defined in such a way that all pointers are preserved. From an implementation viewpoint, since links are encoded as pairs of integers, this means that $top_i$ just returns an unmodified copy of the top $(i-1)$-stack.
 \end{convention}
 
-\paragraph{Recursion schemes} \hfill
 
-We now recall the definition of recursion schemes
+\begin{definition}
+	A tree generating \defname{order-$n$ collapsible pushdown automaton}, $n$-CPDA for short, is a tuple $\langle \Sigma, \Gamma,Q,\delta,q_0 \rangle$ where $\Sigma$ is a ranked alphabet, 
+	$\Gamma$ is a stack alphabet, $Q$ is a finite set of states, $q_0$
+	is the initial state, and $\delta$ is a transition function $ Q \times \Gamma Γ \longrightarrow Q \times Op + Out$ where
+	\begin{itemize}
+		\item  $Op$ denotes the set of operations on higher-order stacks with links from Definition \ref{cpdastackopearations}.;
+		\item $Out = \{(f, q_1 , \cdots ,q_{\arity(f)})  : f \in \Sigma, q_ i \in Q \}$ denotes the set of possible output emitted at each step of the transition function.
+	\end{itemize}
+	An order-$n$ CPDA stack is called a \defname{configuration} of an order-$n$ CPDA.
+\end{definition}
 
-\todo{Add definition of recursion scheme, \defname{type-homogeneity}, and \defname{incremental bound computation tree/graph}\cite{blumong:safelambdacalculus}.}
+This definition extends the notion of tree-generating \defname{Pushdown Automaton} (PDA) which are similarly defined on regular higher-order stack with no links and without the $collapse$ stack operation.
+
+\paragraph{Tree generated by a CPDA/PDA}
+
+Think of a CPDA (resp.\ PDA) as a state machine equipped with a higher-order stacks. At each transition, the CPDA can either (i) applies some operation to the stack and update its state, (ii) output the root node $f\in \Sigma$ of the generated tree together with new states for each branch of the tree root. The infinite tree generated by the automaton can then be obtained by recursively spawning new automatons at each child of the node starting with the specified state $q_i$.
+The formal definition of the generated tree can be found in \cite{KNU02,hague-collaps-full}.
+
+
+\paragraph{Higher-order recursion schemes} \hfill
+
+
+\begin{definition}
+	A \defname{higher-order recursion scheme} is a tuple $\langle
+	\Sigma, \mathcal{N}, \mathcal{R}, S \rangle$, where $\Sigma$ is a
+		ranked alphabet of \emph{terminals};
+		$\mathcal{N}$ is a finite set of typed \emph{non-terminals};
+		$S$ is a distinguished ground-type symbol of
+		$\mathcal{N}$, called the start symbol;
+		$\mathcal{R}$ is a finite set of production rules. 
+		For each non-terminal $F : (A_1, \ldots, A_n, o) \in \mathcal{N}$ there is exactly one rule of the form:
+		$ F z_1 \ldots z_m \rightarrow e$
+		where each $z_i$ (called \emph{parameter}) is a
+		variable of type $A_i$ and $e$ is an applicative term of type $o$
+		generated from the typed symbols in $\Sigma \union \mathcal{N} \union \{z_1:A_1, \ldots, z_m:A_m \}$.
+
+	We say that the recursion scheme is \emph{order-$n$} just in case the order of the highest-order non-terminal is $n$.
+
+\end{definition}
+
+\paragraph{Tree-generated by a recursion scheme}
+An applicative term generated from the terminals symbols $\Sigma$ only (without non-terminals), is viewed as a $\Sigma$-labelled tree and called a \defname{value tree}. A recursion scheme defines a (potentially infinite) value tree obtained by unfolding its rewrite rules \emph{ad infinitum}, replacing formal by actual parameters each time, starting from the start symbol $S$. It is formally defined as the least upper bound of the
+induced \emph{schematological tree grammar} in the continuous algebra of ranked trees with the appropriate ordering \cite{KNU02,demirandathesis}.
+
+\parpic[r]{
+	\raisebox{-30pt}
+	{\begin{tikzpicture}[baseline=(root.base),level distance=3ex,inner ysep=0.5mm,sibling distance=13mm]
+		\node (root) {$g$}
+		child {node {$a$}}
+		child {node {$g$}
+			child {node {$a$}}
+			child {node {$h$}
+				child {node {$h$}
+					child {node {$\ldots$}}
+				}
+			}
+		};
+		\end{tikzpicture}
+	}
+}
+\begin{example}\label{eg:running}
+	Let $G$ be the following order-2 recursion scheme:
+	\[\begin{array}{rll}
+	S & \rightarrow & H \, a\\
+	H \, z & \rightarrow & F \, (g \,
+	z)\\
+	F \, \phi & \rightarrow & \phi \, (\phi \, (F \, h))\\
+	\end{array}\]
+	with non-terminals $S:o$, $F : ((o, o),o)$, $H:(o,o)$ and terminals $g, h, a$ of arity $2, 1, 0$ respectively.
+	Then the tree generated by $G$ is defined by the infinite term
+	$g \, a \, (g \, a \, (h \, (h \, (h \,
+	\cdots))))$ pictured on the right.%  The only infinite \emph{path} in the
+	% tree is the node-sequence $\epsilon \cdot 2 \cdot 22 \cdot 221 \cdot
+	% 2211 \cdots$.
+	
+	%(with the corresponding \textbfit{trace} $g \, g \, h \, h \, h \,
+	%\cdots \; \in \; \Sigma^\omega$).
+\end{example}
+
+
+\begin{definition}[Computation tree]
+	Comp
+\end{definition}
+\todo{tree generated by HORS}
+
+\todo{Add \defname{incremental bound computation tree/graph}\cite{blumong:safelambdacalculus}.}
 
 A recursion scheme is \defname{incrementally-bound} just if its computation graph is incrementally-bound.
 A recursion scheme is \defname{safe} if it is incrementally-bound and homogeneously-typed.
+
+
+
+\subsection{The safety restriction}
+\label{sec:safety}
+
+The safety restriction has appeared under different forms in the literature \cite{KNU02,Dam82,demirandathesis,BlumPhd,blumong:safelambdacalculus}.
+We include here a reformulation of the definition by Knapik {\it et al.} \cite{KNU02}.
+
+\begin{definition}[Type homogeneity]
+\label{subsec:typehomogeneity}
+We say that a type $A_1 \longrightarrow \cdots \longrightarrow A_n \longrightarrow o$ with $n \geq 0$ is \defname{homogeneous}
+just if $\ord{A_1} \geq \ord{A_2}\geq \cdots \geq \ord{A_n}$, and each $A_1$, \ldots, $A_n$ is homogeneous \cite{KNU02}.
+\end{definition}
+
+\begin{definition}[Safe recursion scheme]
+Let $G$ be a higher-order recursion scheme whose non-terminals have homogeneous type.
+We say that $G$ is \textbf{unsafe} just if it has a production rule $F z_1 \ldots z_m \rightarrow e$ where $e$ contains a subterm that:
+\begin{enumerate}
+	\item occurs in {\em operand} position in $e$,
+	\item contains a parameter of order strictly less than its order.
+\end{enumerate}
+By ``operand position'' we mean ``in the second position of some
+occurrence of the term application operator''.
+
+A recursion scheme is \textbf{safe} if it is not unsafe.
+\end{definition}
+
+\begin{remark}
+It is possible to define a similar notion of safety for the simply-typed lambda calculus, where the term `safety' gains more sense: performing $\beta$-reduction in this calculus can be safely implemented by capture-permitting substitution without impacting the normal form of a term \cite{BlumPhd,blumong:safelambdacalculus,safety-mirlong2004}.
+\end{remark}
+
+We can now state the two main results that are relevant to the result shown in this paper:
+
+\begin{theorem}[Safe HORS - PDA equi-expressivity \cite{KNU02}]
+A potentially infinite  $\Sigma$-labelled tree is generated by a \emph{safe} order-$n$ recusion scheme if and only if it is accepted by an order-$n$ pushdown automaton.
+\end{theorem}
+
+\begin{theorem}[HORS - CPDA equi-expressivity \cite{hmos-lics08}]
+	A potentially infinite $\Sigma$-labelled tree is generated by an order-$n$ recursion scheme if and only if it is accepted by an order-$n$ collapsible pushdown automaton.
+\end{theorem}
 
 
 \section{From recursion scheme to collapsible pushdown automaton}
@@ -247,7 +382,7 @@ Let $c$ be a configuration. The \defname{long O-view},
 
 
 \paragraph{Definition}
-We now give the formal definition of the collapsible pushdown automaton from the HMOS  construction
+We now give the formal definition of the collapsible pushdown automaton from the HMOS construction
 \cite{hmos-lics08}. The presentation here differs slightly from the original one: In the case (A), when pushing the prime child of an application node $@$ on the stack, we assign it a link pointing to the preceding stack symbol in the top $1$-stack (\ie, the $@$-node itself).
  This modification avoids the case analysis on the value of $j$---the child-index of $u$'s binder---in the
  cases ($V_0$) and ($V_1$), and the sequence of instructions $pop_1^{p+1}$ can just be replaced by
