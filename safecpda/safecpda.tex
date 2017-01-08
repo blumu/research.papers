@@ -79,7 +79,7 @@ sense that they generate the same tree), and conversely. We will refer to the
 them as the HMOS conversion procedures.
 
 The safety restriction was further studied in the context of the lambda calculus
-in the author's D.Phil thesis \cite{BlumPhd}. Somewhat surprisingly, in the
+in the author's D.Phil.\ thesis \cite{BlumPhd}. Somewhat surprisingly, in the
 lambda calculus setting, the type-homogeneity constraint is not necessary to
 define a useful calculus. One can define a notion of safe simply-typed lambda
 calculus by imposing solely the syntactic constraint above, that we call
@@ -95,7 +95,10 @@ Further, composing the above two transformations yield a methods to
 convert any incrementally-bound recursion scheme into an equivalent \emph{safe} one (in the original sense: incrementally-bound and type-homogeneous). Type-homogeneity is therefore not a proper restriction for safe recursion schemes. This generalizes Knapik \emph{et al.}'s results about  equi-expressivity of pushdown automata and \emph{safe} recursion schemes \cite{KNU02}.
 \vspace{1em}
 
-\emph{Note: The result present in this paper was first conjectured in the author's thesis in \cite{BlumPhd}. A partial proof was privately shared by the author in a 2008 note with an incomplete proof for one of the Lemma. Broadbent \cite{Broadbent2009} was the first to observe how to fill the gap by slightly adjusting the definition of stack safety so as to make the inductive proof work. The present paper introduces yet another definition of stack safety which is closer to the original attempt.}
+\begin{remark}
+The result presented in this paper was privately circulated for the first time in 2009 but never published \cite{privatenode}.
+It was first conjectured in the author's thesis in \cite{BlumPhd}. A partial proof was then privately circulated by the author in a 2008 note. Based on this note, Broadbent \cite{Broadbent2009} adjusted the definition of \emph{stack safety} to make the inductive proof work and fill the remaining gap in the proof. The author then circulated an updated note using yet another definition of stack safety. 
+\end{remark}
 
 \section{Background}
 We first recall some basic notations and recall the definition of higher-order automata and higher-order recursion schemes from the literature \cite{KNU02,hague-collaps-full}.
@@ -107,7 +110,8 @@ Given a set of typed symbols $S$, the set of \defname{applicative terms} generat
 A \defname{$\Sigma$-labelled tree} is a possibly infinite tree where each nodes of the tree is labelled with a symbol in $\Sigma$ with arity matching the number of children nodes in the tree.
 
 
-\subsection{Higher-order pushdown automata}
+\subsection{Higher-order stacks and recursion schemes}
+
 \paragraph{Higher-order stacks}
 The notion of higher-order stacks is defined inductively. We first fix the base alphabet as a finite set $\Gamma$. An \emph{order-$1$} stack over $\Gamma$ is a sequence of elements of $\gamma \in \Gamma^*$. For $n \in \mathbb{N}$ an \emph{order-$(n+1)$}-stack is defined as a stack of order-$n$ stacks.
 The order of a stack $s$ is written $\ord(s)$. The $i^th$ elements in a stack $s$, for $i\geq 0$, is denoted $s_i$ so that a stack $s$ consists of elements in order $s_1$, $\dots$ $s_k$ where $k\geq0$ is called the length of the stack. The stack can then be represented by the notation $[s_1, \cdots s_k]$. The first element $s_1$ and last element $s_k$ are respectively called the `bottom'; and `top' elements of the stack.
@@ -290,9 +294,9 @@ induced \emph{schematological tree grammar} in the continuous algebra of ranked 
 	%\cdots \; \in \; \Sigma^\omega$).
 \end{example}
 
-\paragraph{Computation tree}
+\subsection{Computation tree}
 
-Informally, the computation tree of a higher-order recursion scheme from \cite{OngLics2006} is a finite tree representation of the \emph{$\eta$-long normal form} of the (possibly infinite) lambda term inherent to the production rules of the recursion scheme.
+Informally, the \emph{computation tree} of a higher-order recursion scheme from \cite{OngLics2006} is a finite tree representation of the \emph{$\eta$-long normal form} of the (possibly infinite) lambda term inherent to the production rules of the recursion scheme.
 
 Fix a higher-order recursion scheme $R = \langle \Sigma, \mathcal{N}, \mathcal{R}, S \rangle$.
 Observe that production rules naturally map to simply-typed lambda terms by (i) currying the rule: replacing variables defined on the left-hand side by a succession of lambda abstractions on the right-hand side, (ii) interpreting terminals and non-terminal occurring in the applicative term of the right-hand side as free variables. The rule $F z_1 \ldots z_m \rightarrow f (G (F z_1))$, for instance, corresponds to the simply-typed lambda-term:
@@ -320,42 +324,45 @@ We define the computation tree of a simply-typed term as an abstract syntax tree
 We use lambda calculus terminology when referring to the computation tree. In particular we will sometime refer to the `binder` of a variable node as the uniquely defined lambda node that binds the variable in the corresponding lambda term.
 
 
-Given a simply-typed lambda term $M$ with free variables in $\mathcal{N} \union \Sigma$, we define the \defname{unfolding of $M$} as the simply-typed lambda term obtained by substituting every variable $N \in \mathcal{N}$ by the term $\Lambda (N)$. The unfolding of the computation tree $\tau(M)$ is defined as the computation tree of the unfolding of $M$.
+Given a simply-typed lambda term $M$ with free variables in $\mathcal{N} \union \Sigma$, we define the \defname{unfolding of $M$} as the simply-typed lambda term $M$ obtained by substituting every variable $N \in \mathcal{N}$ by the term $\Lambda (N)$. The unfolding of the computation tree $\tau(M)$ is defined as the computation tree of the unfolding of $M$. 
 
 \begin{definition}
 The (possibly infinite) \defname{computation tree of a recursion scheme} $R$ is defined as the recursive unfolding 
 of the computation tree of the simply-typed term $\Lambda(S)$. 
+
+(An alternative definition can be found in \cite{OngLics2006}.)
 \end{definition}
-See \cite{OngLics2006} for a more formal definition.
+\begin{remark} The repeated unfolding operation does not involve variable renaming since lambda terms representing rewrite rules of a recursion scheme (i) have free variables in $\mathcal{N} \union \Sigma$, (ii) leave all variables in $\mathcal{N} \union \Sigma$ unbound.
+\end{remark}
 
 \paragraph{Incremental binding}
 We recall that the order of a simple type is defined as $\ord(o) = 0$ for any base type $o$, and $\ord(A \typear B) = \max(\ord(A)+1, \ord(B))$. We define the order of a variable node as the order of its associated simple type, and the order of a lambda node $\lambda x_1 \cdots x_n$ for $n>0$ as $1 + \max_{0\leq i\leq n} \ord{x_i}$.
 
 We now recall the following notion from the author's thesis \cite{BlumPhd,blumong:safelambdacalculus} which relates to the syntactic restriction of safety:
-\begin{definition}
+\begin{definition}[\cite{BlumPhd,blumong:safelambdacalculus}]
 The computation tree of a closed-term is \defname{incrementally-bound} if every variable node $x$ is bound by the first lambda node in the path from it to the root that has order strictly greater than $x$.
 
 By extension, we say that the computation tree of an open term $M$ with free variables $x_1, \cdots x_n$, $n\geq 0$ is incrementally-bound if the computation tree of closed term $\lambda x_1 . \cdots \lamdba x_n . M$ is.
 \end{definition} 
 
-We extend this definition to recursion schemes through finite approximation of the computation tree: a recursion scheme is \defname{incrementally-bound} just if every finite tree obtained by pruning some branches of its computation tree is incrementally-bound.
+We extend this definition to recursion schemes through finite approximation of the computation tree: a recursion scheme is \defname{incrementally-bound} just if every finite unfolding of the tree is incrementally-bound. (Or equivalently, if every finite tree obtained by pruning some branches of its computation tree is incrementally-bound.)
 
 
 \subsection{The safety restriction}
 \label{sec:safety}
 
 The safety restriction has appeared under different forms in the literature \cite{KNU02,Dam82,demirandathesis,BlumPhd,blumong:safelambdacalculus}.
-We include here a reformulation of the definition by Knapik {\it et al.} \cite{KNU02}.
+We include here a reformulation of the definition by Knapik {\it et al.} in the setting of recursion schemes \cite{KNU02}.
 
 \begin{definition}[Type homogeneity]
 \label{subsec:typehomogeneity}
-We say that a type $A_1 \longrightarrow \cdots \longrightarrow A_n \longrightarrow o$ with $n \geq 0$ is \defname{homogeneous}
+We say that a simple type $A_1 \longrightarrow \cdots \longrightarrow A_n \longrightarrow o$ with $n \geq 0$ is \defname{homogeneous}
 just if $\ord{A_1} \geq \ord{A_2}\geq \cdots \geq \ord{A_n}$, and each $A_1$, \ldots, $A_n$ is homogeneous \cite{KNU02}.
 \end{definition}
 
 \begin{definition}[Safe recursion scheme]
-Let $G$ be a higher-order recursion scheme such that the non-terminals all have homogeneous type.
-We say that $G$ is \textbf{unsafe} just if it has a production rule $F z_1 \ldots z_m \rightarrow e$ where $e$ contains a subterm that:
+Let $G$ be a higher-order recursion scheme where the \emph{non-terminals all have homogeneous types}.
+We say that $G$ is \textbf{unsafe} just if it has a production rule $F z_1 \ldots z_m \rightarrow e$ where $e$ contains a subterm that:$  $
 \begin{enumerate}
 	\item occurs in {\em operand} position in $e$,
 	\item contains a parameter of order strictly less than its order.
@@ -363,27 +370,33 @@ We say that $G$ is \textbf{unsafe} just if it has a production rule $F z_1 \ldot
 By ``operand position'' we mean ``in the second position of some
 occurrence of the term application operator''.
 
-A recursion scheme is \textbf{safe} if it is not unsafe.
+A recursion scheme is said to be \textbf{safe} if it is not unsafe.
 \end{definition}
 
 The term `safety` comes from the fact that, when converted to lambda-terms, safe recursion schemes can be evaluated without ever having to generate a fresh variable during substitution: $\beta$-redexes can be reduced using (simultaneous) capture-permitting substitution \cite{BlumPhd,blumong:safelambdacalculus,safety-mirlong2004}.
 
-%We now move to the recall a result from the author's thesis
-\begin{proposition}[Correspondence with safe recursion schemes \cite{BlumPhd}]
-	A recursion scheme is \defname{safe} (in the sense of \cite{KNU02}) if it's homogeneously-typed and its computation tree is incrementally-bound.
+The safe subset of the simply-typed lambda calculus introduced in \cite{blumong:safelambdacalculus,BlumPhd} relates to the notion of safe higher-order recursion schemes in the following sense:
+\begin{proposition}[Safe rewrite rules and lambda terms {\cite[Proposition 3.11]{BlumPhd}}]
+\label{prop:safelambdacorresp}
+Take a recursion scheme $R = \langle \Sigma, \mathcal{N}, \mathcal{R}, S \rangle$.
+For every non-terminal $N$, the associated rewriting rule is safe if and only if the simply-type term $\Lambda(N)$, with free variables in $\Sigma\union\mathcal{N}$, is derivable with the typing judgment of the safe lambda calculus of \cite{BlumPhd} and all types involved in the typing derivation are homogeneous.
+\end{proposition}
+
+Safe lambda terms can be characterized in terms of incremental-binding \cite[Proposition 5.11]{BlumPhd}. We now state the equivalent result for recursion schemes. Without loss of generality we will consider recursion schemes \defname{with no dead rule} such that for every production rule, there exists a derivation from the start non-terminal involving that rewrite rule.
+\begin{proposition}[Binder characterization for HORS]
+A higher-order recursion scheme with no dead rule is \emph{safe} (in the sense of \cite{KNU02}) if and only if it is homogeneous and incrementally-bound.
 \end{proposition}
 \begin{proof}
+The proof reduces to the setting of the lambda calculus where a similar result was shown for finite lambda terms \cite{BlumPhd}.
+Take a safe recursion scheme $R = \langle \Sigma, \mathcal{N}, \mathcal{R}, S \rangle$.
 
- This is a consequence of the Proposition 3.11 from \cite{BlumPhd}.
+%%%%%%%%%%%%
+$(\Longrightarrow)$ Observe that all the iterated unfoldings of $\Lambda(S)$ are safe homogeneous simply-typed terms. It's true of $\Lambda(S)$ itself by Proposition \ref{prop:safelambdacorresp}. And by the Substitution Lemma \cite[3.19]{BlumPhd}, it is also true of each subsequent unfolding. Consequently, by the characterization result of the safe-simply typed lambda calculus \cite[Proposition 5.11]{BlumPhd}(i), every repeated unfolding of $\Lambda(S)$ has an incrementally-bound computation tree. Hence $R$ is incrementally-bound.
 
-Take a safe recursion scheme $R = \langle
-\Sigma, \mathcal{N}, \mathcal{R}, S \rangle$.
- 
-Each production rule from a safe recursion scheme corresponds to an applicative term of the safe simply-typed lambda calculus defined by the typing judgement $\vdash^{\Sigma\Union\Mathcal{N}}$in \cite{BlumPhd}.
-
+%%%%%%%%%%%%%
+$(\Longleftarrow)$ Assume that $R$ is not safe. Suppose that it's homogeneously-typed, then the syntactic constraint of safety is not met for some production rule $N x_1 \cdots x_n \rightarrow e \in \matchal{R}$ and non-terminal $N \in \mathcal{N}$. Since the scheme has no dead-rule, after performing $|\mathcal{N}|$ unfoldings of $\Lambda(S)$ the non-terminal $N$ must have been substituted at least once by $\Lambda(N) = \lambda x_1 \cdots x_n. e$, which is unsafe by Proposition \ref{prop:safelambdacorresp}. Hence after a finite number of unfoldings of $S$ we obtain a term $t'$ containing the unsafe subterm $\Lambda(N)$.
+Thus, by \cite[Proposition 5.11]{BlumPhd}(ii), the computation tree $t'$ is not incrementally-bound .
 \end{proof}
-\todo{proof}
-
 
 
 \subsection{Equi-expressivity of recursion schemes and pushdown automata}
@@ -398,6 +411,8 @@ A potentially infinite  $\Sigma$-labelled tree is generated by a \emph{safe} ord
 \begin{theorem}[HORS - CPDA equi-expressivity \cite{hmos-lics08}]
 	A potentially infinite $\Sigma$-labelled tree is generated by an order-$n$ recursion scheme if and only if it is accepted by an order-$n$ collapsible pushdown automaton.
 \end{theorem}
+
+
 
 
 \section{From recursion scheme to collapsible pushdown automaton}
