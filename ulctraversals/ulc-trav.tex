@@ -1,0 +1,116 @@
+% -*- TeX -*- -*- Soft -*-
+%Daemon> ini=pdflatex
+%Daemon> filter=err+warn
+%Daemon> custom_args="-synctex=1"
+
+\documentclass{article}
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage{a4wide}
+\usepackage{gamesem}
+\usepackage{pstring}
+\usepackage{amsmath,amssymb,amsthm}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+
+\newcommand\Nodes{N}% set of nodes
+
+\author{William Blum}
+\title{[Draft] Traversals for ULC: On-the-fly eta-expanded traversals}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+On-the-fly eta-expanded traversal for the untyped lambda calculus.
+(Adapted from the definition used for simply-typed lambda calculus in my thesis \cite{BlumPhd}.)
+\end{abstract}
+
+
+\section{Definition}
+
+For an untyped lambda term $M$ we defined its \defname{computation tree} $\tau(M)$ the same way as for the STLC
+except that we don't perform eta-long expansion. Consecutive lambda abstractions are still merged into a single nodes in the tree so as to maintain the alternation between lambda nodes (at odd level) and variable nodes (at even level).
+Let $\Nodes$ be the set of nodes of the computation tree. We write $\Nodes_{\sf var}$ for the set of variable nodes, $\Nodes_{\sf \lambda}$ for lambda nodes.
+
+We defined the \defname{arity} of a node as follows: the arity of a lambda node $\lambda x_1 \cdots x_k$ for $k\geq 0$ is denoted by $|\lambda x_1 \cdots x_k|$ and is defined as $k$; the arity of a variable node $x$, denoted $|x|$ is the number of children of $x$ in the computation tree; the arity of a $@$ node is the number of its children nodes minus 1.
+
+The set $\travset(M)$ of \defname{traversals} over an untyped lambda term $\tau(M)$ is a sequence of elements in $N + \mathbb{N}$ with associated pointers. It is defined by induction over the rules of Table \ref{tab:trav_rules}.
+Elements in $N$ represent occurrences of nodes from the original term tree while elements in $\mathbb{N}$ represents occurrences of eta-expanded ``ghost'' nodes (either variable or lambda nodes depending on the occurrence parity).
+By convention ghost variables and lambda nodes are given arity $0$.
+
+A traversal that cannot be extended by any rule is said to be \emph{maximal}.
+
+Note that those rules closely match those of \cite{BlumPhd} for STLC. In the present setting we don't have interpreted constants so we removed the rules $(Value)$ and $(InputValue)$ which are not needed.
+
+We now fix an untyped term and abbreviated its set of traversals as just $\travset$.
+ 
+\begin{FramedTable}
+\noindent {\bf Structural rules}
+\begin{itemize}[]
+\item\rulenamet{Root} The singleton sequence $r$ is in $\travset$ where $r$ is the root of the tree.
+\end{itemize}
+
+\begin{itemize}[]
+    \item \rulenamet{Lam} If $t \cdot \lambda \overline{\xi}$ is a traversal then so is
+        $t \cdot \lambda \overline{\xi} \cdot n$ where $n$
+        denotes $\lambda \overline{\xi}$'s child in $\tau(M)$ and its justified is defined as follows:
+        \begin{compactitem}
+            \item If $n$ is an $@$ node then it has no justifier;
+            \item if  $n \in \Nodes_{\sf var}$ but not in $\Nodes_{\sf fv}$ then it points to the only occurrence of its binder in
+            $\pview{t\cdot \lambda \overline{\xi}}$;
+            \item if  $n \in \Nodes_{\sf fv}$ then it points
+            to the only occurrence of the root in
+            $\pview{t \cdot \lambda \overline{\xi}}$.
+        \end{compactitem}
+            (As in STLC, it can be shown that P-views  are paths in the (possibly eta-expanded) tree thus $n$'s enabler occurs exactly once in the P-view.)
+    \item \rulenamet{App} If $t \cdot @$ is a traversal then so is \Pstr[0.4cm]{t \cdot (m) @  \cdot (n-m,40:0) n}.
+\end{itemize}
+
+\emph{\bf (Data) Input-variable rules}
+
+\begin{itemize}[]
+\item \rulenamet{InputVar} If $t$ is a traversal whose last occurrence is a variable hereditarily justified by the root and $x$ is an occurrence of a variable node in $\oview{t}$ then
+so is $t \cdot n$ for every child $\lambda$-node $n$ of $x$, $n$
+pointing to $x$.
+\end{itemize}
+
+\emph{\bf (Program) Copy-cat rules \underline{with on-the-fly eta-expansion}}
+\begin{itemize}[]
+\item\rulenamet{Var}
+Suppose \Pstr[0.5cm]{t \cdot(l){l} \cdot (n){n} \cdot (lx){\lambda \overline{x} }
+    \ldots (x-lx,50:i){x_i} \in \travset} where $x_i$ is a variable in $\Nodes + \mathbb{N}$ (i.e., either a variable node or a ghost variable) that is hereditarily justified by an application node $@$; $n$ is either a (ghost) variable or application node; and $l$ is a (ghost) lambda node. Then:
+    
+\begin{itemize}
+  \item (No expansion) If $|n|\geq i$ (in which case $n$ is necessarily a non-ghost variable in $\Nodes$) then
+ 
+  \Pstr[0.5cm]{ t \cdot(l){l} \cdot
+(n){n} \cdot (lx){\lambda \overline{x}}  \ldots (x-lx,30:i){x_i}
+    \cdot (letai-n,40:i){\lambda \overline{\eta_i}}
+     \in\travset} where $\lambda \overline{\eta_i}$ is the $i$th child of $n$;
+
+\item (Eta-Expansion) If $|n| < k$ then
+
+  \Pstr[0.5cm]{ t \cdot(l){l} \cdot
+(n){n} \cdot (lx){\lambda \overline{x}}  \ldots (x-lx,30:i){x_i}
+    \cdot (letai-n,40:i){i}
+     \in\travset} where $i \in \mathbb{N}$ represents the $i$th ghost child $\lambda$-node of $n$;
+
+
+  \Pstr[0.5cm]{ t \cdot(l){l} \cdot
+(n){n} \cdot (lx){\lambda \overline{x}}  \ldots (x-lx,30:i){x_i}
+    \cdot (letai-n,40:i){i}\cdot (al-l,40:\alpha){\alpha}
+     \in\travset} 
+        
+     where the last occurrence refers to a ghost variable node $\alpha \in \mathbb{N}$ defined as $\alpha = |z| + i - |y|$ and representing the $\alpha$th variable bound by lambda node $l$.
+\end{itemize}
+
+\end{itemize}
+\caption{Traversal rules for the untyped lambda calculus.}
+ \label{tab:trav_rules}
+\end{FramedTable}
+
+
+\bibliographystyle{abbrv}
+\bibliography{ulctrav}
+
+\end{document}
