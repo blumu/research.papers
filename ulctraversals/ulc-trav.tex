@@ -43,7 +43,7 @@ A traversal that cannot be extended by any rule is said to be \emph{maximal}.
 Note that those rules closely match those of \cite{BlumPhd} for STLC. In the present setting we don't have interpreted constants so we removed the rules $(Value)$ and $(InputValue)$ which are not needed.
 
 We now fix an untyped term and abbreviated its set of traversals as just $\travset$.
- 
+
 \begin{FramedTable}
 \noindent {\bf Structural rules}
 \begin{itemize}[]
@@ -79,16 +79,16 @@ pointing to $x$.
 \item\rulenamet{Var}
 Suppose \Pstr[0.5cm]{t \cdot(l){l} \cdot (n){n} \cdot (lx){\lambda \overline{x} }
     \ldots (x-lx,50:i){x_i} \in \travset} where $x_i$ is a variable in $\Nodes + \mathbb{N}$ (i.e., either a variable node or a ghost variable) that is hereditarily justified by an application node $@$; $n$ is either a (ghost) variable or application node; and $l$ is a (ghost) lambda node. Then:
-    
+
 \begin{itemize}
   \item (No expansion) If $|n|\geq i$ (in which case $n$ is necessarily a non-ghost variable in $\Nodes$) then
- 
+
   \Pstr[0.5cm]{ t \cdot(l){l} \cdot
 (n){n} \cdot (lx){\lambda \overline{x}}  \ldots (x-lx,30:i){x_i}
     \cdot (letai-n,40:i){\lambda \overline{\eta_i}}
      \in\travset} where $\lambda \overline{\eta_i}$ is the $i$th child of $n$;
 
-\item (Eta-Expansion) If $|n| < k$ then
+\item (Eta-Expansion) If $|n| < i$ then
 
   \Pstr[0.5cm]{ t \cdot(l){l} \cdot
 (n){n} \cdot (lx){\lambda \overline{x}}  \ldots (x-lx,30:i){x_i}
@@ -99,9 +99,9 @@ Suppose \Pstr[0.5cm]{t \cdot(l){l} \cdot (n){n} \cdot (lx){\lambda \overline{x} 
   \Pstr[0.5cm]{ t \cdot(l){l} \cdot
 (n){n} \cdot (lx){\lambda \overline{x}}  \ldots (x-lx,30:i){x_i}
     \cdot (letai-n,40:i){i}\cdot (al-l,40:\alpha){\alpha}
-     \in\travset} 
-        
-     where the last occurrence refers to a ghost variable node $\alpha \in \mathbb{N}$ defined as $\alpha = |z| + i - |y|$ and representing the $\alpha$th variable bound by lambda node $l$.
+     \in\travset}
+
+     where the last occurrence refers to a ghost variable node $\alpha \in \mathbb{N}$ defined as $\alpha = |l| + i - |n|$ and representing the $\alpha$th variable bound by lambda node $l$.
 \end{itemize}
 
 \end{itemize}
