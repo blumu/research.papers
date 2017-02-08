@@ -15,6 +15,9 @@
 
 \newcommand\Nodes{N}% set of nodes
 
+\newcommand{\ghostlmd}{{\lambda\!\!\lambda}}
+\newcommand{\ghostvar}{\theta}
+
 \author{William Blum}
 \title{[Draft] Traversals for ULC: On-the-fly eta-expanded traversals}
 
@@ -34,8 +37,8 @@ Let $\Nodes$ be the set of nodes of the computation tree. We write $\Nodes_{\sf 
 
 We defined the \defname{arity} of a node as follows: the arity of a lambda node $\lambda x_1 \cdots x_k$ for $k\geq 0$ is denoted by $|\lambda x_1 \cdots x_k|$ and is defined as $k$; the arity of a variable node $x$, denoted $|x|$ is the number of children of $x$ in the computation tree; the arity of a $@$ node is the number of its children nodes minus 1.
 
-The set $\travset(M)$ of \defname{traversals} over an untyped lambda term $\tau(M)$ is a sequence of elements in $N + \mathbb{N}$ with associated pointers. It is defined by induction over the rules of Table \ref{tab:trav_rules}.
-Elements in $N$ represent occurrences of nodes from the original term tree while elements in $\mathbb{N}$ represents occurrences of eta-expanded ``ghost'' nodes (either variable or lambda nodes depending on the occurrence parity).
+The set $\travset(M)$ of \defname{traversals} over an untyped lambda term $\tau(M)$ is a sequence of elements in $\Nodes + \{ \ghostlmd, \ghostvar \}$ with associated pointers. It is defined by induction over the rules of Table \ref{tab:trav_rules}.
+Elements in $N$ represent occurrences of nodes from the original term tree while $\ghostlmd$ and $\ghostvar$ are placeholders representing eta-expanded ``ghost'' lambda nodes and ``ghost'' variable nodes respectively.
 By convention ghost variables and lambda nodes are given arity $0$.
 
 A traversal that cannot be extended by any rule is said to be \emph{maximal}.
@@ -63,10 +66,27 @@ We now fix an untyped term and abbreviated its set of traversals as just $\travs
             $\pview{t \cdot \lambda \overline{\xi}}$.
         \end{compactitem}
             (As in STLC, it can be shown that P-views  are paths in the (possibly eta-expanded) tree thus $n$'s enabler occurs exactly once in the P-view.)
+    
+    \item \rulenamet{Lam^\ghostlmd} Suppose
+  $\Pstr[0.5cm]{ t \cdot(l){l} \cdot
+(v){v} \cdot \ldots \cdot 
+(gl-v,40:i){\ghostlmd} \in\travset}$ for some traversal prefix $t$, lambda node $l \in \Nodes + \{ \ghostlmd \}$ and variable node $v \in \Nodes + \{ \ghostvar\}$ then
+    
+    
+$$\Pstr[0.5cm]{ t \cdot(l){l} \cdot
+(v){v} 
+\cdot \ldots \cdot 
+(gl-v,40:i){\ghostlmd}\cdot (al-l,40:j){\ghostvar}
+     \in\travset}$$
+
+     where $j = |l| + i - |v|$. The placeholder $\ghostvar$ represents an occurrence of the $j$th variable bound by lambda node $l$ if the sub-term at node $l$ were eta-expanded $i-|v|$ times.
+
+
     \item \rulenamet{App} If $t \cdot @$ is a traversal then so is \Pstr[0.4cm]{t \cdot (m) @  \cdot (n-m,40:0) n}.
 \end{itemize}
 
-\emph{\bf (Data) Input-variable rules}
+\emph{\bf Data - Input-variable rules}
+
 
 \begin{itemize}[]
 \item \rulenamet{InputVar} If $t$ is a traversal whose last occurrence is a variable hereditarily justified by the root and $x$ is an occurrence of a variable node in $\oview{t}$ then
@@ -74,37 +94,27 @@ so is $t \cdot n$ for every child $\lambda$-node $n$ of $x$, $n$
 pointing to $x$.
 \end{itemize}
 
-\emph{\bf (Program) Copy-cat rules \underline{with on-the-fly eta-expansion}}
-\begin{itemize}[]
-\item\rulenamet{Var}
+\emph{\bf Program - Copy-cat rules \underline{with on-the-fly eta-expansion}}
+
 Suppose \Pstr[0.5cm]{t \cdot(l){l} \cdot (n){n} \cdot (lx){\lambda \overline{x} }
-    \ldots (x-lx,50:i){x_i} \in \travset} where $x_i$ is a variable in $\Nodes + \mathbb{N}$ (i.e., either a variable node or a ghost variable) that is hereditarily justified by an application node $@$; $n$ is either a (ghost) variable or application node; and $l$ is a (ghost) lambda node. Then:
+    \ldots (x-lx,50:i){x_i} \in \travset} where $i>0$, $x_i$ is a variable in $\Nodes + \{ \ghostvar\}$ hereditarily justified by an $@$-node; $n \in \Nodes + \{ \ghostvar \}$ is either a (ghost) variable or application node; and $l$ is a lambda node in $\Nodes + \{\ghostlmd\}$. Then:
 
 \begin{itemize}
-  \item (No expansion) If $|n|\geq i$ (in which case $n$ is necessarily a non-ghost variable in $\Nodes$) then
-
-  \Pstr[0.5cm]{ t \cdot(l){l} \cdot
+  \item \rulenamet{Var} (No expansion) If $i \leq |n|$ then
+  $$\Pstr[0.5cm]{ t \cdot(l){l} \cdot
 (n){n} \cdot (lx){\lambda \overline{x}}  \ldots (x-lx,30:i){x_i}
     \cdot (letai-n,40:i){\lambda \overline{\eta_i}}
-     \in\travset} where $\lambda \overline{\eta_i}$ is the $i$th child of $n$;
+     \in\travset}$$
+where $\lambda \overline{\eta_i} \in N$ is the $i$th child of $n$ (which is necessarily a node of the tree since $|n|\geq|i|>0$).
 
-\item (Eta-Expansion) If $|n| < i$ then
-
-  \Pstr[0.5cm]{ t \cdot(l){l} \cdot
+\item \rulenamet{Var^\eta} (Eta-Expansion) If $i > |n|$ then
+  $$\Pstr[0.5cm]{ t \cdot(l){l} \cdot
 (n){n} \cdot (lx){\lambda \overline{x}}  \ldots (x-lx,30:i){x_i}
-    \cdot (letai-n,40:i){i}
-     \in\travset} where $i \in \mathbb{N}$ represents the $i$th ghost child $\lambda$-node of $n$;
-
-
-  \Pstr[0.5cm]{ t \cdot(l){l} \cdot
-(n){n} \cdot (lx){\lambda \overline{x}}  \ldots (x-lx,30:i){x_i}
-    \cdot (letai-n,40:i){i}\cdot (al-l,40:\alpha){\alpha}
-     \in\travset}
-
-     where the last occurrence refers to a ghost variable node $\alpha \in \mathbb{N}$ defined as $\alpha = |l| + i - |n|$ and representing the $\alpha$th variable bound by lambda node $l$.
+    \cdot (letai-n,40:i){\ghostlmd}
+     \in\travset}$$    
+     where the ghost node $\ghostlmd$ represents the $i$th ghost child of $n$.
 \end{itemize}
 
-\end{itemize}
 \caption{Traversal rules for the untyped lambda calculus.}
  \label{tab:trav_rules}
 \end{FramedTable}
