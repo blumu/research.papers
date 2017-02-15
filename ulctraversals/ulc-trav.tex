@@ -377,6 +377,15 @@ Hence $\betanf{M} = \lambda y s z \cdot s\ (y\ s\ z)$.
 \end{itemize}
 \end{example}
 
+\begin{example}[Baby example]
+  Take $M = (\lambda x. x x) (\lambda y. y)$.
+
+  $t = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda x}\ (n3-n2){x}\ (n4-n1){\lambda y}\ (n5-n4){y}\ (n6-n3){\lambda }\ (n7-n2){x}\ (n8-n1){\lambda y}\ (n9-n8){y}\ (n10-n7){\ghostlmd^1}\ (n11-n6){\ghostvar^1}\ (n12-n5){\ghostlmd^{1}}\ (n13-n4){\ghostvar^2}\ (n14-n3){\ghostlmd^2}\ (n15-n2){\ghostvar^2}\ (n16-n1){\ghostlmd^2}\ (n17-n0){\ghostvar^1}}$
+
+We have $\pview{t\filter\theroot} = \Pstr[0.7cm]{(n0){\lambda }\ (n17-n0){\ghostvar^1}}$
+and the traversal arity threshold is $arth(t) = 1$ therefore the beta-normal form of $M$ is $\lambda y . y$.
+\end{example}
+
 \begin{example}[Traversals for $varity\ 2$]
 \todo{Add traversals for $varity 2$ example.}
 \end{example}
