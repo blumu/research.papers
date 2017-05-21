@@ -107,6 +107,8 @@ The set $\travset(M)$ of \defname{traversals} over an untyped lambda term $\tau(
 Elements in $N$ represent occurrences of nodes from the original term tree while $\ghostlmd$ and $\ghostvar$ are placeholders representing eta-expanded ``ghost'' lambda nodes and ``ghost'' variable nodes respectively.
 By convention ghost variables and lambda nodes are given arity $0$.
 
+%where $t^\omega$ denotes the last occurrence in traversal $t$ and $\jp(t)$ denotes the prefix of $t$ ending at the justifier of the %last node of $t$.
+
 A traversal that cannot be extended by any rule is said to be \emph{maximal}.
 
 Note that those rules closely match those of \cite{BlumPhd} for STLC. In the present setting of ULC, however, there are no interpreted constants therefore we don't need the rules \rulenamet{Value} and \rulenamet{InputValue} from the original presentation.
@@ -158,7 +160,7 @@ for every $k$th child $\alpha \in \Nodes_\lambda$ of every
 occurrence $m \in \Nodes_{\sf var}$ in $\oview{t\cdot n}$, where $\alpha$ points to $m$ with label $k$.
 
 \item \rulenamet{InputVar^\eta} If $n$ is a ghost variable then
-for every other ghost variable $\ghostvar$ occurring in $\oview{t\cdot x}$ and every label $k\geq 1$
+for every other ghost variable $\ghostvar$ occurring in $\oview{t\cdot n}$ and every label $k\geq 1$
  we have $t \cdot n \cdot \ghostlmd \in\travset$, where $\ghostlmd$ points to $\ghostvar$.
 \end{itemize}
 
@@ -185,7 +187,7 @@ where $\lambda \overline{x} \in N$ is the $i$th child of $n$
      where the ghost node $\ghostlmd$ represents the $i$th ghost child of $n$.
 \end{itemize}
 
-\caption{Traversal rules for the untyped lambda calculus.}
+\caption{Traversal rules for the untyped lambda calculus (ULC).}
  \label{tab:trav_rules}
 \end{FramedTable}
 
@@ -206,17 +208,28 @@ In particular for all $n\in\NodesVar$ and $\alpha\in\NodesLmd$:
 The rule \rulenamet{Lam} is well defined. In particular it can be show as in STLC, that P-views are paths in the (possibly eta-expanded) tree thus $n$'s enabler occurs exactly once in the P-view.
 \end{remark}
 
-\begin{remark}[Ghost materialization through \rulenamet{Var}]
-Among all the rules defined in Table \ref{tab:trav_rules}, the rule \rulenamet{Var}  is the only rule that can materialize a structural node in $\Nodes$ from a traversal ending with a ghost node.
+\begin{definition}
+We call \defname{ghost materialization} instances of traversal rule application where the last occurrence in the traversal is
+a ghost nodes, and the new node traversed, after applying some traversal rule, is a structural node.
+\end{definition}
 
-In this situation the last occurrence in the traversal prior to applying the rule is a ghost variable $\ghostvar$:
+\begin{remark}[Only \rulenamet{Var} can materialize a ghost node]
+Observet that among all the rules defined in Table \ref{tab:trav_rules}, the rule \rulenamet{Var} is the only rule that can materialize a structural node in $\Nodes$ from a traversal ending with a ghost node. This means that after traversing ghost nodes, the only way to come back to strucutural nodes is to visit a ghost variable node $\ghostvar$ with an application of rule \rulenamet{Var} of the following form:
+
 $$\rulename{Var}\ \  \Pstr[0.5cm]{ t \cdot(beta){\beta} \cdot
-(n){n} \cdot (lx){\alpha}  \ldots (x-lx,30:i){\ghostvar}
-    \cdot (letai-n,40:i){\lambda \overline{x}}
+(y){y} \cdot (l){\alpha}  \ldots (t-l,30:i){\ghostvar}
+    \cdot (lx-y,40:i){\lambda \overline{x}}
      \in\travset}$$
-where $\lambda \overline{x} \in \NodesLmd$ is the $i$th child of $n \in \NodesVar$,
-$\alpha,\beta \in \Nodes_\lambda + \{\ghostlmd\}$, $0\leq \alpha < i \leq |n|$.
+where
+\begin{itemize}
+\item $y \in \NodesVar$
+\item $\lambda \overline{x} \in \NodesLmd$ is the $i$th child lambda node of $y \in \NodesVar$,
+\item $\alpha$ is either a structural lambda node in $\Nodes_\lambda$ or a ghost lambda node $\{\ghostlmd\}$
+\item $0\leq \alpha < i \leq |y|$.
+\end{itemize}
 \end{remark}
+
+
 
 
 \section{Correspondence}
@@ -235,37 +248,54 @@ The ``on-the-fly'' eta-expansion should correspond to the $Fun$ morphism of Ker'
 
 \section{Traversals for normalizing ULC term}
 
-\begin{remark}[Traversals for normalizing term]
-The beta-normal form of a term $M$ can be reconstructed from the set of paths in its computation tree. And the set of paths in the computation tree of a beta-normal term is given by the set of P-views of its traversals. Furthermore by the Traversal-Game Semantics isomorphism the set of traversals of the beta-nf is just the set of projection, with respect to the root, of the set of traversal of the $M$ \cite{BlumPhd}.
-\end{remark}
-
-\begin{observation}[Finite traversals are enough]
-For the purpose of computing beta normal form, the value $k$ in rule $\rulename{InputVar^\eta}$ can be bounded by a computable quantity called the \defname{arity threshold} of the traversal at that point.
+\begin{observation}
+The beta-normal form of $M$ is uniquely determined by the maximal paths of its tree representation.
+By the Game-Traversal Correspondence Theorem \cite{BlumPhd}, the set of traversals of the beta-normal form of $M$ is precisely the set of projections, with respecte to the root, of the traversals of $M$. Furthermore, by the Path-P-view correspondence, the set of
+of paths of the beta-normal form is given by the set of P-views of projections of traversals of $M$.
+Hence the P-views of maximal traversals of $M$ yields maximal paths in the tree representation of the beta-normal form of $M$.
 \end{observation}
+
+The above observation, made explicit in \cite{BlumPhd} for STLC, yields a method to normalize a simply-typed lambda term.
+In this section we show how the same method works for untyped lambda terms using the ULC traversals of Tabel \ref{tab:trav_rules}.
+
+
+\subsection{Ghost nodes intuition}
+
+It may be helpful to think of ghost nodes as the counterpart of imaginary numbers sometimes used in mathematics
+to prove trigonometry identities (e.g. using De Moivre's Theorem): they are introduced intermediately to perform some computation or calculation but do not appear in the final result. Just like complex number $i$ is defined from the impossibility of taking the square root of $-1$, ghost nodes are defined from the impossibility of performing a beta-reduction on a lambda term due to insufficient number of binding variable names.
+
+\subsection{Arity threshold}
+
+In this section, we show that, for the purpose of computing beta normal form, the value $k$ in rule $\rulename{InputVar^\eta}$ can be bounded by a computable quantity called the \defname{arity threshold} of the traversal at that point.
+
+When traversing a lambda term, we introduce ghost nodes on-demand each time an eta-expansion is deemed necessary.
+We don't want, of course, to eta-expand ad-infinitum: Our goal is to find a finite representation of the normalized the term, as opposed to compute the possibly infinite set of traversal representing the semantic denotation of the term (i.e., it's game semantic denotation). To that extend, traversing ghost nodes in a traversal is only useful if it eventually leads to traversing some structural node of the tree.
+
+Intutively, after a sufficiently large number of eta-expansion, we can be guaranteed to only traverse ghost nodes that never materialize back to structural nodes. This section formalizes this intuition: we defined the \defname{arity threshold} as the maximum number of time we want to eta-expand a give subterm with the rule $\rulename{InputVar^\eta}$.
 
 \begin{definition}[Traversal arity threshold]
 \label{dfn:arity-threshold}
-Take a traversal $t$ where rule $\rulename{InputVar^\eta}$ can be applied. Its \defname{arity threshold} is defined as:
-    \begin{align*}
-    \textsf{arth}(t) &= \max_{(l,n)\in X(t)} |l| - |n| \\
-    X(t) &= \{ (l,n) \in \Nodes_\lambda \times \Nodes_{\sf var} | \mbox{ $l$ and $n$ occur subsequently in $t$ between $\jp(t^\omega)$ and $t^\omega$} \}
-    \end{align*}
-where $t^\omega$ denotes the last occurrence in traversal $t$ and $\jp(t)$ denotes the prefix of $t$ ending at the justifier of the last node of $t$.
+Let $t$ be traversal on which rule $\rulename{InputVar^\eta}$ can be applied. Then $t$ ends with a variable node hereditarily justified by the root, call it $n_1$. Let's consider the nodes between $n_1$ and its justifier:
+
+$$ t = \Pstr[0.2cm]{ \cdots (aq){\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ (n1-aq){n_1} } $$
+
+for some $k>0$ where $\alpha_j$ are lambda nodes in $\NodesLmd + \{\ghostlmd\}$,
+and $n_j$ are variable node in $\NodesVar + \{\ghostvar\}$ for all $1\leq j\leq k$.
+
+The \defname{arity threshold} of $t$ is defined as:
+\begin{align*}
+\textsf{arth}(t) &= \max_{q=1..k} \left( |n_q| + \sum_{j=1..q-1} (|n_j| - |\alpha_j|) \right)
+\end{align*}
+
 \todo{Add notes explaining the idea behind this definition}
 \end{definition}
 
+
 \begin{definition}[Succinct traversal set]
-We define the \defname{succinct traversal set} of $M$, noted $\travset^s(M)$ as the set of maximal traversals obtained from the induction rule of Table \ref{tab:trav_rules} where the value $k$ in the rule \rulenamet{InputVar^\eta} is bounded by the arity of the traversal.
+We define the \defname{succinct traversal set} of $M$, noted $\travset^s(M)$ as the set of maximal traversals obtained from the induction rule of Table \ref{tab:trav_rules} where the value $k$ in the rule \rulenamet{InputVar^\eta} is bounded by the arity of the traversal from Definition \ref{dfn:arity-threshold}.
 \end{definition}
 
-\begin{observation}
-The beta-normal form of $M$ is uniquely determined by
-the maximal paths of its tree representation.
-By the Game-Traversal Correspondence Theorem \cite{BlumPhd}, the set of traversals of the beta-normal form of $M$ is precisely the set of projections of the traversals of $M$. And by the Path-P-view correspondence, the set of
-of paths of the beta-normal form is given by the set of P-views of
-projections of traversals of $M$.
-Hence the P-views of maximal traversals of $M$ yields maximal paths in the tree representation of the beta-normal form of $M$.
-\end{observation}
+\subsection{Normalizing ULC terms: examples}
 
 \begin{example}[Walking example ``${\sf add}\ 1$'']
 We demonstrate here on a small example, how the beta-normal form of a term can be obtained with traversals.

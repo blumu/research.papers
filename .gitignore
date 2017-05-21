@@ -10,3 +10,5 @@ safecpda/pstring.pro
 safecpda/safecpda.zip
 ulctraversals/ulc-trav.dvi
 ulctraversals/ulc-trav.pdf
+*.bbl
+*.blg
