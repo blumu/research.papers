@@ -17,6 +17,7 @@
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}[section]
 \newtheorem{property}{Property}[section]
+\newtheorem{proposition}{Proposition}[section]
 \newtheorem{remark}{Remark}[section]
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{example}{Example}[section]
@@ -28,6 +29,8 @@
 
 \newcommand{\ghostlmd}{{\lambda\!\!\lambda}}
 \newcommand{\ghostvar}{\theta}
+
+\newcommand{\travsetaffine}{{\travset^a}}
 
 \author{William Blum}
 \title{[Draft] On-the-fly eta-expansion for traversing and normalizing ULC terms}
@@ -99,15 +102,22 @@ The question addressed in the present note is: can this method be extended to th
 
 For an untyped lambda term $M$ we defined its \defname{computation tree} $\tau(M)$ the same way as for the STLC
 except that we don't perform eta-long expansion. Consecutive lambda abstractions are still merged into a single nodes in the tree so as to maintain the alternation between lambda nodes (at odd level) and variable nodes (at even level).
-Let $\Nodes$ be the set of nodes of the computation tree. We write $\Nodes_{\sf var}$ for the set of variable nodes, $\Nodes_{\sf \lambda}$ for lambda nodes, and $\Nodes_{@}$ for the application nodes.
+Let $\Nodes$ be the set of nodes of the computation tree. We write $\NodesVar$ for the set of variable nodes, $\NodesLmd$ for lambda nodes, and $\Nodes_{@}$ for the application nodes.
+
+In addition to those nodes already used in STLC, we introduce two ``imaginary'' nodes called \defname{ghost nodes}:
+one ``ghost variable node'', denoted $\ghostvar$, and one ``ghost lambda nodes'', denoted $\ghostlmd$.
+Those nodes will be used as placeholders in justified sequences to represent eta-expanded lambda nodes and variable nodes respectively.
+
+We will write $\NodesLmd^\ghostlmd$ as a shortand for $\NodesLmd + \{\ghostlmd\}$
+and $\NodesVar^\ghostvar$ as a shortand for $\NodesVar + \{\ghostvar\}$.
+We will refer to nodes $\Nodes$ of the computation tree as \defname{structural nodes}, and nodes in $\{\ghostlmd, \ghostvar\}$ as the ghost nodes.
 
 We defined the \defname{arity} of a node as follows: the arity of a lambda node $\lambda x_1 \cdots x_k$ for $k\geq 0$ is denoted by $|\lambda x_1 \cdots x_k|$ and is defined as $k$; the arity of a variable node $x$, denoted $|x|$ is the number of children of $x$ in the computation tree; the arity of a $@$ node is the number of its children nodes minus 1.
-
-The set $\travset(M)$ of \defname{traversals} over an untyped lambda term $\tau(M)$ is a sequence of elements in $\Nodes + \{ \ghostlmd, \ghostvar \}$ with associated pointers. It is defined by induction over the rules of Table \ref{tab:trav_rules}.
-Elements in $N$ represent occurrences of nodes from the original term tree while $\ghostlmd$ and $\ghostvar$ are placeholders representing eta-expanded ``ghost'' lambda nodes and ``ghost'' variable nodes respectively.
 By convention ghost variables and lambda nodes are given arity $0$.
 
-%where $t^\omega$ denotes the last occurrence in traversal $t$ and $\jp(t)$ denotes the prefix of $t$ ending at the justifier of the %last node of $t$.
+The set $\travset(M)$ of \defname{traversals} over an untyped lambda term $\tau(M)$ is a sequence of elements in $\Nodes + \{ \ghostlmd, \ghostvar \}$ with associated pointers. It is defined by induction over the rules of Table \ref{tab:trav_rules}.
+
+For any traversal $t$ we write $t^\omega$ to denote the last occurrence in traversal $t$, and $\jp(t)$ to denote the prefix of $t$ ending at the justifier of the last node of $t$.
 
 A traversal that cannot be extended by any rule is said to be \emph{maximal}.
 
@@ -122,53 +132,52 @@ We now fix an untyped term and abbreviated its set of traversals as just $\travs
 \end{itemize}
 
 \begin{itemize}[]
-    \item \rulenamet{Lam} If $t \cdot \lambda \overline{\xi}$ is a traversal then so is
-        $t \cdot \lambda \overline{\xi} \cdot n$ where $n$
-        denotes $\lambda \overline{\xi}$'s child in $\tau(M)$ and its justifier is defined as follows. If $n$ is
+    \item \rulenamet{Lam} If $t \cdot \alpha$ is a traversal where $\alpha\in\NodesLmd$ then so is
+        $t \cdot \alpha \cdot n$ where $n$
+        denotes $\alpha$'s unique child in $\tau(M)$ and its justifier is defined as follows. If $n$ is
         \begin{compactitem}
-            \item an $@$-node then it has no justifier
+            \item an $@$-node then it has no justifier,
             \item in $\Nodes_{\sf fv}$ then it points
             to the only occurrence of the root in
-            $\pview{t \cdot \lambda \overline{\xi}}$
-            \item in $\Nodes_{\sf var}$ but not in $\Nodes_{\sf fv}$ then it points to the only occurrence of its binder in
-            $\pview{t\cdot \lambda \overline{\xi}}$.
+            $\pview{t \cdot \alpha}$,
+            \item in $\Nodes_{\sf var}\setminus \Nodes_{\sf fv}$ then it points to the only occurrence of its binder in
+            $\pview{t\cdot \alpha}$.
         \end{compactitem}
     \item \rulenamet{Lam^\ghostlmd} If
   $\Pstr[0.5cm]{ t \cdot(alpha){\alpha} \cdot
 (n){n} \cdot \ldots \cdot
-(gl-n,40:i){\ghostlmd} \in\travset}$ for some prefix $t$, $\alpha \in \Nodes_\lambda + \{\ghostlmd \}$ and $n \in\Nodes_{\sf var} + \{\ghostvar\}$ then
+(gl-n,40:i){\ghostlmd} \in\travset}$ for some prefix $t$, $\alpha \in \NodesLmd^\ghostlmd$ and $n \in\NodesVar^\ghostvar$ then
 $$\Pstr[0.5cm]{ t \cdot(alpha){\alpha} \cdot
 (n){n}
 \cdot \ldots \cdot
 (gl-n,40:i){\ghostlmd}\cdot (al-alpha,40:j){\ghostvar}
       \in\travset}$$
- where $j = |\alpha| + i - |n|$. The placeholder $\ghostvar$ represents an occurrence of the $j$th variable that would be bound by lambda node $\alpha$ if the sub-term at node $\alpha$ were eta-expanded $i-|n|$ times.
- (We have $i>|n|$ necessarily since the $i$th child of $n$ is a ghost variable node.)
+ where $j = |\alpha| + i - |n|$. (Intuition: the ghost placeholder $\ghostvar$ represents an occurrence of the $j$th variable that would be bound by lambda node $\alpha$ if the sub-term at node $\alpha$ were eta-expanded $i-|n|$ times.
+ We have $i>|n|$ necessarily since the $i$th child of $n$ is a ghost variable node.)
 
 
-    \item \rulenamet{App} If $t \cdot @$ is a traversal then so is \Pstr[0.4cm]{t \cdot (m) @  \cdot (n-m,40:0) n} where $\alpha$ is the
-    $0$th child $\lambda$-node of $@$.
+    \item \rulenamet{App} If $t \cdot @$ is a traversal then so is \Pstr[0.4cm]{t \cdot (at) @  \cdot (a-at,40:0) \alpha} where $\alpha\in\NodesLmd$ is the $0$th child $\lambda$-node of $@$.
 \end{itemize}
 
 \emph{\bf Data - Input-variable rules}
 
-If $t \cdot n$ is a traversal where $n \in \Nodes_{\sf var} + \{\ghostvar \}$ is hereditarily justified by the root:
+If $t \cdot n$ is a traversal where $n \in \NodesVar^\ghostvar$ is hereditarily justified by the root:
 \begin{itemize}[]
-\item \rulenamet{InputVar} If $n\in \Nodes_{\sf var}$ then
-$t \cdot n \cdot \alpha \in \travset$
+\item \rulenamet{InputVar} If $n$ is a structural node then
 for every $k$th child $\alpha \in \Nodes_\lambda$ of every
-occurrence $m \in \Nodes_{\sf var}$ in $\oview{t\cdot n}$, where $\alpha$ points to $m$ with label $k$.
+occurrence $m \in \Nodes_{\sf var}$ in $\oview{t\cdot n}$,
+we have $t \cdot n \cdot \alpha \in \travset$ where $\alpha$ points to $m$ with label $k$.
 
 \item \rulenamet{InputVar^\eta} If $n$ is a ghost variable then
-for every other ghost variable $\ghostvar$ occurring in $\oview{t\cdot n}$ and every label $k\geq 1$
- we have $t \cdot n \cdot \ghostlmd \in\travset$, where $\ghostlmd$ points to $\ghostvar$.
+for every ghost variable $\ghostvar$ occurring in $\oview{t\cdot n}$ and every label $k\geq 1$
+we have $t \cdot n \cdot \ghostlmd \in\travset$, where $\ghostlmd$ points to $\ghostvar$ with label $k$.
 \end{itemize}
 
 \emph{\bf Program - Copy-cat rules \underline{with on-the-fly eta-expansion}}
 
 Suppose \Pstr[0.5cm]{t \cdot(beta){\beta} \cdot (n){n} \cdot (alpha){\alpha}
-    \ldots (m-alpha,50:i){m} \in \travset} where $i>0$, $m \in \Nodes_{\sf var} + \{ \ghostvar\}$ hereditarily justified by an $@$-node;
-     $n \in (\Nodes_{\sf var} \Union \Nodes_{@}) + \{ \ghostvar \}$; and $\alpha,\beta \in \Nodes_\lambda + \{\ghostlmd\}$. Then:
+    \ldots (m-alpha,50:i){m} \in \travset} where $i>0$, $m \in \NodesVar^\ghostvar$ hereditarily justified by an $@$-node;
+     $n \in \NodesVar^\ghostvar \Union \Nodes_{@}$; and $\alpha,\beta \in \NodesLmd^\ghostlmd$. Then:
 
 \begin{itemize}
   \item \rulenamet{Var} (No expansion) If $i \leq |n|$ then
@@ -250,7 +259,7 @@ The ``on-the-fly'' eta-expansion should correspond to the $Fun$ morphism of Ker'
 
 \begin{observation}
 The beta-normal form of $M$ is uniquely determined by the maximal paths of its tree representation.
-By the Game-Traversal Correspondence Theorem \cite{BlumPhd}, the set of traversals of the beta-normal form of $M$ is precisely the set of projections, with respecte to the root, of the traversals of $M$. Furthermore, by the Path-P-view correspondence, the set of
+By the Game-Traversal Correspondence Theorem \cite{BlumPhd}, the set of traversals of the beta-normal form of $M$ is precisely the set of projections, with respect to the root, of the traversals of $M$. Furthermore, by the Path-P-view correspondence, the set of
 of paths of the beta-normal form is given by the set of P-views of projections of traversals of $M$.
 Hence the P-views of maximal traversals of $M$ yields maximal paths in the tree representation of the beta-normal form of $M$.
 \end{observation}
@@ -258,11 +267,53 @@ Hence the P-views of maximal traversals of $M$ yields maximal paths in the tree 
 The above observation, made explicit in \cite{BlumPhd} for STLC, yields a method to normalize a simply-typed lambda term.
 In this section we show how the same method works for untyped lambda terms using the ULC traversals of Tabel \ref{tab:trav_rules}.
 
+\subsection{Context-affine traversals}
+
+A lambda term is \defname{affine} if every bound variable in the term occurs at most once in the term.
+
+Intuition: in the definition of traversals from Table \ref{tab:trav_rules}, the rules \rulenamet{InputVar} and \rulenamet{InputVar^\eta} are defined so as to
+account for all possible moves from the opponent O. This is need to get the isomoprhism with the game denotation of a term. For instance this is necessary to model contexts terms like the Kierstead terms $λf.f(λx.f(λy.y))$ and $λf.f(λx.f(λy.x))$. So for any lambda term $M$, its game denotation must contains plays with two occurrences of the same O-move representing the two separate occurrences of $f$.
+
+For the sake of computing the beta normal form of a term, however, we only need to consider sufficiently many plays to cover all the path of the beta-normal form of the term. It is therefore not required to account for multiple occurrences of the same O-move in a given play: we can restrict plays to those denoting the interaction of the term $M$ with affine contexts (in which bound variables are consumed at most once.)
+
+\begin{definition}[Context-affine traversals]
+For any traversal $t$ we will consider the following set of triplets representing all the justification pointers in the O-view of $t$:
+$$ Just(t) = \left\{ (\alpha, m, k) \in \NodesLmd^\ghostlmd \times \NodesVar^\ghostvar \times \nat\
+|\ \mbox{$\alpha$ is justified by $m$ in $\oview{t}$ with label $k$} \right\}
+$$
+
+We define the set of \defname{context-affine traversals} $\travsetaffine$ as the subset of $\travset$ defined by the induction rules of Table \ref{tab:trav_rules}
+with $\travsetaffine$ substituted for $\travset$ in every rule, and with rules \rulenamet{InputVar} and \rulenamet{InputVar^\eta} restricted as follows:
+
+Let $t \cdot n \in \travsetaffine$ be a context-affine traversal where $n \in \NodesVar^\ghostvar$ is hereditarily justified by the root.
+
+\begin{itemize}[]
+\item \rulenamet{InputVar} Case where $n$ is a structural variable node.
+
+For every occurrence of a structural variable nodes $m$ in $\oview{t\cdot n}$
+and every $k$th child $\alpha \in \Nodes_\lambda$ of $m$
+such that $(\alpha,m,k) \not\in Just(t)$
+we have $t \cdot n \cdot \alpha \in \travsetaffine$, where $\alpha$ points to $m$ with label $k$.
+
+\item \rulenamet{InputVar^\eta} Case where $n$ is a ghost variable.
+
+For every occurrence $m$ of a ghost variable in $\oview{t\cdot n}$
+and every $k\geq 1$ such that there is no $(\ghostlmd, m,k) \not\in Just(t)$
+we have $t \cdot n \cdot \ghostlmd \in\travsetaffine$, where $\ghostlmd$ points to $m$ with label $k$.
+\end{itemize}
+\end{definition}
+
+\begin{proposition}[Affine traversals are sufficient for normalization]
+For all traversal $t\in\travset$ there exists  an affine traversal $u \in \travsetaffine$ such that
+$$\pview{u\filter\theroot} = \pview{t\filter\theroot} \ .$$
+\end{proposition}
+\todo{Formalize intuition explained above in a proof. (see handwritten notes)}
+
 
 \subsection{Ghost nodes intuition}
 
-It may be helpful to think of ghost nodes as the counterpart of imaginary numbers sometimes used in mathematics
-to prove trigonometry identities (e.g. using De Moivre's Theorem): they are introduced intermediately to perform some computation or calculation but do not appear in the final result. Just like complex number $i$ is defined from the impossibility of taking the square root of $-1$, ghost nodes are defined from the impossibility of performing a beta-reduction on a lambda term due to insufficient number of binding variable names.
+It is helpful to think of ghost nodes as the counterpart of complex numbers sometimes used in mathematics
+to prove trigonometry identities: they are introduced intermediately to perform some computation or calculation (e.g. using De Moivre's Theorem) but do not appear in the final result. Just like the imaginary number $i$ is created out of the impossibility of calculating the square root of $-1$, ghost nodes are defined from the impossibility of performing a beta-reduction on a lambda term due to insufficient number of binding variable names.
 
 \subsection{Arity threshold}
 
@@ -271,26 +322,132 @@ In this section, we show that, for the purpose of computing beta normal form, th
 When traversing a lambda term, we introduce ghost nodes on-demand each time an eta-expansion is deemed necessary.
 We don't want, of course, to eta-expand ad-infinitum: Our goal is to find a finite representation of the normalized the term, as opposed to compute the possibly infinite set of traversal representing the semantic denotation of the term (i.e., it's game semantic denotation). To that extend, traversing ghost nodes in a traversal is only useful if it eventually leads to traversing some structural node of the tree.
 
-Intutively, after a sufficiently large number of eta-expansion, we can be guaranteed to only traverse ghost nodes that never materialize back to structural nodes. This section formalizes this intuition: we defined the \defname{arity threshold} as the maximum number of time we want to eta-expand a give subterm with the rule $\rulename{InputVar^\eta}$.
+Intutively, after a sufficiently large number of eta-expansion, we are guaranteed to keep on traversing ghost nodes that never materialize back to structural nodes. This section formalizes this intuition by introducing the \defname{arity threshold} as the maximum number of time we want to eta-expand a give subterm using rule $\rulename{InputVar^\eta}$ in the calculation of $\travset$. We will show later that such limit is sufficient
+in order to retrieve the normal form of a lambda term when it exists.
 
 \begin{definition}[Traversal arity threshold]
 \label{dfn:arity-threshold}
 Let $t$ be traversal on which rule $\rulename{InputVar^\eta}$ can be applied. Then $t$ ends with a variable node hereditarily justified by the root, call it $n_1$. Let's consider the nodes between $n_1$ and its justifier:
 
-$$ t = \Pstr[0.2cm]{ \cdots (aq){\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ (n1-aq){n_1} } $$
+$$ t = \Pstr[0.2cm]{ \cdots (aq){\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ (n1-aq,25){n_1} } $$
 
-for some $k>0$ where $\alpha_j$ are lambda nodes in $\NodesLmd + \{\ghostlmd\}$,
-and $n_j$ are variable node in $\NodesVar + \{\ghostvar\}$ for all $1\leq j\leq k$.
+for some $k>0$ where $\alpha_j$ are lambda nodes in $\NodesLmd^\ghostlmd$,
+and $n_j$ are variable node in $\NodesVar^\ghostvar$ for all $1\leq j\leq k$.
 
 The \defname{arity threshold} of $t$ is defined as:
 \begin{align*}
 \textsf{arth}(t) &= \max_{q=1..k} \left( |n_q| + \sum_{j=1..q-1} (|n_j| - |\alpha_j|) \right)
 \end{align*}
-
-\todo{Add notes explaining the idea behind this definition}
 \end{definition}
 
+Rule $\rulename{InputVar^\eta}$ leaves infinitely many choice for the link label: any value greater than $1$. The following result shows that, for calculating paths in the tree representation of the beta-normal form of the term, it suffices to consider labels that are stricly smaller than the arity threshold.
 
+Consider a traversal on which we are about to apply rule $\rulename{InputVar^\eta}$.
+Let's see what happens if we chose a value greater than the arity threshold of the traversal.
+
+\begin{definition}[Traversal extension]
+We say that $t$ is an \defname{extension} of traversal $u$ if $u$ is a strict subsequence of $t$ sharing the same justification pointers.
+A traversal that does not have any extension is a \defname{maximal traversal}.
+\end{definition}
+
+\begin{property}
+Let $t$ be a traversal ending with a ghost variable $t^\omega = \ghostvar$ hereditarily justified by the root.
+Let $t_{max}$ be a maxmimal traversal extending $t$.
+Let $i$ denote the label of the ghost lambda node immediately extending $t$ in $t_{max}$, let $m$ denote its justifier and $\alpha$ denote $m$'s justifier in $t$.
+$$ t_{max} = \Pstr[0.3cm]{ \cdots (alpha){\alpha} \cdots (m-alpha)m \cdots t^\omega\  (l-m,30:i)\ghostlmd \cdots } $$
+
+(Note that $m$ may coincide with $t^\omega$ contrary to what the above equation may suggest.)
+
+\begin{enumerate}[(i)]
+\item If $i>\textsf{arth}(t)$ then $t^\omega$ is followed by an alternation of ghost lambda nodes and ghost variable nodes terminated by a ghost variable sharing the same justifier as $m$:
+$$ t_{max} = \Pstr[0.3cm]{ \cdots (alpha){\alpha} \cdots (m-alpha){m} \cdots t^\omega\  (l-m,30:i)\ghostlmd\ \ghostvar\ \cdots\ \ghostvar\ \ghostlmd\ (n2-alpha,30){\ghostvar} \cdots } $$
+
+\item Reciprocally, if $i\geq \textsf{arth}(t)$ then at least one structural node will be materialized after $t^\omega$.
+\item % (ii) Informally: Since all the added nodes are ghosts, their arity is 0 and therefore any further extension would only possibly lead to more ghost nodes!
+
+% Let $\theta_2$ denote the second node justified by $\alpha$. How can the traversal be extended after that? Using the INputVar\eta rule.
+
+\end{enumerate}
+\end{property}
+\begin{proof}
+(i) Consider the inclusive sub-sequence of nodes from $\alpha$ to $m$. By the alternation property of traversals, it contains $2k$ nodes for some $k\geq1$. Let's write this sequence as a succession of lambda nodes $\alpha_q$ and variable nodes $n_q$, with indices going from $k$ down to $1$. We start indexing from $\alpha$ so that $\alpha_k = \alpha$ and $n_1 = n$.
+
+We show by finite induction on $k\geq1$ that the first $2k$ nodes after $t^\omega$ are successive pairs of ghost lambda and ghost variable nodes justified in order by $n_1, \alpha_1, n_2, \alpha_2, n_3, \ldots, n_k, \alpha_k$ with respective labels $i_1, i_2, i_2, i_3, i_3, \cdots, i_{k-1}, i_{k-1}, i_k$ defined by:
+\begin{equation*}
+\left\{
+    \begin{aligned}
+i_1 &= i \\
+i_{q+1} &= i_q + |\alpha_q| - |n_q| \hbox{, $1\leq q < k$}.
+    \end{aligned}
+\right.
+\end{equation*}
+
+Or equivalenlty:
+\begin{eqnarray*}
+t_{max} &=& \Pstr[0.3cm]{ \cdots
+ (alpha){\alpha} \ (nk){n_k} \
+ (alphakm1){\alpha_{k-1}} \ (nkm1){n_{k-1}} \
+ \cdots\
+ (a2){\alpha_2}\ (n2){n_2}\ (a1){\alpha_1}\ (n1-alpha,20){m} \cdots t^\omega\
+ (l1-n1,30:i_1){\ghostlmd}\
+ (t1-a1,35:i_2){\ghostvar} \ (l2-n2,38:i_2){\ghostlmd}\
+  (t2-a2,42:i_3){\ghostvar} \cdots
+(tkm1-alphakm1,35:i_{k-1}){\ghostvar} \ (lkm1-nk,40:i_{k-1}){\ghostlmd}\
+ (tk-alpha,45:i_k){\ghostvar} \cdots }\\
+i_{q+1} &=& i + \sum_{j=1..q} (|\alpha_j| - |n_j|)
+\end{eqnarray*}
+
+\begin{itemize}
+\item Base case $q=1$: Because $t^\omega$ is a ghost variable node hereditarily justified by the root, the only next rule that can be applied is \rulenamet{InputVar^\eta}, and by assumption the following node is a ghost lambda node justified by $m$ with label $i_1 = i$. Then by rule \rulenamet{Lam^\ghostlmd} the next node is a ghost variable justified by $\alpha$ with label $i_2 = i + |\alpha_1| - |t^\omega|$.
+
+$$ t_{max} = \Pstr[0.3cm]{ \cdots (alpha){\alpha_1} (m){m}\cdots t^\omega (l-m,30:i){\ghostlmd} (t-alpha,40:i_2){\ghostvar} \cdots} $$
+
+\item For $1<q\leq k$, by the induction hypothesis we have:
+$$
+t_{max} = \Pstr[0.3cm]{
+   \cdots
+  (aq){\alpha_q}\
+  (nq){n_q} \
+  (aqm1){\alpha_{q-1}}\
+  (nqm1){n_{q-1}} \
+ \cdots\
+ t^\omega\ \cdots
+  (lk-nqm1,35:{i_{q-2}})\ghostlmd\
+  (tq-aqm1,40:{i_{q-1}})\ghostvar\
+   \cdots
+}
+$$
+
+We then have:
+\begin{align*}
+i_{q-1} &= i + \sum_{j=1..q-2} (|\alpha_j| - |n_j|)
+&\qquad\hbox{(by induction hypothesis)}\\
+        &> \textsf{arth}(t) + \sum_{j=1..q-2} (|\alpha_j| - |n_j|)
+&\qquad\hbox{(assumption $i> \textsf{arth}(t)$)} \\
+        &= \max_{r=1..k} \left( |n_r| + \sum_{j=1..r-1} (|n_j| - |\alpha_j|) \right)
+        + \sum_{j=1..q-2} (|\alpha_j| - |n_j|)
+& \qquad\hbox{(definition of $\textsf{arth}$)} \\
+    &\geq |n_q| + \sum_{j=1..q-2} (|n_j| - |\alpha_j|) + \sum_{j=1..q-2} (|\alpha_j| - |n_j|)
+&\qquad\hbox{(take $r=q-1$)} \\
+    &= |n_q|
+\end{align*}
+
+
+Two cases:
+\begin{itemize}
+\item If $\alpha_{q-1}$ is hereditarily justified by an $@$ node.
+Then wee apply rule \rulenamet{Var^\eta} to visit a ghost lambda node justified by $n_q$ with label $i_q$.
+
+\item If $\alpha_{q-1}$ is hereditarily justified by the root.
+\todo{part missing!}
+\end{itemize}
+
+Since $i_{q-1} > |n_q|$ we can then apply the rule \rulenamet{Lam^\ghostlmd} to visit ghost variable node $\ghostvar$ justified by $\alpha_q$ and labelled by $i_q = i_{q-1} + |\alpha_{q-1}| -|n_{q-1}|$.
+
+\end{itemize}
+\end{proof}
+
+This property leads to the following definition:
 \begin{definition}[Succinct traversal set]
 We define the \defname{succinct traversal set} of $M$, noted $\travset^s(M)$ as the set of maximal traversals obtained from the induction rule of Table \ref{tab:trav_rules} where the value $k$ in the rule \rulenamet{InputVar^\eta} is bounded by the arity of the traversal from Definition \ref{dfn:arity-threshold}.
 \end{definition}
