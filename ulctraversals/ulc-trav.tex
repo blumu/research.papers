@@ -384,6 +384,7 @@ with $\travsetbr$ substituted for $\travset$ in every rule, and where the input-
 
 
 \begin{proposition}[Branching traversals are sufficient for normalization]
+\label{prop:branching_traversal_normalizing}
 For every traversal $t\in\travset$ there exists $u \in \travsetbr$ such that
 $$\pview{u\filter\theroot} = \pview{t\filter\theroot} \ .$$
 \end{proposition}
@@ -404,44 +405,40 @@ In this section, we show that, for the purpose of computing beta normal forms, t
 When traversing a lambda term, we introduce ghost nodes on-demand each time an eta-expansion is deemed necessary.
 We don't want, of course, to eta-expand ad-infinitum: Our goal is to find a finite representation of the normalized the term, as opposed to compute the possibly infinite set of traversal representing the semantic denotation of the term (i.e., it's game semantic denotation). To that extend, traversing ghost nodes in a traversal is only useful if it eventually leads to traversing some structural node of the tree.
 
-Intutively, after a sufficiently large number of eta-expansion, we are guaranteed to keep on traversing ghost nodes that never materialize back to structural nodes. This section formalizes this intuition by introducing the \defname{arity threshold} as the maximum number of time we want to eta-expand a give subterm using the branching traversal rule $\rulename{IVar^\eta}_\branching$ to compute the set $\pathset$. We will show later that such limit is sufficient in order to retrieve the normal form of a lambda term when it exists.
+Intuitively, after a sufficiently large number of eta-expansion, we are guaranteed to keep on traversing ghost nodes that never materialize back to structural nodes. This section formalizes this intuition by introducing the \defname{arity threshold} as the maximum number of time we want to eta-expand a give subterm using the branching traversal rule $\rulename{IVar^\eta}_\branching$ to compute the set $\pathset$. We will show later that such limit is sufficient in order to retrieve the normal form of a lambda term when it exists.
+
+\begin{definition}[Weave]
+We call \defname{weave} of a traversal $t$, any sub-sequence of consecutive nodes from $t$,
+with even length, starting with a lambda nodes and finishing with a variable node both hereditarily justified by the root, and such that all the occurrences in-between are hereditarily justified by an application node (\ie not by the root).
+
+From the parity property of traversals, a weave consists of alternations of lambda nodes and variable/application nodes. It is convenient to represent a weave as follows for some $k\geq 1$ where for $j$ ranging from $k$ down to $1$, $\alpha_j$ is a lambda node in $\NodesLmd^\ghostlmd$ and $n_j$ is a variable/application node in $\NodesVar^\ghostvar$:
+
+$$ t = \cdots \underline{\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ \underline{n_1} \cdots $$
+
+The first and last occurrences of the weave are underlined; the $2k-2$ nodes occurring in between are those that are not hereditarily justified by the root.
+
+For any occurrence $n$ in $t$ that is hereditarily justified by the root, we call \defname{weave ending at $n$} the sequence of nodes ending at $n$ that constitutes a weave. It can be obtained by taking the longest subsequence of nodes preceding $n$ that are not hereditarily justified by the root.
+\end{definition}
 
 \begin{definition}[Traversal arity threshold]
 \label{dfn:arity-threshold}
-Let $t$ be traversal on which rule $\rulename{IVar^\eta}$ can be applied. Then $t$ ends with a variable node hereditarily justified by the root, let's call it $n_1$. We now consider the longest sequence of nodes preceeding $n_1$ in $t$ consisting only of nodes that are not hereditarily justified by the root, we have:
+Let $t$ be traversal ending with a variable node hereditarily justified by the root.
+Let $\underline{\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ \underline{n_1}$ be the weave of $t$ ending at $t^\omega$, (so that $n_1 = t^\omega$) for some $k>0$  where $\alpha_j \in \NodesLmd^\ghostlmd$, and $n_j \in \NodesVar^\ghostvar$ for all $1\leq j\leq k$.
 
-$$ t = \cdots \alpha_k\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ n_1 $$
-
-for some $k>0$ where $\alpha_j$ are lambda nodes in $\NodesLmd^\ghostlmd$,
-and $n_j$ are variable nodes in $\NodesVar^\ghostvar$ for all $1\leq j\leq k$, and where
-$\alpha_k$ is the only nodes, among the $2k$ nodes between $\alpha_k$ and $n_1$, that is hereditarily justified by the root.
-
-The \defname{arity threshold} of $t$ is defined as:
+We define the \defname{arity threshold} of $t$ as:
 \begin{align*}
-\arth(t) &= \max_{q=1..k-1} \left( |n_q| + \sum_{j=1..q-1} (|n_j| - |\alpha_j|) \right)
+\arth(t) &= \max_{q=1..k-1} \left( |n_q| + \sum_{j=1..q-1} (|n_j| - |\alpha_j|) \right)\ .
 \end{align*}
 \end{definition}
 
-Rule $\rulename{IVar^\eta}$ leaves infinitely many choice for the link label: any value greater than $1$. The following result shows that, for calculating paths in the tree representation of the beta-normal form of the term, it suffices to consider labels that are stricly smaller than the arity threshold.
+Observe that rule $\rulename{IVar^\eta}$ leaves infinitely many choices for the link label: any value greater than $1$. The following result shows that, for calculating paths in the tree representation of the beta-normal form of the term, it suffices to consider labels that are stricly smaller than the arity threshold.
 
-%Consider a traversal on which we are about to apply rule $\rulename{IVar^\eta}$.
-%Let's see what happens if we chose a value greater than the arity threshold of the traversal.
+\begin{property}[Weaving]
+\label{prop:weaving}
+Let $t \in \travsetbr$ be a branching traversal ending with a variable node hereditarily justified by the root. Let $2k$ be the length of the weave ending at $t^\omega$ for $k\geq1$. Suppose $t_{max} \in \travsetbr$ is a maximal traversal extension of $t$, in which case by rule $\rulename{IVar^\eta}_\branching$, the node immediately after $t$ is a ghost lambda node justified by $t^\omega$ with label $i\geq 1$. Then:
 
-
-
-\begin{property}
-Let $t \in \travsetbr$ be a branching traversal ending with occurrence $t^\omega$ of a variable node hereditarily justified by the root. Let's consider the longest sequence of nodes preceeding $t^\omega$ that are not hereditarily justified by the root:
-
-$$ t = \cdots \underline{\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ \underline{n_1} $$
-
-where $n_1 = t^\omega$ and for some $k>0$, for all $1\leq j\leq k$, $\alpha_j \in \NodesLmd^\ghostlmd$,$n_j\in\NodesVar^\ghostvar$, and
-all the $2(k-1)$ nodes occurring between $\alpha_k$ and $n_1$ (excluded) are hereditarily justified by some application node.
-
-Let $t_{max}$ be a maxmimal traversal extending $t$. By rule $\rulename{IVar^\eta}_\branching$ the node immediately succeeding $t$ is a ghost lambda node $\ghostlmd$
-justified by $t^\omega$ with label $i\geq 1$.
-
-
-If $i>\arth(t)$ then $t^\omega$ is followed by $2k$ ghost nodes - alternating between lambda and variable ghost nodes - all hereditarily justified by an application node except the last ghost variable occurrence which is hereditarily justified by the root:
+\begin{enumerate}[(i)]
+\item If $i>\arth(t)$ then $t^\omega$ is followed in $t_{max}$ by a weave of length $2k$ consisting only of ghost nodes:
 $$ t_{max} = \Pstr[0.3cm]{ \cdots
 (ak){\underline{\alpha_k}}\ (nk){n_k}\
 (ak1)\alpha_{k-1}\ (nk1){n_{k-1}}\
@@ -454,16 +451,13 @@ $$ t_{max} = \Pstr[0.3cm]{ \cdots
 (lk1-nk1,30)\ghostlmd\ (vk1-ak1,30)\ghostvar\
 (lk-nk,30)\ghostlmd\ (vk-ak,30){\underline{\ghostvar}} \cdots } $$
 
-% (ii) Informally: Since all the added nodes are ghosts, their arity is 0 and therefore any further extension would only possibly lead to more ghost nodes!
+where $\underline{\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ \underline{n_1}$ denotes the weave ending at $n_1 = t^\omega$.
 
-% Let $\theta_2$ denote the second node justified by $\alpha$. How can the traversal be extended after that? Using the IVar\eta rule.
-
+\item If $i>\arth(t)$ then \emph{all the nodes} following $t^\omega$ in any traversal extension of $t$ are ghost nodes.
+\end{enumerate}
 \end{property}
 \begin{proof}
-%
-%$$ t_{max} = \Pstr[0.3cm]{ \cdots \alpha_k\ n_k\ \alpha_{k-1}\ %n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ (m){t^\omega}\cdot  %(l-m,30:i)\ghostlmd \cdots } $$
-
-Consider the inclusive sub-sequence of nodes from $\alpha$ to $m$. By the alternation property of traversals, it contains $2k$ nodes for some $k\geq1$. Let's write this sequence as a succession of lambda nodes $\alpha_q$ and variable nodes $n_q$, with indices going from $k$ down to $1$. We start indexing from $\alpha$ so that $\alpha_k = \alpha$ and $n_1 = n$.
+(i) Consider the inclusive sub-sequence of nodes from $\alpha$ to $m$. By the alternation property of traversals, it contains $2k$ nodes for some $k\geq1$. Let's write this sequence as a succession of lambda nodes $\alpha_q$ and variable nodes $n_q$, with indices going from $k$ down to $1$. We start indexing from $\alpha$ so that $\alpha_k = \alpha$ and $n_1 = n$.
 
 We show by finite induction on $k\geq1$ that the first $2k$ nodes after $t^\omega$ are successive pairs of ghost lambda and ghost variable nodes justified in order by $n_1, \alpha_1, n_2, \alpha_2, n_3, \ldots, n_k, \alpha_k$ with respective labels $i_1, i_2, i_2, i_3, i_3, \cdots, i_{k-1}, i_{k-1}, i_k$ defined by:
 \begin{equation*}
@@ -478,22 +472,22 @@ i_{q+1} &= i_q + |\alpha_q| - |n_q| \hbox{, $1\leq q < k$}.
 Or equivalently:
 \begin{eqnarray*}
 t_{max} &=& \Pstr[0.3cm]{ \cdots
- (alpha){\alpha} \ (nk){n_k} \
- (alphakm1){\alpha_{k-1}} \ (nkm1){n_{k-1}} \
+ (alpha){\alpha_k} \ (nk){n_k} \
+ (alphakm1){\alpha_{k-1}} \
  \cdots\
- (a2){\alpha_2}\ (n2){n_2}\ (a1){\alpha_1}\ (n1-alpha,20){m} \cdots t^\omega\
+ (a2){\alpha_2}\ (n2){n_2}\ (a1){\alpha_1}\ (n1){t^\omega}\
  (l1-n1,30:i_1){\ghostlmd}\
- (t1-a1,35:i_2){\ghostvar} \ (l2-n2,38:i_2){\ghostlmd}\
-  (t2-a2,42:i_3){\ghostvar} \cdots
-(tkm1-alphakm1,35:i_{k-1}){\ghostvar} \ (lkm1-nk,40:i_{k-1}){\ghostlmd}\
+ (t1-a1,40:i_2){\ghostvar} \ (l2-n2,41:i_2){\ghostlmd}\
+  (t2-a2,45:i_3){\ghostvar} \cdots
+(tkm1-alphakm1,40:i_{k-1}){\ghostvar} \ (lkm1-nk,43:i_{k-1}){\ghostlmd}\
  (tk-alpha,45:i_k){\ghostvar} \cdots }\\
 i_{q+1} &=& i + \sum_{j=1..q} (|\alpha_j| - |n_j|)
 \end{eqnarray*}
 
 \begin{itemize}
-\item Base case $q=1$: Because $t^\omega$ is a ghost variable node hereditarily justified by the root, the only next rule that can be applied is \rulenamet{IVar^\eta}, and by assumption the following node is a ghost lambda node justified by $m$ with label $i_1 = i$. Then by rule \rulenamet{Lam^\ghostlmd} the next node is a ghost variable justified by $\alpha$ with label $i_2 = i + |\alpha_1| - |t^\omega|$.
+\item Base case $q=1$: Because $t^\omega$ is a ghost variable node hereditarily justified by the root, the only next rule that can be applied is \rulenamet{IVar^\eta_\branching}, and by assumption the following node is a ghost lambda node justified by $t^\omega$ with label $i_1 = i$. Then by rule \rulenamet{Lam^\ghostlmd_\branching} the next node is a ghost variable justified by $\alpha$ with label $i_2 = i + |\alpha_1| - |t^\omega|$.
 
-$$ t_{max} = \Pstr[0.3cm]{ \cdots (alpha){\alpha_1} (m){m}\cdots t^\omega (l-m,30:i){\ghostlmd} (t-alpha,40:i_2){\ghostvar} \cdots} $$
+$$ t_{max} = \Pstr[0.3cm]{ \cdots (alpha){\alpha_1}\ (m){t^\omega} (l-m,30:i){\ghostlmd}\ (t-alpha,45:i_2){\ghostvar} \cdots} $$
 
 \item For $1<q\leq k$, by the induction hypothesis we have:
 $$
@@ -526,16 +520,12 @@ i_{q-1} &= i + \sum_{j=1..q-2} (|\alpha_j| - |n_j|)
 \end{align*}
 
 
-Two cases:
-\begin{itemize}
-\item If $\alpha_{q-1}$ is hereditarily justified by an $@$ node.
-Since $i_{q-1} > |n_q|$ we can then apply rule \rulenamet{Var^\eta} to visit a ghost lambda node justified by $n_q$ with label $i_q$. Then we use rule \rulenamet{Lam^\ghostlmd} to visit ghost variable node $\ghostvar$ justified by $\alpha_q$ and labelled by $i_q = i_{q-1} + |\alpha_{q-1}| -|n_{q-1}|$.
-
-\item If $\alpha_{q-1}$ is hereditarily justified by the root.
-\todo{part missing!}
+By definition of the weave, $\alpha_{q-1}$ is hereditarily justified by an $@$ node.
+Since $i_{q-1} > |n_q|$ we can then apply rule \rulenamet{Var^\eta_\branching} to visit a ghost lambda node justified by $n_q$ with label $i_q$. With rule \rulenamet{Lam^\ghostlmd_\branching} we then visit ghost variable node $\ghostvar$ justified by $\alpha_q$ and labelled by $i_q = i_{q-1} + |\alpha_{q-1}| -|n_{q-1}|$.
 \end{itemize}
 
-\end{itemize}
+(ii) By (i) the next weave following $t$ consists solely of ghost nodes and ends with a ghost variable $\ghostvar$ hereditarily justified by the root. Since ghost nodes have arity $0$, the arity threshold at that point is $0$. Hence, any label value $j$ chosen to extend the traversal at that point will be strictly greater than the arity threshold: thus by (i) the next weave consists solely of ghost nodes.
+By repeating the argument this shows that all the nodes following $t$ are necessarily ghost nodes.
 \end{proof}
 
 This property leads to the following definition:
@@ -548,8 +538,16 @@ We define the set of \defname{normalizing traversals}, noted $\travsetnorm$ as t
      \andalso n \enables_k \ghostlmd
      \andalso |n| < k \leq \arth(t)}
      {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:k){\ghostlmd}} \in \travsetbr}
-
 \end{definition}
+
+\begin{proposition}[Normalizing traversals are sufficient for normalization]
+\label{prop:normalizing_traversal_normalizing}
+For every traversal $t\in\travset$ there exists $u \in \travsetnorm$ such that
+$$\pview{u\filter\theroot} = \pview{t\filter\theroot} \ .$$
+\end{proposition}
+\begin{proof}
+Consequence of Proposition \ref{prop:branching_traversal_normalizing} and Property \ref{prop:weaving}
+\end{proof}
 
 \subsection{Normalizing ULC terms: examples}
 
