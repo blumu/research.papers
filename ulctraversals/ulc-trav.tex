@@ -58,7 +58,7 @@ On-the-fly eta-expanded traversal for the untyped lambda calculus.
 
 In \cite{BlumPhd} we establish the correspondence between the theory of traversals and Game semantics for the simply-typed lambda calculus (STLC). The proof in the thesis relies on several ingredients:
 \begin{enumerate}
-  \item The introduction of a new traversal rule \rulenamet{InputVar} to model free variables;
+  \item The introduction of a new traversal rule \rulenamet{IVar} to model free variables;
   \item A formal definition of the notion of \defname{interaction game semantics} corresponding to the game denotation of a term in the usual sense but where internal moves are all revealed instead of hidden;
   \item The definition of various operations on traversals, in particular the notion of \defname{traversal core} which preserves only the ``essence'' of a traversal.
 \end{enumerate}
@@ -94,13 +94,13 @@ Because the traversals P-views (noted $\pview{t}$ for every traversal $t$) corre
 
 
 \begin{remark}
-All the traversal rules are deterministic except \rulenamet{InputVar}. The rule \rulenamet{InputVar} gives two non-deterministic choices: (i) the variable to pick in the O-view,
+All the traversal rules are deterministic except \rulenamet{IVar}. The rule \rulenamet{IVar} gives two non-deterministic choices: (i) the variable to pick in the O-view,
 (ii) the child lambda node to pick amongst the picked variable's children.
 A consequence of this definition is that even for terms having a normal form (and in particular even for beta-normal terms), the set of traversals can be infinite, and traversals can be infinitely long.
 E.g. Take the term $\lambda f . f (\lambda x. x)$. We have that $\lambda f \cdot f \cdot (\lambda x \cdot  x)^k$ is a traversal for all $k\geq0$. Viewed from a game semantic perspective, those traversals accounts for all the possible denotations of the function parameter $f$: observe that for each $k$, there exists a term that applies its argument $k$ times: $\lambda y . y (y ( \ldots y)) $.
 
 \todo{Type my handwritten notes with proof explaining this in more details.}
-For the sake of computing the beta-normal form of a term, however, it's only necessary to traverse finitely many finite traversals (provided that the normal form exists). Effectively, this means limiting the rule \rulenamet{InputVar} so that it traverse only nodes leading to paths in the computation tree that are yet unexplored. In practice, it means that when choosing the next lambda node to visit, one can ignore nodes that are already present in the O-view.
+For the sake of computing the beta-normal form of a term, however, it's only necessary to traverse finitely many finite traversals (provided that the normal form exists). Effectively, this means limiting the rule \rulenamet{IVar} so that it traverse only nodes leading to paths in the computation tree that are yet unexplored. In practice, it means that when choosing the next lambda node to visit, one can ignore nodes that are already present in the O-view.
 \end{remark}
 
 \textbf{Implementation}
@@ -190,12 +190,12 @@ $$\Pstr[0.5cm]{ t \cdot(alpha){\alpha} \cdot
 
 If $t \cdot n$ is a traversal where $n \in \NodesVar^\ghostvar$ is hereditarily justified by the root:
 \begin{itemize}[]
-\item \rulenamet{InputVar} If $n$ is a structural node then
+\item \rulenamet{IVar} If $n$ is a structural node then
 for every node $m \in \NodesVar$ occurring in $\oview{t\cdot n}$
 and every $k$th child $\alpha \in \Nodes_\lambda$ of $m$ (where $k\leq|m|$),
 we have $t \cdot n \cdot \alpha \in \travset$ with $\alpha$ pointing to $m$ with label $k$.
 
-\item \rulenamet{InputVar^\eta} If $n$ is a ghost variable then
+\item \rulenamet{IVar^\eta} If $n$ is a ghost variable then
 for every node $m\in \NodesVar$ occurring in $\oview{t\cdot n}$ and every $k>|m|$ we have $t \cdot n \cdot \ghostlmd \in\travset$, with $\ghostlmd$ pointing to $m$ with label $k$.
 \end{itemize}
 
@@ -268,7 +268,7 @@ where
 
 
 \section{Correspondence}
-Following the STLC framework of my thesis, the rule \rulenamet{InputVar} is defined so as to obtain the correspondence with game semantics: the nodes visited by this rule correspond to moves played by the Opponent in the game denotation. (We recall that in Game Semantics, the Opponent represents the environment of the program, or equivalently, the data passed to the program.
+Following the STLC framework of my thesis, the rule \rulenamet{IVar} is defined so as to obtain the correspondence with game semantics: the nodes visited by this rule correspond to moves played by the Opponent in the game denotation. (We recall that in Game Semantics, the Opponent represents the environment of the program, or equivalently, the data passed to the program.
 We aim to prove that this presentation yields an isomorphism between the set of traversals and the revealed game semantics of the ULC term, and subsequently that it yields an isomorphism between the standard game semantics and the set of traversal cores (i.e., projected wrt. the root):
 
 \begin{theorem}[Correspondence with Game Semantics]
@@ -302,7 +302,7 @@ In this section we show how the same method works for untyped lambda terms using
 
 A lambda term is \defname{affine} if every bound variable in the term occurs at most once in the term.
 
-Intuition: in the definition of traversals from Table \ref{tab:trav_rules}, the rules \rulenamet{InputVar} and \rulenamet{InputVar^\eta} are defined so as to
+Intuition: in the definition of traversals from Table \ref{tab:trav_rules}, the rules \rulenamet{IVar} and \rulenamet{IVar^\eta} are defined so as to
 account for all possible moves from the opponent O. This is need to get the isomoprhism with the game denotation of a term. For instance this is necessary to model contexts terms like the Kierstead terms $\lambda f.f(\lambda x.f(\lambda y.y))$ and $\lambda f.f(\lambda x.f(\lambda y.x))$. So for any lambda term $M$, its game denotation must contains plays with two occurrences of the same O-move representing the two separate occurrences of $f$.
 
 In the game denotation of a lambda term $M$, at every point in a given play where it is Opponent's turn to play, all possible Opponent moves are accounted for. This guarantees that the denotation models all possible behaviours of contextual terms interacting with $M$, including behaviours not necessarily representable by a lambda term (e.g., in the simply-typed setting, the context may range over a PCF term or Idealized Algol term).
@@ -322,7 +322,7 @@ $$
 We define the set of \defname{context-affine traversals} $\travsetaffine$ as the subset of $\travset$ defined by the induction rules of Table \ref{tab:trav_rules}
 with $\travsetaffine$ substituted for $\travset$ in every rule, and where the input-variable rules are restricted as follows:
 
-\infrule[$\rulefont{InputVar}_\affine$]
+\infrule[$\rulefont{IVar}_\affine$]
      {
             t = t_1 \cdot m \cdot t_2 \in \travsetaffine
             \andalso t^\omega \in \NodeHjByRoot
@@ -332,7 +332,7 @@ with $\travsetaffine$ substituted for $\travset$ in every rule, and where the in
      }
      {\Pstr[0.5cm]{t_1 \cdot (m){m} \cdot t_2 \cdot (l-m,25:k){\alpha}} \in \travsetaffine}
 
-\infrule[$\rulefont{InputVar^\eta}_\affine$]
+\infrule[$\rulefont{IVar^\eta}_\affine$]
      {t = t_1 \cdot m \cdot t_2 \in \travsetaffine
      \andalso t^\omega\in \NodeHjByRoot
      \andalso t^\omega \in \NodesVar^\ghostvar
@@ -354,13 +354,13 @@ $$\pview{u\filter\theroot} = \pview{t\filter\theroot} \ .$$
 
 
 \subsection{Normalizing traversals}
-We now show a stricter result: for the purpose of normalizing a term, it is sufficient to consider traversals where we restrict the non-determinism in rules \rulenamet{InputVar^\eta} and \rulenamet{InputVar} such that the visited lambda nodes is necessarily justified be the immediately preceding input variable node.
-The intuition is that the non-determinism in those two rules correspond to branching points in a depth-first exploration of the beta-normal form of the term. And because there is no side-effects in the lambda calculus, it is enough to explore each possible branch of the tree in a separate traversal.
+We now show a stricter result: for the purpose of normalizing a term, it is sufficient to consider traversals where we restrict the non-determinism in rules \rulenamet{IVar^\eta} and \rulenamet{IVar} such that the visited lambda nodes is necessarily justified be the immediately preceding input variable node.
+The intuition is that the non-determinism in those two rules corresponds to branching points in a depth-first exploration of the beta-normal form of the term. And because there is no side-effect in lambda terms, it is enough to explore each possible branch of the tree in a separate traversal.
 
 \begin{definition}[Normalizing traversals]
 We define the set of \defname{normalizing traversals} $\travsetnorm$ as the subset of $\travset$ defined by the induction rules of Table \ref{tab:trav_rules}
 with $\travsetnorm$ substituted for $\travset$ in every rule, and where the input-variable rules are restricted as follows:
-\infrule[$\rulefont{InputVar}_\normalizing$]
+\infrule[$\rulefont{IVar}_\normalizing$]
      {t \cdot n \in \travsetnorm
       \andalso n \in\NodeHjByRoot
       \andalso n \in \NodesVar
@@ -369,7 +369,7 @@ with $\travsetnorm$ substituted for $\travset$ in every rule, and where the inpu
      }
      {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:k){\alpha}} \in \travsetnorm}
 
-\infrule[$\rulefont{InputVar^\eta}_\normalizing$]
+\infrule[$\rulefont{IVar^\eta}_\normalizing$]
      {t \cdot n \in \travsetnorm
      \andalso n \in\NodeHjByRoot
      \andalso n \in \NodesVar^\ghostvar
@@ -394,17 +394,17 @@ to prove trigonometry identities: they are introduced intermediately to perform 
 
 \subsection{Arity threshold}
 
-In this section, we show that, for the purpose of computing beta normal form, the value $k$ in rule $\rulename{InputVar^\eta}$ can be bounded by a computable quantity called the \defname{arity threshold} of the traversal at that point.
+In this section, we show that, for the purpose of computing beta normal form, the value $k$ in rule $\rulename{IVar^\eta}$ can be bounded by a computable quantity called the \defname{arity threshold} of the traversal at that point.
 
 When traversing a lambda term, we introduce ghost nodes on-demand each time an eta-expansion is deemed necessary.
 We don't want, of course, to eta-expand ad-infinitum: Our goal is to find a finite representation of the normalized the term, as opposed to compute the possibly infinite set of traversal representing the semantic denotation of the term (i.e., it's game semantic denotation). To that extend, traversing ghost nodes in a traversal is only useful if it eventually leads to traversing some structural node of the tree.
 
-Intutively, after a sufficiently large number of eta-expansion, we are guaranteed to keep on traversing ghost nodes that never materialize back to structural nodes. This section formalizes this intuition by introducing the \defname{arity threshold} as the maximum number of time we want to eta-expand a give subterm using rule $\rulename{InputVar^\eta}$ when calculating $\pathset$ $\travsetnorm$. We will show later that such limit is sufficient
+Intutively, after a sufficiently large number of eta-expansion, we are guaranteed to keep on traversing ghost nodes that never materialize back to structural nodes. This section formalizes this intuition by introducing the \defname{arity threshold} as the maximum number of time we want to eta-expand a give subterm using rule $\rulename{IVar^\eta}$ when calculating $\pathset$ $\travsetnorm$. We will show later that such limit is sufficient
 in order to retrieve the normal form of a lambda term when it exists.
 
 \begin{definition}[Traversal arity threshold]
 \label{dfn:arity-threshold}
-Let $t$ be traversal on which rule $\rulename{InputVar^\eta}$ can be applied. Then $t$ ends with a variable node hereditarily justified by the root, let's call it $n_1$. We now consider the longest sequence of nodes preceeding $n_1$ in $t$ consisting only of nodes that are not hereditarily justified by the root, we have:
+Let $t$ be traversal on which rule $\rulename{IVar^\eta}$ can be applied. Then $t$ ends with a variable node hereditarily justified by the root, let's call it $n_1$. We now consider the longest sequence of nodes preceeding $n_1$ in $t$ consisting only of nodes that are not hereditarily justified by the root, we have:
 
 $$ t = \cdots \alpha_k\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ n_1 $$
 
@@ -418,9 +418,9 @@ The \defname{arity threshold} of $t$ is defined as:
 \end{align*}
 \end{definition}
 
-Rule $\rulename{InputVar^\eta}$ leaves infinitely many choice for the link label: any value greater than $1$. The following result shows that, for calculating paths in the tree representation of the beta-normal form of the term, it suffices to consider labels that are stricly smaller than the arity threshold.
+Rule $\rulename{IVar^\eta}$ leaves infinitely many choice for the link label: any value greater than $1$. The following result shows that, for calculating paths in the tree representation of the beta-normal form of the term, it suffices to consider labels that are stricly smaller than the arity threshold.
 
-%Consider a traversal on which we are about to apply rule $\rulename{InputVar^\eta}$.
+%Consider a traversal on which we are about to apply rule $\rulename{IVar^\eta}$.
 %Let's see what happens if we chose a value greater than the arity threshold of the traversal.
 
 \begin{definition}[Traversal extension]
@@ -443,7 +443,7 @@ $$ t_{max} = \Pstr[0.3cm]{ \cdots (alpha){\alpha} \cdots (m-alpha){m} \cdots t^\
 \item Reciprocally, if $i\geq \textsf{arth}(t)$ then at least one structural node will be materialized after $t^\omega$.
 \item % (ii) Informally: Since all the added nodes are ghosts, their arity is 0 and therefore any further extension would only possibly lead to more ghost nodes!
 
-% Let $\theta_2$ denote the second node justified by $\alpha$. How can the traversal be extended after that? Using the INputVar\eta rule.
+% Let $\theta_2$ denote the second node justified by $\alpha$. How can the traversal be extended after that? Using the IVar\eta rule.
 
 \end{enumerate}
 \end{property}
@@ -476,7 +476,7 @@ i_{q+1} &=& i + \sum_{j=1..q} (|\alpha_j| - |n_j|)
 \end{eqnarray*}
 
 \begin{itemize}
-\item Base case $q=1$: Because $t^\omega$ is a ghost variable node hereditarily justified by the root, the only next rule that can be applied is \rulenamet{InputVar^\eta}, and by assumption the following node is a ghost lambda node justified by $m$ with label $i_1 = i$. Then by rule \rulenamet{Lam^\ghostlmd} the next node is a ghost variable justified by $\alpha$ with label $i_2 = i + |\alpha_1| - |t^\omega|$.
+\item Base case $q=1$: Because $t^\omega$ is a ghost variable node hereditarily justified by the root, the only next rule that can be applied is \rulenamet{IVar^\eta}, and by assumption the following node is a ghost lambda node justified by $m$ with label $i_1 = i$. Then by rule \rulenamet{Lam^\ghostlmd} the next node is a ghost variable justified by $\alpha$ with label $i_2 = i + |\alpha_1| - |t^\omega|$.
 
 $$ t_{max} = \Pstr[0.3cm]{ \cdots (alpha){\alpha_1} (m){m}\cdots t^\omega (l-m,30:i){\ghostlmd} (t-alpha,40:i_2){\ghostvar} \cdots} $$
 
@@ -525,7 +525,7 @@ Since $i_{q-1} > |n_q|$ we can then apply rule \rulenamet{Var^\eta} to visit a g
 
 This property leads to the following definition:
 \begin{definition}[Succinct traversal set]
-We define the \defname{succinct traversal set} of $M$, noted $\travset^s(M)$ as the set of maximal traversals obtained from the induction rule of Table \ref{tab:trav_rules} where the value $k$ in the rule \rulenamet{InputVar^\eta} is bounded by the arity of the traversal from Definition \ref{dfn:arity-threshold}.
+We define the \defname{succinct traversal set} of $M$, noted $\travset^s(M)$ as the set of maximal traversals obtained from the induction rule of Table \ref{tab:trav_rules} where the value $k$ in the rule \rulenamet{IVar^\eta} is bounded by the arity of the traversal from Definition \ref{dfn:arity-threshold}.
 \end{definition}
 
 \subsection{Normalizing ULC terms: examples}
@@ -576,7 +576,7 @@ $t_0\filter\theroot = \Pstr[0.7cm]{(n0){\lambda } \cdot (n9-n0){{\ghostvar^2}} }
 and therefore $\pview{t\filter\theroot} =  \lambda \cdot \ghostvar^2$ is a path in  $\betanf{M}$.
 This means that $\betanf{M}$ must be of the form $\lambda y s \ldots \cdot y N_1 \ldots \ldots N_q$ for some fresh variable $y$ and $s$ and $q\geq0$.
 
-\item In order to determine what each argument $N_k$ is in the final normal form, we apply the $\rulename{InputVar^\eta}$ rule for each possible argument index $k\geq 1$ and then continue applying the traversal rules.
+\item In order to determine what each argument $N_k$ is in the final normal form, we apply the $\rulename{IVar^\eta}$ rule for each possible argument index $k\geq 1$ and then continue applying the traversal rules.
 
 For $k=1$ we get the traversal:
 
@@ -603,7 +603,7 @@ $\pview{t_1\filter\theroot} = \Pstr[0.7cm]{(l){\lambda } \cdot (x-l){\ghostvar^2
 which means that the normal form is of the form $\lambda y s \ldots \cdot s (y R_1 \ldots R_{q_2}) N_2 \ldots N_q$ for some terms $R_1$, \ldots $R_{q_2}$, and $q,q_2\geq 0$.
 
 \item What should be the value of $q$? In other words, how many more $k$ do we need to look at?  The answer: we need to keep iterating on $k$ until the point where applying the traversal rules will only produce ghost variables and ghost lambda-nodes! Because there is a finite number of nodes in the computation tree, the variable node arities are bounded. Therefore for high enough argument indices $k$, the condition $i\leq|n|$     in the definition of \rulenamet{Var} will never be met:
-        after applying rule \rulenamet{InputVar^\eta} on $t_0$, all subsequent extensions of the traversal will be done using either rule $\rulename{Var^\eta}$ or rule $\rulename{Lam^\eta}$.
+        after applying rule \rulenamet{IVar^\eta} on $t_0$, all subsequent extensions of the traversal will be done using either rule $\rulename{Var^\eta}$ or rule $\rulename{Lam^\eta}$.
      The upper-bound $q$ for $k$ is precisely given by the \emph{arity threshold} of the traversal $t_0$ as defined in \ref{dfn:arity-threshold}.
      Here we have ${\sf arth}(t_0) = 1$. Thus we don't need to look at higher value of $k$ and we have:
      $\betanf{M} = \lambda y s \ldots \cdot s (y R_1 \ldots R_{q_2})$.
@@ -611,7 +611,7 @@ which means that the normal form is of the form $\lambda y s \ldots \cdot s (y R
 \item The arity threshold of $t_1$ is ${\sf arth}(t_1) = |\lambda xysz| - |x| = 4 -2 = 2$ hence
     $\betanf{M} = \lambda y s \ldots \cdot s (y R_1 R_2)$.
 
-\item Let's apply the rule \rulenamet{InputVar^\eta} for varying value of child index $1\leq k_2 \leq q_2 = 2$. We first look at the case $k_2 = 1$. The traversal obtained is:
+\item Let's apply the rule \rulenamet{IVar^\eta} for varying value of child index $1\leq k_2 \leq q_2 = 2$. We first look at the case $k_2 = 1$. The traversal obtained is:
 
 $t_2 = \Pstr[0.7cm]{
 (n0){\lambda }\
@@ -646,7 +646,7 @@ Thus $\pview{t_2 \filter\theroot} =
 
 Hence $\betanf{M}$ is of the form $\lambda y s \ldots \cdot s\ (y\ s\ R_2)$.
 
-\item Now let's extend $t_1$ with \rulenamet{InputVar^\lambda} for $k_2 = 2$. We get the traversal:
+\item Now let's extend $t_1$ with \rulenamet{IVar^\lambda} for $k_2 = 2$. We get the traversal:
 
 $t_3 = \Pstr[0.7cm]{
 (n0){\lambda }\
@@ -706,7 +706,7 @@ Take $M = varity\ two$ where
   two &\equiv \lambda s_2 z_2 . s_2 (s_2\ z_2)
 \end{align*}
 
-In order to compute the set of succinct traversals, we apply the traversal rules inductively until an input variable is reached, at which point we apply the rule \rulenamet{InputVar^\eta} for all possible values of $k$ ranging from $1$ to the arity threshold of the traversal. The first traversal obtained is denoted $t_\epsilon$, and for every sequence of integer $s \in \nat^*$,  the traversal $t_{s \cdot k}$ represents the maximal traversal obtained after extending $t_s$ using the rule \rulenamet{InputVar^\eta} with link-label $k \in \nat$.
+In order to compute the set of succinct traversals, we apply the traversal rules inductively until an input variable is reached, at which point we apply the rule \rulenamet{IVar^\eta} for all possible values of $k$ ranging from $1$ to the arity threshold of the traversal. The first traversal obtained is denoted $t_\epsilon$, and for every sequence of integer $s \in \nat^*$,  the traversal $t_{s \cdot k}$ represents the maximal traversal obtained after extending $t_s$ using the rule \rulenamet{IVar^\eta} with link-label $k \in \nat$.
 This process yields the set of traversals $\{t_\epsilon, t_{11}, t_{12}, t_{121}, t_{122} \}$ represented in the following pages.
 
 \begin{landscape}
