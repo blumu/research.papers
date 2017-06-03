@@ -206,13 +206,13 @@ for every node $m\in \NodesVar$ occurring in $\oview{t\cdot n}$ and every $k>|m|
 
 \emph{\bf Program - Copy-cat rules \underline{with on-the-fly eta-expansion}}
 
-Suppose \Pstr[0.5cm]{t \cdot(beta){\beta} \cdot (n){n} \cdot (alpha){\alpha}
+Suppose \Pstr[0.5cm]{t \cdot (n){n} \cdot (alpha){\alpha}
     \ldots (m-alpha,50:i){m} \in \travset} where $i>0$, $m \in \NodesVar^\ghostvar$ hereditarily justified by an $@$-node;
-     $n \in \NodesVar^\ghostvar \Union \Nodes_{@}$; and $\alpha,\beta \in \NodesLmd^\ghostlmd$. Then:
+     $n \in \NodesVar^\ghostvar \union \Nodes_{@}$; and $\alpha \in \NodesLmd^\ghostlmd$. Then:
 
 \begin{itemize}
   \item \rulenamet{Var} (No expansion) If $i \leq |n|$ then
-  $$\Pstr[0.5cm]{ t \cdot(beta){\beta} \cdot
+  $$\Pstr[0.5cm]{ t  \cdot
 (n){n} \cdot (lx){\alpha}  \ldots (x-lx,30:i){m}
     \cdot (letai-n,40:i){\lambda \overline{x}}
      \in\travset}$$
@@ -220,7 +220,7 @@ where $\lambda \overline{x} \in N$ is the $i$th child of $n$
 (both structural nodes of the tree since $|n|\geq i>0$).
 
 \item \rulenamet{Var^\eta} (Eta-Expansion) If $i > |n|$ then
-  $$\Pstr[0.5cm]{ t \cdot(beta){\beta} \cdot
+  $$\Pstr[0.5cm]{ t \cdot
 (n){n} \cdot (lx){\alpha}  \ldots (x-lx,30:i){m}
     \cdot (letai-n,40:i){\ghostlmd}
      \in\travset}$$
@@ -511,7 +511,7 @@ i_{q-1} &= i + \sum_{j=1..q-2} (|\alpha_j| - |n_j|)
 &\qquad\hbox{(by induction hypothesis)}\\
         &> \arth(t) + \sum_{j=1..q-2} (|\alpha_j| - |n_j|)
 &\qquad\hbox{(assumption $i> \arth(t)$)} \\
-        &= \max_{r=1..k} \left( |n_r| + \sum_{j=1..r-1} (|n_j| - |\alpha_j|) \right)
+        &= \max_{r=1..k-1} \left( |n_r| + \sum_{j=1..r-1} (|n_j| - |\alpha_j|) \right)
         + \sum_{j=1..q-2} (|\alpha_j| - |n_j|)
 & \qquad\hbox{(definition of $\arth$)} \\
     &\geq |n_q| + \sum_{j=1..q-2} (|n_j| - |\alpha_j|) + \sum_{j=1..q-2} (|\alpha_j| - |n_j|)
@@ -521,7 +521,7 @@ i_{q-1} &= i + \sum_{j=1..q-2} (|\alpha_j| - |n_j|)
 
 
 By definition of the weave, $\alpha_{q-1}$ is hereditarily justified by an $@$ node.
-Since $i_{q-1} > |n_q|$ we can then apply rule \rulenamet{Var^\eta_\branching} to visit a ghost lambda node justified by $n_q$ with label $i_q$. With rule \rulenamet{Lam^\ghostlmd_\branching} we then visit ghost variable node $\ghostvar$ justified by $\alpha_q$ and labelled by $i_q = i_{q-1} + |\alpha_{q-1}| -|n_{q-1}|$.
+Since $i_{q-1} > |n_q|$, by the rule \rulenamet{Var^\eta_\branching} the next node is necessarily a ghost lambda node justified by $n_q$ with label $i_q$. With rule \rulenamet{Lam^\ghostlmd_\branching} the following node is a ghost variable node $\ghostvar$ justified by $\alpha_q$ and labelled by $i_q = i_{q-1} + |\alpha_{q-1}| -|n_{q-1}|$.
 \end{itemize}
 
 (ii) By (i) the next weave following $t$ consists solely of ghost nodes and ends with a ghost variable $\ghostvar$ hereditarily justified by the root. Since ghost nodes have arity $0$, the arity threshold at that point is $0$. Hence, any label value $j$ chosen to extend the traversal at that point will be strictly greater than the arity threshold: thus by (i) the next weave consists solely of ghost nodes.
@@ -531,14 +531,15 @@ By repeating the argument this shows that all the nodes following $t$ are necess
 This property leads to the following definition:
 \begin{definition}[Normalizing traversals]
 We define the set of \defname{normalizing traversals}, noted $\travsetnorm$ as the set of maximal traversals obtained from the induction rule of Table \ref{tab:trav_rules} where the value $k$ in the rule \rulenamet{IVar^\eta} is bounded by the arity of the traversal from Definition \ref{dfn:arity-threshold}:
-
 \infrule[$\rulefont{IVar^\eta}_\normalizing$]
-     {t \cdot n \in \travsetbr
+     {t \cdot n \in \travsetnorm
      \andalso n \in\NodeHjByRoot \inter \NodesVar^\ghostvar
      \andalso n \enables_k \ghostlmd
      \andalso |n| < k \leq \arth(t)}
-     {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:k){\ghostlmd}} \in \travsetbr}
+     {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:k){\ghostlmd}} \in \travsetnorm}
 \end{definition}
+
+The inductive rules defining $\travsetnorm$ are recapitulated in table \ref{tab:normalizing_trav_rules}. Note that in this table, the rules \rulenamet{IVar^\eta} and \rulenamet{Var^\eta} are respectively merged with \rulenamet{IVar} and \rulenamet{IVar} for conciseness.
 
 \begin{proposition}[Normalizing traversals are sufficient for normalization]
 \label{prop:normalizing_traversal_normalizing}
@@ -548,6 +549,79 @@ $$\pview{u\filter\theroot} = \pview{t\filter\theroot} \ .$$
 \begin{proof}
 Consequence of Proposition \ref{prop:branching_traversal_normalizing} and Property \ref{prop:weaving}
 \end{proof}
+
+\begin{FramedTable}
+\noindent {\bf Structural rules}
+
+\infrule[$\rulefont{Root}_\normalizing$]
+    {}
+    {\theroot \in \travsetnorm}
+
+\infrule[$\rulefont{App}_\normalizing$]
+    {t \cdot @ \in \travsetnorm \andalso \alpha\in\NodesLmd \andalso @ \enables_0 \alpha }
+    {\Pstr[0.4cm]{t \cdot (at) @  \cdot (a-at,40:0) \alpha} \in \travsetnorm}
+
+\infrule[$\rulefont{Lam}_\normalizing$]
+     {t \cdot \alpha \in \travsetnorm \andalso \alpha\in\NodesLmd \andalso
+     n \mbox{ is $\alpha$'s unique child node} }
+     {t \cdot \alpha \cdot n \in \travsetnorm
+      \andalso
+      \parbox[t]{5cm}{\footnotesize
+            \mbox{where $n$'s pointer}
+            \begin{compactitem}[-]
+                \item $n=@$: is undefined;
+                \item $n\in\Nodes_{\sf fv}$: points to the initial occurrence of $t$,  is labelled by the index of the variable name;
+                \item $n \not\in \Nodes_{\sf fv}$: points to the only occurrence of $n$'s binder in $\pview{t\cdot \alpha}$, is labelled by the binding index of the variable name.
+            \end{compactitem}
+            }
+      }
+
+\infrule[$\rulefont{Lam^\ghostlmd}_\normalizing$]
+    {
+        \Pstr[0.5cm]{ t \cdot(alpha){\alpha} \cdot (m){m} \cdot \ldots \cdot (gl-m,40:i){\ghostlmd} \in\travsetnorm}
+        \andalso  \alpha \in \NodesLmd^\ghostlmd
+        \andalso m \in\NodesVar^\ghostvar
+    }
+    {
+        \Pstr[0.5cm]{ t \cdot(alpha){\alpha} \cdot
+        (m){m}
+        \cdot \ldots \cdot
+        (gl-m,40:i){\ghostlmd}\cdot (al-alpha,40:{|\alpha| + i - |m|}){\ghostvar}
+            \in\travsetnorm}
+    }
+
+\emph{\bf Data - Input-variable rules}
+\infrule[$\rulefont{IVar^\eta}_\normalizing$]
+     {t \cdot n \in \travsetnorm
+      \andalso n \in\NodeHjByRoot \inter \NodesVar^\ghostvar
+      \andalso n \enables_k \alpha
+      \andalso 1\leq k \leq \arth(t)
+     }
+     {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,30:k){\alpha}} \in \travsetnorm}
+
+\emph{\bf Program - Copy-cat rules with on-the-fly eta-expansion}
+
+\infrule[$\rulefont{Var^\eta}_\normalizing$]
+    {
+        \Pstr[0.5cm]{t \cdot (n){n} \cdot (alpha){\alpha}
+        \ldots (m-alpha,50:i){m} \in \travsetnorm}
+        \andalso m \in \NodesVar^\ghostvar \setminus \Nodes^{\filter\theroot}
+        \andalso n \enables_i \beta
+        \andalso i>0
+    }
+    {
+        \Pstr[0.5cm]{ t \cdot
+        (n){n} \cdot (lx){\alpha}  \ldots (x-lx,30:i){m}
+            \cdot (letai-n,35:i){\beta}
+            \in\travsetnorm}
+    }
+
+where necessarily $n \in \NodesVar^\ghostvar \union \Nodes_{@}$ and $\alpha,\beta \in \NodesLmd^\ghostlmd$.
+
+\caption{Normalizing traversal rules for the untyped lambda calculus (ULC).}
+\label{tab:normalizing_trav_rules}
+\end{FramedTable}
+
 
 \subsection{Normalizing ULC terms: examples}
 
@@ -626,11 +700,25 @@ which means that the normal form is of the form $\lambda y s \ldots \cdot s (y R
 \item What should be the value of $q$? In other words, how many more $k$ do we need to look at?  The answer: we need to keep iterating on $k$ until the point where applying the traversal rules will only produce ghost variables and ghost lambda-nodes! Because there is a finite number of nodes in the computation tree, the variable node arities are bounded. Therefore for high enough argument indices $k$, the condition $i\leq|n|$     in the definition of \rulenamet{Var} will never be met:
         after applying rule \rulenamet{IVar^\eta} on $t_0$, all subsequent extensions of the traversal will be done using either rule $\rulename{Var^\eta}$ or rule $\rulename{Lam^\eta}$.
      The upper-bound $q$ for $k$ is precisely given by the \emph{arity threshold} of the traversal $t_0$ as defined in \ref{dfn:arity-threshold}.
-     Here we have ${\sf arth}(t_0) = 1$. Thus we don't need to look at higher value of $k$ and we have:
+     Here we have
+     \begin{align*}
+     \arth(t_0)
+     = \max \{ & |s^2| , \\
+               & |s^1| + (|s^2| - |\lambda|) , \\
+               & |x| +  (|s^1| - |\lambda s z|) + (|s^2| - |\lambda|)
+               %& |@| + (|x|- |\lambda x y s z |) + (|s^1| - |\lambda s z|) + (|s^2| -|\lambda|) \
+               \} \\
+    = \max \{   & 0 , \\
+                & 1 + (0 - 0) , \\
+                & 2 + (1 - 2) + (0 - 0)
+                %& 2 + (2 - 4) + (1 - 2) + (0 - 0)
+            \} \\
+     = 1
+     \end{align*}
+     Thus we don't need to look at higher value of $k$ at $t_0$, we thus have:
      $\betanf{M} = \lambda y s \ldots \cdot s (y R_1 \ldots R_{q_2})$.
 
-\item The arity threshold of $t_1$ is ${\sf arth}(t_1) = |\lambda xysz| - |x| = 4 -2 = 2$ hence
-    $\betanf{M} = \lambda y s \ldots \cdot s (y R_1 R_2)$.
+\item The arity threshold of $t_1$ is $\arth(t_1) = |z| + |y| - |\lambda^2| = 0+2-0 = 2$ hence  $\betanf{M}$ is of the form $\lambda y s \ldots \cdot s (y R_1 R_2)$.
 
 \item Let's apply the rule \rulenamet{IVar^\eta} for varying value of child index $1\leq k_2 \leq q_2 = 2$. We first look at the case $k_2 = 1$. The traversal obtained is:
 
@@ -715,8 +803,7 @@ Hence $\betanf{M} = \lambda y s z \cdot s\ (y\ s\ z)$.
 
   $t = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda x}\ (n3-n2){x}\ (n4-n1){\lambda y}\ (n5-n4){y}\ (n6-n3){\lambda }\ (n7-n2){x}\ (n8-n1){\lambda y}\ (n9-n8){y}\ (n10-n7){\ghostlmd^1}\ (n11-n6){\ghostvar^1}\ (n12-n5){\ghostlmd^{1}}\ (n13-n4){\ghostvar^2}\ (n14-n3){\ghostlmd^2}\ (n15-n2){\ghostvar^2}\ (n16-n1){\ghostlmd^2}\ (n17-n0){\ghostvar^1}}$
 
-We have $\pview{t\filter\theroot} = \Pstr[0.7cm]{(n0){\lambda }\ (n17-n0){\ghostvar^1}}$
-and the traversal arity threshold is $arth(t) = 1$ therefore the beta-normal form of $M$ is $\lambda y . y$.
+The traversal arity threshold is $arth(t) = 0$ therefore this the only maximal traversal. We have $\pview{t\filter\theroot} = \Pstr[0.7cm]{(n0){\lambda }\ (n17-n0){\ghostvar^1}}$ thus the beta-normal form of $M$ is $\lambda y . y$.
 \end{example}
 
 \begin{example}[Neil Jones' $varity\ 2$]
