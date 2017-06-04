@@ -49,13 +49,30 @@
 \newcommand\arth{\textsf{arth}}
 
 \author{William Blum}
-\title{[Draft] On-the-fly eta-expansion for traversing and normalizing ULC terms}
+\title{[Draft] Untyped Normalizing Traversals. \\
+ {\small How to traverse and normalize untyped lambda terms via on-the-fly eta-expansion.}}
 
 \begin{document}
 \maketitle
 \begin{abstract}
-On-the-fly eta-expanded traversal for the untyped lambda calculus.
-(Adapted from the definition used for simply-typed lambda calculus in my thesis \cite{BlumPhd}.)
+This note introduces a new method to traverse untyped lambda terms. It extends the notion of traversals introduced in my thesis \cite{BlumPhd} for the simply-typed lambda calculus (STLC) to the untyped lambda calculus (ULC), and yields a method to normalize terms.
+
+Traversals were originally introduced by Ong to study higher-order recursion schemes used as generator of order-$0$ structures such as trees. In \cite{BlumPhd}, I extended the notion to the simply-typed lambda calculus by adding the (IVar) rule to account for free variables, and gave a concrete proof that traversals are isomoprhic to the game denotation of a simply-typed term through the `core projection' operation.
+
+The adapation to the untyped setting adds several new ingredients:
+(i) The (Lam) and (Var) rules are augmented to implement eta-expansion when there is an insufficient number of variable names in the lambda node of a redex to be able to traverse it.
+(ii) The eta-expansion is performed `on-the-fly`, as needed, at every point where the traditional STLC traversal would normally get stuck.
+(iii) The concept of ``ghost'' nodes is introduced to model imaginary nodes in the computation tree that progressively appear as eta-expansions are performed on the subterms.
+(iv) The computation tree itself does not get modified during eta-expansion. Ghost nodes are only added to the traversal and are only ``visible'' in the context where they get introduced.
+(v) The (IVar) rule, introduced in my thesis to model free variables, is constrained by a quantity called the `arity threshold` which can be calculated in linear time from the traversal itself. This limits the non-deterministic branching factor of this rule, which is required to guarantee that the normalization procedure terminates when the beta-normal form exists.
+
+I've implemented the normalization algorithm in the HOG tool. I provide some examples of normalized terms in the last section.
+
+{\bf TODO:}
+
+(i) Adapt the proof of the game semantics correspondence theorem from my thesis to this setting, perhaps using Andrew Ker's game model of ULC.
+
+(ii) Establish connection with previous work by Daniil Berezun and Neil Jones on traversals compilation for ULC.
 \end{abstract}
 
 \section{Background}
@@ -525,7 +542,7 @@ We define the set of \defname{normalizing traversals}, noted $\travsetnorm$ as t
      {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:k){\ghostlmd}} \in \travsetnorm}
 \end{definition}
 
-The inductive rules defining $\travsetnorm$ are recapitulated in table \ref{tab:normalizing_trav_rules}. Note that in this table, the rules \rulenamet{IVar^\eta} and \rulenamet{Var^\eta} are respectively merged with \rulenamet{IVar} and \rulenamet{IVar} for conciseness.
+The inductive rules defining $\travsetnorm$ are recapitulated in table \ref{tab:normalizing_trav_rules}.
 
 \begin{proposition}[Normalizing traversals are sufficient for normalization]
 \label{prop:normalizing_traversal_normalizing}
@@ -841,7 +858,7 @@ Hence the set of maximal paths in the beta-normal form of $M$ is given by:
 
 Therefore the beta-normal from of $arity\ two$ is:
 \begin{align*}
-\betanf{arity\ two} &= \lambda x_1 x_2 x_3 x_4 . x_3 (x_1 x_3 (x_2 x_3 x_4))\\
+\betanf{varity\ two} &= \lambda x_1 x_2 x_3 x_4 . x_3 (x_1 x_3 (x_2 x_3 x_4))\\
 &\equiv_\alpha \lambda x y s z . s (x s (y s z))
 \end{align*}
 
