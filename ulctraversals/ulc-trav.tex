@@ -57,14 +57,16 @@
 \begin{abstract}
 This note introduces a new method to traverse untyped lambda terms. It extends the notion of traversals introduced in my thesis \cite{BlumPhd} for the simply-typed lambda calculus (STLC) to the untyped lambda calculus (ULC), and yields a method to normalize terms.
 
-Traversals were originally introduced by Ong to study higher-order recursion schemes used as generator of order-$0$ structures such as trees. In \cite{BlumPhd}, I extended the notion to the simply-typed lambda calculus by adding the (IVar) rule to account for free variables, and gave a concrete proof that traversals are isomoprhic to the game denotation of a simply-typed term through the `core projection' operation.
+The concept of traversals was first introduced in \cite{Ong2006} to study higher-order recursion schemes used as generator of order-$0$ structures such as trees. In \cite{BlumPhd}, I extended the notion to the simply-typed lambda calculus by adding the (IVar) rule to account for free variables, and gave a concrete proof that traversals are isomoprhic to the game denotation of a simply-typed term through the `core projection' operation.
 
-The adapation to the untyped setting adds several new ingredients:
+The adaptation to the untyped setting adds several new ingredients:
 (i) The (Lam) and (Var) rules are augmented to implement eta-expansion when there is an insufficient number of variable names in the lambda node of a redex to be able to traverse it.
 (ii) The eta-expansion is performed `on-the-fly`, as needed, at every point where the traditional STLC traversal would normally get stuck.
 (iii) The concept of ``ghost'' nodes is introduced to model imaginary nodes in the computation tree that progressively appear as eta-expansions are performed on the subterms.
 (iv) The computation tree itself does not get modified during eta-expansion. Ghost nodes are only added to the traversal and are only ``visible'' in the context where they get introduced.
 (v) The (IVar) rule, introduced in my thesis to model free variables, is constrained by a quantity called the `arity threshold` which can be calculated in linear time from the traversal itself. This limits the non-deterministic branching factor of this rule, which is required to guarantee that the normalization procedure terminates when the beta-normal form exists.
+
+Another notable change, compared to traversals used in their original setting of recursion schems \cite{Ong2006} or the forsimply-typed lambda calculus case \cite{BlumPhd}, is the absence of $\eta$-long transform of the term. This has the benefit to simplify the presentation: the computation tree is just a tree representation of the original, unmodified, lambda term.
 
 I've implemented the normalization algorithm in the HOG tool. I provide some examples of normalized terms in the last section.
 
@@ -72,7 +74,9 @@ I've implemented the normalization algorithm in the HOG tool. I provide some exa
 
 (i) Adapt the proof of the game semantics correspondence theorem from my thesis to this setting, perhaps using Andrew Ker's game model of ULC.
 
-(ii) Establish connection with previous work by Daniil Berezun and Neil Jones on traversals compilation for ULC.
+(ii) Establish connection with previous work by Daniil Berezun and Neil Jones on traversals compilation for ULC \cite{JonesBerezunLLL}.
+
+(iii) Establish connection with Pointer Abstract Machines by Danos and Reigner \cite{KerThesis}.
 \end{abstract}
 
 \section{Background}
@@ -121,7 +125,7 @@ A consequence of this definition is that even for terms having a normal form (an
 E.g. Take the term $\lambda f . f (\lambda x. x)$. We have that $\lambda f \cdot f \cdot (\lambda x \cdot  x)^k$ is a traversal for all $k\geq0$. Viewed from a game semantic perspective, those traversals accounts for all the possible denotations of the function parameter $f$: observe that for each $k$, there exists a term that applies its argument $k$ times: $\lambda y . y (y ( \ldots y)) $.
 
 \todo{Type my handwritten notes with proof explaining this in more details.}
-For the sake of computing the beta-normal form of a term, however, it's only necessary to traverse finitely many finite traversals (provided that the normal form exists). Effectively, this means limiting the rule \rulenamet{IVar} so that it traverse only nodes leading to paths in the computation tree that are yet unexplored. In practice, it means that when choosing the next lambda node to visit, one can ignore nodes that are already present in the O-view.
+For the sake of computing the beta-normal form of a term, however, it's only necessary to traverse finitely many finite traversals (provided that the normal form exists). Effectively, this means limiting the rule \rulenamet{IVar} so that it traverses only nodes leading to paths in the computation tree that are yet unexplored. In practice, it means that when choosing the next lambda node to visit, one can ignore nodes that are already present in the O-view.
 \end{remark}
 
 \textbf{Implementation}
@@ -563,7 +567,7 @@ Consequence of Proposition \ref{prop:branching_traversal_normalizing} and Proper
 \infrule[$\rulefont{App}_\normalizing$]
     {t \cdot @ \in \travsetnorm \andalso @ \enables_0 \alpha }
     {\Pstr[0.4cm]{t \cdot (at) @  \cdot (a-at,40:0) \alpha} \in \travsetnorm}
-    
+
 where necessarily $\alpha\in\NodesLmd$, since application nodes can only enable lambda-nodes.
 
 \infrule[$\rulefont{Lam}_\normalizing$]
@@ -592,7 +596,7 @@ where necessarily $\alpha\in\NodesLmd$, since application nodes can only enable 
     {
         \Pstr[0.5cm]{ t \cdot(alpha){\alpha} \cdot
         (m){m}
-         \ldots 
+         \ldots
         (gl-m,40:i){\ghostlmd}\cdot (al-alpha,40:{|\alpha| + i - |m|}){\ghostvar}
             \in\travsetnorm}
     }
@@ -621,7 +625,7 @@ where necessarily $n \in \NodesVar^\ghostvar \union \Nodes_{@}$, $\alpha,\beta \
 \emph{\bf Data - Input-variable rules}
 \infrule[$\rulefont{IVar}_\normalizing$]
      {t \cdot n \in \travsetnorm
-      \andalso n \in \NodesVar^\ghostvar \inter \NodeHjByRoot 
+      \andalso n \in \NodesVar^\ghostvar \inter \NodeHjByRoot
       \andalso n \enables_k \alpha
       \andalso 1\leq k \leq \arth(t)
      }
@@ -868,10 +872,31 @@ Therefore the beta-normal from of $arity\ two$ is:
 \betanf{varity\ two} &= \lambda x_1 x_2 x_3 x_4 . x_3 (x_1 x_3 (x_2 x_3 x_4))\\
 &\equiv_\alpha \lambda x y s z . s (x s (y s z))
 \end{align*}
-
-
-
 \end{example}
+
+\section{Further directions}
+
+\subsection{Higher-order collapsible pushdown automata}
+
+In \cite{Ong2006}, a construction\footnote{This CPDA construction from HORS is implemented in the HOG tool.)}
+ is defined that converts a higher-order recursion scheme into an equivalent collapsible higher-order pushdown automaton (in the sense that they generate the same infinite tree). The automaton proceeds by calculating traversals over the tree representation of the higher-order recrusion scheme. In that setting, the recursion scheme represents a closed term (no free variable) of order-$0$, and the generated structure is an order-$0$ value (a tree).
+
+Conceivably, there must be some kind of tree-generating automaton that can be used to calculate the set of traversals of an untyped lambda term as defined in this paper. The generated tree would be an order-$0$ tree representation of the beta-normal of a term: each terminal symbol of the automaton would correspond to a ``token'' of the lambda term: either a lambda node (represented by non-terminal of type $o->o$), or a variable node (represented by a non-terminal of type $o^k->o$ where $k\geq0$ is the number of operand applied to the variable in the beta normal form of the term.
+
+In the untyped lambda calculus, though, there is no notion of order, therefore the type-based definition of higher-order pushdown automata, where each non-terminals has a simple-type, would not be appropriate here. The definition of HOCPDA would thus need to be relaxed to allow non-terminals of any type. The construction of the HOPCPDA itself would follow the same lines as \cite{Ong2006} except that $\eta$-long normal expansion is not needed.
+
+\subsection{Connection with compilation of ULC to LLL}
+
+In \cite{JonesBerezunLLL}, Daniil Berezung and Neil Jones define a different version of traversals with notable differences: no ghost lambda nodes, two types of justification pointers: binding pointers and control pointers. Although very similar, the relationship between their notion of traversals and the one defined in this paper is still not formally established. Danos and Reigner's Linear Head reduction paper \cite{danos-head} appears to be the best avenue to estabilish the connection.
+
+\subsection{Game semantics connection}
+
+In the lines of what I did in \cite{BlumPhd} on formalizing the isomorphim between the traversal theory and Game Semantics for the simply-typed lambda calculus, PCF and Idealized Algol, a natural question to ask is whether there is a similar connection between the ULC traversals defined in this paper on game models of the untyped lambda calculus.
+
+TODO: give intuition on why this notion of traversals probably coincide with the game model of the untyped lambda calculus by Andrew Ker.
+
+
+
 \bibliographystyle{abbrv}
 \bibliography{ulctrav}
 
