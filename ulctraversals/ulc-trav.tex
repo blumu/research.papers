@@ -39,6 +39,7 @@
 \newcommand{\travsetbr}{{\travset^\branching}}
 \newcommand{\travsetnorm}{{\travset^\normalizing}}
 
+\newcommand{\child}{{\small \sf Child}}
 
 \newcommand{\NodeHjByRoot}{\Nodes^{\filter\theroot}}
 
@@ -142,11 +143,12 @@ The question addressed in the present note is: can this method be extended to th
 For an untyped lambda term $M$ we defined its \defname{computation tree} $\tau(M)$ the same way as for the STLC
 except that we don't perform eta-long expansion. Consecutive lambda abstractions are still merged into a single nodes in the tree so as to maintain the alternation between lambda nodes (at odd level) and variable nodes (at even level).
 Let $\Nodes$ be the set of nodes of the computation tree. We write $\NodesVar$ for the set of variable nodes, $\NodesLmd$ for lambda nodes, and $\Nodes_{@}$ for the application nodes.
-We define the \defname{enabling relation} $\enables$ between nodes of the computation tree as the relation associating each lambda node to all the variable nodes that it binds, and every variable and application node to each of their child node. We write $m \enables_k \alpha$ to indicate that a lambda node $\alpha$ is the $k$th child of a variable or application node $m$ for some $k\geq0$; and $\alpha \enables_k m$ to indicate that the node $m$ is labelled by the $k$th variable bound by $\alpha$ for $k\geq1$. We write $\NodeHjByRoot$ to denotes the image of the root of the tree by the transitive closure of the enabling relation and we call it the set of nodes \defname{hereditarily enabled by the root}.
+
+We define the \defname{enabling relation} $\enables$ between nodes of the computation tree as the relation associating each lambda node to all the variable nodes that it binds, the root of the tree to all the free variable nodes, and every variable and application node to each of their child node. Additionally every free variable  We write $m \enables_k \alpha$ to indicate that a lambda node $\alpha$ is the $k$th child of a variable or application node $m$ for some $k\geq0$; and $\alpha \enables_k m$ to indicate that the node $m$ is labelled by the $k$th variable bound by $\alpha$ for $k\geq1$. We write $\NodeHjByRoot$ to denotes the image of the root of the tree by the transitive closure of the enabling relation and we call it the set of nodes \defname{hereditarily enabled by the root}.
 
 We call a \defname{justified sequence}, a sequences of nodes of $\Nodes$ where each node occurrence (except the very first one in the sequence) has an associated ``justification pointers'' or ``link'' pointing to a another node occurring before it in the sequence and respecting the enabling relation $\enables$. The target occurence of the link is called the ``justifier''.
 
-We defined the \defname{arity} of a node as follows: the arity of a lambda node $\lambda x_1 \cdots x_k$ for $k\geq 0$ is denoted by $|\lambda x_1 \cdots x_k|$ and is defined as $k$; the arity of a variable node $x$, denoted $|x|$ is the number of children of $x$ in the computation tree; the arity of a $@$ node is the number of its children nodes minus 1.
+We defined the \defname{arity} of a node as follows: the arity of a lambda node $\lambda x_1 \cdots x_k$ for $k\geq 0$ is denoted by $|\lambda x_1 \cdots x_k|$ and is defined as $k$; the arity of a variable node $x$, denoted $|x|$ is the number of children of $x$ in the computation tree; the arity of a $@$ node is the number of its children nodes minus 1 (\ie, the number of operands in the application).
 
 \subsubsection{ULC ghost nodes}
 For ULC, we extend the definition of nodes from STLC by introducing two infinite classes of ``imaginary'' nodes called \defname{ghost nodes}:
@@ -190,11 +192,10 @@ We now fix an untyped term and abbreviated its set of traversals as just $\travs
         denotes $\alpha$'s unique child in $\tau(M)$ and its justifier is defined as follows. If $n$ is
         \begin{compactitem}
             \item an $@$-node then it has no justifier,
-            \item in $\Nodes_{\sf fv}$ then it points
+            \item a free variable node in $\Nodes_{\sf var}$  then it points
             to the only occurrence of the root in
             $\pview{t \cdot \alpha}$,
-            \item in $\Nodes_{\sf var}\setminus \Nodes_{\sf fv}$ then it points to the only occurrence of its binder in
-            $\pview{t\cdot \alpha}$.
+            \item a bound variable in $\Nodes_{\sf var}$ then it points to the only occurrence of its binder in $\pview{t\cdot \alpha}$.
         \end{compactitem}
     \item \rulenamet{Lam^\ghostlmd} If
   $\Pstr[0.5cm]{ t \cdot(alpha){\alpha} \cdot
@@ -329,9 +330,9 @@ In this section we show how the same method works for untyped lambda terms using
 A lambda term is \defname{affine} if every bound variable in the term occurs at most once in the term.
 
 Intuition: in the definition of traversals from Table \ref{tab:trav_rules}, the rules \rulenamet{IVar} and \rulenamet{IVar^\eta} are defined so as to
-account for all possible moves from the opponent O. This is need to get the isomoprhism with the game denotation of a term. For instance this is necessary to model contexts terms like the Kierstead terms $\lambda f.f(\lambda x.f(\lambda y.y))$ and $\lambda f.f(\lambda x.f(\lambda y.x))$. So for any lambda term $M$, its game denotation must contains plays with two occurrences of the same O-move representing the two separate occurrences of $f$.
+account for all possible moves from the opponent O. This is needed to get the isomorphism with the game denotation of a term. For instance this is necessary to model contexts terms like the Kierstead terms $\lambda f.f(\lambda x.f(\lambda y.y))$ and $\lambda f.f(\lambda x.f(\lambda y.x))$. So for any lambda term $M$, its game denotation must contain plays with two occurrences of the same O-move representing the two separate occurrences of $f$.
 
-In the game denotation of a lambda term $M$, at every point in a given play where it is Opponent's turn to play, all possible Opponent moves are accounted for. This guarantees that the denotation models all possible behaviours of contextual terms interacting with $M$, including behaviours not necessarily representable by a lambda term (e.g., in the simply-typed setting, the context may range over a PCF term or Idealized Algol term).
+In the game denotation of a lambda term $M$, at every point in a given play where it is Opponent's turn to play, all possible Opponent moves are accounted for. This guarantees that the denotation models all possible behaviours of contextual terms interacting with $M$, including behaviours not necessarily representable by a lambda term (e.g., in a typed setting, the context may range over a PCF term or Idealized Algol term).
 
 For the sake of computing the beta normal form of a term, however, it is sufficient to only consider sufficiently enough plays to cover all paths of the tree representation of the beta-normal form of the term. For instance, we will now show that it is enough to consider plays modeling interaction with contexts where bound variables are referenced at most once.
 
@@ -570,24 +571,18 @@ Consequence of Proposition \ref{prop:branching_traversal_normalizing} and Proper
 
 where necessarily $\alpha\in\NodesLmd$, since application nodes can only enable lambda-nodes.
 
-\infrule[$\rulefont{Lam}_\normalizing$]
-     {t \cdot \alpha \in \travsetnorm \andalso \alpha\in\NodesLmd \andalso
-     n \mbox{ is $\alpha$'s unique child node} }
-     {t \cdot \alpha \cdot n \in \travsetnorm
-      \andalso
-      \parbox[t]{6cm}{\footnotesize
-            \mbox{where $n$'s pointer}:
-            \begin{compactitem}[-]
-                \item $n\in\Nodes_@$: is undefined;
-                \item $n\in\Nodes_{\sf fv}$:
-                    (i) points to the first occurrence in $\pview{t\cdot \alpha}$
-                    (ii) is labelled by the free variable index (free variables are numbered from $1$ onwards);
-                \item $n \in \NodesVar\setminus\Nodes_{\sf fv}$:
-                    (i) points to the only occurrence of $n$'s binder in $\pview{t\cdot \alpha}$
-                    (ii) is labelled by the variable binding index.
-            \end{compactitem}
-            }
-      }
+\infrule[$\rulefont{Lam}^@_\normalizing$]
+     {t \cdot \alpha \in \travsetnorm \andalso \alpha\in\NodesLmd, \child(\alpha) \in \Nodes_@ }
+     {t \cdot \alpha \cdot \child(\alpha) \in \travsetnorm \andalso \mbox{$\child(\alpha)$ has no pointer}}
+
+\infrule[$\rulefont{Lam}^{\sf var}_\normalizing$]
+     {t = t_1 \cdot \beta \cdot t_2 \cdot \alpha \in \travsetnorm
+     \quad \alpha\in\NodesLmd, \child(\alpha) \in \NodesVar
+     \quad \beta \enables_i \child(\alpha), i \geq 1
+     \quad \beta \in\pview{t} }
+     {\Pstr[0.5cm]{t_1 \cdot (beta)\beta \cdot t_2 \cdot \alpha \cdot (n-beta,30:i){\child(\alpha)
+     } \in \travsetnorm}}
+where $\child(\alpha)$ denotes the unique child node in the computation tree of lambda-node $\alpha$, $t_1, t_2$ denotes two subsequences of the traversal, and $\pview{t}$ denotes the P-view of the traversal (the sequence obtained by reading the sequence backwards, alternating between reading the preceding node versus following the justification pointer). (It can be shown a posteriori that a variable's binder necessarily occurs exactly once in the P-view.)
 
 \infrule[$\rulefont{Lam^\ghostlmd}_\normalizing$]
     {
