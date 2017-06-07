@@ -561,46 +561,43 @@ Consequence of Proposition \ref{prop:branching_traversal_normalizing} and Proper
     {\theroot \in \travsetnorm}
 
 \infrule[$\rulefont{App}_\normalizing$]
-    {t \cdot @ \in \travsetnorm \andalso \alpha\in\NodesLmd \andalso @ \enables_0 \alpha }
+    {t \cdot @ \in \travsetnorm \andalso @ \enables_0 \alpha }
     {\Pstr[0.4cm]{t \cdot (at) @  \cdot (a-at,40:0) \alpha} \in \travsetnorm}
+    
+where necessarily $\alpha\in\NodesLmd$, since application nodes can only enable lambda-nodes.
 
 \infrule[$\rulefont{Lam}_\normalizing$]
      {t \cdot \alpha \in \travsetnorm \andalso \alpha\in\NodesLmd \andalso
      n \mbox{ is $\alpha$'s unique child node} }
      {t \cdot \alpha \cdot n \in \travsetnorm
       \andalso
-      \parbox[t]{5cm}{\footnotesize
-            \mbox{where $n$'s pointer}
+      \parbox[t]{6cm}{\footnotesize
+            \mbox{where $n$'s pointer}:
             \begin{compactitem}[-]
-                \item $n=@$: is undefined;
-                \item $n\in\Nodes_{\sf fv}$: points to the initial occurrence of $t$,  is labelled by the index of the variable name;
-                \item $n \not\in \Nodes_{\sf fv}$: points to the only occurrence of $n$'s binder in $\pview{t\cdot \alpha}$, is labelled by the binding index of the variable name.
+                \item $n\in\Nodes_@$: is undefined;
+                \item $n\in\Nodes_{\sf fv}$:
+                    (i) points to the first occurrence in $\pview{t\cdot \alpha}$
+                    (ii) is labelled by the free variable index (free variables are numbered from $1$ onwards);
+                \item $n \in \NodesVar\setminus\Nodes_{\sf fv}$:
+                    (i) points to the only occurrence of $n$'s binder in $\pview{t\cdot \alpha}$
+                    (ii) is labelled by the variable binding index.
             \end{compactitem}
             }
       }
 
 \infrule[$\rulefont{Lam^\ghostlmd}_\normalizing$]
     {
-        \Pstr[0.5cm]{ t \cdot(alpha){\alpha} \cdot (m){m} \cdot \ldots \cdot (gl-m,40:i){\ghostlmd} \in\travsetnorm}
-        \andalso  \alpha \in \NodesLmd^\ghostlmd
-        \andalso m \in\NodesVar^\ghostvar
+        \Pstr[0.5cm]{ t \cdot(alpha){\alpha} \cdot (m){m} \ldots (gl-m,40:i){\ghostlmd} \in\travsetnorm}
     }
     {
         \Pstr[0.5cm]{ t \cdot(alpha){\alpha} \cdot
         (m){m}
-        \cdot \ldots \cdot
+         \ldots 
         (gl-m,40:i){\ghostlmd}\cdot (al-alpha,40:{|\alpha| + i - |m|}){\ghostvar}
             \in\travsetnorm}
     }
-
-\emph{\bf Data - Input-variable rules}
-\infrule[$\rulefont{IVar}_\normalizing$]
-     {t \cdot n \in \travsetnorm
-      \andalso n \in\NodeHjByRoot \inter \NodesVar^\ghostvar
-      \andalso n \enables_k \alpha
-      \andalso 1\leq k \leq \arth(t)
-     }
-     {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,30:k){\alpha}} \in \travsetnorm}
+where necessarily $\alpha \in \NodesLmd^\ghostlmd$ and $m \in\NodesVar^\ghostvar$.
+\\
 
 \emph{\bf Program - Copy-cat rules with on-the-fly eta-expansion}
 
@@ -618,8 +615,18 @@ Consequence of Proposition \ref{prop:branching_traversal_normalizing} and Proper
             \cdot (letai-n,35:i){\beta}
             \in\travsetnorm}
     }
+where necessarily $n \in \NodesVar^\ghostvar \union \Nodes_{@}$, $\alpha,\beta \in \NodesLmd^\ghostlmd$, and $\beta = \ghostlmd$ iff $i>|n|$.
+\\
 
-where necessarily $n \in \NodesVar^\ghostvar \union \Nodes_{@}$ and $\alpha,\beta \in \NodesLmd^\ghostlmd$.
+\emph{\bf Data - Input-variable rules}
+\infrule[$\rulefont{IVar}_\normalizing$]
+     {t \cdot n \in \travsetnorm
+      \andalso n \in \NodesVar^\ghostvar \inter \NodeHjByRoot 
+      \andalso n \enables_k \alpha
+      \andalso 1\leq k \leq \arth(t)
+     }
+     {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,30:k){\alpha}} \in \travsetnorm}
+where necessarily $\alpha \in \NodesLmd$ since variable nodes can only enable lambda nodes.
 
 \caption{Normalizing traversal rules for the untyped lambda calculus (ULC).}
 \label{tab:normalizing_trav_rules}
