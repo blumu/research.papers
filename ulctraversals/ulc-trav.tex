@@ -35,11 +35,13 @@
 \newcommand{\normalizing}{{\sf norm}}
 \newcommand{\branching}{{\sf branch}}
 
-\newcommand{\travsetaffine}{{\travset^\affine}}
-\newcommand{\travsetbr}{{\travset^\branching}}
-\newcommand{\travsetnorm}{{\travset^\normalizing}}
+%\newcommand\travset{\mathcal{T}\!rav}
+\newcommand\travsetshort{\mathcal{T}\!r}
+\newcommand{\travsetaffine}{{\travsetshort^\affine}}
+\newcommand{\travsetbr}{{\travsetshort^\branching}}
+\newcommand{\travsetnorm}{\travsetshort^\normalizing}
 
-\newcommand{\child}{{\small \sf Child}}
+\newcommand{\child}{{\small \sf Ch}}
 
 \newcommand{\NodeHjByRoot}{\Nodes^{\filter\theroot}}
 
@@ -50,8 +52,8 @@
 \newcommand\arth{\textsf{arth}}
 
 \author{William Blum}
-\title{[Draft] Untyped Normalizing Traversals. \\
- {\small How to traverse and normalize untyped lambda terms via on-the-fly eta-expansion.}}
+\title{[Draft] Untyped Normalizing Traversals \\
+ {\small Traversing and normalizing untyped lambda terms via on-the-fly eta-expansion.}}
 
 \begin{document}
 \maketitle
@@ -61,11 +63,13 @@ This note introduces a new method to traverse untyped lambda terms. It extends t
 The concept of traversals was first introduced in \cite{Ong2006} to study higher-order recursion schemes used as generator of order-$0$ structures such as trees. In \cite{BlumPhd}, I extended the notion to the simply-typed lambda calculus by adding the (IVar) rule to account for free variables, and gave a concrete proof that traversals are isomoprhic to the game denotation of a simply-typed term through the `core projection' operation.
 
 The adaptation to the untyped setting adds several new ingredients:
-(i) The (Lam) and (Var) rules are augmented to implement eta-expansion when there is an insufficient number of variable names in the lambda node of a redex to be able to traverse it.
-(ii) The eta-expansion is performed `on-the-fly`, as needed, at every point where the traditional STLC traversal would normally get stuck.
-(iii) The concept of ``ghost'' nodes is introduced to model imaginary nodes in the computation tree that progressively appear as eta-expansions are performed on the subterms.
-(iv) The computation tree itself does not get modified during eta-expansion. Ghost nodes are only added to the traversal and are only ``visible'' in the context where they get introduced.
-(v) The (IVar) rule, introduced in my thesis to model free variables, is constrained by a quantity called the `arity threshold` which can be calculated in linear time from the traversal itself. This limits the non-deterministic branching factor of this rule, which is required to guarantee that the normalization procedure terminates when the beta-normal form exists.
+\begin{compactitem}
+\item  The (Lam) and (Var) rules are augmented to implement eta-expansion when there is an insufficient number of variable names in the lambda node of a redex to be able to traverse it.
+\item The eta-expansion is performed `on-the-fly`, as needed, at every point where the traditional STLC traversal would normally get stuck.
+\item The concept of ``ghost'' nodes is introduced to model imaginary nodes in the computation tree that progressively appear as eta-expansions are performed on the subterms.
+\item The computation tree itself does not get modified during eta-expansion. Ghost nodes are only added to the traversal and are only ``visible'' in the context where they get introduced.
+\item The (IVar) rule, introduced in my thesis to model free variables, is constrained by a quantity called the `arity threshold` which can be calculated in linear time from the traversal itself. This limits the non-deterministic branching factor of this rule, which is required to guarantee that the normalization procedure terminates when the beta-normal form exists.
+\end{compactitem}
 
 Another notable change, compared to traversals used in their original setting of recursion schems \cite{Ong2006} or the forsimply-typed lambda calculus case \cite{BlumPhd}, is the absence of $\eta$-long transform of the term. This has the benefit to simplify the presentation: the computation tree is just a tree representation of the original, unmodified, lambda term.
 
@@ -154,7 +158,7 @@ We defined the \defname{arity} of a node as follows: the arity of a lambda node 
 For ULC, we extend the definition of nodes from STLC by introducing two infinite classes of ``imaginary'' nodes called \defname{ghost nodes}:
 one class of ``ghost variable nodes'', denoted $\ghostvar$, and one class of ``ghost lambda nodes'', denoted $\ghostlmd$. By abuse of notation we will use $\ghostvar$ and $\ghostlmd$ to refer to particular elements of the two respective classes.
 
-We will refer to nodes $\Nodes$ of the computation tree as \defname{structural nodes}, and nodes in $\ghostlmd$ and $\ghostvar$ as the \defname{ghost nodes}. We will write $\NodesLmd^\ghostlmd$ as a shortand for $\NodesLmd + \ghostlmd$
+We refer to nodes $\Nodes$ of the computation tree as \defname{structural nodes}, and nodes in $\ghostlmd$ and $\ghostvar$ as the \defname{ghost nodes}. We will write $\NodesLmd^\ghostlmd$ as a shortand for $\NodesLmd + \ghostlmd$
 and $\NodesVar^\ghostvar$ as a shortand for $\NodesVar + \ghostvar$.
 
 We extend the definition of the enabling relation $\enables$ to ghost nodes by induction as follows: for every (ghost) variable or application node $m$ and for all $k>|m|$ there is a ghost lambda node $\ghostlmd$ such that $m \enables_k \ghostlmd$; for all (ghost) lambda node $\alpha$ and all $k>|\alpha|$ there is a ghost variable node $\ghostlmd$ such that $\alpha \enables_k \ghostvar$.
@@ -167,9 +171,12 @@ By convention ghost variables and lambda nodes are given arity $0$.
 
 \subsection{Traversals}
 
-The set $\travset(M)$ of \defname{traversals} over an untyped lambda term $\tau(M)$ is a jsutified sequence of elements in $\Nodes + \ghostlmd + \ghostvar$ with associated pointers. It is defined by induction over the rules of Table \ref{tab:trav_rules}.
+The set $\travset(M)$ of \defname{traversals} over an untyped lambda term $\tau(M)$ is a justified sequence of elements in $\Nodes + \ghostlmd + \ghostvar$ with associated pointers. It is defined by induction over the rules of Table \ref{tab:trav_rules}.
 
 For any traversal $t$ we write $t^\omega$ to denote the last occurrence in traversal $t$, and $\jp(t)$ to denote the prefix of $t$ ending at the justifier of the last node of $t$.
+
+We use the standard game-semantic operations for justified sequences \cite{Abr02}. In particular we refer to the P-view
+of a traversal, denoted $\pview{t}$, as the sub-sequence obtained by reading the traversal backwards as follows: and alternatively (i) reading the preceding two occurrences of  (i) if the node being read is a variable node then keep that node and follow its justification pointer (\ie skip  all the occurrences ``underneath that pointer'') (ii) if the node is a lambda node then keep that node and move to the preceding node. The O-view, denoted $\oview{t}$, is defined as the dual of the P-view.
 
 We say that $t$ is an \defname{extension} of traversal $u$ if $u$ is a strict subsequence of $t$ sharing the same justification pointers.
 A traversal that does not have any extension is a \defname{maximal traversal}.
@@ -249,7 +256,7 @@ where $\lambda \overline{x} \in N$ is the $i$th child of $n$
      where the ghost node $\ghostlmd$ represents the $i$th ghost child of $n$.
 \end{itemize}
 
-\caption{Traversal rules for the untyped lambda calculus (ULC).}
+\caption{Game-semantic traversal rules for the untyped lambda calculus (ULC).}
  \label{tab:trav_rules}
 \end{FramedTable}
 
@@ -572,19 +579,27 @@ Consequence of Proposition \ref{prop:branching_traversal_normalizing} and Proper
 where necessarily $\alpha\in\NodesLmd$, since application nodes can only enable lambda-nodes.
 
 \infrule[$\rulefont{Lam}^@_\normalizing$]
-     {t \cdot \alpha \in \travsetnorm \andalso \alpha\in\NodesLmd, \child(\alpha) \in \Nodes_@ }
+     {t \cdot \alpha \in \travsetnorm
+     \andalso \alpha\in\NodesLmd
+     \andalso \child(\alpha) \in \Nodes_@ }
      {t \cdot \alpha \cdot \child(\alpha) \in \travsetnorm \andalso \mbox{$\child(\alpha)$ has no pointer}}
 
 \infrule[$\rulefont{Lam}^{\sf var}_\normalizing$]
-     {t = t_1 \cdot \beta \cdot t_2 \cdot \alpha \in \travsetnorm
-     \quad \alpha\in\NodesLmd, \child(\alpha) \in \NodesVar
+     {t_1 \cdot \beta \cdot t_2 \cdot \alpha \in \travsetnorm
+     \quad \alpha\in\NodesLmd
+     \quad \child(\alpha) \in \NodesVar
      \quad \beta \enables_i \child(\alpha), i \geq 1
-     \quad \beta \in\pview{t} }
+     \quad \beta \mbox{ visible at } \alpha }
      {\Pstr[0.5cm]{t_1 \cdot (beta)\beta \cdot t_2 \cdot \alpha \cdot (n-beta,30:i){\child(\alpha)
      } \in \travsetnorm}}
-where $\child(\alpha)$ denotes the unique child node in the computation tree of lambda-node $\alpha$, $t_1, t_2$ denotes two subsequences of the traversal, and $\pview{t}$ denotes the P-view of the traversal (the sequence obtained by reading the sequence backwards, alternating between reading the preceding node versus following the justification pointer). (It can be shown a posteriori that a variable's binder necessarily occurs exactly once in the P-view.)
+where
+\begin{compactitem}[-]
+\item $\child(\alpha)$ denotes the unique child tree node of lambda-node $\alpha$;
+\item $t_1, t_2$ denotes subsequences of traversal $t$;
+\item ``visible'' means that the node occurs in the P-view $\pview{t}$ of the traversal (\ie the sub-sequence read from $t$ backwards by following the justification pointer every other  node).
+\end{compactitem}
 
-\infrule[$\rulefont{Lam^\ghostlmd}_\normalizing$]
+\infrule[$\rulefont{Lam^\ghostlmd_\normalizing}$]
     {
         \Pstr[0.5cm]{ t \cdot(alpha){\alpha} \cdot (m){m} \ldots (gl-m,40:i){\ghostlmd} \in\travsetnorm}
     }
@@ -602,19 +617,19 @@ where necessarily $\alpha \in \NodesLmd^\ghostlmd$ and $m \in\NodesVar^\ghostvar
 
 \infrule[$\rulefont{Var}_\normalizing$]
     {
-        \Pstr[0.5cm]{t \cdot (n){n} \cdot (alpha){\alpha}
-        \ldots (m-alpha,50:i){m} \in \travsetnorm}
-        \andalso m \in \NodesVar^\ghostvar \setminus \Nodes^{\filter\theroot}
-        \andalso n \enables_i \beta
+        \Pstr[0.5cm]{t \cdot m \cdot (alpha){\alpha}
+        \ldots (n-alpha,50:i){n} \in \travsetnorm}
+        \andalso n \in \NodesVar^\ghostvar \setminus \Nodes^{\filter\theroot}
+        \andalso m \enables_i \beta
         \andalso i>0
     }
     {
         \Pstr[0.5cm]{ t \cdot
-        (n){n} \cdot (lx){\alpha}  \ldots (x-lx,30:i){m}
-            \cdot (letai-n,35:i){\beta}
+        (m){m} \cdot (a){\alpha}  \ldots (n-a,30:i){n}
+            \cdot (letai-m,35:i){\beta}
             \in\travsetnorm}
     }
-where necessarily $n \in \NodesVar^\ghostvar \union \Nodes_{@}$, $\alpha,\beta \in \NodesLmd^\ghostlmd$, and $\beta = \ghostlmd$ iff $i>|n|$.
+where necessarily $m \in \NodesVar^\ghostvar \union \Nodes_{@}$, $\alpha,\beta \in \NodesLmd^\ghostlmd$, and $\beta = \ghostlmd$ iff $i>|m|$.
 \\
 
 \emph{\bf Data - Input-variable rules}
@@ -634,7 +649,7 @@ where necessarily $\alpha \in \NodesLmd$ since variable nodes can only enable la
 
 \subsection{Normalizing ULC terms: examples}
 
-\begin{example}[Walking example ``${\sf add}\ 1$'']
+\begin{example}[Walk-through example ``${\sf add}\ 1$'']
 We demonstrate here on a small example, how the beta-normal form of a term can be obtained with traversals.
 Consider the Church numerals written $k = \lambda s z . s^k z$ for $k\geq0$. We consider a term $M$ representing the function that adds $1$ to the input integer: $M k$ reduces to $(k+1)$ for all $k$. Such term can be defined as $M \equiv{\sf add}\ 1$ where
 ${\sf add} \equiv \lambda x y s z. x\, s (y\, s\, z)$.
@@ -888,7 +903,7 @@ In \cite{JonesBerezunLLL}, Daniil Berezung and Neil Jones define a different ver
 
 In the lines of what I did in \cite{BlumPhd} on formalizing the isomorphim between the traversal theory and Game Semantics for the simply-typed lambda calculus, PCF and Idealized Algol, a natural question to ask is whether there is a similar connection between the ULC traversals defined in this paper on game models of the untyped lambda calculus.
 
-TODO: give intuition on why this notion of traversals probably coincide with the game model of the untyped lambda calculus by Andrew Ker.
+TODO: give intuition on why this notion of traversals probably coincides with the game model of the untyped lambda calculus by Andrew Ker.
 
 
 
