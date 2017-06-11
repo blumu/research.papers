@@ -11,6 +11,7 @@
 \usepackage{pst-tree}
 \usepackage{enumitem}
 %\usepackage{xcolor}
+\usepackage{xspace}
 \usepackage{pstring}
 \usepackage{todonotes}
 \usepackage{amsmath,amssymb,amsthm}
@@ -44,13 +45,15 @@
 
 \newcommand{\child}{{\small \sf Ch}}
 
-\newcommand{\NodeHjByRoot}{\Nodes^{\filter\theroot}}
-
 \newcommand{\rulefont}[1]{\mathbf{\sf #1}}
 \newcommand{\enables}{\vdash}
 
+\newcommand{\NodeHjByRoot}{\Nodes^{\theroot\enables}}
+
 \newcommand\pathset{{\mathcal{P}aths}}
 \newcommand\arth{\textsf{arth}}
+
+\renewcommand\ie{{\it i.e.\@\xspace}}
 
 \author{William Blum}
 \title{[Draft] Untyped Normalizing Traversals \\
@@ -109,7 +112,7 @@ $\phi_M$ and $\psi_M$:
 
 where $\syntrevsem{\Gamma \entail M : T}$ denotes the interaction game denotation of $M$, $\sem{\Gamma \entail M : T}$ denotes the innocent game denotation of $M$,
 $\travset(M)^\star$ denotes the set of traversals where application nodes are removed, and $\travset(M)^{\filter
-\theroot}$ denotes the set of traversal cores of $M$ (\ie traversal projected to the root of the tree).
+\theroot}$ denotes the set of traversal cores of $M$ (\ie, traversal projected to the root of the tree).
 \end{theorem}
 
 \subsection{Normalizing terms with traversals}
@@ -145,15 +148,14 @@ The question addressed in the present note is: can this method be extended to th
 
 \subsection{Computation tree, enabling relation, justified sequences}
 
-For an untyped lambda term $M$ we defined its \defname{computation tree} $\tau(M)$ the same way as for the STLC
-except that we don't perform eta-long expansion. Consecutive lambda abstractions are still merged into a single nodes in the tree so as to maintain the alternation between lambda nodes (at odd level) and variable nodes (at even level).
-Let $\Nodes$ be the set of nodes of the computation tree. We write $\NodesVar$ for the set of variable nodes, $\NodesLmd$ for lambda nodes, and $\Nodes_{@}$ for the application nodes.
+For an untyped lambda term $M$ we define its \defname{computation tree} $\tau(M)$ the same way as in STLC except that the term does not get transformed to eta-long form before constructing the tree. Consecutive lambda abstractions are still merged into a single node in the tree so as to maintain alternation between lambda nodes (at odd level, counting from 1 onwards) and variable nodes (at even level).
+Let $\Nodes$ be the set of nodes of the computation tree. We write $\NodesVar$ for the set of variable nodes, $\NodesLmd$ for lambda nodes, and $\Nodes_{@}$ for  application nodes.
 
-We define the \defname{enabling relation} $\enables$ between nodes of the computation tree as the relation associating each lambda node to all the variable nodes that it binds, the root of the tree to all the free variable nodes, and every variable and application node to each of their child node. Additionally every free variable  We write $m \enables_k \alpha$ to indicate that a lambda node $\alpha$ is the $k$th child of a variable or application node $m$ for some $k\geq0$; and $\alpha \enables_k m$ to indicate that the node $m$ is labelled by the $k$th variable bound by $\alpha$ for $k\geq1$. We write $\NodeHjByRoot$ to denotes the image of the root of the tree by the transitive closure of the enabling relation and we call it the set of nodes \defname{hereditarily enabled by the root}.
+We define the \defname{enabling relation} $\enables$ between nodes of the computation tree as the relation associating each lambda node to all the variable nodes that it binds, the root of the tree to all the free variable nodes, and every variable and application node to each of their child node. We write $m \enables_k \alpha$ to indicate that a lambda node $\alpha$ is the $k$th child of a variable or application node $m$ for some $k\geq0$; and $\alpha \enables_k m$ to indicate that the node $m$ is labelled by the $k$th variable bound by $\alpha$ for $k\geq1$. We write $\NodeHjByRoot$ to denotes the image of the root of the tree by the transitive closure of the enabling relation and we call it the set of nodes \defname{hereditarily enabled by the root}.
 
 We call a \defname{justified sequence}, a sequences of nodes of $\Nodes$ where each node occurrence (except the very first one in the sequence) has an associated ``justification pointers'' or ``link'' pointing to a another node occurring before it in the sequence and respecting the enabling relation $\enables$. The target occurence of the link is called the ``justifier''.
 
-We defined the \defname{arity} of a node as follows: the arity of a lambda node $\lambda x_1 \cdots x_k$ for $k\geq 0$ is denoted by $|\lambda x_1 \cdots x_k|$ and is defined as $k$; the arity of a variable node $x$, denoted $|x|$ is the number of children of $x$ in the computation tree; the arity of a $@$ node is the number of its children nodes minus 1 (\ie, the number of operands in the application).
+We defined the \defname{arity} of a node as follows: the arity of a lambda node $\lambda x_1 \cdots x_k$ for $k\geq 0$ is denoted by $|\lambda x_1 \cdots x_k|$ and is defined as $k$; the arity of a variable node $x$, denoted $|x|$ is the number of children of $x$ in the computation tree; the arity of a $@$ node is the number of its children nodes minus 1 (\ie\@, the number of operands in the application).
 
 \subsubsection{ULC ghost nodes}
 For ULC, we extend the definition of nodes from STLC by introducing two infinite classes of ``imaginary'' nodes called \defname{ghost nodes}:
@@ -162,13 +164,13 @@ one class of ``ghost variable nodes'', denoted $\ghostvar$, and one class of ``g
 We refer to nodes $\Nodes$ of the computation tree as \defname{structural nodes}, and nodes in $\ghostlmd$ and $\ghostvar$ as the \defname{ghost nodes}. We will write $\NodesLmd^\ghostlmd$ as a shortand for $\NodesLmd + \ghostlmd$
 and $\NodesVar^\ghostvar$ as a shortand for $\NodesVar + \ghostvar$.
 
-We extend the definition of the enabling relation $\enables$ to ghost nodes by induction as follows: for every (ghost) variable or application node $m$ and for all $k>|m|$ there is a ghost lambda node $\ghostlmd$ such that $m \enables_k \ghostlmd$; for all (ghost) lambda node $\alpha$ and all $k>|\alpha|$ there is a ghost variable node $\ghostlmd$ such that $\alpha \enables_k \ghostvar$.
+We extend the definition of the enabling relation $\enables$ to ghost nodes by induction as follows: for every (ghost) variable or application node $m$ and for all $k>|m|$ there is a ghost lambda node $\ghostlmd$ such that $m \enables_k \ghostlmd$; for all (ghost) lambda node $\alpha$ and all $k>|\alpha|$ there is a ghost variable node $\ghostvar$ such that $\alpha \enables_k \ghostvar$.
 
 Observe that every ghost variable and ghost lambda node is uniquely defined by its enabler node (possibly itself a ghost node) and the associated label $k\geq 1$.
 
-Ghost nodes thus defined will be used as placeholders in \defname{justified sequences} to represent eta-expanded lambda nodes and variable nodes respectively.
+Ghost nodes thus defined will be used as placeholders in \defname{justified sequences} to respectively represent eta-expanded lambda nodes and variable nodes.
 
-By convention ghost variables and lambda nodes are given arity $0$.
+By convention ghost variables and lambda nodes are assigned arity $0$.
 
 \subsubsection{Justified sequence of nodes}
 A \defname{justified sequences} is a sequence of nodes from the computation tree where every node in the sequence, except the first one, has a link (the justification pointer) pointing to some previous node in the sequence (its justifier). A justified sequence verifies the \defname{alternation condition} if the first node is a lambda node and subsequent nodes occurrences alternate between (i) a variable or application node (ii) a lambda node. From now on we will assume that all justified sequences verify the alternation condition.
@@ -182,7 +184,7 @@ We say that an occurrence of a node in a justified sequence is \defname{heredita
 \subsection{Traversals}
 
 \begin{definition}[Traversals]
-We define the set of \defname{traversals} over an untyped lambda term $\tau(M)$, denoted $\travset(M)$, or just abbreviated as $\travset$ when the term is clear from context, as the set of justified sequences of elements in $\Nodes + \ghostlmd + \ghostvar$ with associated pointers defined by induction over the rules of Table \ref{tab:trav_rules}.
+We define the set of \defname{traversals} of an untyped lambda term $M$, denoted $\travset(M)$, or just abbreviated as $\travset$ when the term is clear from context, as the set of justified sequences of nodes in the computation tree of $M$ (\ie., $\Nodes + \ghostlmd + \ghostvar$) with associated pointers defined by induction over the rules of Table \ref{tab:trav_rules}.
 
 A traversal that does not have any extension is a \defname{maximal traversal}.
 \end{definition}
@@ -221,26 +223,26 @@ $$\Pstr[0.5cm]{ t \cdot(alpha){\alpha} \cdot
 
 \emph{\bf PROGRAM -- Copy-cat rules \underline{with on-the-fly eta-expansion}}
 \begin{itemize}
-\item \rulenamet{Var} If \Pstr[0.5cm]{t \cdot (n){n} \cdot (alpha){\alpha}
-    \ldots (m-alpha,50:i){m} \in \travset} for $i>0$, $m \in \NodesVar^\ghostvar$ hereditarily justified by an $@$-node;
-     $n \in \NodesVar^\ghostvar \union \Nodes_{@}$; and $\alpha \in \NodesLmd^\ghostlmd$ then:
+\item \rulenamet{Var} If \Pstr[0.5cm]{t \cdot (m){m} \cdot (alpha){\alpha}
+    \ldots (n-alpha,50:i){n} \in \travset} for $i>0$, $n \in \NodesVar^\ghostvar$ hereditarily justified by an $@$-node;
+     $m \in \NodesVar^\ghostvar \union \Nodes_{@}$; and $\alpha \in \NodesLmd^\ghostlmd$ then:
   $$\Pstr[0.5cm]{ t  \cdot
-(n){n} \cdot (lx){\alpha}  \ldots (x-lx,30:i){m}
-    \cdot (letai-n,40:i){\beta}
+(m){m} \cdot (lx){\alpha}  \ldots (x-lx,30:i){n}
+    \cdot (letai-m,40:i){\beta}
      \in\travset}$$
 \begin{description}[align=right,labelwidth=2cm]
-\item[Concrete] $i \leq |n|$: $\beta$ is a structural lambda node in $\NodesLmd$ and is the $i$th child of $n$ ($n$ is necessarily itself a structural node since $|n|\geq i>0$);
-\item[Eta-expanded] $i > |n|$: $\beta$ is a ghost lambda node $\ghostlmd$ representing the $i$th ghost child of $n$.
+\item[Concrete] $i \leq |m|$: $\beta$ is a structural lambda node in $\NodesLmd$ and is the $i$th child of $m$;
+\item[Eta-expanded] $i > |m|$: $\beta$ is a ghost lambda node $\ghostlmd$ representing the $i$th ghost child of $m$.
 \end{description}
 \end{itemize}
 
 \emph{\bf DATA -- Input-variable rules}
 \begin{itemize}
 \item \rulenamet{IVar} If $t \cdot n$ is a traversal where $n \in \NodesVar^\ghostvar$ is hereditarily justified by the root. For every node $m \in \NodesVar^\ghostvar$ occurring in $\oview{t\cdot n}$
-and every $k>1$ we have $t \cdot n \cdot \alpha \in \travset$ with $\alpha$ pointing to $m$ with label $k$, where:
+and every $i>1$ we have $t \cdot n \cdot \alpha \in \travset$ with $\alpha$ pointing to $m$ with label $i$, where:
 \begin{description}[align=right,labelwidth=2cm]
-\item[Concrete] $k\leq|m|$: $\alpha \in \Nodes_\lambda$ is the $k$th child of $m$;
-\item[Eta-expanded] $k>|m|$: $\alpha$ is a ghost lambda node $\ghostlmd$.
+\item[Concrete] $i\leq|m|$: $\alpha \in \Nodes_\lambda$ is the $i$th child of $m$;
+\item[Eta-expanded] $i>|m|$: $\alpha$ is a ghost lambda node $\ghostlmd$.
 \end{description}
 \end{itemize}
 
@@ -248,6 +250,16 @@ and every $k>1$ we have $t \cdot n \cdot \alpha \in \travset$ with $\alpha$ poin
 \caption{Game-semantic traversal rules for the untyped lambda calculus (ULC).}
  \label{tab:trav_rules}
 \end{FramedTable}
+
+\begin{remark}
+The traversal rules are well-defined:
+\begin{itemize}
+\item Rule \rulenamet{Lam}: An easy induction shows that the P-view of a traversal ending with a structural node is precisely the path from the root of the tree to last node of the traversal (with associated justification pointers).
+Therefore, if the last node is a variable node, its enabler necessarily occurs exactly once in the P-view.
+\item Rule \rulenamet{Var}: Concrete case: $m$ is necessarily itself a structural node since $|m|\geq i>0$, and its $i$th child exists since $m$ as arity greater than $i$.
+\end{itemize}
+\end{remark}
+
 
 \subsubsection{Comparison with STLC}
 There are three important differences between the rules of Table \ref{tab:trav_rules} and the traversal rules of the simply-typed lambda calculus introduced in \cite{Blum2006}:
@@ -276,17 +288,12 @@ In particular for all $n\in\NodesVar$ and $\alpha\in\NodesLmd$:
 \end{enumerate}
 \end{property}
 
-\begin{remark}
-The rule \rulenamet{Lam} is well defined. In particular it can be show as in STLC, that P-views are paths in the (possibly eta-expanded) tree thus $n$'s enabler occurs exactly once in the P-view.
-\end{remark}
-
 \begin{definition}
-We call \defname{ghost materialization} instances of traversal rule application where the last occurrence in the traversal is
-a ghost nodes, and the new node traversed, after applying some traversal rule, is a structural node.
+We call \defname{ghost materialization} any application of a traversal rule  where the last occurrence in the traversal before the rule is applied is a ghost nodes ($\ghostvar$ or $\ghostlmd$), and the new node traversed after applying some traversal rule is a structural node of the tree (in $\Nodes$).
 \end{definition}
 
 \begin{remark}[Only \rulenamet{Var} can materialize a ghost node]
-Observet that among all the rules defined in Table \ref{tab:trav_rules}, the rule \rulenamet{Var} is the only rule that can materialize a structural node in $\Nodes$ from a traversal ending with a ghost node. This means that after traversing ghost nodes, the only way to come back to strucutural nodes is to visit a ghost variable node $\ghostvar$ with an application of rule \rulenamet{Var} of the following form:
+Observe that among all the rules defined in Table \ref{tab:trav_rules}, the rule \rulenamet{Var} is the only rule that can materialize a structural node in $\Nodes$ from a traversal ending with a ghost node. This means that after traversing ghost nodes, the only way to come back to strucutural nodes is to visit a ghost variable node $\ghostvar$ with an application of rule \rulenamet{Var} of the following form:
 
 $$\rulename{Var}\ \  \Pstr[0.5cm]{ t \cdot(beta){\beta} \cdot
 (y){y} \cdot (l){\alpha}  \ldots (t-l,30:i){\ghostvar}
@@ -413,7 +420,7 @@ to prove trigonometry identities: they are introduced intermediately to perform 
 
 \subsection{Arity threshold}
 
-In this section, we show that, for the purpose of computing beta normal forms, the value $k$ in rule $\rulename{IVar}$ can be bounded by a computable quantity called the \defname{arity threshold} of a traversal.
+In this section, we show that, for the purpose of computing beta normal forms, the value $i$ in rule $\rulename{IVar}$ can be bounded by a computable quantity called the \defname{arity threshold} of a traversal.
 
 When traversing a lambda term, we introduce ghost nodes on-demand each time an eta-expansion is deemed necessary.
 We don't want, of course, to eta-expand ad-infinitum: Our goal is to find a finite representation of the normalized the term, as opposed to compute the possibly infinite set of traversals representing the semantic denotation of the term (i.e., it's game semantic denotation). To that extend, traversing ghost nodes in a traversal is only useful if it eventually leads to traversing some structural node of the tree.
@@ -543,7 +550,7 @@ By repeating the argument this shows that all the nodes following $t$ are necess
 
 This property leads to the following definition:
 \begin{definition}[Normalizing traversals]
-We define the set of \defname{normalizing traversals}, noted $\travsetnorm$ as the set of maximal traversals obtained from the induction rule of Table \ref{tab:trav_rules} where the value $k$ in the rule \rulenamet{IVar} is bounded by the arity of the traversal from Definition \ref{dfn:arity-threshold}:
+We define the set of \defname{normalizing traversals}, noted $\travsetnorm$ as the set of maximal traversals obtained from the induction rule of Table \ref{tab:trav_rules} where the value $i$ in the rule \rulenamet{IVar} is bounded by the arity of the traversal from Definition \ref{dfn:arity-threshold}:
 \infrule[$\rulefont{IVar}_\normalizing$]
      {t \cdot n \in \travsetnorm
      \andalso n \in\NodeHjByRoot \inter \NodesVar^\ghostvar
@@ -634,10 +641,10 @@ where necessarily $m \in \NodesVar^\ghostvar \union \Nodes_{@}$, $\alpha,\beta \
 \infrule[$\rulefont{IVar}_\normalizing$]
      {t \cdot n \in \travsetnorm
       \andalso n \in \NodesVar^\ghostvar \inter \NodeHjByRoot
-      \andalso n \enables_k \alpha
-      \andalso 1\leq k \leq \arth(t)
+      \andalso n \enables_i \alpha
+      \andalso 1\leq i \leq \arth(t)
      }
-     {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,30:k){\alpha}} \in \travsetnorm}
+     {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,30:i){\alpha}} \in \travsetnorm}
 where necessarily $\alpha \in \NodesLmd$ since variable nodes can only enable lambda nodes.
 
 \caption{Normalizing traversal rules for the untyped lambda calculus (ULC).}
@@ -728,7 +735,7 @@ $\pview{t_1\filter\theroot} = \Pstr[0.7cm]{(l){\lambda } \cdot (x-l){\ghostvar^2
 }$
 which means that the normal form is of the form $\lambda y s \ldots \cdot s (y R_1 \ldots R_{q_2}) N_2 \ldots N_q$ for some terms $R_1$, \ldots $R_{q_2}$, and $q,q_2\geq 0$.
 
-\item What should be the value of $q$? In other words, how many more $k$ do we need to look at?  The answer: we need to keep iterating on $k$ until the point where applying the traversal rules will only produce ghost variables and ghost lambda-nodes! Because there is a finite number of nodes in the computation tree, the variable node arities are bounded. Therefore for high enough argument indices $k$, the condition $i\leq|n|$ in the definition of \rulenamet{Var} will never be met:
+\item What should be the value of $q$? In other words, how many more $k$ do we need to look at?  The answer: we need to keep iterating on $k$ until the point where applying the traversal rules will only produce ghost variables and ghost lambda-nodes! Because there is a finite number of nodes in the computation tree, the variable node arities are bounded. Therefore for high enough index $k$, the eta-expansion case from rule \rulenamet{Var} will never be met:
         after applying rule \rulenamet{IVar} on $t_\epsilon$, all subsequent extensions of the traversal will be constructed using repeated applications of rule $\rulename{Lam^\ghostvar}$ or the eta-expanded case of rule $\rulename{Var}$.
      The upper-bound $q$ for $k$ is precisely given by the \emph{arity threshold} of the traversal $t_\epsilon$ as defined in \ref{dfn:arity-threshold}.
      Here we have
@@ -951,6 +958,8 @@ In \cite{JonesBerezunLLL}, Daniil Berezung and Neil Jones define a different ver
 In the lines of what I did in \cite{BlumPhd} on formalizing the isomorphim between the traversal theory and Game Semantics for the simply-typed lambda calculus, PCF and Idealized Algol, a natural question to ask is whether there is a similar connection between the ULC traversals defined in this paper on game models of the untyped lambda calculus.
 
 TODO: give intuition on why this notion of traversals probably coincides with the game model of the untyped lambda calculus by Andrew Ker.
+
+\subsection{Head linear reduction}
 
 
 
