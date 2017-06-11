@@ -23,6 +23,7 @@
 \newtheorem{proposition}{Proposition}[section]
 \newtheorem{remark}{Remark}[section]
 \newtheorem{theorem}{Theorem}[section]
+\newtheorem{conjecture}{Conjecture}[section]
 \newtheorem{example}{Example}[section]
 \newtheorem{observation}{Observation}[section]
 
@@ -102,7 +103,7 @@ One can then show that, for every simply-typed term $\Gamma \entail M :T$,
 there is a bijection $\varphi_M$ from the set of traversals of $M$ to the revealed interaction game denotation of $M$, further there is a bijection between the standard game denotation of $M$ and its standard innocent game denotation. Formally:
 \begin{theorem}[STLC Game Semantics and Traversals (Theorem 4.96 in \cite{BlumPhd}]
 \label{thm:correspondence}
-For every simply-typed term $\Gamma \entail M :T$ there exists two bijections
+For every simply-typed term $\Gamma \entail M :T$ there exist two bijections
 $\phi_M$ and $\psi_M$:
 
 \begin{eqnarray*}
@@ -315,32 +316,58 @@ where
 Following the STLC framework of my thesis, the rule \rulenamet{IVar} is defined so as to obtain the correspondence with game semantics: the nodes visited by this rule correspond to moves played by the Opponent in the game denotation. (We recall that in Game Semantics, the Opponent represents the environment of the program, or equivalently, the data passed to the program.
 We aim to prove that this presentation yields an isomorphism between the set of traversals and the revealed game semantics of the ULC term, and subsequently that it yields an isomorphism between the standard game semantics and the set of traversal cores (i.e., projected wrt. the root):
 
-\begin{theorem}[Correspondence with Game Semantics]
-\label{thm:ulc_corresp}
 The traversal-game semantics isomoprhism of \cite{BlumPhd} for STLC also yields for ULC using traversal definition from Table \ref{tab:trav_rules} and the game model of ULC from Ker's thesis.
-\end{theorem}
+
+\begin{conjecture}[ULC Traversals Correspondence with Game Semantics]
+\label{thm:ulc_corresp}
+For every untyped lambda-term $M$ there exist two bijections
+$\phi_M$ and $\psi_M$:
+
+\begin{eqnarray*}
+ \varphi_M  &:& \travset(M)^\star \stackrel{\cong}{\longrightarrow} \syntrevsem{M} \\
+ \psi_M  &:& \travset(M)^{\filter \theroot} \stackrel{\cong}{\longrightarrow} \sem{M} \enspace .
+\end{eqnarray*}
+
+where
+$\sem{M}$ denotes the innocent \emph{effectively almost everwhere (EAC)} game denotation of $M$ defined in \cite{KerThesis},
+and $\syntrevsem{M}$ denotes the corresponding interaction game denotation where internal moves are not hidden during strategy composition.
+
+$\travset(M)^\star$ denotes the set of traversals where application nodes are removed, and $\travset(M)^{\filter
+\theroot}$ denotes the set of traversal cores of $M$ (\ie, traversal projected to the root of the tree).
+\end{conjecture}
 \begin{proof}
 \todo{add proof sketch!}
-Should follow the same argument as \cite{BlumPhd} but using the Ker's game model of ULC instead of the innocent game model of the STLC.
-The ``on-the-fly'' eta-expansion should correspond to the $Fun$ morphism of Ker's game category.
+Should follow the same argument as \cite{BlumPhd} but using the Ker's game model of ULC instead of the innocent game model of STLC.
+Our ``on-the-fly'' eta-expansion should correspond to the $Fun : U \rightarrow (U \Rightarrow U)$ morphism of Ker's game category where $U$ denotes the maximal arena.
 \end{proof}
 
 
 \section{Traversals for normalizing ULC term}
 
-\begin{observation}
-The beta-normal form of $M$ is uniquely determined by the maximal paths of its tree representation.
-By the Game-Traversal Correspondence Theorem \cite{BlumPhd}, the set of traversals of the beta-normal form of $M$ is precisely the set of projections, with respect to the root, of the traversals of $M$. Furthermore, by the Path-P-view correspondence, the set of
-of paths of the beta-normal form is given by the set of P-views of projections of traversals of $M$.
-Hence the P-views of maximal traversals of $M$ yields maximal paths in the tree representation of the beta-normal form of $M$.
-\end{observation}
+In STLC, as mentioned in the introduction, the Correspondence Theorem \ref{thm:ulc_corresp} yields a method to normalize a simply-typed lambda term.
 
-Given a fixed lambda term $M$, we write $\pathset (M)$, or just $\pathset$ if the term in question is clear from context, to denote the set of possibly infinite maximal paths in the infinitary computation tree representation of $M$. \todo{add reference to paper with formalization of the concept of infinitary computation tree.} The above observation for STLC can then be rephrased as:
-$$\pview{\travset(M)\filter\theroot} = \pathset(\betanf{M}) $$
+Indeed, the beta-normal form of a simply-typed term $M$ is uniquely determined by the maximal paths of its tree representation. And by the Game-Traversal Correspondence Theorem, the set of traversals of the beta-normal form of $M$ is precisely the set of projections, with respect to the root, of the traversals of $M$. Furthermore, by the Path-P-view correspondence, the set of of paths of the beta-normal form is given by the set of P-views of projections of traversals of $M$. Hence the P-views of maximal traversals of $M$ yields maximal paths in the tree representation of the beta-normal form of $M$.
+Formally:
+\begin{equation}
+\pview{\travset(M)\filter\theroot} = \pathset(\betanf{M}) \label{eqn:pviewcore_paths}
+\end{equation}
+where $\pathset (M)$ denotes the set of maximal paths in the computation tree representation of $M$.
+Observe that the set of traversals can be infinite because the game denotation of a term must account for all possible moves of the Opponent for all possible denotation of the context term (think of context terms where some parameter is repeatedly called exactly $k$ times where $k$ is unbound). Fortunately, such traversals are redundant when it comes to normalizing the term: one can limit the set of traversals to the subset of \emph{branch traversals} where such behaviour is not allowed for the Opponent while still preserving the above equality.
+This is formalized in Proposition \ref{prop:branching_traversal_normalizing}.
 
-The above observation, made explicit in \cite{BlumPhd} for STLC, yields a method to normalize a simply-typed lambda term.
-In this section we show how the same method works for untyped lambda terms using the ULC traversals of Table \ref{tab:trav_rules}.
+In this section we aim to prove the same result for the untyped lambda calculus (ULC). We will then prove the Equation \ref{eqn:pviewcore_paths} in context of the untyped lambda calculus based on the ULC traversal definition of
+Table \ref{tab:trav_rules}.
 
+\subsubsection{The core P-view correspondence for ULC}
+
+Because ULC is not strongly-normalizing, maximal traverals are not finite. There is therefore no notion of `last occurrence' in such traversal, which means that the P-view itself is undefined. We will instead consider P-views of finitary approximations of traversals. In other words, for ULC, the equation above becomes:
+$$ \Union_{k>0} \pview{\travset^k(M)\filter\theroot} = \pathset(\betanf{M}) . $$
+for any untyped lambda term $M$
+where $\pathset (M)$, or just $\pathset$ if the term in question is clear from context, denotes the set of \emph{possibly infinite} maximal paths in the infinitary computation tree representation of the normal form of $M$.
+and  $\travset^k$ denotes the set of traversals of length $k$ at most.
+\end{remark}
+
+\todo{add reference to paper with formalization of the concept of infinitary computation tree.}
 
 \subsection{Context-affine traversals}
 
