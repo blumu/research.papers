@@ -564,7 +564,7 @@ Consequence of Proposition \ref{prop:branching_traversal_normalizing} and Proper
 \end{proof}
 
 \begin{FramedTable}
-\noindent {\bf Structural rules}
+\noindent {\bf PROGRAM - Structural rules}
 
 \infrule[$\rulefont{Root}_\normalizing$]
     {}
@@ -611,7 +611,7 @@ where
 where necessarily $\alpha \in \NodesLmd^\ghostlmd$ and $m \in\NodesVar^\ghostvar$.
 \\
 
-\emph{\bf Program - Copy-cat rules with on-the-fly eta-expansion}
+\emph{\bf PROGRAM - Copy-cat rules with on-the-fly eta-expansion}
 
 \infrule[$\rulefont{Var}_\normalizing$]
     {
@@ -630,7 +630,7 @@ where necessarily $\alpha \in \NodesLmd^\ghostlmd$ and $m \in\NodesVar^\ghostvar
 where necessarily $m \in \NodesVar^\ghostvar \union \Nodes_{@}$, $\alpha,\beta \in \NodesLmd^\ghostlmd$, and $\beta = \ghostlmd$ iff $i>|m|$.
 \\
 
-\emph{\bf Data - Input-variable rules}
+\emph{\bf DATA - Input-variable rules}
 \infrule[$\rulefont{IVar}_\normalizing$]
      {t \cdot n \in \travsetnorm
       \andalso n \in \NodesVar^\ghostvar \inter \NodeHjByRoot
@@ -884,8 +884,51 @@ Therefore the beta-normal from of $varity\ 2$ is:
 \end{align*}
 \end{example}
 
-\begin{example}[``Missing argument example'' by Neil Jones]
+\begin{example}[``Missing operand'' example by Neil Jones]
+This small example illustrates how on-the-fly eta-expansion helps resolve the ``missing argument'' problem faced when using the traversal rules of STLC. Take $M = (\lambda u . u\ (y_1\ u)) (\lambda v . v\ y_2)$.
 
+The computation tree is:
+\begin{tikzpicture}[baseline=(root.base),level distance=5ex,inner ysep=0.5mm,sibling distance=10mm]
+\node (root)
+{$\lambda$}
+child {node{$@$}
+        child{node{$\lambda u $}
+           child {node {$u$}
+              child {node {$\lambda$}
+                  child {node {$y_1$}
+                      child {node {$\lambda$}
+                          child {node {$u$}
+                          }
+                      }
+                  }
+              }
+           }
+        }
+        child{node{$\lambda v$}
+            child{node{$v$}
+                child{node{$\lambda$}
+                    child{ node {$y_2$}}
+                }
+            }
+        }
+    }
+;
+\end{tikzpicture}
+
+The only two maximal normalizing traversals are:
+\begin{itemize}
+
+\item $t_1 = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda u}\ (n3-n2){u}\ (n4-n1){\lambda v}\ (n5-n4){v}\ (n6-n3){\lambda }\ (n7-n0){y_1}\ (n8-n7){\lambda }\ (n9-n2){u}\ (n10-n1){\lambda v}\ (n11-n10){v}\ (n12-n9){{\ghostlmd^{1}}}\ (n13-n8){{\ghostvar^{1}}}\ (n14-n13){{\ghostlmd^{1}}}\ (n15-n12){{\ghostvar^{1}}}\ (n16-n11){\lambda }\ (n17-n0,35){y_2}\ }$
+\item $t_2 = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda u}\ (n3-n2){u}\ (n4-n1){\lambda v}\ (n5-n4){v}\ (n6-n3){\lambda }\ (n7-n0){y_1}\ (n8-n7){{\ghostlmd^{2}}}\ (n9-n6){{\ghostvar^{1}}}\ (n10-n5){\lambda }\ (n11-n0){y_2}\ }$
+\end{itemize}
+Using the STLC traversals, one can traverse $t_1$ all the way to variable $v$ at which point we get stuck due to the lack of operand applied to the last occurrence of $u$ (the one at the bottom of the left branch in the tree). Using ULC rule, that operands gets created on-the-fly through eta-expansion and is represented by ghost lambda node $\ghostlmd^1$.
+
+The two core P-views give the two paths in the beta-normal form of $M$:
+\begin{itemize}
+\item $\pview{t_1\filter\theroot} = \Pstr[0.7cm]{(n0){\lambda }\ (n1-n0){y_1}\ (n2-n1){\lambda }\ (n3-n2){{\ghostvar^{1}}}\ (n4-n3){{\ghostlmd^{1}}}\ (n5-n0){y2}\ }$
+\item $\pview{t_2\filter\theroot} = \Pstr[0.7cm]{(n0){\lambda }\ (n1-n0){y_1}\ (n2-n1){{\ghostlmd^{2}}}\ (n3-n0){y_2}\ }$
+\end{itemize}
+Thus: $\betanf{M} = \lambda x . y_1 (\lambda  z.z\ y_2) y_2$.
 \end{example}
 
 \section{Further directions}
