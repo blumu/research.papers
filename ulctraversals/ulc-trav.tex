@@ -57,8 +57,9 @@
 \renewcommand\ie{{\it i.e.\@\xspace}}
 
 \author{William Blum}
-\title{[Draft] Untyped Normalizing Traversals \\
- {\small Traversing and normalizing untyped lambda terms via on-the-fly eta-expansion.}}
+\title{Paranormal Traversals for the Lambda Calculus :-) [Draft] \\
+ {\small Traversing and normalizing untyped lambda terms via
+ head-linear reduction and on-the-fly eta-expansion.}}
 
 \begin{document}
 \maketitle
@@ -162,7 +163,7 @@ Given an untyped lambda term $M$ we define its \defname{computation tree} as the
 \begin{definition}[Computation tree of an untyped term]
 	Let $M$ be an untyped lambda term with variable names in $\mathcal{V}$.
 \begin{itemize}
-\item 
+\item
 	The \defname{computation tree} $\tau(M)$ is a labelled tree with labels taken from $ \{ @ \} \union \mathcal{V} \union \{ \lambda x_1 \ldots x_n \ | \ x_1 ,\ldots, x_n \in
 	\mathcal{V}, n\in\nat \}$, defined inductively on the syntax of $M$:
 	\begin{eqnarray*}
@@ -182,7 +183,7 @@ Note that any lambda term can indeed be written in one of the two forms above. I
 
 Observe that the definition is similar to that of STLC \cite{Ong2006, BlumPhd} with the notable difference that the term does not get eta-long expanded prior to constructing the computation tree.
 
-We define the \defname{enabling relation} $\enables$ between nodes of the computation tree as the relation associating each lambda node to all the variable nodes that it binds, the root of the tree to all the free variable nodes, and every variable and application node to each of their child node. We write $m \enables_k \alpha$ to indicate that a lambda node $\alpha$ is the $k$th child of a variable or application node $m$ for some $k\geq0$; and $\alpha \enables_k m$ to indicate that the node $m$ is labelled by the $k$th variable bound by $\alpha$ for $k\geq1$. 
+We define the \defname{enabling relation} $\enables$ between nodes of the computation tree as the relation associating each lambda node to all the variable nodes that it binds, the root of the tree to all the free variable nodes, and every variable and application node to each of their child node. We write $m \enables_k \alpha$ to indicate that a lambda node $\alpha$ is the $k$th child of a variable or application node $m$ for some $k\geq0$; and $\alpha \enables_k m$ to indicate that the node $m$ is labelled by the $k$th variable bound by $\alpha$ for $k\geq1$.
 
 We define \defname{hereditarily enabling} as the transitive closure of the enabling relation, and we say that node $m$ \defname{hereditarily enables} node $n$ if $m \enables^* n$ where $\enables^*$ denotes the transitive closure of $\enables$. We write $\NodeHjByRoot$ to denote the set of nodes hereditarily enabled by the root, that is the image of the tree root by the transitive closure of the enabling relation.
 
@@ -220,15 +221,15 @@ For any justified sequence $t$ we write $t^\omega$ to denote the last occurrence
 We use the standard game-semantic operations for justified sequences \cite{Abr02}. In particular we refer to the P-view of a justified sequence $s$, denoted $\pview{s}$, as the sub-sequence of $s$ obtained by reading the sequence backwards as follows: (i) if the node being read is a variable node then keep that node and follow its justification pointer (\ie, skip  all the occurrences ``underneath that pointer'') (ii) if the node is a lambda node then keep that node and move to the preceding node. The O-view, denoted $\oview{t}$, is defined as the dual of the P-view.
 
 \begin{definition}[Projection]
-Let $s$ be a justified sequence of nodes. 
+Let $s$ be a justified sequence of nodes.
 
 \begin{itemize}
 \item Let $n$ be a node occurring in $s$ we write $s\filter n$ to denote the subsequence of $s$ obtained by keeping only nodes that are hereditarily justified by $n$ in $s$. We call it the \defname{projection of $s$} with respect to $n$;
- 
+
  \item Let $A$ be a subset of nodes in $\Nodes$, we write $s \filter A$ to denote the subsequence of $s$ obtained by keeping only nodes that are in $A$;
- 
- \item We call $s\filter\NodeHjByRoot$ the \definame{core} of $s$;
- 
+
+ \item We call $s\filter\NodeHjByRoot$ the \defname{core} of $s$;
+
  \item We call $\pview{s\filter\NodeHjByRoot}$ the \defname{core P-view} of $s$.
 \end{itemize}
 \end{definition}
@@ -330,7 +331,7 @@ There are three important differences between the rules of Table \ref{tab:trav_r
 
 \subsubsection{Ghost nodes in ULC traversals}
 
-Ghost nodes appear in a traversal when the arity of a node is too low to continue a regular
+Ghost nodes appear in a traversal when the arity of a node is too low to continue a
 structural traversal of the tree:
 \begin{property}
 If $\Pstr[0.5cm]{(x){x} \cdots (y-x,30:i){y}} \in \travset$ then
@@ -419,7 +420,6 @@ $$ \Union_{k>0} \pview{\travset^k(M)\filter\theroot} = \pathset(\betanf{M}) . $$
 for any untyped lambda term $M$
 where $\pathset (M)$, or just $\pathset$ if the term is clear from context, denotes the set of \emph{possibly infinite} maximal paths in the infinitary computation tree representation of the normal form of $M$.
 and  $\travset^k(M)$ denotes the set of traversals of length $k$ at most.
-\end{remark}
 
 \todo{add reference to paper with formalization of the concept of infinitary computation tree.}
 
@@ -1033,6 +1033,7 @@ In the untyped lambda calculus, though, there is no notion of order, therefore t
 
 In \cite{JonesBerezunLLL}, Daniil Berezung and Neil Jones define a different version of traversals with notable differences: no ghost lambda nodes, two types of justification pointers: binding pointers and control pointers. Although very similar, the relationship between their notion of traversals and the one defined in this paper is still not formally established. Danos and Reigner's Linear Head reduction paper \cite{danos-head} appears to be the best avenue to estabilish the connection.
 
+
 \subsection{Game semantics connection}
 
 In the lines of what I did in \cite{BlumPhd} on formalizing the isomorphim between the traversal theory and Game Semantics for the simply-typed lambda calculus, PCF and Idealized Algol, a natural question to ask is whether there is a similar connection between the ULC traversals defined in this paper on game models of the untyped lambda calculus.
@@ -1040,6 +1041,74 @@ In the lines of what I did in \cite{BlumPhd} on formalizing the isomorphim betwe
 TODO: give intuition on why this notion of traversals probably coincides with the game model of the untyped lambda calculus by Andrew Ker.
 
 \subsection{Head linear reduction}
+
+Traversals have emerged as a constructive method to represetn
+Relationship between Game Semantics and
+
+In 2004, Danos and Regner \cite{danos-head} establish the connection between Game Semantics and the notion of \emph{head-linear reduction}.
+
+Head linear reduction is  a non-standard reduction strategy for the lambda calculus and shed some light studies the connection with Game Semantics.
+
+\subsection{Notes for Neil and Daniil}
+
+Here are some thoughts on comparing (i) Daniil-Jones (DJ) traversals, (ii) Danos-Reigner's Pointer Abstract Machine (PAM) machine state runs, and (iii) Blum's ``paranormal'' and game-semantic-inspired traversals for ULC. Those are based on the conversations Neil and I had during his visit to MSR.
+
+
+\subsubsection{Normalization}
+
+\begin{itemize}
+  \item Danos-Reigner: PAM implements head-linear reduction. This reduction does not itself normalize the term, it only yields the head-normal form of the term! The paper does not clearly indicate any method to normalize the term based solely on head-linear reduction.
+      In particular in the PAM transition of Section 5.2, step 2, if the hoc variable is free then the machine stops: no transition applies.
+  \item Berezun-Jones: Although not explicitly explained in the paper. Daniil and Neil have a ``read-out procedure''' to reconstruct the term from the traversal. The procedure is based on rewriting rules applied to the traversals.
+  \item Blum: Normalization is performed by exploring all possible paths in the beta-normal form of the term. The algorithm generates one maximal traversal per path in the tree representation of the term. The term can then be uniquely recreated (up to variable naming) from those paths.
+\end{itemize}
+
+\subsubsection{Traversal/Run structure}
+\begin{itemize}
+\item Danos-Reigner: State run. Each state has three components: one pointer, a reference to a variable node, a reference to a subterm.
+\item Berezun-Jones: Traversals of `tokens' with two pointers (control and binding pointers). A tokens is a reference to a node in the AST of the lambda term.
+\item Blum: Traversals are sequences of node with one back pointer. Nodes can either be structural nodes from the `compact' AST of the term (where consecutive lambda nodes and application nodes are bundled together) or imaginary `ghost' nodes. Each node occurrence except the first one has exactly one justification pointer.
+\end{itemize}
+
+\subsubsection{Binding pointers -- PAM pointers -- P-view}
+
+Neil-Daniil's binding pointers represent the ``head $\lambda$-list'' notion in Danos-Reigner paper (page 3): it gives the list of lambda nodes encountered from the variable all the way to the root.
+
+\begin{itemize}
+\item Danos-Reigner: The De Bruijn index of a variable is used to find the binder in the head $\lambda$-list. If index is $k$ (by Lemma 11) the binder can be retrieved by following $k$ pointers in the PAM states. The notion of ``subterm chain'' of a variable correspond to the notion of P-view in Game Semantics.
+
+\item  Berezun-Jones: The De Bruijn index is used to determine how many binding (green) pointers to follow to reach the occurrence of the binder in the traversal.
+
+\item Blum: Traversals are game-semantics inspired (ala Ong) and in particular verify the alternation property. To that end, consecutive binders are bulked together in a single binder node. Given a variable occurrence, its `bulk' binder is located by reading the P-view backward by $k'$ iterations where $k'$ is statically determined as the distance between the variable occurrence and its binder in the computation tree. The label associated with the link determines which exact variable in the `bulk lambda' binds the variable.
+\end{itemize}
+
+\subsubsection{Control pointers -- PAM -- }
+
+\subsubsection{Retrieving application operands: Control pointers -- PAM's redex argument }
+\begin{itemize}
+  \item Danos-Reigner: the operands of a `prime redex' is statically defined from the term's expression (the `argument of a hoc variable', in Section 5.1)
+
+  \item Berezun-Jones: control pointers are used to associate operators to the corresponding operand in an application: for instance if $@_1 (\lambda x .M) N$ is a redex of the tree then any occurrence of $\lambda x$ will point to some previous occurrence of $@_1$ in the traversal. The token representing the operand $N$ can then be statically determined from the AST of the tree.
+      Control pointers always point to $@$ tokens.
+
+  \item Blum: There are two cases:
+     \begin{itemize}
+     \item Structural operands: Same as Ong's traversals: pretty much the same as Berezun-Jones with the only technical difference that consecutive lambda and applications nodes are `bulked' together. In particular, `bulk lambda' nodes point to their parent node (either a variable or an application node $@$). If the variable $x$ of the redex is the $i$th bound variable in the bulk lambda, then the operand is obtained by fetching the $i$th child of the bulkd lambda's parent node.
+    \item Eta-expanded operands: When an operand is missing, a ghost lambda node is first introduced with rule \rulenamet{Var} (corresponding to the variable obtained after eta-expanding the operator). Then through repeated application of rule
+        \rulenamet{Lam^\ghostlmd} and \rulenamet{Var}, either a structural node gets eventually materialized, which then represents the operand of the application; or the traversal reaches a ghost variable hereditarily justified by the root. In the latter case, a new variable gets created through eta-expansion to represent the missing operand.
+
+        \emph{Note}: the ghost materialization loop implemented by rule \rulenamet{Lam^\ghostlmd} and \rulenamet{Var} proceeds by calculating the quantity ``$|\alpha|+i-|m|$'' at each iteration which is the exact same quantity ($r-a+l$) used in step 2. (b) of the PAM transition \cite{danos-head}, the ``price to pay for having no stacks or environments''.
+    \end{itemize}
+
+\end{itemize}
+
+
+\subsubsection{Flag -- ?? -- ??}
+\begin{itemize}
+  \item Berezun-Jones: Semantics 2, 3, 4 and 5 from section 3 involve a mysterious `flag' boolean parameter that indicates the context of the application (either weak or strong evaluation).
+  \item Danos-Reigner: ??? Must be somehow replaced by the iterative loop in step 2(b)
+  \item Blum: ??? Must be somehow encoded in the iterative ghost materialization algorithm implemented by the \rulenamet{Var} and \rulenamet{Lam^\ghostlmd} rules.
+\end{itemize}
 
 
 
