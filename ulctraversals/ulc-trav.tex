@@ -49,7 +49,7 @@
 \newcommand{\rulefont}[1]{\mathbf{\sf #1}}
 \newcommand{\enables}{\vdash}
 
-\newcommand{\NodeHjByRoot}{\Nodes^{\theroot\enables}}
+\newcommand{\NodeHjByRoot}{\Nodes^{\theroot\enables^*}}
 
 \newcommand\pathset{{\mathcal{P}aths}}
 \newcommand\arth{\textsf{arth}}
@@ -147,16 +147,48 @@ The question addressed in the present note is: can this method be extended to th
 
 \section{Definitions}
 
+\subsection{Untyped lambda calculus}
+
+We consider the set of terms $\Lambda$ of the untyped lambda calculus constructed from the following grammar:
+$$\Lambda := x\ |\ (\Lambda\ \Lambda)\ |\ \lambda x. \Lambda $$
+where $x$ ranges over a countable set of variable names.
+
+For conciseness when writing lambda terms, we will abbreviate ``consecutive'' lambda abstraction $\lambda x_1 \ldots \lambda x_n . U$ for some $n\geq 0$ and term $U$ as just
+$\lambda x_1 \ldots x_n . U$. If $\overline{x}$ denote the list of variables $x_1 \ldots x_n$ we will just write $\lambda \overline{x} . U$.
+
 \subsection{Computation tree, enabling relation, justified sequences}
 
-For an untyped lambda term $M$ we define its \defname{computation tree} $\tau(M)$ the same way as in STLC except that the term does not get transformed to eta-long form before constructing the tree. Consecutive lambda abstractions are still merged into a single node in the tree so as to maintain alternation between lambda nodes (at odd level, counting from 1 onwards) and variable nodes (at even level).
-Let $\Nodes$ be the set of nodes of the computation tree. We write $\NodesVar$ for the set of variable nodes, $\NodesLmd$ for lambda nodes, and $\Nodes_{@}$ for  application nodes.
+Given an untyped lambda term $M$ we define its \defname{computation tree} as the abstract syntax tree (AST) representation of the lambda term where consecutive lambda abstractions are merged into a single node labelled by the list of bound variables and with a single child, and similarly consecutive applications are represented by a single node labelled $@$ with multiple children: one for the operator and one for each application operand. Formally:
+\begin{definition}[Computation tree of an untyped term]
+	Let $M$ be an untyped lambda term with variable names in $\mathcal{V}$.
+\begin{itemize}
+\item 
+	The \defname{computation tree} $\tau(M)$ is a labelled tree with labels taken from $ \{ @ \} \union \mathcal{V} \union \{ \lambda x_1 \ldots x_n \ | \ x_1 ,\ldots, x_n \in
+	\mathcal{V}, n\in\nat \}$, defined inductively on the syntax of $M$:
+	\begin{eqnarray*}
+		\tau(\lambda \overline{x} . z s_1 \ldots s_m) &=& \lambda \overline{x}\; \langle\; \underline z\; \langle\tau(s_1),\ldots,\tau(s_m)\rangle\rangle\\
+		&& \hbox {where $m\geq 0$, $z \in \mathcal{V}$}, \\
+ \tau(\lambda \overline{x} . (\lambda y.t) s_1 \ldots s_m) &=& \lambda \overline{x}\; \langle\; @ \; \langle \tau(\lambda y.t),\tau(s_1),\ldots,\tau(s_m) \rangle \rangle \enspace\\
+&&  \hbox{where $m\geq 1$, $y\in \mathcal{V}$}.
+	\end{eqnarray*}
+where the expression `$l\langle t_1, \ldots, t_m \rangle$' for $m \geq 0$ denotes a labelled tree with root labelled $l$ and $m$ ordered children trees $t_1$, \ldots, $t_m$. The underlined label $z$ represents a node label for $m>0$, and a leaf label if $m=0$.
 
-We define the \defname{enabling relation} $\enables$ between nodes of the computation tree as the relation associating each lambda node to all the variable nodes that it binds, the root of the tree to all the free variable nodes, and every variable and application node to each of their child node. We write $m \enables_k \alpha$ to indicate that a lambda node $\alpha$ is the $k$th child of a variable or application node $m$ for some $k\geq0$; and $\alpha \enables_k m$ to indicate that the node $m$ is labelled by the $k$th variable bound by $\alpha$ for $k\geq1$. We write $\NodeHjByRoot$ to denotes the image of the root of the tree by the transitive closure of the enabling relation and we call it the set of nodes \defname{hereditarily enabled by the root}.
+\item We write $\Nodes$ to denote the set of nodes of the computation tree. We write $\NodesVar$ for the set of variable nodes, $\NodesLmd$ for lambda nodes, and $\Nodes_{@}$ for  application nodes.
+We write $\theroot$ to denote the root of the tree.
+\end{itemize}
+\end{definition}
 
-We call a \defname{justified sequence}, a sequences of nodes of $\Nodes$ where each node occurrence (except the very first one in the sequence) has an associated ``justification pointers'' or ``link'' pointing to a another node occurring before it in the sequence and respecting the enabling relation $\enables$. The target occurence of the link is called the ``justifier''.
+Note that any lambda term can indeed be written in one of the two forms above. In particular, applicative terms are handled by the case $n=0$ of the form $\lambda . N$ for some term $N$ where `$\lambda.$' is referred to as a ``dummy lambda''. This compact representation turns out to be useful to maintain alternation between lambda nodes (at odd level, counting from 1 onwards) and variable nodes (at even level).
 
-We defined the \defname{arity} of a node as follows: the arity of a lambda node $\lambda x_1 \cdots x_k$ for $k\geq 0$ is denoted by $|\lambda x_1 \cdots x_k|$ and is defined as $k$; the arity of a variable node $x$, denoted $|x|$ is the number of children of $x$ in the computation tree; the arity of a $@$ node is the number of its children nodes minus 1 (\ie\@, the number of operands in the application).
+Observe that the definition is similar to that of STLC \cite{Ong2006, BlumPhd} with the notable difference that the term does not get eta-long expanded prior to constructing the computation tree.
+
+We define the \defname{enabling relation} $\enables$ between nodes of the computation tree as the relation associating each lambda node to all the variable nodes that it binds, the root of the tree to all the free variable nodes, and every variable and application node to each of their child node. We write $m \enables_k \alpha$ to indicate that a lambda node $\alpha$ is the $k$th child of a variable or application node $m$ for some $k\geq0$; and $\alpha \enables_k m$ to indicate that the node $m$ is labelled by the $k$th variable bound by $\alpha$ for $k\geq1$. 
+
+We define \defname{hereditarily enabling} as the transitive closure of the enabling relation, and we say that node $m$ \defname{hereditarily enables} node $n$ if $m \enables^* n$ where $\enables^*$ denotes the transitive closure of $\enables$. We write $\NodeHjByRoot$ to denote the set of nodes hereditarily enabled by the root, that is the image of the tree root by the transitive closure of the enabling relation.
+
+A consequence of the definition of the enabling relation is that every node of the tree is either hereditarily justified by the root or by some application node $@$.  Variable nodes that are hereditarily enabled by the root are called \defname{external variable nodes}, and variables hereditarily justified by an application node are called \defname{internal variable nodes}.
+
+We defined the \defname{arity} of a node as follows: the arity of a lambda node $\lambda x_1 \cdots x_k$ for $k\geq 0$ is denoted by $|\lambda x_1 \cdots x_k|$ and is defined as $k$; the arity of a variable node $x$, denoted $|x|$ is the number of children of $x$ in the computation tree; the arity of a $@$ node is the number of its children nodes minus 1 (\ie, the number of operands in the application).
 
 \subsubsection{ULC ghost nodes}
 For ULC, we extend the definition of nodes from STLC by introducing two infinite classes of ``imaginary'' nodes called \defname{ghost nodes}:
@@ -169,30 +201,51 @@ We extend the definition of the enabling relation $\enables$ to ghost nodes by i
 
 Observe that every ghost variable and ghost lambda node is uniquely defined by its enabler node (possibly itself a ghost node) and the associated label $k\geq 1$.
 
-Ghost nodes thus defined will be used as placeholders in \defname{justified sequences} to respectively represent eta-expanded lambda nodes and variable nodes.
+Ghost nodes thus defined will be used as placeholders to respectively represent eta-expanded lambda nodes and variable nodes.
 
 By convention ghost variables and lambda nodes are assigned arity $0$.
 
 \subsubsection{Justified sequence of nodes}
-A \defname{justified sequences} is a sequence of nodes from the computation tree where every node in the sequence, except the first one, has a link (the justification pointer) pointing to some previous node in the sequence (its justifier). A justified sequence verifies the \defname{alternation condition} if the first node is a lambda node and subsequent nodes occurrences alternate between (i) a variable or application node (ii) a lambda node. From now on we will assume that all justified sequences verify the alternation condition.
+
+A \defname{justified sequence} is a sequence of nodes from the computation tree where every node in the sequence, except the first one, has an associated link (the ``justification pointer'' or ``link'') pointing to some previous node occurrence in the sequence (called its ``justifier'') such as the two nodes are related by the enabling relation $\enables$ (the justifier node must enables the node pointing to it).
+
+A justified sequence verifies the \defname{alternation condition} if the first node is a lambda node and subsequent nodes occurrences alternate between (i) a variable or application node (ii) a lambda node. From now on we will only consider justified sequences verifying the alternation condition.
+
+It might be helpful here to highlight the fact that the enabling relation is \emph{statically} induced by the structure of the tree and defined on nodes of the tree, whereas the justification relation is defined on \emph{occurrences} of nodes and is specific to a given justified sequence.
+
+We say that an occurrence of a node in a justified sequence is \defname{hereditarily justified by some other occurrence} if recursively following justification pointers starting from it leads to that other occurrence in the sequence. Because justification pointers must honor the enabling relation $\enables$ induced by the term structure, if a node occurrence $n$ is hereditarily justified by some occurrence of a node $m\in\Nodes$ then $n$ is necessarily hereditarily enabled by $m$. Further if $m$ occurs only once in the justified sequence then the occurrences hereditarily justified by $m$ are precisely the occurrences of nodes that are hereditarily \emph{enabled} by $m$.
 
 For any justified sequence $t$ we write $t^\omega$ to denote the last occurrence in $t$, and $\jp(t)$ to denote the prefix of $t$ ending at the justifier of the last node of $t$. We say that $t$ is an \defname{extension} of justified sequence $u$ if $u$ is a strict subsequence of $t$ sharing the same justification pointers.
 
-We use the standard game-semantic operations for justified sequences \cite{Abr02}. In particular we refer to the P-view of a justified sequence $s$, denoted $\pview{s}$, as the sub-sequence of $s$ obtained by reading the sequence backwards as follows: (i) if the node being read is a variable node then keep that node and follow its justification pointer (\ie skip  all the occurrences ``underneath that pointer'') (ii) if the node is a lambda node then keep that node and move to the preceding node. The O-view, denoted $\oview{t}$, is defined as the dual of the P-view.
+We use the standard game-semantic operations for justified sequences \cite{Abr02}. In particular we refer to the P-view of a justified sequence $s$, denoted $\pview{s}$, as the sub-sequence of $s$ obtained by reading the sequence backwards as follows: (i) if the node being read is a variable node then keep that node and follow its justification pointer (\ie, skip  all the occurrences ``underneath that pointer'') (ii) if the node is a lambda node then keep that node and move to the preceding node. The O-view, denoted $\oview{t}$, is defined as the dual of the P-view.
 
-We say that an occurrence of a node in a justified sequence is \defname{hereditarily justified by the root (occurrence)} if recursively following justification pointers starting from that occurrences leads to some occurrence of the root node in the sequence.
+\begin{definition}[Projection]
+Let $s$ be a justified sequence of nodes. 
+
+\begin{itemize}
+\item Let $n$ be a node occurring in $s$ we write $s\filter n$ to denote the subsequence of $s$ obtained by keeping only nodes that are hereditarily justified by $n$ in $s$. We call it the \defname{projection of $s$} with respect to $n$;
+ 
+ \item Let $A$ be a subset of nodes in $\Nodes$, we write $s \filter A$ to denote the subsequence of $s$ obtained by keeping only nodes that are in $A$;
+ 
+ \item We call $s\filter\NodeHjByRoot$ the \definame{core} of $s$;
+ 
+ \item We call $\pview{s\filter\NodeHjByRoot}$ the \defname{core P-view} of $s$.
+\end{itemize}
+\end{definition}
+Observe that if the root of the tree occurs only once in $s$ then
+$s \filter \theroot = s\filter\NodeHjByRoot$, where $\theroot$ denotes the occurrence of the root in $s$.
+
+
 
 \subsection{Traversals}
 
 \begin{definition}[Traversals]
-We define the set of \defname{traversals} of an untyped lambda term $M$, denoted $\travset(M)$, or just abbreviated as $\travset$ when the term is clear from context, as the set of justified sequences of nodes in the computation tree of $M$ (\ie., $\Nodes + \ghostlmd + \ghostvar$) with associated pointers defined by induction over the rules of Table \ref{tab:trav_rules}.
+We define the set of \defname{traversals} of an untyped lambda term $M$, denoted $\travset(M)$, or just abbreviated as $\travset$ when the term is clear from context, as the set of justified sequences of nodes in the computation tree of $M$ (\ie, $\Nodes + \ghostlmd + \ghostvar$) with associated pointers defined by induction over the rules of Table \ref{tab:trav_rules}.
 
 A traversal that does not have any extension is a \defname{maximal traversal}.
 \end{definition}
 
-An immediate property of traversal is that traversal occurrences that are hereditarily justified by the root correspond to nodes of the computation tree that are hereditarily enabled by the root: \ie they are all occurrences of nodes in $\NodeHjByRoot$.
-
-Note that those rules closely match those of \cite{BlumPhd} for STLC. In the present setting of ULC, however, there are no interpreted constants therefore we don't need the rules \rulenamet{Value} and \rulenamet{InputValue} from the original presentation.
+Note that those rules closely match those of \cite{BlumPhd} for STLC and PCF. In the ULC setting, however, there is no interpreted constants therefore rules \rulenamet{Value} and \rulenamet{InputValue} from the original presentation are not needed.
 
 \begin{FramedTable}
 \noindent {\bf PROGRAM -- Structural rules}
@@ -257,7 +310,7 @@ The traversal rules are well-defined:
 \begin{itemize}
 \item Rule \rulenamet{Lam}: An easy induction shows that the P-view of a traversal ending with a structural node is precisely the path from the root of the tree to last node of the traversal (with associated justification pointers).
 Therefore, if the last node is a variable node, its enabler necessarily occurs exactly once in the P-view.
-\item Rule \rulenamet{Var}: Concrete case: $m$ is necessarily itself a structural node since $|m|\geq i>0$, and its $i$th child exists since $m$ as arity greater than $i$.
+\item Rule \rulenamet{Var}: In the concrete sub-case, $m$ is necessarily itself a structural node since $|m|\geq i>0$, and its $i$th child exists in $\Nodes$ since $m$ as arity greater than $i$.
 \end{itemize}
 \end{remark}
 
@@ -275,6 +328,7 @@ There are three important differences between the rules of Table \ref{tab:trav_r
 
 \end{enumerate}
 
+\subsubsection{Ghost nodes in ULC traversals}
 
 Ghost nodes appear in a traversal when the arity of a node is too low to continue a regular
 structural traversal of the tree:
@@ -312,8 +366,8 @@ where
 
 
 
-\section{Correspondence}
-Following the STLC framework of my thesis, the rule \rulenamet{IVar} is defined so as to obtain the correspondence with game semantics: the nodes visited by this rule correspond to moves played by the Opponent in the game denotation. (We recall that in Game Semantics, the Opponent represents the environment of the program, or equivalently, the data passed to the program.
+\section{Game semantic correspondence}
+Following the simply-typed framework of \cite{BlumPhd}, the rule \rulenamet{IVar} is defined so as to obtain the correspondence with game semantics: the nodes visited by this rule correspond to moves played by the Opponent in the game denotation. (We recall that in Game Semantics, the Opponent represents the environment of the program, or in other words, it models the larger program context in which the program is being executed. In particular, it determines the input data that is provided to the program.)
 We aim to prove that this presentation yields an isomorphism between the set of traversals and the revealed game semantics of the ULC term, and subsequently that it yields an isomorphism between the standard game semantics and the set of traversal cores (i.e., projected wrt. the root):
 
 The traversal-game semantics isomoprhism of \cite{BlumPhd} for STLC also yields for ULC using traversal definition from Table \ref{tab:trav_rules} and the game model of ULC from Ker's thesis.
@@ -456,7 +510,7 @@ Intuitively, after a sufficiently large number of eta-expansions, we are guarant
 
 \begin{definition}[Weave]
 We call \defname{weave} of a traversal $t$, any sub-sequence of consecutive nodes from $t$,
-with even length, starting with a lambda nodes and finishing with a variable node both hereditarily justified by the root, and such that all the occurrences in-between are hereditarily justified by an application node (\ie not by the root).
+with even length, starting with a lambda nodes and finishing with a variable node both hereditarily justified by the root, and such that all the occurrences in-between are hereditarily justified by an application node (\ie, not by the root).
 
 From the parity property of traversals, a weave consists of alternations of lambda nodes and variable/application nodes. It is convenient to represent a weave as follows for some $k\geq 1$ where for $j$ ranging from $k$ down to $1$, $\alpha_j$ is a lambda node in $\NodesLmd^\ghostlmd$ and $n_j$ is a variable/application node in $\NodesVar^\ghostvar$:
 
@@ -628,7 +682,7 @@ where
 \begin{compactitem}[-]
 \item $\child(\alpha)$ denotes the unique child tree node of lambda-node $\alpha$;
 \item $t_1, t_2$ denotes subsequences of traversal $t$;
-\item ``visible'' means that the node occurs in the P-view $\pview{t}$ of the traversal (\ie the sub-sequence read from $t$ backwards by following the justification pointer every other  node).
+\item ``visible'' means that the node occurs in the P-view $\pview{t}$ of the traversal (\ie, the sub-sequence read from $t$ backwards by following the justification pointer every other  node).
 \end{compactitem}
 
 \infrule[$\rulefont{Lam^\ghostlmd_\normalizing}$]
