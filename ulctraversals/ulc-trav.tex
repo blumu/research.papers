@@ -70,14 +70,13 @@ The concept of traversals was first introduced in \cite{Ong2006} to study higher
 
 The adaptation to the untyped setting adds several new ingredients:
 \begin{compactitem}
-\item  The (Lam) and (Var) rules are augmented to implement eta-expansion when there is an insufficient number of variable names in the lambda node of a redex to be able to traverse it.
-\item The eta-expansion is performed `on-the-fly`, as needed, at every point where the traditional STLC traversal would normally get stuck.
-\item The concept of ``ghost'' nodes is introduced to model imaginary nodes in the computation tree that progressively appear as eta-expansions are performed on the subterms.
+\item  The (Lam) and (Var) rules are augmented to implement eta-expansion. \item The eta-expansion is performed `on-the-fly`, as needed, at each point where the traditional STLC traversal would normally get stuck: whenever there is insufficiently many operands in an application to continue traversing the term.
+\item The concept of ``ghost'' nodes is introduced. Ghost nodes are imaginary nodes in the computation tree that progressively appear as eta-expansions are performed on the subterms.
 \item The computation tree itself does not get modified during eta-expansion. Ghost nodes are only added to the traversal and are only ``visible'' in the context where they get introduced.
 \item The (IVar) rule, introduced in my thesis to model free variables, is constrained by a quantity called the `arity threshold` which can be calculated in linear time from the traversal itself. This limits the non-deterministic branching factor of this rule, which is required to guarantee that the normalization procedure terminates when the beta-normal form exists.
 \end{compactitem}
 
-Another notable change, compared to traversals used in their original setting of recursion schems \cite{Ong2006} or the forsimply-typed lambda calculus case \cite{BlumPhd}, is the absence of $\eta$-long transform of the term. This has the benefit to simplify the presentation: the computation tree is just a tree representation of the original, unmodified, lambda term.
+Another notable change, compared to the original setting of traversals for recursion scheme \cite{Ong2006} or in the simply-typed lambda calculus setting \cite{BlumPhd}, is the absence of $\eta$-long transform of the term. This has the benefit to simplify the presentation: the computation tree is just a tree representation of the original, unmodified, lambda term.
 
 I've implemented the normalization algorithm in the HOG tool. I provide some examples of normalized terms in the last section.
 
@@ -140,7 +139,7 @@ For the sake of computing the beta-normal form of a term, however, it's only nec
 \end{remark}
 
 \textbf{Implementation}
-This reduction method was implemented in the HOG tool mentioned in my thesis which lets you ``play the traversal game'' and calculate various types of projections including the one giving the traversal cores.
+This normalization algorithm was implemented in the HOG tool mentioned in my thesis which lets you ``play the traversal game'' and calculate various types of projections including the one giving the traversal cores.
 
 \todo{Cite Neil's paper and discussion.}
 The question addressed in the present note is: can this method be extended to the untyped lambda calculus (ULC) following the same game-semantic argument but based on Ker's game model of the untyped lambda calculus instead of the game model of STLC?
@@ -1051,8 +1050,11 @@ Head linear reduction is  a non-standard reduction strategy for the lambda calcu
 
 \subsection{Notes for Neil and Daniil}
 
-Here are some thoughts on comparing (i) Daniil-Jones (DJ) traversals, (ii) Danos-Reigner's Pointer Abstract Machine (PAM) machine state runs, and (iii) Blum's ``paranormal'' and game-semantic-inspired traversals for ULC. Those are based on the conversations Neil and I had during his visit to MSR.
-
+Here are some thoughts on comparing the following three approaches
+based on the conversations Neil and I had during his visit to MSR:
+(i) Berezun-Jones (DJ) traversals,
+(ii) Danos-Reigner's Pointer Abstract Machine (PAM) state runs,
+(iii) Blum's ``paranormal'' and game-semantic-inspired traversals for ULC introduced in this note.
 
 \subsubsection{Normalization}
 
@@ -1109,6 +1111,36 @@ Neil-Daniil's binding pointers represent the ``head $\lambda$-list'' notion in D
   \item Danos-Reigner: ??? Must be somehow replaced by the iterative loop in step 2(b)
   \item Blum: ??? Must be somehow encoded in the iterative ghost materialization algorithm implemented by the \rulenamet{Var} and \rulenamet{Lam^\ghostlmd} rules.
 \end{itemize}
+
+
+\subsubsection{Converting other traversals to the paranormal traversals}
+
+\paragraph{From Berezun-Jones}
+
+\begin{enumerate}
+\item Remove single application token $@$ that are immediately followed by a variable.
+\item Merge consecutive application nodes in the traversal, preserve all control pointers pointing to them. Assign link label $0$ if the source of the pointer is in operator position of the $@$, and $i >0$ if is in operand position of the $i$th merged $@$.
+
+Remove all binding and control pointers starting from the $@$ tokens thesmelves.
+
+\item Merge consecutive lambda tokens $\lambda x_1$, \ldots, $\lambda x_n$, $n>1$ in the traversals into single lambda nodes $\lambda x_1 \ldots x_n$.
+ Binding pointers:
+ \begin{itemize}
+ \item For any binding pointer from some variable token $x$ in the traversal, pointing to one of the merged lambda nodes, replace the link as follows: if $x$ has deBrujin index $i$ then follow $i$ binding pointer in the original sequence. This will lead to some lambda token $\lambda x$. Make the link points instead to the merged lambda node containing that $\lambda x$. Assigned link label $i$ where $i$ is the index of the bound variable in the merged list of $x_1 \ldots x_n$.
+ \item Remove all the binding pointers from either lambda or $@$ tokens that are pointing to any of the merged lambda nodes.
+ \item Remove all binding pointers from the merged lambda nodes to other nodes.
+ \end{itemize}
+ Control pointers: preserve only the control pointer associated with the first lambda in the sequence of lambda tokens.
+
+\item Add dummy lambdas $\lambda$ and ghost nodes: for each pair $(x,y)$ of consecutive variable tokens $x$ and $y$, processing the traversal from left to right, reconstruct the ``missing'' dummy and ghost nodes between $x$ and $y$ by applying rules \rulenamet{Lam^\normalizing} and \rulenamet{Var^\normalizing}.
+{\bf TO PROVE}: by applying those rules repeatedly starting from $x$, we necessarily get back to variable nodes $y$ with the same justification pointer.
+\end{enumerate}
+
+\paragraph{From Danos-Regner}
+
+Take a substitution sequence of a PAM: $((z_0,A_1), (z_1,A_2) \ldots$.
+\todo{type notes}
+%The traversals can be reconstructed as follows:
 
 
 
