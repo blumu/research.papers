@@ -59,17 +59,19 @@
 \renewcommand\ie{{\it i.e.\@\xspace}}
 
 \author{William Blum}
-\title{Paranormal Traversals for the Lambda Calculus :-) [Draft] \\
- {\small Traversing and normalizing untyped lambda terms \\
-  via head-linear reduction and on-the-fly eta-expansion.}}
+\title{Paranormal Traversals of the $\lambda$-calculus \\[12pt]
+ {\small [Draft] Normalizing untyped lambda terms through head-linear traverse and on-the-fly eta-expansion.}}
 
 \begin{document}
 \maketitle
 \begin{abstract}
-We introduce a method to normalize untyped lambda terms (when the normal-form exist) by combining existing term-tree traversing techniques, inspired from Game Semantics, with judicious use of the eta-conversion rule of the lambda calculus.
+We introduce a method to normalize untyped lambda terms (when the normal-form exists) by combining the theory of traversals, a term-tree traversing techniques inspired from Game Semantics \cite{Ong2006,BlumPhd}, with judicious use of the eta-conversion rule of the lambda calculus.
 
-Surprisingly, compared to existing term traversing technique for the simply-typed lambda calculus (STLC) \cite{BlumPhd}, very little change is required: (i) eta-long transformation is not required anymore: the original term is preserved intact (ii) we relax some of the structural restrictions from the original traversal rules of STLC; (iii) this relaxation induces the notion of imaginary nodes called ``ghost nodes''. They represent nodes that would exist in the abstract syntax tree of the term if some of its subterms were to be eta-expanded.
-With these two modifications, a traversal that would normally get `stuck' using the original definition of traversal, can now proceed further. The normalization procedure then naturally follows, like in STLC, from the Path-Correspondence invariant of traversals.
+In the simply-typed lambda calculus (STLC), the theory of traversal is only defined for terms in eta-long form \cite{BlumPhd}. This transformation guarantees that application operands always exist when traversing the term. In the (finitary) untyped lambda calculus (ULC), however, eta-long expansion is undefined. Attempting to bindly apply the traversing rules of the STLC on an untyped lambda term therefore leads to situations where the traversal gets `stuck' due to an insufficiant number of operands in an application.
+
+We show how very little modifications to the traversal rules of STLC is required to handle the untyped case: (i) eta-long transformation is not needed: the original term is preserved intact (ii) we relax some structural restrictions of the STLC rules; (iii) theses relaxations induce imaginary nodes, the ``ghosts'', representing nodes that would exist in the abstract syntax tree of the term if some of its subterms were to be eta-expanded `on-the-fly'. The above relaxation allows the traversal to proceed where the STLC rules would get blocked.
+
+We then show how, by bounding the non-determinism of the free variable rule, one can effectively compute a subset of traversals that characterizes the set of paths in the beta-normal form of the term. This yields a normalization algorithm for ULC.
 \end{abstract}
 
 \section{Background}
