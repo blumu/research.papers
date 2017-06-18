@@ -10,7 +10,6 @@
 \usepackage{gamesem}
 \usepackage{pst-tree}
 \usepackage{enumitem}
-%\usepackage{xcolor}
 \usepackage{xspace}
 \usepackage{pstring}
 \usepackage{todonotes}
@@ -57,10 +56,11 @@
 \newcommand\arth{\textsf{arth}}
 
 \renewcommand\ie{{\it i.e.\@\xspace}}
+\renewcommand\ie{{\it e.g.\@\xspace}}
 
 \author{William Blum}
-\title{Paranormal Traversals of the $\lambda$-calculus \\[12pt]
- {\small [Draft] Normalizing untyped lambda terms through head-linear traverse and on-the-fly eta-expansion.}}
+\title{Imaginary Traversals of the Lambda Calculus \\[12pt]
+ {\small [Draft] Normalizing untyped lambda-terms through traversals and on-the-fly eta-expansion.}}
 
 \begin{document}
 \maketitle
@@ -77,17 +77,11 @@ We then show how, by bounding the non-determinism of the free variable rule, one
 \section{Background}
 
 Traversals were originally introduced in the context of higher-order recursion schemes \cite{Ong2006} used as generator of order-$0$ structures such as trees.
-The notion was then extended to the more general setting of simply-typed languages and in particular the simply-typed lambda calculus \cite{BlumPhd} where a new rule \rulenamet{IVar} was added to account for the presence of free variables. The relationship with Game Semantics is well understood in the typed setting: the set of traversals is in bijection with (the plays of) the interaction game denotation of a term, further the \emph{core projection} operation yields a bijection between the standard game denotation and its standard innocent game denotation (Theorem \ref{thm:correspondence}). This correspondence yields a method to evaluate beta-redexes of a simply-typed lambda term without performing the traditional $\beta$-reduction \cite{danos-head,BlumPhd,BlumGalop2008, Blum-LocalBeta2008}.
+The notion was then extended to the more general setting of simply-typed languages and in particular the simply-typed lambda calculus \cite{BlumPhd} where a new non-deterministic rule \rulenamet{IVar} is introduced to account for the presence of free variables. The relationship with Game Semantics is well understood in the typed setting: the set of traversals is in bijection with (the plays of) the interaction game denotation of a term, further the \emph{core projection} operation yields a bijection between the standard game denotation and its standard innocent game denotation (Theorem \ref{thm:correspondence}). This correspondence yields a method to evaluate beta-redexes of a simply-typed lambda term without performing the traditional $\beta$-reduction \cite{danos-head,BlumPhd,BlumGalop2008, Blum-LocalBeta2008}.
 
-Berezun and Jones recently discovered a similar term-traversing technique for the \emph{untyped} lambda calculus (ULC) \cite{JonesBerezunLLL}. Starting from a definition of semantics for the untyped lambda calculus they derived a normalization method that, very much like the traversal of \cite{Ong2006, BlumPhd}, proceeds by traversing some tree representation of the term.
-The Berezun-Jones traversals distinctively rely on two justification pointers: each `token' of the traversal can have one \emph{binding pointer} as well as one \emph{control pointer}. They also involve the use of a boolean parameter (the `flag') associated with every token of the traversal.
-This contrasts with the game-semantic traversals of STLC which only require a single pointer per node, but, on the other hand, require eta-long expansion of the term prior to traversing it.
+In this paper we show how the game-semantic traversals of STLC \cite{BlumPhd} naturally extend to ULC, and thus yield a method to normalize untyped lambda terms. In the absence of types, eta-long expansion is simply not an option: it would yield an infinite term. We thus opt instead for a more reasonable option: \emph{on-demand eta-expansion}. The idea stems from the following observation: attempting to apply the original STLC traversal rules on an untyped lambda term can lead to situations where the traversal gets ``stuck''. This happens when a sub-term in operator position has an insufficient number of operands to be able to resolve a parameter. For example, STLC traversals would get stuck when trying to resolved the ``$y$ argument'' of $f$ in term $(\lambda f.f)(\lambda y.y)$. The absence of $\eta$-long transform of the term is a notable difference with the traversals for recursion scheme \cite{Ong2006} or the simply-typed lambda calculus \cite{BlumPhd}. This simplifies the presentation as the traversed tree is just a direct representation of the original, unmodified, lambda term.
 
-In this paper we show how the game-semantic traversals of STLC \cite{BlumPhd} naturally extend to ULC, and thus yield another method to normalize untyped lambda terms. In the absence of types, eta-long expansion is simply not an option: it would yield an infinite term. We thus opt instead for a more reasonable option: \emph{on-demand eta-expansion}. The idea stems from the following observation: attempting to apply the original STLC traversal rules on an untyped lambda term can lead to situations where the traversal gets ``stuck''. This happens when a sub-term in operator position has an insufficient number of operands to be able to resolve a parameter. For example, STLC traversals would get stuck when trying to resolved the ``$y$ argument'' of $f$ in term $(\lambda f.f)(\lambda y.y)$.
-
-Consequently, a notable difference with the traversals for recursion scheme \cite{Ong2006} or the simply-typed lambda calculus \cite{BlumPhd}, is the absence of $\eta$-long transform of the term. This simplifies the presentation and bring it closer to Berezun-Jones' traversal where the traversed tree is just a direct representation of the original, unmodified, lambda term \cite{JonesBerezunLLL}. In contrast to Berezun-Jones, however, our traversal necessitate a single justification pointer per node occurrence.
-
-This adaptation of the game-semantic traversals to the untyped setting has several new ingredients that we will detail in the remaining of the paper:
+This adaptation of the game-semantic traversals to the untyped setting has several new ingredients that we will detail in the rest of the paper:
 \begin{compactitem}
 \item  The `lambda' and `variable' rules are augmented to implement eta-expansion.
  \item The eta-expansion is performed `on-the-fly`, as needed, at each point where the traditional STLC traversal would normally get stuck: whenever there is insufficiently many operands in an application to continue traversing the term.
@@ -96,7 +90,7 @@ This adaptation of the game-semantic traversals to the untyped setting has sever
 \item The `input variable' rule, introduced in \cite{BlumPhd} to model free variables, is constrained by a quantity called the \emph{arity threshold}. This quantity, calculated in linear time from the traversal itself, limits the non-deterministic branching factor of the `input variable' rule. This guarantees that the normalization procedure terminates when the beta-normal form exists.
 \end{compactitem}
 
-The normalization algorithm presented in this paper was implemented in the HOG tool \cite{Blum-HogTool}. In the last section of this paper I provide some examples of terms normalized with the algorithm.
+The normalization algorithm presented in this paper was implemented in the HOG tool \cite{Blum-HogTool}. The last section of the paper provides some examples of terms normalized with the algorithm.
 
 \subsection{Related work}
 
@@ -105,79 +99,73 @@ In 2004, Danos and Regnier showed the connection between Game Semantics and \emp
 
 Despite the connection established in this 2004 paper, it's not clear how the head linear reduction helps normalize a term. The \emph{Pointer Abstract Machine} introduced in the same paper, for instance, yields what they call ``\emph{quasi-head normal form (qhn)}'' of the term, not the normal form itself. The resulting \emph{qhn} still needs to be first reduced to head normal form (using head reduction) and then normalized by appealing to the standard $\lambda$-calculus theory that tells us that head reduction terminates. The traversals introduced in the present paper gives an effective algorithm to normalize any untyped lambda term without appealing to the head reduction strategy.
 
-\subsubsection{Berezun-Jones traversals}
-
-{\bf TODO:}
-(ii) connection with previous work by Daniil Berezun and Neil Jones on traversals compilation for ULC \cite{JonesBerezunLLL}.
-
-
-\subsubsection{Game model of the untyped lambda calculus}
-{\bf TODO:}
-(i) Adapt the proof of the game semantics correspondence theorem from my thesis to this setting, perhaps using Andrew Ker's game model of ULC.
-\cite{KerThesis}.
-
 \subsubsection{Traversal of STLC}
 
-\todo{no eta-long expansion: betanf, not the eta-beta nf}
+In \cite{BlumPhd} we extended the theory of traversals to the simply-typed lambda calculus by introducing the new traversal rule \rulenamet{IVar} to model free variables present in lambda terms. (Such rule is not needed in the original presentation of traversals because higher-order recursion schemes are necessarily closed terms of ground type.) We then formalized the correspondence between the theory of traversals and Game semantics by establishing a bijection between traversals and the game denotation of a term. This correspondence yields a method to reduce beta-redexes in simply-typed typed lambda-terms. This normalization procedure was studied in \cite{BlumPhd,BlumGalop2008,Blum-HogTool,Ong-NormByTrav2015}.
 
-\subsection{Game semantics correspondence}
+The work presented in the present paper can be viewed as a generalization of this work to the untyped case. For simply-typed terms, a notable difference is that the normalization procedure introduced here produces the beta-normal form of the term rather than its beta-eta-long normal form.
 
-In \cite{BlumPhd} we establish the correspondence between the theory of traversals and Game semantics for the simply-typed lambda calculus (STLC). The proof in the thesis relies on several ingredients:
+\subsubsection{Berezun-Jones traversals}
+Berezun and Jones  introduced the first notion of traversals for the \emph{untyped} lambda calculus (ULC) \cite{JonesBerezunLLL}. Although they took inspiration from the Game Semantic traversals of \cite{Ong2006,BlumGalop2008}, their definition is more operational in nature and does not directly related to the game denotation of a term. Starting from an operational semantics of the untyped lambda calculus they derive a normalization method that, very much like the traversal of \cite{Ong2006, BlumPhd}, proceeds by traversing some tree representation of the term.
+
+The tree representation used in Berezun-Jones' traversals are direct abstract syntax tree representation of the lambda-term, whereas in the present setting we use a more `compressed' form where consecutive lambdas and applications are merged into a single node. On the other hand, unlike the original definition of traversals for STLC where eta-long transformation is performed prior to traversing a term, both Berezun-Jones' traversals and the traversals introduced in the present paper require no prior syntactic transformation of the lambda term.
+
+The Berezun-Jones traversals distinctively rely on two justification pointers: each `token' of the traversal can have one \emph{binding pointer} as well as one \emph{control pointer}. They also involve the use of a boolean parameter (the `flag') associated with every token of the traversal. In contrast to Berezun-Jones, the traversals presented in this paper necessitate a single justification pointer per node occurrence.
+
+Another notable difference is that the normalization algorithm of Berezun-Jones requires a single traversal of the term. Our normalization algorithm, however, produces one traversal for every branch in the tree representing the beta-normal form. Each branching point corresponds to some occurrence of a variable in the normal form, and each branch corresponds to one operand of the variable. One can conceivably see how such non-deterministic branching could be eliminated by adding appropriate auxiliary pointers to implement backtracking: after the first operand is evaluated, backtrack to the operator variable in the traversal and explore the remaining operands.
+
+\subsection{Correspondence with Game semantics for STLC}
+
+This section recalls previous known results in the more restricted context of the simply-typed lambda calculus.
+
+In \cite{BlumPhd} we formalized the correspondence between the theory of traversals and Game Semantics. Given a simply-typed term-in-context $\Gamma \entail M :T$, with typed-context $\Gamma$ (a set of typed variables), and simple type $T$, its traversals $\travset(\Gamma \entail M :T)$ is a set of sequences of nodes from some tree representation of $M$ where each node occurrence in a given sequence can have an associated pointer to some previous occurrence in the sequence. It is defined by induction over the traversal rules of \cite{Ong2006} augmented with a new rule to represent free variables. We then showed that there is a bijection between the set of traversals of $M$ and the revealed interaction game denotation of $M$, further there is a traversal transformation (the `core projection') that yields a bijection with the innocent game denotation of $M$. Formally:
+\begin{theorem}[Game Semantics and STLC Traversals Correspondence -- (Theorem 4.96 in \cite{BlumPhd}]
+\label{thm:correspondence}
+For every simply-typed term $\Gamma \entail M :T$ we have the following two bijections:
+\begin{eqnarray*}
+ \travset(\Gamma \entail M : T)^\star & \cong & \revsem{\Gamma \entail M :T} \\
+ \travset(\Gamma \entail M : T)^{\filter \theroot} & \cong & \sem{\Gamma \entail M :T} \enspace .
+\end{eqnarray*}
+where $\revsem{\Gamma \entail M : T}$ denotes the interaction game denotation of $M$, $\sem{\Gamma \entail M : T}$ denotes the innocent game denotation of $M$,
+$\travset(M)^\star$ denotes the set of traversals where application nodes are removed, and $\travset(M)^{\filter \theroot}$ denotes the set of \emph{core projections} of $M$.
+\end{theorem}
+The (fairly technical) proof relies on several key concepts \cite{BlumPhd}:
 \begin{enumerate}
-  \item The introduction of a new traversal rule \rulenamet{IVar} to model free variables;
-  \item A formal definition of the notion of \defname{interaction game semantics} corresponding to the game denotation of a term in the usual sense but where internal moves are all revealed instead of hidden;
-  \item The definition of various operations on traversals, in particular the notion of \defname{traversal core} which preserves only the ``essence'' of a traversal.
+  \item The introduction of a \defname{traversal rule for free variables} of the lambda calculus \rulenamet{IVar}. Such rule is not needed in the original presentation of traversals because higher-order recursion schemes are necessarily closed terms of ground type;
+  \item The notion of \defname{interaction game semantics} obtained from game denotation of a term by revealing all the internal moves when composing two game strategies;
+  \item The definition of various operations and transformations on traversals, in particular the \defname{projection with respect to the root of the tree} which preserves only the ``core'' of a traversal.
 \end{enumerate}
 
-In \cite{BlumPhd} we showed that for every simply-typed term-in-context $\Gamma \entail M :T$ where $\Gamma$ denotes the typed-context of $M$ and $T$ denotes its type,
-there is a bijection $\varphi_M$ from the set of traversals of $M$ to the revealed interaction game denotation of $M$, further there is a bijection between the standard game denotation of $M$ and its standard innocent game denotation. Formally:
 
-\begin{theorem}[Game Semantics and STLC Traversals (Theorem 4.96 in \cite{BlumPhd}]
-\label{thm:correspondence}
-For every simply-typed term $\Gamma \entail M :T$ there exist two bijections
-$\phi_M$ and $\psi_M$:
+\paragraph{Normalizing terms with traversals}
 
-\begin{eqnarray*}
- \varphi_M  &:& \travset(\Gamma \entail M : T)^\star \stackrel{\cong}{\longrightarrow} \syntrevsem{\Gamma \entail M :T} \\
- \psi_M  &:& \travset(\Gamma \entail M : T)^{\filter \theroot} \stackrel{\cong}{\longrightarrow} \sem{\Gamma \entail M :T} \enspace .
-\end{eqnarray*}
-
-where $\syntrevsem{\Gamma \entail M : T}$ denotes the interaction game denotation of $M$, $\sem{\Gamma \entail M : T}$ denotes the innocent game denotation of $M$,
-$\travset(M)^\star$ denotes the set of traversals where application nodes are removed, and $\travset(M)^{\filter
-\theroot}$ denotes the set of traversal cores of $M$ (\ie, traversal projected to the root of the tree).
-\end{theorem}
-
-
-\subsection{Normalizing terms with traversals}
-
-The \defname{projection with respect to the root} of a traversal $t$, noted $t\filter {\theroot}$, also called the \defname{core} of the traversal, consists of the subsequence of nodes that are hereditarily justified by the initial occurrence of the root. By the correspondence theorem the traversal cores are precisely plays from the game denotation of the term.
-Because the traversals P-views (noted $\pview{t}$ for every traversal $t$) correspond to paths in the tree representation of the term (\cite{BlumPhd}, Proposition 4.29), this yields a method to calculate the beta-normal form of any STLC term $M$:
+The \defname{projection with respect to the root} of a traversal $t$, also called the \defname{core of the traversal}, consists of the subsequence of nodes that are hereditarily justified by the initial occurrence of the root. By the correspondence theorem the traversal cores are precisely plays from the game denotation of the term. In the traversal world, the game-semantic concept of ``Proponent view'', or just P-view, correspond to just paths in the tree representation of the term (\cite{BlumPhd}, Proposition 4.29). Because P-view are effectively computable from the traversal, this yields a method to calculate the beta-normal form of any STLC term $M$:
 
 \begin{algorithm}
 \caption{Normalization by traversals}
 \begin{enumerate}
-  \item Enumerate traversals of $M$;
-  \item For each traversal $t$, calculate its traversal core $t \filter \theroot$. This gives a play in $\sem{M}$;
-  \item Calculate the P-view of the traversal core: $\pview{t\filter \theroot}$;
-  \item Apply the bijection from the Correspondence Theorem to get the corresponding path in the tree representation of the $\beta$-nf of $M$.
+  \item Enumerate all maximal traversals of $M$\footnote{The set of traversals may be infinite but in practice only a finite number of traversals need to be enumerated to normalize the term.};
+  \item For each traversal $t$, project it with respect to the tree root to get the traversal core. By the correspondence theorem this yields a play in $\sem{M}$;
+  \item Calculate the P-view of the traversal core;
+  \item Apply the bijection from the Correspondence Theorem to get the corresponding path in the tree representation of the $\beta$-nf of $M$;
+  \item Aggregate all the paths thus obtained to reconstruct the beta-normal form of $M$.
 \end{enumerate}
 \end{algorithm}
 
 \begin{remark}
-All the traversal rules are deterministic except \rulenamet{IVar}. The rule \rulenamet{IVar} gives two non-deterministic choices: (i) the variable to pick in the O-view,
-(ii) the child lambda node to pick amongst the picked variable's children.
-A consequence of this definition is that even for terms having a normal form (and in particular even for beta-normal terms), the set of traversals can be infinite, and traversals can be infinitely long.
-E.g. Take the term $\lambda f . f (\lambda x. x)$. We have that $\lambda f \cdot f \cdot (\lambda x \cdot  x)^k$ is a traversal for all $k\geq0$. Viewed from a game semantic perspective, those traversals accounts for all the possible denotations of the function parameter $f$: for each $k$, there exists a term that applies its argument $k$ times: $\lambda y . y (y ( \ldots y)) $.
+All the traversal rules are deterministic except the one used to model free variables: The rule \rulenamet{IVar} offers two non-deterministic choices: (i) which variable to pick in the O-view,
+(ii) which child lambda node to pick amongst the picked variable's children.
+A consequence of this definition is that even for terms having a normal form (and in particular even for beta-normal terms), the set of traversals can be infinite, and traversals can be infinitely long. For example, take the term $\lambda f . f (\lambda x. x)$. For all $k\geq0$, the sequence $\lambda f \cdot f \cdot (\lambda x \cdot  x)^k$ (with appropriate pointers) is a traversal. From a game semantic viewpoint, those traversals accounts for all the possible denotations of the function parameter $f$: indeed, for each $k$, there exists a term that applies its argument $k$ times: $\lambda y . y (y ( \ldots y)) $, and there got to be plays in the game denotation of the term to accounts for those possible arguments.
 
 For the sake of computing the beta-normal form of a term, however, it's only necessary to traverse finitely many finite traversals (provided that the normal form exists). Effectively, this means limiting the rule \rulenamet{IVar} to traverse only nodes leading to paths in the computation tree that are yet unexplored. In practice, it means that when choosing the next lambda node to visit, one can restrict the next move to child lambda nodes of the latest nodes in the traversal. This intuition is formalized by the notion of \emph{branching traversal} in Definition \ref{dfn:branching_traversals} and Proposition \ref{prop:branching_traversal_normalizing}.
 \end{remark}
 
-\textbf{Implementation}
-This normalization algorithm was implemented in the HOG tool mentioned in my thesis which lets you ``play the traversal game'' and calculate various types of projections including the one giving the traversal cores.
+\paragraph{Implementation of the normalization procedure}
+This normalization algorithm was implemented in the HOG tool\cite{BlumGalop2008, BlumPhd}. This tools takes any simply-typed lambda term and lets the user interactively generate all the traversals by ``playing the traversal game'' over the tree representation of the term. The tool offers a `worksheet' environment where the user can apply various operations on the traversals, including projections, views and core.
 
-\todo{Cite Neil's paper and discussion.}
-The question addressed in the present note is: can this method be extended to the untyped lambda calculus (ULC) following the same game-semantic argument but based on Ker's game model of the untyped lambda calculus instead of the game model of STLC?
+\subsection{Rest of the paper}
 
+In the remaining of this paper we will introduce basic definition from the traversal theory and introduce a new notion of traversals for the untyped lambda calculus. We briefly discuss the correspondence with game models of the Untyped Lambda Calculus \cite{KerThesis} and show how they yield an algorithm to normalize untyped lambda terms. Finally, we illustrate the normalization algorithm on some examples of lambda terms.
 
 \section{Definitions}
 
@@ -335,7 +323,7 @@ and every $i>1$ we have $t \cdot n \cdot \alpha \in \travset$ with $\alpha$ poin
 \end{itemize}
 
 
-\caption{Game-semantic traversal rules for the untyped lambda calculus (ULC).}
+\caption{Game-semantic `imaginary' traversal rules for the untyped lambda calculus.}
  \label{tab:trav_rules}
 \end{FramedTable}
 
@@ -350,7 +338,7 @@ Therefore, if the last node is a variable node, its enabler necessarily occurs e
 
 
 \subsubsection{Comparison with STLC}
-There are three important differences between the rules of Table \ref{tab:trav_rules} and the traversal rules of the simply-typed lambda calculus introduced in \cite{Blum2006}:
+There are three important differences between the rules of Table \ref{tab:trav_rules} and the traversal rules of the simply-typed lambda calculus introduced in \cite{BlumPhd}:
 \begin{enumerate}
   \item In the original STLC traversals, the term gets eta-long expanded prior to calculating the set of traversals. This guarantees that the operand of an application always exists in the tree. In ULC, however, eta-long expansion is an infinite process, so instead of eta-long expanding the term beforehand, we eta-expand on the fly as neeeded. Eta-expansion occurs in rule \rulenamet{Var} when the arity of a variable in operand position is too low to be able to statically determine the operand of an application (case when $i>|n|$). When the variable arity is high enough ($i\geq|n|$), the two versions of the rule (for STLC and ULC) coincide and the static tree representation of the term dictates which node to traverse next.
 
@@ -397,23 +385,19 @@ where
 \end{itemize}
 \end{remark}
 
-
-
-
 \section{Game semantic correspondence}
-Following the simply-typed framework of \cite{BlumPhd}, the rule \rulenamet{IVar} is defined so as to obtain the correspondence with game semantics: the nodes visited by this rule correspond to moves played by the Opponent in the game denotation. (We recall that in Game Semantics, the Opponent represents the environment of the program, or in other words, it models the larger program context in which the program is being executed. In particular, it determines the input data that is provided to the program.)
-We aim to prove that this presentation yields an isomorphism between the set of traversals and the revealed game semantics of the ULC term, and subsequently that it yields an isomorphism between the standard game semantics and the set of traversal cores (i.e., projected wrt. the root):
 
-The traversal-game semantics isomoprhism of \cite{BlumPhd} for STLC also yields for ULC using traversal definition from Table \ref{tab:trav_rules} and the game model of ULC from Ker's thesis.
+In the simply-typed case, the relationship with Game Semantics is made explicit by Theorem \ref{thm:correspondence}. Does a similar result hold in the untyped case?
+
+In his thesis, Andrew Ker defined and studied several Game models for the untyped lambda calculus\cite{KerThesis}.  We conjecture that the traversal-game semantics isomoprhism for STLC also yields for ULC using traversal definition from Table \ref{tab:trav_rules} and the game model of ULC from Ker's thesis. In other words, there is an isomorphism between the set of imaginary traversals and the revealed game semantics of the ULC term, and further, there is an isomorphism between the standard game semantics and the set of traversal cores:
 
 \begin{conjecture}[ULC Traversals Correspondence with Game Semantics]
 \label{thm:ulc_corresp}
-For every untyped lambda-term $M$ there exist two bijections
-$\phi_M$ and $\psi_M$:
+For every untyped lambda-term $M$ we have the two bijections:
 
 \begin{eqnarray*}
- \varphi_M  &:& \travset(M)^\star \stackrel{\cong}{\longrightarrow} \syntrevsem{M} \\
- \psi_M  &:& \travset(M)^{\filter \theroot} \stackrel{\cong}{\longrightarrow} \sem{M} \enspace .
+ \travset(M)^\star &\cong& \syntrevsem{M} \\
+ \travset(M)^{\filter \theroot} &\cong& \sem{M} \enspace .
 \end{eqnarray*}
 
 where
@@ -423,18 +407,17 @@ and $\syntrevsem{M}$ denotes the corresponding interaction game denotation where
 $\travset(M)^\star$ denotes the set of traversals where application nodes are removed, and $\travset(M)^{\filter
 \theroot}$ denotes the set of traversal cores of $M$ (\ie, traversal projected to the root of the tree).
 \end{conjecture}
-\begin{proof}
-\todo{add proof sketch!}
-Should follow the same argument as \cite{BlumPhd} but using the Ker's game model of ULC instead of the innocent game model of STLC.
+
+Following the simply-typed framework of \cite{BlumPhd}, the rule \rulenamet{IVar} is defined so as to obtain the correspondence with game semantics: the nodes visited by this rule correspond to moves played by the Opponent in the game denotation.\footnote{We recall that in Game Semantics, the Opponent represents the environment of the program, or in other words, it models the larger program context in which the program is being executed. In particular, it determines the input data that is provided to the program.}
+
+\begin{proof}[Proof idea]
+It should follow the same argument as \cite{BlumPhd} but using the Ker's game model of ULC instead of the innocent game model of STLC.
 Our ``on-the-fly'' eta-expansion should correspond to the $Fun : U \rightarrow (U \Rightarrow U)$ morphism of Ker's game category where $U$ denotes the maximal arena.
 \end{proof}
 
-
 \section{Traversals for normalizing ULC term}
 
-In STLC, as mentioned in the introduction, the Correspondence Theorem \ref{thm:ulc_corresp} yields a method to normalize a simply-typed lambda term.
-
-Indeed, the beta-normal form of a simply-typed term $M$ is uniquely determined by the maximal paths of its tree representation. And by the Game-Traversal Correspondence Theorem, the set of traversals of the beta-normal form of $M$ is precisely the set of projections, with respect to the root, of the traversals of $M$. Furthermore, by the Path-P-view correspondence, the set of of paths of the beta-normal form is given by the set of P-views of projections of traversals of $M$. Hence the P-views of maximal traversals of $M$ yields maximal paths in the tree representation of the beta-normal form of $M$.
+In STLC, as mentioned in the introduction, the Correspondence Theorem \ref{thm:ulc_corresp} yields a method to normalize a simply-typed lambda term. Indeed, the beta-normal form of a simply-typed term $M$ is uniquely determined by the maximal paths of its tree representation. And by the Game-Traversal Correspondence Theorem, the set of traversals of the beta-normal form of $M$ is precisely the set of projections, with respect to the root, of the traversals of $M$. Furthermore, by the Path-P-view correspondence, the set of of paths of the beta-normal form is given by the set of P-views of projections of traversals of $M$. Hence the P-views of maximal traversals of $M$ yields maximal paths in the tree representation of the beta-normal form of $M$.
 Formally:
 \begin{equation}
 \pview{\travset(M)\filter\theroot} = \pathset(\betanf{M}) \label{eqn:pviewcore_paths}
@@ -449,7 +432,7 @@ Table \ref{tab:trav_rules}.
 \subsubsection{The core P-view correspondence for ULC}
 
 Because ULC is not strongly-normalizing, maximal traverals are not finite. There is therefore no notion of `last occurrence' in such traversal, which means that the P-view itself is undefined. We will instead consider P-views of finitary approximations of traversals. In other words, for ULC, the equation above becomes:
-$$ \Union_{k>0} \pview{\travset^k(M)\filter\theroot} = \pathset(\betanf{M}) . $$
+$$ \Union_{k\geq0} \pview{\travset^k(M)\filter\theroot} = \pathset(\betanf{M}) . $$
 for any untyped lambda term $M$
 where $\pathset (M)$, or just $\pathset$ if the term is clear from context, denotes the set of \emph{possibly infinite} maximal paths in the infinitary computation tree representation of the normal form of $M$.
 and  $\travset^k(M)$ denotes the set of traversals of length $k$ at most.
@@ -499,10 +482,12 @@ $$\pview{u\filter\theroot} = \pview{t\filter\theroot} \ .$$
 
 \subsection{Branching traversals}
 We now show a stricter result: for the purpose of normalizing a term, it is sufficient to consider traversals where we restrict the non-determinism in rule \rulenamet{IVar} such that the visited lambda nodes is necessarily justified be the immediately preceding input variable node.
-The intuition is that the non-determinism in those two rules corresponds to branching points in a depth-first exploration of the beta-normal form of the term. Because there is no possible side-effect in lambda terms, it is enough to explore each possible branch of the tree in a separate traversal.
+The intuition is that the non-determinism in those two rules corresponds to branching points in a depth-first exploration of the beta-normal form of the term. Because there is no possible side-effect in lambda terms, it is enough to explore each possible branch of the tree in separate traversals.
 
-\todo{Example: The Kierstead term contexts are excluded (as in the affine case)
-because $f$ cannot be called twice. But this also exclude the context $\lambda f g . f (\lambda f (\lambda x . g (\lambda y . x)))$ where the two calls to the distinct variable $f$ and $g$ bound by the same node cannot be modeled by this notion of traversal.}
+\begin{example}[Kierstead terms]
+From a game semantic point of view, restricting the opponent moves can be interpreted as restricting the set contexts in which the term can be used, and more particularly the set of terms that can be applied to it.
+Like in the affine case, the branching restriction prevents the context from calling the same parameter twice, which eliminates the Kierstead contexts (since the argument $f$ is called twice). But additionally, it also excludes the context $\lambda f \lambda g . f (\lambda f (\lambda x . g (\lambda y . x)))$ where the calls to the two variables $f$ and $g$ are bound by two consecutive lambdas.
+\end{example}
 
 \begin{definition}
 \label{dfn:branching_traversals}
@@ -1089,7 +1074,7 @@ Here are some thoughts on comparing the following three approaches
 based on the conversations Neil and I had during his visit to MSR:
 (i) Berezun-Jones (DJ) traversals,
 (ii) Danos-Reigner's Pointer Abstract Machine (PAM) state runs,
-(iii) Blum's ``paranormal'' and game-semantic-inspired traversals for ULC introduced in this note.
+(iii) Blum's game-semantic-inspired imaginary traversals for ULC introduced in this note.
 
 \subsubsection{Normalization}
 
@@ -1148,7 +1133,7 @@ Neil-Daniil's binding pointers represent the ``head $\lambda$-list'' notion in D
 \end{itemize}
 
 
-\subsubsection{Converting other traversals to the paranormal traversals}
+\subsubsection{Converting other traversals to the imaginary ULC traversals}
 
 \paragraph{From Berezun-Jones}
 
