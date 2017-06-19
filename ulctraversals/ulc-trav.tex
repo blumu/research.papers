@@ -59,8 +59,8 @@
 \renewcommand\ie{{\it e.g.\@\xspace}}
 
 \author{William Blum}
-\title{Imaginary Traversals of Untyped Lambda Terms \\[12pt]
- {\small [Draft] Normalizing untyped lambda-terms through traversals and on-the-fly eta-expansion.}}
+\title{Imaginary Traversals for the Untyped Lambda Calculus  [Draft] \\[12pt]
+ {\small Normalizing untyped lambda-terms with traversals and on-the-fly eta-expansion.}}
 
 \begin{document}
 \maketitle
@@ -143,9 +143,10 @@ The \defname{projection with respect to the root} of a traversal $t$, also calle
 
 \begin{algorithm}
 \caption{Normalization by traversals}
+\label{algo:stlc_normalization_by_traversals}
 \begin{enumerate}
-  \item Enumerate all maximal traversals of $M$\footnote{The set of traversals may be infinite but in practice only a finite number of traversals need to be enumerated to normalize the term.};
-  \item For each traversal $t$, project it with respect to the tree root to get the traversal core. By the correspondence theorem this yields a play in $\sem{M}$;
+  \item Enumerate maximal traversals of $M$ (The set of traversals may be infinite but in practice only a finite number of traversals need to be enumerated to normalize the term.);
+  \item For each traversal, project it with respect to the tree root to get the traversal core. By the correspondence theorem this yields a play in $\sem{M}$;
   \item Calculate the P-view of the traversal core;
   \item Apply the bijection from the Correspondence Theorem to get the corresponding path in the tree representation of the $\beta$-nf of $M$;
   \item Aggregate all the paths thus obtained to reconstruct the beta-normal form of $M$.
@@ -350,7 +351,11 @@ There are three important differences between the rules of Table \ref{tab:trav_r
 
 \end{enumerate}
 
-\subsubsection{Ghost nodes in ULC traversals}
+\subsubsection{Ghost nodes intuition}
+
+It is helpful to think of ghost nodes as the counterpart of complex numbers sometimes used in mathematics
+to prove trigonometry identities: they are introduced intermediately to perform some computation or calculation (e.g. using De Moivre's Theorem) but do not appear in the final result. Just like the imaginary number $i$ is created out of the impossibility of calculating the square root of $-1$, ghost nodes are defined from the impossibility of ``traversing'' a beta-redex of a lambda term due to an insufficient number of operands.
+
 
 Ghost nodes appear in a traversal when the arity of a node is too low to continue a
 structural traversal of the tree:
@@ -418,25 +423,26 @@ Our ``on-the-fly'' eta-expansion should correspond to the $Fun : U \rightarrow (
 
 \section{Traversals for normalizing ULC term}
 
-In STLC, as mentioned in the introduction, the Correspondence Theorem \ref{thm:ulc_corresp} yields a method to normalize a simply-typed lambda term. Indeed, the beta-normal form of a simply-typed term $M$ is uniquely determined by the maximal paths of its tree representation. And by the Game-Traversal Correspondence Theorem, the set of traversals of the beta-normal form of $M$ is precisely the set of projections, with respect to the root, of the traversals of $M$. Furthermore, by the Path-P-view correspondence, the set of of paths of the beta-normal form is given by the set of P-views of projections of traversals of $M$. Hence the P-views of maximal traversals of $M$ yields maximal paths in the tree representation of the beta-normal form of $M$.
-Formally:
+In STLC, as mentioned in the introduction, the Correspondence Theorem \ref{thm:ulc_corresp} yields a method to normalize a simply-typed lambda term. This is because the beta-normal form of a simply-typed term $M$ is uniquely determined by the maximal paths of its tree representation. By the Game-Traversal Correspondence Theorem, the set of traversals of the beta-normal form of $M$ is precisely the set of traversal cores of $M$. By the Path-P-view correspondence\cite{Ong2006,BlumPhd}, the set of paths in tree of the normal form is given by the set of P-views of traversal cores of $M$. Hence the P-views of maximal traversals of $M$ yields all the maximal paths in the tree representation of the beta-normal form of $M$.
+Formally, for every simply-typed term $M$:
 \begin{equation}
 \pview{\travset(M)\filter\theroot} = \pathset(\betanf{M}) \label{eqn:pviewcore_paths}
 \end{equation}
 where $\pathset (M)$ denotes the set of maximal paths in the computation tree representation of $M$.
-Observe that the set of traversals can be infinite because the game denotation of a term must account for all possible moves of the Opponent for all possible denotation of the context term (think of context terms where some parameter is repeatedly called exactly $k$ times where $k$ is unbound). Fortunately, such traversals are redundant when it comes to normalizing the term: one can limit the set of traversals to the subset of \emph{branch traversals} where such behaviour is not allowed for the Opponent while still preserving the above equality.
+This equality proves soundness of the normalization procedure of Algorithm \ref{algo:stlc_normalization_by_traversals}.
+
+Observe that the set of traversals can be infinite because the game denotation of a term must account for all possible moves of the Opponent for all possible denotation of the context term (take, for instance, context terms where some parameter is repeatedly called exactly $k$ times where $k$ is unbound). Fortunately, such traversals are redundant when it comes to normalizing the term: one can limit the set of traversals to the subset of \emph{branch traversals} where such behaviour is not allowed for the Opponent while still preserving the above equality.
 This is formalized in Proposition \ref{prop:branching_traversal_normalizing}.
+\\
 
-In this section we aim to prove the same result for the untyped lambda calculus (ULC). We will then prove the Equation \ref{eqn:pviewcore_paths} in context of the untyped lambda calculus based on the ULC traversal definition of
-Table \ref{tab:trav_rules}.
+In this section we aim to establish a similar normalization procedure for the untyped lambda calculus by proving the counterpart of Equation \ref{eqn:pviewcore_paths} for
+the traversal definition of Table \ref{tab:trav_rules} and for untyped lambda-terms with a normal form.
 
-\subsubsection{The core P-view correspondence for ULC}
+\subsubsection{The View-Path correspondence for ULC}
 
-Because ULC is not strongly-normalizing, maximal traverals are not necessarily finite. There is therefore no notion of `last occurrence' in such traversal, which means that the P-view itself is undefined. We will instead consider P-views of finitary approximations of traversals. In other words, for ULC, the equation above becomes:
+Because ULC is not strongly-normalizing, traverals are not necessarily finite. There is therefore no notion of `last occurrence' in such traversal, which means that the P-view itself is undefined. We will instead consider P-views of finitary approximations of traversals. In other words, for ULC, the counterpart of the above equation that we want to prove is:
 $$ \Union_{k\geq0} \pview{\travset^k(M)\filter\theroot} = \pathset(\betanf{M}) . $$
-for any untyped lambda term $M$
-where $\pathset (M)$, or just $\pathset$ if the term is clear from context, denotes the set of \emph{possibly infinite} maximal paths in the infinitary computation tree representation\footnote{For a formal definition of infinitary computation trees see \cite{Blum17-HomogNotRestriction, Ong2006}} of the normal form of $M$.
-and  $\travset^k(M)$ denotes the set of traversals of length $k$ at most.
+for any untyped lambda term $M$ having a normal form $\betanf{M}$, where $\pathset (\betanf{M})$ denotes the set of \emph{possibly infinite} maximal paths in the infinitary computation tree\footnote{For a formal definition of infinitary computation trees see \cite{Blum17-HomogNotRestriction, Ong2006}} of the normal form of $M$, and  $\travset^k(M)$ denotes the set of traversals of length $k$ at most.
 
 \subsection{Context-affine traversals}
 
@@ -511,17 +517,11 @@ $$\pview{u\filter\theroot} = \pview{t\filter\theroot} \ .$$
 \end{proof}
 
 
-\subsection{Ghost nodes intuition}
-
-It is helpful to think of ghost nodes as the counterpart of complex numbers sometimes used in mathematics
-to prove trigonometry identities: they are introduced intermediately to perform some computation or calculation (e.g. using De Moivre's Theorem) but do not appear in the final result. Just like the imaginary number $i$ is created out of the impossibility of calculating the square root of $-1$, ghost nodes are defined from the impossibility of ``traversing'' a beta-redex of a lambda term due to an insufficient number of operands.
-
 \subsection{Arity threshold}
 
 In this section, we show that, for the purpose of computing beta normal forms, the value $i$ in rule $\rulename{IVar}$ can be bounded by a computable quantity called the \defname{arity threshold} of a traversal.
 
-When traversing a lambda term, we introduce ghost nodes on-demand each time an eta-expansion is deemed necessary.
-We don't want, of course, to eta-expand ad-infinitum: Our goal is to find a finite representation of the normalized the term, as opposed to compute the possibly infinite set of traversals representing the semantic denotation of the term (i.e., it's game semantic denotation). To that extend, traversing ghost nodes in a traversal is only useful if it eventually leads to traversing some structural node of the tree.
+When traversing a lambda term, we introduce ghost nodes on-demand each time an eta-expansion is deemed necessary. Recall that our goal is to normalize the term (when it exists) by generating some finite representation of its normal form. We are \emph{not} interested in generating the possibly infinite set of traversals corresponding to the game-semantic denotation of the term. We therefore don't want to eta-expand ad-infinitum: visiting ghost nodes will be useful only if they eventually lead to traversing some structural node of the tree.
 
 Intuitively, after a sufficiently large number of eta-expansions, we are guaranteed to keep on traversing ghost nodes that never materialize back to structural nodes. This section formalizes this intuition by introducing the \defname{arity threshold} as the maximum number of times that is necessary to eta-expand a given subterm with traversal rule $\rulename{IVar}$ in order to compute the set of paths of the beta-normal form of the term. We will show later that such limit is sufficient in order to retrieve the normal form of a lambda term when it exists.
 
@@ -550,6 +550,21 @@ We define the \defname{arity threshold} of $t$ as:
 \end{definition}
 
 Observe that rule $\rulename{IVar}$ leaves infinitely many choices for the link label: any value greater than $1$. The following result shows that, for calculating paths in the tree representation of the beta-normal form of the term, it suffices to consider link labels that are strictly smaller than the arity threshold.
+
+\begin{remark}[Calculating the arity threshold]
+The arity threshold can be rewritten as:
+\begin{align*}
+\arth(t) &= \max_{q=1..k-1} b_q \ .
+\end{align*}
+where for $1\leq q< k-1$ we define $b_q = \sum_{j=1..q} (|n_j| - |\alpha_j|) + |\alpha_q|$.
+
+The $b_q$'s verify the following induction:
+ \begin{align*}
+ b_1 &= |n_1| \\
+ b_{q+1} &= b_q + |n_{q+1}| - |\alpha_q|
+ \end{align*}
+In other words: $b_{q} = |n_1| - |\alpha_1| + |n_2| - |\alpha_2| + \ldots + |n_{q-1}| - |\alpha_q| $. So an algorithm to calculate the arity threshold consists in adding and substracting the arity of the nodes starting from the last occurrence of the traversal and reading backwards until reaching an external lambda node. The maximal value seen during that summation is the arity threshold.
+\end{remark}
 
 \begin{property}[Weaving]
 \label{prop:weaving}
@@ -666,6 +681,18 @@ $$\pview{u\filter\theroot} = \pview{t\filter\theroot} \ .$$
 \end{proposition}
 \begin{proof}
 Consequence of Proposition \ref{prop:branching_traversal_normalizing} and Property \ref{prop:weaving}
+\end{proof}
+
+\begin{theorem}[Correctness of ULC normalization]
+For any untyped lambda term $M$ with normal form $N$ we have:
+$$\pview{\travsetnorm(M) \filter\theroot} = \pathset(N) .$$
+  \end{theorem}
+\begin{proof}[Proof sketch]
+It's trivial if $M$ is in beta-normal form.
+For any other untyped term $M$ with a normal form, we consider its head-linear reduction sequence.
+We know from \cite{danos-head} that $M$'s head-linear reduction sequence leads to some term $M'$ in quasi-head normal form, and that if $M'$ has $n>0$ prime redexes then performing $n$ head reductions produces a head normal form $M''$.
+The idea is to show that each of those reduction steps preserves the invariant $\travsetnorm(M)\filter\theroot$.
+The head normal form $M''$ is not necessarily normal, however, but we can then recursively apply the same reduction strategy to each argument of the head variable to get to the normal form.
 \end{proof}
 
 \begin{FramedTable}
@@ -1015,7 +1042,7 @@ t_\epsilon = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda t}\ (n3-n2){t
 \end{landscape}
 
 Keeping only the maximal traversals gives us the following set of maximal normalizing traversals of $M$:
-$$\travset^\normalizing(M) = \{ t_{11}, t_{121}, t_{122} \}$$
+$$\travsetnorm(M) = \{ t_{11}, t_{121}, t_{122} \}$$
 
 Hence the set of maximal paths in the beta-normal form of $M$ is given by the traversal core P-views:
 \begin{align*}
