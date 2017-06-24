@@ -1192,12 +1192,36 @@ Take a substitution sequence of a PAM: $((z_0,A_1), (z_1,A_2) \ldots$.
 
 \section{Correctness proof (draft)}
 
-Let $\rightarrow_{hl}$ denote the head-linear reduction of Danos-Regnier \cite{danos-head},
-$\rightarrow_{h}$ denote the standard head reduction (the one that fire the head redex of a term)and, $\rightarrow^*_{hl}$, $\rightarrow^*_h$ denotes their respective transitive closures. We have the following result:
+For any reduction relation $\rightarrow$ between terms we will write
+$\rightarrow^*$ to denote its transitive closure.
 
-\todo{define quasi-head normal form and prime redex}
+\subsection{Background: Lambda calculus and reduction}
+We recall from standard results of the lambda calculus.
+A redex is a term of the form $(\lambda x. M) N$.
+Reducing redex $(\lambda x. M) N$, or also \emph{firing} the redex, means substituting all free occurrences of $x$ in $M$ by the term $N$ in which all the free occurrences of $x$ are renamed with a fresh variable name (so as to avoid variable capture). We write this
+$M[N[z/x]/x]$ where $z$ is a fresh variable name and $M[\_/\_]$ denotes capture permitting substitution.
 
+A term is said to be in \defname{normal form} if it does not contain any redex.
+A term is in \defname{head normal form} if it can be written $\lambda x_1 \ldots x_n . y A_1 \ldots A_m$ for $n,m\geq0$. If a term is not in head normal form then its \defname{head beta-redex} is the left-most redex, otherwise the term does not have any head beta-redex.
+
+The \defname{head reduction}, denoted $\rightarrow_{h}$, fires the head redex of a term if it exists. It can be shown that its transitive closure $\rightarrow^*_{h}$ yields the head-normal form. The \defname{normal-order reduction strategy}, also called leftmost-outermost reduction strategy, performs head reduction until reaching the head-normal form and then recursively applies head reduction on each operand of the head variable. This reduction strategy can be shown to yield the normal form if it exists.
+
+\subsection{Head-linear reduction}
+We now introduce the head-linear reduction of Danos-Regnier using a slightly different presentation \cite{danos-head}.
+
+In order to define head-linear reduction, one needs to consider specific \emph{occurrences} of variables and sub-terms in a given term. We will denote any redex $(\lambda x. M) A$ occurring in a larger term, by the pair $(\lambda x, A)$ where $\lambda x$ and $A$ denote respectively the specific \emph{occurrences} of $\lambda x$ and $A$ in the term forming the redex.
+
+We say that a variable occurrence is \defname{involved} in a redex $(\lambda x. M) A$ if it is a free occurrence of $x$ in $M$. A variable occurrence can therefore be involved in at most one redex. We define the \defname{linear substitution} of $x$ for $A$, written $M\{x\mapsto A\}$ as the term obtained by performing capture-avoiding substitution of that single occurrence of $x$ by $A$. (Compare this to the standard substitution that is performed on \emph{every} occurrence of $x$ in $M$.) When performing such substitution we say that we \defname{linearly fire} the redex $(\lambda x, A)$ for that occurrence of $x$.
+
+We define the \defname{head variable occurrence} of a term as the left-most variable occurring in the term (\ie, the first variable found by depth-first traversal of the term tree.) If the head variable occurrence of a term is involved in a redex we call that redex the \defname{head-linear redex}, and we say that we linearly fire the head-linear redex if we perform linear substitution for the head variable occurrence. A term that does not have a head-linear redex is said to be in \defname{quasi head-normal form}.
+
+The \defname{head-linear reduction} $\rightarrow_{hl}$ is defined as the reduction that linearly fires the head linear redex, if it exists. It can be shown that the transitive closure $\rightarrow^*_{hl}$ yields the quasi head-normal form.
+
+\todo{define prime redex}
+
+We have the following result:
 \begin{theorem}[Head-linear reduction and head normal form\cite{danos-head}]
+\label{thm:danosreigner_headlinred}
 \begin{compactitem}
 \item If $T \rightarrow^*_{hl} T$  then $T$ and $T'$ are $\beta$-equivalent.
 \item If $T$ is in quasi-head normal form and has $n$ prime redexes then the head reduction of $T$ leads to a head normal form in exactly $n$ steps.
@@ -1205,7 +1229,24 @@ $\rightarrow_{h}$ denote the standard head reduction (the one that fire the head
 \end{compactitem}
 \end{theorem}
 
-A head-linear reduction strategy therefore yields the head normal form of a term. To get to the normal form one can repeatedly apply the strategy for each operand of the head variable in the head normal form:
+\subsubsection{Linear reduction strategy}
+
+Danos-Regnier's head-linear reduction is a linear version of the head reduction.It is not complete for normalization: it only leads to the quasi-head normal form, not the normal form. We will now define the counterpart of the normal-order reduction strategy for the head-linear reduction.
+
+\todo{We define the \defname{linear reduction}, written $\rightarrow_l$, as the reduction that linearly fires the left-most variable occurrence that is involved in some redex. (Compare this with the head-linear reduction that first locates the left-most variable occurrence and, if it is involved in a redex, linearly fires it.)
+}
+
+\begin{example}
+Take $M = (\lambda x. x x N) z$. We have $M \rightarrow_{hl} (\lambda x. z x N) z$ which is in quasi head normal form because the head variable $w$ is not involved in any redex.
+And since the left-most occurrence $x$ is involved in the redex $(\lambda x, z)$ we have $(\lambda x. z x N) z \rightarrow_l (\lambda x. z z N) z$.
+\end{example}
+
+
+
+
+By Theorem \ref{thm:danosreigner_headlinred}, the head-linear reduction strategy can be used to compute the head normal form of a term (by first calculating its quasi head normal form). We define
+
+So intuitively, one can get to the normal form by repeatedly applying the strategy for each operand of the head variable in the head normal form. This gives the notion of \defname{linear reduction}
 
 \begin{definition}[Traversal reduction]
 We define the traversal reduction, written $\rightarrow_t$, as follows:
