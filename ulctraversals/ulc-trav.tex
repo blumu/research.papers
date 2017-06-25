@@ -1197,7 +1197,7 @@ $\rightarrow^*$ to denote its transitive closure.
 
 \subsection{Background: Lambda calculus and reduction}
 We recall from standard results of the lambda calculus.
-A redex is a term of the form $(\lambda x. M) N$.
+A \defname{redex} is a sub-term of the form $(\lambda x. M) N$.
 Reducing redex $(\lambda x. M) N$, or also \emph{firing} the redex, means substituting all free occurrences of $x$ in $M$ by the term $N$ in which all the free occurrences of $x$ are renamed with a fresh variable name (so as to avoid variable capture). We write this
 $M[N[z/x]/x]$ where $z$ is a fresh variable name and $M[\_/\_]$ denotes capture permitting substitution.
 
@@ -1209,17 +1209,32 @@ The \defname{head reduction}, denoted $\rightarrow_{h}$, fires the head redex of
 \subsection{Head-linear reduction}
 We now introduce the head-linear reduction of Danos-Regnier \cite{danos-head}.
 
-The notion of redex from the standard lambda calculus is generalized by the notion of prime redex:
+In the standard lambda calculus, a redex is necessarily formed by the outermost lambda in operator position of an application: if the operator consists  of consecutive lambda abstractions as in $(\lambda x \lambda y . M) A_1 A_2$ then the outermost $\lambda x$ is the one defining the redex. The notion of redex can be generalized to allow any of the consecutive $\lambda$-abstractions to form a redex so that for instance the abstraction $\lambda y$ and corresponding argument $A_2$ defines a redex:
 
-In order to define head-linear reduction, one needs to consider specific \emph{occurrences} of variables and sub-terms in a given term.
 
-We will denote any redex $(\lambda x. M) A$ occurring in a larger term, by the pair $(\lambda x, A)$
+\begin{definition}[Generalized redex]
+The set of generalized redexes of a term $M$, written $gr(M)$, is a set of pairs $(\lambda x, A)$ where $\lambda x$ is some abstraction in $M$ and $A$ is a subterm called the argument of $\lambda x$. The head $\lambda$ list of $M$, written $\lambda_l(M)$ is a list of lambda abstractions of $M$. They are defined by mutual induction as follows:
+\begin{align*}
+gr(v) &= \emptyset & \lambda_l(v) &= \emptyset\\
+gr(\lambda x. U) &= gr(N) & \lambda_l(\lambda x. U) &= \lambda x \cdot \lambda_l(U) \\
+gr(U V) &= \{ (\lambda x, V) \} \union gr(U) \union gr(V) &
+\lambda_l(U V) &= l & \mbox{if $\lambda_l(U) = \lambda x \cdot l$} \\
+gr(U V) &= gr(U) \union gr(V) & \lambda_l(U V) &= \epsilon & \mbox{if $\lambda_l(U) = \epsilon$.} \\
+\end{align*}
+where $v$ ranges over variable occurrences, $x$ ranges over variable names, $U, V$ range over subterms of $M$, and $\epsilon$ denotes the empty list.
+\end{definition}
 
-where $\lambda x$ and $A$ denote respectively the specific \emph{occurrences} of $\lambda x$ and $A$ in the term forming the redex.
+\begin{example}
+Take $M= (\lambda z . (\lambda x \lambda y . M) N) A_1 A_2$ then
+$gr(M) = \{ (\lambda z, N), (\lambda x, A_1), (\lambda y, A_2)\}$.
+\end{example}
 
-We say that a variable occurrence is \defname{involved} in a redex $(\lambda x. M) A$ if it is a free occurrence of $x$ in $M$. A variable occurrence can therefore be involved in at most one redex. We define the \defname{linear substitution} of $x$ for $A$, written $M\{x\mapsto A\}$ as the term obtained by performing capture-avoiding substitution of that single occurrence of $x$ by $A$. (Compare this to the standard substitution that is performed on \emph{every} occurrence of $x$ in $M$.) When performing such substitution we say that we \defname{linearly fire} the redex $(\lambda x, A)$ for that occurrence of $x$.
+Note: In order to define head-linear reduction, one needs to consider specific \emph{occurrences} of variables and sub-terms in a given term. In particular, when denoting a generalized redex by a pair $(\lambda x, A)$, $\lambda x$ and $A$ denote specific \emph{occurrences} of $\lambda x$ and subterm $A$.
 
-We define the \defname{head variable occurrence} of a term as the left-most variable occurring in the term (\ie, the first variable found by depth-first traversal of the term tree.) If the head variable occurrence of a term is involved in a redex we call that redex the \defname{head-linear redex}, and we say that we linearly fire the head-linear redex if we perform linear substitution for the head variable occurrence. A term that does not have a head-linear redex is said to be in \defname{quasi head-normal form}.
+We say that a variable occurrence is \defname{involved} in the generalized redex $(\lambda x, A)$ if the variable occurrence is bound by $\lambda x$. A variable occurrence can therefore be involved in at most one generalized redex. We define the \defname{linear substitution} of $x$ for $A$, written $M\{x\mapsto A\}$ as the term obtained by performing capture-avoiding substitution of that single occurrence of $x$ by $A$. (Compare this to the standard substitution that applies to \emph{every} occurrence of $x$ in $M$.) When performing such substitution we say that we \defname{linearly fire} the generalized redex $(\lambda x, A)$ for that occurrence of $x$.
+
+We define the \defname{head variable occurrence} of a term as the left-most variable occurring in the term (\ie, the first variable found by depth-first traversal of the term tree.) If the head variable occurrence of a term is involved in a generalized redex then we call that redex the \defname{head-linear redex}.
+A term that does not have a head-linear redex is said to be in \defname{quasi head-normal form}.
 
 The \defname{head-linear reduction} $\rightarrow_{hl}$ is defined as the reduction that linearly fires the head linear redex, if it exists. It can be shown that the transitive closure $\rightarrow^*_{hl}$ yields the quasi head-normal form.
 
@@ -1248,11 +1263,9 @@ haoc(x) &= x \\
 haoc(U V) &=
 \end{align*}
 
-
-
  The \defname{linear reduction}, written $\rightarrow_l$, is defined recursively as follows:
 $M \rightarrow_l M'$ if either (i)  $M \rightarrow_{hl} M'$
-or (ii) $M$ is in quasi-head normal form with  = \lambda x_1 \ldots x_n .
+or (ii) $M$ is in quasi-head normal form with  $= \lambda x_1 \ldots x_n $.
 
 \end{definition}
 linearly fires the left-most variable occurrence that is involved in some redex. (Compare this with the head-linear reduction that first locates the left-most variable occurrence and, if it is involved in a redex, linearly fires it.)
