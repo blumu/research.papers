@@ -50,7 +50,7 @@
 \newcommand{\rulefont}[1]{\mathbf{\sf #1}}
 \newcommand{\enables}{\vdash}
 
-\newcommand{\NodeHjByRoot}{\Nodes^{\theroot\enables^*}}
+\newcommand{\NodeHjByRoot}{\Nodes^{\theroot\enables^+}}
 
 \newcommand\pathset{{\mathcal{P}aths}}
 \newcommand\arth{\textsf{arth}}
@@ -207,7 +207,7 @@ Observe that the definition is similar to that of STLC \cite{Ong2006, BlumPhd} w
 
 We define the \defname{enabling relation} $\enables$ between nodes of the computation tree as the relation associating each lambda node to all the variable nodes that it binds, the root of the tree to all the free variable nodes, and every variable and application node to each of their child node. We write $m \enables_k \alpha$ to indicate that a lambda node $\alpha$ is the $k$th child of a variable or application node $m$ for some $k\geq0$; and $\alpha \enables_k m$ to indicate that the node $m$ is labelled by the $k$th variable bound by $\alpha$ for $k\geq1$.
 
-We define \defname{hereditarily enabling} as the transitive closure of the enabling relation, and we say that node $m$ \defname{hereditarily enables} node $n$ if $m \enables^* n$ where $\enables^*$ denotes the transitive closure of $\enables$. We write $\NodeHjByRoot$ to denote the set of nodes hereditarily enabled by the root, that is the image of the tree root by the transitive closure of the enabling relation.
+We define \defname{hereditarily enabling} as the transitive closure of the enabling relation, and we say that node $m$ \defname{hereditarily enables} node $n$ if $m \enables^+ n$ where $\enables^+$ denotes the transitive closure of $\enables$. We write $\NodeHjByRoot$ to denote the set of nodes hereditarily enabled by the root, that is the image of the tree root by the transitive closure of the enabling relation.
 
 A consequence of the definition of the enabling relation is that every node of the tree is either hereditarily justified by the root or by some application node $@$.  Variable nodes that are hereditarily enabled by the root are called \defname{external variable nodes}, and variables hereditarily justified by an application node are called \defname{internal variable nodes}.
 
@@ -1192,9 +1192,6 @@ Take a substitution sequence of a PAM: $((z_0,A_1), (z_1,A_2) \ldots$.
 
 \section{Correctness proof (draft)}
 
-For any reduction relation $\rightarrow$ between terms we will write
-$\rightarrow^*$ to denote its transitive closure.
-
 \subsection{Background: Lambda calculus and reduction}
 We recall from standard results of the lambda calculus.
 A \defname{redex} is a sub-term of the form $(\lambda x. M) N$.
@@ -1204,16 +1201,18 @@ $M[N[z/x]/x]$ where $z$ is a fresh variable name and $M[\_/\_]$ denotes capture 
 A term is said to be in \defname{normal form} if it does not contain any redex.
 A term is in \defname{head normal form} if it can be written $\lambda x_1 \ldots x_n . y A_1 \ldots A_m$ for $n,m\geq0$. If a term is not in head normal form then its \defname{head beta-redex} is the left-most redex, otherwise the term does not have any head beta-redex.
 
-The \defname{head reduction}, denoted $\rightarrow_{h}$, fires the head redex of a term if it exists. It can be shown that its transitive closure $\rightarrow^*_{h}$ yields the head-normal form. The \defname{normal-order reduction strategy}, also called leftmost-outermost reduction strategy, performs head reduction until reaching the head-normal form and then recursively applies head reduction on each operand of the head variable. This reduction strategy can be shown to yield the normal form if it exists.
+The \defname{head reduction}, denoted $\rightarrow_{h}$, fires the head redex of a term if it exists. It can be shown that its transitive closure $\rightarrow^+_{h}$ yields the head-normal form. The \defname{normal-order reduction strategy}, also called leftmost-outermost reduction strategy, performs head reduction until reaching the head-normal form and then recursively applies head reduction on each operand of the head variable. This reduction strategy can be shown to yield the normal form if it exists.
+
+For any reduction relation $\rightarrow$ between terms we will write
+$\rightarrow^+$ to denote its transitive closure.
 
 \subsection{Head-linear reduction}
 We now introduce the head-linear reduction of Danos-Regnier \cite{danos-head}.
 
-In the standard lambda calculus, a redex is necessarily formed by the outermost lambda in operator position of an application: if the operator consists  of consecutive lambda abstractions as in $(\lambda x \lambda y . M) A_1 A_2$ then the outermost $\lambda x$ is the one defining the redex. The notion of redex can be generalized to allow any of the consecutive $\lambda$-abstractions to form a redex so that for instance the abstraction $\lambda y$ and corresponding argument $A_2$ defines a redex:
-
+In the standard lambda calculus, a redex is necessarily formed by the outermost lambda in operator position of an application: if the operator consists of consecutive lambda abstractions (\eg, as in $(\lambda x \lambda y . M) A_1 A_2$) then the outermost lambda (\eg, $\lambda x$) is the one that will form the redex. The notion of redex can be generalized to allow evaluation of arguments in any orders. In particular, one can allow any of the consecutive $\lambda$-abstractions to form a redex (\eg, the abstraction $\lambda y$ and corresponding argument $A_2$ would be a valid redex). This is formally as follows:
 
 \begin{definition}[Generalized redex]
-The set of generalized redexes of a term $M$, written $gr(M)$, is a set of pairs $(\lambda x, A)$ where $\lambda x$ is some abstraction in $M$ and $A$ is a subterm called the argument of $\lambda x$. The head $\lambda$ list of $M$, written $\lambda_l(M)$ is a list of lambda abstractions of $M$. They are defined by mutual induction as follows:
+The set of generalized redexes of a term $M$, written $gr(M)$, is a set of pairs $(\lambda x, A)$ where $\lambda x$ is some abstraction in $M$ and $A$ is a subterm called the argument of $\lambda x$. The head $\lambda$ list of $M$, written $\lambda_l(M)$ is a list of lambda abstractions of $M$. They are defined by induction as follows:
 \begin{align*}
 gr(v) &= \emptyset & \lambda_l(v) &= \emptyset\\
 gr(\lambda x. U) &= gr(N) & \lambda_l(\lambda x. U) &= \lambda x \cdot \lambda_l(U) \\
@@ -1224,74 +1223,72 @@ gr(U V) &= gr(U) \union gr(V) & \lambda_l(U V) &= \epsilon & \mbox{if $\lambda_l
 where $v$ ranges over variable occurrences, $x$ ranges over variable names, $U, V$ range over subterms of $M$, and $\epsilon$ denotes the empty list.
 \end{definition}
 
-\begin{example}
-Take $M= (\lambda z . (\lambda x \lambda y . M) N) A_1 A_2$ then
-$gr(M) = \{ (\lambda z, N), (\lambda x, A_1), (\lambda y, A_2)\}$.
+\begin{example} For any term $M, N, A_1, A_2$ we have
+(i) $gr((\lambda x \lambda y . M) A_1 A_2) = \{ (\lambda x, A_1), (\lambda y, A_2)\}$ and
+(ii) $gr((\lambda z . (\lambda x \lambda y . M) N) A_1 A_2) = \{ (\lambda z, A_1), (\lambda x, N), (\lambda y, A_2)\}$.
 \end{example}
 
-Note: In order to define head-linear reduction, one needs to consider specific \emph{occurrences} of variables and sub-terms in a given term. In particular, when denoting a generalized redex by a pair $(\lambda x, A)$, $\lambda x$ and $A$ denote specific \emph{occurrences} of $\lambda x$ and subterm $A$.
+Note: In order to define head-linear reduction, one needs to consider specific \emph{occurrences} of variables and sub-terms in a given term. In particular, let's emphasize that when denoting a generalized redex by a pair $(\lambda x, A)$, the component $\lambda x$ and $A$ denote specific \emph{occurrences} of $\lambda x$ and subterm $A$.
 
 We say that a variable occurrence is \defname{involved} in the generalized redex $(\lambda x, A)$ if the variable occurrence is bound by $\lambda x$. A variable occurrence can therefore be involved in at most one generalized redex. We define the \defname{linear substitution} of $x$ for $A$, written $M\{x\mapsto A\}$ as the term obtained by performing capture-avoiding substitution of that single occurrence of $x$ by $A$. (Compare this to the standard substitution that applies to \emph{every} occurrence of $x$ in $M$.) When performing such substitution we say that we \defname{linearly fire} the generalized redex $(\lambda x, A)$ for that occurrence of $x$.
 
 We define the \defname{head variable occurrence} of a term as the left-most variable occurring in the term (\ie, the first variable found by depth-first traversal of the term tree.) If the head variable occurrence of a term is involved in a generalized redex then we call that redex the \defname{head-linear redex}.
 A term that does not have a head-linear redex is said to be in \defname{quasi head-normal form}.
 
-The \defname{head-linear reduction} $\rightarrow_{hl}$ is defined as the reduction that linearly fires the head linear redex, if it exists. It can be shown that the transitive closure $\rightarrow^*_{hl}$ yields the quasi head-normal form.
+The \defname{head-linear reduction} $\rightarrow_{hl}$ is defined as the reduction that linearly fires the head linear redex, if it exists. It can be shown that the transitive closure $\rightarrow^+_{hl}$ yields the quasi head-normal form.
 
-\todo{define prime redex}
+\paragraph{Soundness}
+The set of \defname{spine subterms} is defined by induction: a term is a spine subterm of itself; the spine subterms of $U V$ and $\lambda U$ are those of $U$.
+A \defname{spine prime redex} is a generalized redex $(\lambda x, A)$ such that the operator of the redex ($\lambda x . U$ for some $U$) is a spine subterm.
 
 We have the following result:
-\begin{theorem}[Head-linear reduction and head normal form\cite{danos-head}]
+\begin{theorem}[Soundness of head-linear reduction \cite{danos-head}]
 \label{thm:danosreigner_headlinred}
+We have the following:
 \begin{compactitem}
-\item If $T \rightarrow^*_{hl} T$  then $T$ and $T'$ are $\beta$-equivalent.
-\item If $T$ is in quasi-head normal form and has $n$ prime redexes then the head reduction of $T$ leads to a head normal form in exactly $n$ steps.
+\item If $T \rightarrow^+_{hl} T$  then $T$ and $T'$ are $\beta$-equivalent.
+\item If $T$ is in quasi-head normal form and has $n$ spine prime redexes then the head reduction of $T$ leads to a head normal form in exactly $n$ steps.
 \item If $T$ is any term, the head linear reduction of $T$ terminates iff the head reduction of $T$ terminates.
 \end{compactitem}
 \end{theorem}
 
-\subsubsection{Linear reduction strategy}
+\subsubsection{Leftmost linear reduction strategy}
 
-Danos-Regnier's head-linear reduction is a linear version of the head reduction. It is not complete for normalization: it only leads to the quasi head-normal form, not the normal form. We will now define the linear counterpart of the normal-order reduction strategy.
+As the name indicates, the head-linear reduction is a linear version of the \emph{head} reduction. It thus only yields the quasi \emph{head}-normal form, not the normal form, and therefore is not complete for normalization.
 
-Informally, we define the \defname{linear reduction strategy} as the strategy that performs head-linear reduction if possible, and otherwise, if the term is in quasi-head normal form, continuously (and recursively) applies the head-linear reduction on each argument of the head variable occurrence.
+In the standard lambda calculus, normal-order reduction strategy is obtained by repeatedly applying head reduction to get to the head-normal form, and then continuously applying the head-reduction on each argument of the head variable.
+This ultimately yields the normal form of the term if it exists.
+
+We now define the linear counterpart of the normal-order reduction: Informally, we define the \defname{leftmost linear reduction strategy} as the strategy that performs head-linear reduction if possible, and otherwise, if the term is in quasi-head normal form, continuously (and recursively) applies the head-linear reduction on each argument (from left to right) of the head variable occurrence.
 Formally:
-\begin{definition}
-Given a term $M$, we define its \defname{head active variable occurrence}, denoted $haoc(M)$ by induction on $M$:
+\begin{definition}[Left-most linear reduction]
+Given a term $M$, we define the partial function $lloc_M$ from subterms of $M$ to  variable occurrence by induction on the subterms of $M$:
 \begin{align*}
-haoc(x) &= x \\
-haoc(U V) &=
+lloc_M(v) &=
+    \begin{cases}
+    v &\mbox{if $v$ is involved in a generalized redex in $M$,} \\
+    \mbox{is undefined} & \mbox {otherwise.}
+    \end{cases}  \\
+lloc_M(\lambda x . U) &= loc_M(U) \\
+lloc_M(U V) &= \begin{cases}
+                lloc_M(U) &\mbox{if $lloc_M(U)$ is defined,} \\
+                lloc_M(V) &\mbox{if $lloc_M(U)$ is undefined and $\lambda_l(M) = \epsilon$.} \\
+                lloc_M(V) &\mbox{otherwise.}
+              \end{cases}
 \end{align*}
+where $v$ ranges over variable occurrence in $M$.
 
- The \defname{linear reduction}, written $\rightarrow_l$, is defined recursively as follows:
-$M \rightarrow_l M'$ if either (i)  $M \rightarrow_{hl} M'$
-or (ii) $M$ is in quasi-head normal form with  $= \lambda x_1 \ldots x_n $.
-
+The \defname{leftmost linear variable occurrence} of $M$
+is defined as $lloc_M(M)$ if it exists, otherwise $M$ is said to be in \defname{quasi normal form}. The \defname{leftmost linear reduction} strategy, written $\rightarrow_l$, is defined as the strategy that linearly fires the generalized redex involving the leftmost linear variable occurrence.
 \end{definition}
-linearly fires the left-most variable occurrence that is involved in some redex. (Compare this with the head-linear reduction that first locates the left-most variable occurrence and, if it is involved in a redex, linearly fires it.)
 
+Leftmost linear reduction proceeds by first locating the left-most variable occurrence and, if it is involved in a redex, linearly fires it. Compare this with the traditional left-most outermost reduction which first locate the leftmost redex and then fires it by substituting all the variables involved in it.
 
 \begin{example}
 Take $M = (\lambda x. x x N) z$. We have $M \rightarrow_{hl} (\lambda x. z x N) z$ which is in quasi head normal form because the head variable $w$ is not involved in any redex.
 And since the left-most occurrence $x$ is involved in the redex $(\lambda x, z)$ we have $(\lambda x. z x N) z \rightarrow_l (\lambda x. z z N) z$.
 \end{example}
 
-
-
-
-By Theorem \ref{thm:danosreigner_headlinred}, the head-linear reduction strategy can be used to compute the head normal form of a term (by first calculating its quasi head normal form). We define
-
-So intuitively, one can get to the normal form by repeatedly applying the strategy for each operand of the head variable in the head normal form. This gives the notion of \defname{linear reduction}
-
-\begin{definition}[Traversal reduction]
-We define the traversal reduction, written $\rightarrow_t$, as follows:
-$T \rightarrow_t T'$ if and only if:
-\begin{enumerate}
-\item $T \rightarrow_{hl} T'$;
-\item or $T$ is in quasi-head normal form and $T \rightarrow_h T'$;
-\item or $T$ is in head normal form $T = \lambda x_1 \ldots \lambda x_n . z A_1 \ldots A_m$ for some lambda terms $A_1, \ldots A_m$ where  $n\geq 0, m >1$; and for some $1\leq j\leq m$ we have $T' = \lambda x_1 \ldots \lambda x_n . z A_1 \ldots A'_j\ldots A_m$  and  $A_j \rightarrow_t A_j'$.
-\end{enumerate}
-\end{definition}
 
 
 
