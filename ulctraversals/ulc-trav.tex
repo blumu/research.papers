@@ -1207,9 +1207,15 @@ A term is in \defname{head normal form} if it can be written $\lambda x_1 \ldots
 The \defname{head reduction}, denoted $\rightarrow_{h}$, fires the head redex of a term if it exists. It can be shown that its transitive closure $\rightarrow^*_{h}$ yields the head-normal form. The \defname{normal-order reduction strategy}, also called leftmost-outermost reduction strategy, performs head reduction until reaching the head-normal form and then recursively applies head reduction on each operand of the head variable. This reduction strategy can be shown to yield the normal form if it exists.
 
 \subsection{Head-linear reduction}
-We now introduce the head-linear reduction of Danos-Regnier using a slightly different presentation \cite{danos-head}.
+We now introduce the head-linear reduction of Danos-Regnier \cite{danos-head}.
 
-In order to define head-linear reduction, one needs to consider specific \emph{occurrences} of variables and sub-terms in a given term. We will denote any redex $(\lambda x. M) A$ occurring in a larger term, by the pair $(\lambda x, A)$ where $\lambda x$ and $A$ denote respectively the specific \emph{occurrences} of $\lambda x$ and $A$ in the term forming the redex.
+The notion of redex from the standard lambda calculus is generalized by the notion of prime redex:
+
+In order to define head-linear reduction, one needs to consider specific \emph{occurrences} of variables and sub-terms in a given term.
+
+We will denote any redex $(\lambda x. M) A$ occurring in a larger term, by the pair $(\lambda x, A)$
+
+where $\lambda x$ and $A$ denote respectively the specific \emph{occurrences} of $\lambda x$ and $A$ in the term forming the redex.
 
 We say that a variable occurrence is \defname{involved} in a redex $(\lambda x. M) A$ if it is a free occurrence of $x$ in $M$. A variable occurrence can therefore be involved in at most one redex. We define the \defname{linear substitution} of $x$ for $A$, written $M\{x\mapsto A\}$ as the term obtained by performing capture-avoiding substitution of that single occurrence of $x$ by $A$. (Compare this to the standard substitution that is performed on \emph{every} occurrence of $x$ in $M$.) When performing such substitution we say that we \defname{linearly fire} the redex $(\lambda x, A)$ for that occurrence of $x$.
 
@@ -1231,10 +1237,26 @@ We have the following result:
 
 \subsubsection{Linear reduction strategy}
 
-Danos-Regnier's head-linear reduction is a linear version of the head reduction.It is not complete for normalization: it only leads to the quasi-head normal form, not the normal form. We will now define the counterpart of the normal-order reduction strategy for the head-linear reduction.
+Danos-Regnier's head-linear reduction is a linear version of the head reduction. It is not complete for normalization: it only leads to the quasi head-normal form, not the normal form. We will now define the linear counterpart of the normal-order reduction strategy.
 
-\todo{We define the \defname{linear reduction}, written $\rightarrow_l$, as the reduction that linearly fires the left-most variable occurrence that is involved in some redex. (Compare this with the head-linear reduction that first locates the left-most variable occurrence and, if it is involved in a redex, linearly fires it.)
-}
+Informally, we define the \defname{linear reduction strategy} as the strategy that performs head-linear reduction if possible, and otherwise, if the term is in quasi-head normal form, continuously (and recursively) applies the head-linear reduction on each argument of the head variable occurrence.
+Formally:
+\begin{definition}
+Given a term $M$, we define its \defname{head active variable occurrence}, denoted $haoc(M)$ by induction on $M$:
+\begin{align*}
+haoc(x) &= x \\
+haoc(U V) &=
+\end{align*}
+
+
+
+ The \defname{linear reduction}, written $\rightarrow_l$, is defined recursively as follows:
+$M \rightarrow_l M'$ if either (i)  $M \rightarrow_{hl} M'$
+or (ii) $M$ is in quasi-head normal form with  = \lambda x_1 \ldots x_n .
+
+\end{definition}
+linearly fires the left-most variable occurrence that is involved in some redex. (Compare this with the head-linear reduction that first locates the left-most variable occurrence and, if it is involved in a redex, linearly fires it.)
+
 
 \begin{example}
 Take $M = (\lambda x. x x N) z$. We have $M \rightarrow_{hl} (\lambda x. z x N) z$ which is in quasi head normal form because the head variable $w$ is not involved in any redex.
