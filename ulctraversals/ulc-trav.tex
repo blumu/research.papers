@@ -481,7 +481,7 @@ For every traversal $t\in\travset$ there exists an affine traversal $u \in \trav
 $$\pview{u\filter\theroot} = \pview{t\filter\theroot} \ .$$
 \end{proposition}
 \begin{proof}
-\todo{Formalize intuition explained above in a proof. (see handwritten notes)}
+We omit the proof, it's a similar argument to the proof of Proposition \ref{prop:branching_traversal_normalizing} below.
 \end{proof}
 
 
@@ -1289,8 +1289,45 @@ Take $M = (\lambda x. x x N) z$. We have $M \rightarrow_{hl} (\lambda x. z x N) 
 And since the left-most occurrence $x$ is involved in the redex $(\lambda x, z)$ we have $(\lambda x. z x N) z \rightarrow_l (\lambda x. z z N) z$.
 \end{example}
 
+The definition of prime redex from Danos-Regnier corresponds to the \emph{prime spine redexes} in our setting. We generalize the notion of prime redex as follows
+\begin{definition}[Prime redexes]
+The set of prime redexes $PR(M)$ of a term $M$ is a subset of the generalized redexes of $M$ defined by induction as follows:
+\begin{align*}
+PR(v) &= \emptyset \\
+PR(\lambda x . U) &= PR(U)\\
+PR(U V) &=
+    \begin{cases}
+        \{(\lambda x, V) \} \union PR(U) & \mbox{if $\lambda_l(U) = \lambda x \cdot l $} \\
+        PR(U) & \mbox{if $\lambda_l(U) = \epsilon$ and $lloc_M(U)$ is defined} \\
+        PR(U) \union PR(V) & \mbox{if $\lambda_l(U) = \epsilon$ and $lloc_M(U)$ is undefined}
+    \end{cases}
+\end{align*}
+where $v$ ranges over variable occurrences and $U,V$ over subterms of $M$.
+\end{definition}
+
+\begin{example}
+Take $M = (\lambda x . z ((\lambda w y . y)x)) U$ for any term $U$.
+Then $M$ is in quasi-head normal form with one prime spine redex $(x,U)$.
+Head linear reduction gives $M \rightarrow_{hl} z ((\lambda w y. y) U)$.
+
+$M$ is also in quasi normal form. Indeed $lloc_M(M) = lloc_M(N) = lloc_M (\lambda w y . y)$ which is undefined.
+The prime redexes of $M$ are $PR(M) = \{ (\lambda x, U) , (\lambda w, x) \}$.
+Reducing the prime redexes with two head reduction gives
+$M \rightarrow_h z ((\lambda w y.y)x) \rightarrow_h z (\lambda y . y)$ which is in normal form.
+\end{example}
 
 
+\subsection{Traversal Correctness}
+
+Proof idea: ``traversals implement left-most linear reduction''.
+The proof sketch:
+\begin{itemize}
+\item Show that `leftmost linear reduction' yields the `quasi normal form'.  (Should not be too difficult: a consequence of Danos-Regnier’s Theorem 2)
+\item Observe that if $M$ is beta-normal then (trivially) its set of traversal cores P-views is precisely the set of paths in the tree representation of M
+\item If $M$ reduces to $M'$ using the linear reduction then the traversal cores P-views of $M'$ are isomorphic to the traversals core P-views of $M$.
+\item Reducing a trivial redex preserves (modulo some traversal prefix) the set of traversals.
+The interesting part of the proof will be to show how the ghost nodes gradually ``materialize'' after each step of the linear reduction.
+\end{itemize}
 
 \bibliographystyle{abbrv}
 \bibliography{ulctrav}
