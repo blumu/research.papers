@@ -1282,8 +1282,12 @@ This ultimately yields the normal form of the term if it exists.
 
 We now define the linear counterpart of the normal-order reduction: Informally, the \defname{leftmost linear reduction strategy} is the strategy that performs head-linear reduction if possible, and otherwise, if the term is in quasi-head normal form, continuously (and recursively) applies the head-linear reduction on each argument (from left to right) of the head variable occurrence.
 Formally:
+
 \begin{definition}[Leftmost linear reduction]
-Given a term $M$, we define the partial function $lloc_M$ from subterms of $M$ to variable occurrences by induction on the subterms of $M$:
+Given a term $M$, we write $\mathcal{V}(M)$ for the set of variable occurrences in $M$
+and $\mathcal{V}^\bot(M)$ for $\{\bot \} + \mathcal{V}(M)$ where the bottom element $\bot$ represents the `undefined' occurrence. We introduce the partial order $\sqsubseteq$ on $\mathcal{V}^\bot(M)$ defined by: for all $x,y \in \mathcal{V}^\bot(M)$, $x \sqsubseteq y$ if and only if $x = y$ or $x = \bot$.
+
+We define the partial function $lloc_M$ from subterms of $M$ to variable occurrences by induction on the subterms of $M$:
 \begin{align*}
 lloc_M(v) &=
     \begin{cases}
@@ -1301,7 +1305,7 @@ where $v$ ranges over variable occurrences in $M$,
 and for any subterm $N$, $lloc_M(N) = \bot$ denotes that $lloc$ is undefined at $N$.
 
 The \defname{leftmost linear variable occurrence} of $M$
-is defined as $lloc_M(M)$ if it exists, otherwise $M$ is said to be in \defname{quasi normal form}. The \defname{leftmost linear reduction} strategy, written $\rightarrow_l$, is defined as the strategy that linearly fires the generalized redex involving the leftmost linear variable occurrence.
+is defined as $lloc_M(M)$ if it exists, otherwise $M$ is said to be in \defname{quasi normal form}, or \emph{qnf} for short. The \defname{leftmost linear reduction} strategy, written $\rightarrow_l$, is defined as the strategy that linearly fires the generalized redex involving the leftmost linear variable occurrence.
 \end{definition}
 
 Leftmost linear reduction proceeds by first locating the left-most variable occurrence and, if it is involved in a redex, linearly fires it. In comparison, the traditional left-most outermost reduction first locates the leftmost redex and then fires it by substituting all the variables involved in it.
@@ -1311,7 +1315,76 @@ Take $M = (\lambda x. x x N) z$. We have $M \rightarrow_{hl} (\lambda x. z x N) 
 But since the left-most occurrence $x$ is involved in the redex $(\lambda x, z)$ the leftmost linear reduction gives $(\lambda x. z x N) z \rightarrow_l (\lambda x. z z N) z$.
 \end{example}
 
-The definition of prime redex from Danos-Regnier corresponds to the \emph{prime spine redexes} in our setting. We generalize the notion of prime redex as follows
+\begin{property}
+\label{prop:lloc_properties}
+Some immediate properties:
+\begin{itemize}
+\item[(i)]
+ If $N$ is a subterm of $M$ then $lloc_N(N) \sqsubseteq lloc_M(N)$;
+\item[(ii)]
+ If $M$ is beta-normal then $lloc_M(M) = \bot$;
+ \item[(iii)]
+ If $U V$ is in quasi normal form then so is $U$.
+\item[(iv)]
+ If $\lambda x . U$ is in quasi normal form then so is $U$.
+\end{itemize}
+\end{property}
+\begin{proof}
+(i) Immediate from the fact that generalized redexes of $N$ are also generalized redexes of $M$. (ii) If $lloc_M(M) \neq \bot$ then $M$ must contain a generalized redex and therefore must also contain a standard redex hence $M$ is not beta-normal.
+(iii) If $U V$ is in quasi normal form then $lloc_{UV}(UV) = \bot$ so by definition of $lloc$ we must have $lloc_{UV}(U) = \bot$. By (i) since $U$ is a subterm of $UV$ this implies $lloc_{UV}(U) = \bot$.
+(iv) We have $\bot = lloc_{\lambda x . U}(\lambda x . U) = lloc_{\lambda x . U}(U) \sqsupseteq lloc_{U}(U)$.
+\end{proof}
+
+We say that a standard redex $(\lambda x. N) A$ is \emph{trivial} if $x$ does not occur freely in $N$ in which case the redex can be \emph{trivially reduced} to just $N$.
+
+\begin{proposition}[Trivial redexes in quasi normal forms]
+\label{prop:qnf_nf}
+Let $M$ be a term in quasi normal form and suppose that $M$ is not in beta-normal form. Then:
+\begin{itemize}
+\item[(i)] If $x$ is a variable occurrence in $M$ involved in a generalized redex of $M$ then $x$ occurs in operand position in a subterm of the form:
+$$(\lambda z .U) A_1 \ldots A_q (\ldots x \ldots) $$
+\item[(ii)] Let $(\lambda x . N) A$ be the leftmost standard redex occurring in $M$ such that $N$ does not contain any redex. Then $x$ does not occur freely in $N$.
+\end{itemize}
+\end{proposition}
+\begin{proof}
+\begin{compactitem}
+\item[(i)] By induction on $M$. Suppose $M = v$ for some variable $v$ then the result trivially holds since $M$ has no generalized redex. Suppose $M = \lambda x . U$ then it follows by the induction hypothesis since the generalized redexes of $M$ are those of $U$.
+Suppose $M = U V$. If $x$ occurs in $U$ then we conclude by the induction hypothesis. If $x$ occurs in $V$ then if $V$ is in \emph{qnf} we conclude by the induction hypothesis. Otherwise by definition of $lloc$ we necessarily have $\lambda_l(U) \neq \epsilon$. Hence $U$ is either an abstraction or a redex with possibly multiple applied arguments. Consequently, so is $UV$ which proves (i).
+
+\item[(ii)] By induction on $M$. Suppose $M = v$ for some variable $v$ then it trivially holds since $M$ has no redex. Suppose $M = \lambda x . U$ then the result follows by the induction hypothesis since the redexes of $M$ are those of $U$.
+
+Suppose $M = U V$. Let's consider the three sub-cases depending on where the redex is located in $U V$:
+\begin{compactitem}
+  \item[(1)] The redex $(\lambda x . N) A$  is in $U$. Since $M$ is in quasi normal form, by Property \ref{prop:lloc_properties}(iii) so is $U$, we can thus conclude by the induction hypothesis.
+
+  \item[(2)] The redex $(\lambda x . N) A$  is in $V$.
+If $\lambda_l(U) = \epsilon$ then by definition of $lloc$ we have $lloc_M(UV) = lloc_M(V) = \bot$ so we conclude by the induction hypothesis.
+If $\lambda_l(U) \neq \epsilon$, then either $U$ contains a redex or $U$ is an abstraction. But $U$ cannot be a redex since by assumption $N$ does not contain any redex, and $U$ being abstraction would make $M = U V$ itself a redex which would contradict the fact that redex $(\lambda x . N) A$ in $V$ is the leftmost redex in $M$.
+
+  \item[(3)] $U = \lambda x . N$ and $V = A$.
+  By assumption $UV$ is in \emph{qnf} therefore by Property \ref{prop:lloc_properties}(iii) and (iv), $N$ is in \emph{qnf}.
+  Suppose $x$ occurs freely in $N$ then by the induction hypothesis (i), it must appear in operand position in consecutive applications to some lambda abstraction. But this contradicts the assumption that $N$ does not contain any redex.
+\end{compactitem}
+\end{compactitem}
+\end{proof}
+
+\begin{theorem}[Soundness and completeness of leftmost linear reduction]
+\label{thm:soundness_leftmostlinearred}
+We have:
+\begin{itemize}
+\item[(i)] If $M \rightarrow_{l} N$ then $M$ and $N$ are beta-equivalent.
+\item[(ii)] The left-most head linear reduction strategy terminates iff the head linear reduction terminates.
+\item[(iii)] If $M$ is in quasi normal form and contains $n$ standard redexes then there is an evaluation strategy that reduces $M$ to its normal form in $n$ beta-reduction steps.
+\end{itemize}
+\end{theorem}
+\begin{proof}
+(i) TODO\todo{Proof of (i) is a variation of Danos-Regnier proof for the same result for head-linear reduction.}
+(ii) TODO\todo{Hopefully the proof of (ii) should not involve state machine/stack/environments, ...}
+(iii) The idea consists in reducing the redex `inside-out' from left to right. By Proposition \ref{prop:qnf_nf}(ii), each reduction is trivial and it is easy to see that  $lloc$ is preserved by trivial reduction, therefore each term in the reduction sequence is in \emph{qnf}. The last term in the sequence has no redex therefore it's in beta-normal form.
+\end{proof}
+\todo{To prove!}
+
+The definition of prime redex from Danos-Regnier corresponds to the \emph{prime spine redexes} in our setting. We generalize the notion of prime redex as follows \todo{this definition might not even be needed after all!}
 \begin{definition}[Prime redexes]
 The set of prime redexes $PR(M)$ of a term $M$ is a subset of the generalized redexes of $M$ defined by induction as follows:
 \begin{align*}
@@ -1344,11 +1417,11 @@ $M \rightarrow_h z ((\lambda w y.y)x) \rightarrow_h z (\lambda y . y)$ which is 
 Proof idea: ``traversals implement left-most linear reduction''.
 The proof sketch:
 \begin{itemize}
-\item Show that `leftmost linear reduction' yields the `quasi normal form'.  (Should not be too difficult: a consequence of Danos-Regnier’s Theorem 2)
+\item Show that `leftmost linear reduction' yields the `quasi normal form'.  (Theorem \ref{thm:soundness_leftmostlinearred})
 \item Observe that if $M$ is beta-normal then (trivially) its set of traversal cores P-views is precisely the set of paths in the tree representation of M
-\item If $M$ reduces to $M'$ using the linear reduction then the traversal cores P-views of $M'$ are isomorphic to the traversals core P-views of $M$.
+\item If $M$ reduces to $N$ using the leftmost linear reduction then the traversal cores P-views of $N$ are isomorphic to the traversals core P-views of $M$.
 \item Reducing a trivial redex preserves (modulo some traversal prefix) the set of traversals.
-The interesting part of the proof will be to show how the ghost nodes gradually ``materialize'' after each step of the linear reduction.
+The interesting part of the proof will be to show how the ghost nodes gradually ``materialize'' after each step of the linear reduction, and how the arity threshold gives the right bound for limiting eta-expansion.
 \end{itemize}
 
 \bibliographystyle{abbrv}
