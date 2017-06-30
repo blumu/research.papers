@@ -199,7 +199,7 @@ We say that an occurrence of a node in a justified sequence is \defname{heredita
 
 For any justified sequence $t$ we write $t^\omega$ to denote the last occurrence in $t$, and $\jp(t)$ to denote the prefix of $t$ ending at the justifier of the last node of $t$. We say that $t$ is an \defname{extension} of justified sequence $u$ if $u$ is a strict subsequence of $t$ sharing the same justification pointers.
 
-We use the standard game-semantic operations for justified sequences \cite{Abr02}. In particular we refer to the P-view of a justified sequence $s$, denoted $\pview{s}$, as the sub-sequence of $s$ obtained by reading the sequence backwards as follows: (i) if the node being read is a variable node then keep that node and follow its justification pointer (\ie, skip  all the occurrences ``underneath that pointer'') (ii) if the node is a lambda node then keep that node and move to the preceding node. The O-view, denoted $\oview{t}$, is defined as the dual of the P-view.
+We use the standard operations borrowed from Game Semantics on justified sequences \cite{Abr02}.
 
 \begin{definition}[Projection]
 Let $s$ be a justified sequence of nodes.
@@ -212,16 +212,29 @@ Let $s$ be a justified sequence of nodes.
  \item We define the \defname{core} of $s$, written $\core{s}$ as the subsequence of $s$ consisting of external nodes:
  \begin{align*}
  \pi \colon \travulc(M) & \longrightarrow \justseqset(M) \\
-      t  & \longmapsto  s\filter\NodeHjByRoot
+      t  & \longmapsto  s\filter\NodeHjByRoot \ .
  \end{align*}
- ;
-
- \item We define the \defname{core P-view} as $\pview{\core{s}}$, the P-view of the traversal core.
 \end{itemize}
 \end{definition}
 Observe that if there is a single occurrence $r$ of the tree root in$s$ then $\core{s} = s\filter\NodeHjByRoot = s\filter r$.
 
+The P-view of a justified sequence $s$, denoted $\pview{s}$, is the sub-sequence of $s$ obtained by reading $s$ backwards as follows: (i) if the node being read is a variable node then keep that node and follow its justification pointer (\ie, skip all the occurrences ``underneath that pointer'') (ii) if the node is a lambda node then keep that node and move to the preceding node. Formally:
+\begin{definition}[Views]
+$$\begin{array}{rcll}
+ \pview{\epsilon} &=&  \epsilon \\
+ \pview{t \cdot n }  &=&  \pview{s} \cdot n
+    & \mbox{if $n$ is a variable or $@$ node;}
+    \\
+ \pview{\Pstr[10pt]{ t \cdot (m){m} \ldots (lmd-m,25){n}}} &=&
+        \Pstr{ \pview{t} \cdot (m2){m} \cdot (lmd2-m2,60){n} }
+    & \mbox{if $n$ is a lambda node;}
+    \\
+ \pview{t \cdot n }  &=&  n & \mbox{if $n$ has no pointer}\enspace .
+\end{array}$$
+The O-view, denoted $\oview{t}$, is defined as the dual of the P-view \cite{Abr02}.
+\end{definition}
 
+We define the \defname{core P-view} as $\pview{\core{s}}$, the P-view of the traversal core.
 
 \subsection{Traversals}
 
@@ -430,12 +443,25 @@ Our ``on-the-fly'' eta-expansion should correspond to the $Fun : U \rightarrow (
 
 \subsection{Normalizing STLC terms}
 
-In STLC, as mentioned in the introduction, the Correspondence Theorem \ref{thm:ulc_corresp} yields a method to normalize a simply-typed lambda term. This is because the beta-normal form of a simply-typed term $M$ is uniquely determined by the maximal paths of its tree representation. By the Game-Traversal Correspondence Theorem, the set of traversals of the beta-normal form of $M$ is precisely the set of cores of traversals of $M$. (We recall that the \defname{projection with respect to the root} of a traversal $t$, also called the \defname{core of the traversal}, consists of the subsequence of nodes that are hereditarily justified by the initial occurrence of the root.) By the Path-P-view correspondence\cite{Ong2006,BlumPhd}, the set of paths in tree of the normal form is given by the set of P-views of traversal cores of $M$. Hence the P-views of maximal traversals of $M$ yields all the maximal paths in the tree representation of the beta-normal form of $M$.
-Formally, for every simply-typed term $M$:
+In STLC, as mentioned in the introduction, the Correspondence Theorem \ref{thm:ulc_corresp} yields a method to normalize a simply-typed lambda term. This is formalized by the following characterization theorem.
+
+We now introduce a quotienting operation over traversals:
+\begin{definition}[Quotienting]
+We introduce the equivalence relation $\sim$ over $\travulc(M)$ defined by $t \sim u$ just if $\pview{\core{t}} = \pview{\core{u}}$, and define $\travulc(M)/{\sim}$ as the set of equivalence classes of $\travulc(M)$.
+\end{definition}
+
+Let $\pathset(M)$ denotes the set of maximal paths in the computation tree representation of $M$ for any term $M$.
+
+\begin{theorem}[Normalized Paths Characterization for STLC]
+For every simply-typed term $M$, let $\betanf{M}$ denote its normal form. We have:
 \begin{equation}
-\pview{\core{\travstlc(M)}} = \pathset(\betanf{M}) \label{eqn:pviewcore_paths}
+\travulc(M)/{\sim}\ \cong\ \pathset(\betanf{M}) \label{eqn:pviewcore_paths}
 \end{equation}
-where $\core{\travstlc(M)}$ denotes the set of cores of traversals of $M$ and  $\pathset (M)$ denotes the set of maximal paths in the computation tree representation of $M$.
+where the isomorphism is given by the function $t\in\travulc \mapsto \pview{\core{t}}$.
+\end{theorem}
+\begin{proof}
+A simply-typed term in beta-normal form is uniquely determined by the maximal paths of its tree representation. By the Game-Traversal Correspondence Theorem, the set of traversals of the beta-normal form of $M$ is precisely the set of cores of traversals of $M$. By the Path-P-view correspondence\cite{Ong2006,BlumPhd}, the set of paths in tree of the normal form is given by the set of P-views of traversal cores of $M$. Hence the P-view of cores of maximal traversals of $M$ yields all the maximal paths in the tree representation of the beta-normal form of $M$.
+\end{proof}
 
 Because P-views are effectively computable, the above equality yields a normalization procedure for STLC:
 \begin{algorithm}
@@ -452,7 +478,7 @@ $^{(*)}$ The set of traversals may be infinite, but the finite subset of \emph{b
 \end{algorithm}
 
 \begin{remark}
-By the Game Semantics correspondence, the set of STLC traversals can be infinite. Indeed, the game denotation of a term must allow Opponent's moves accounting for all possible context terms. In particular, suppose that the term $M$ is a second order term, then one can define an infinite sequence of term contexts that would call $M$ with a function parameter that would call its argument exactly $k$ times for $k>0$. It turns out that traversals accounting for all those contexts are redundant when it comes to normalizing the term. The intuition being that, due to the absence of side-effects, calling the same argument multiple times will always involves the same underlying computation in $M$. This is formalized in Proposition \ref{prop:branching_traversal_normalizing} (shown for ULC but the same argument holds for STLC) which states that the above equality can be maintained when restricting the set of traversals to the subset of \emph{branch traversals} in which such repeatitive Opponent's behaviour is proscribed.
+By the Game Semantics correspondence, the set of STLC traversals can be infinite. Indeed, the game denotation of a term must allow Opponent's moves accounting for all possible context terms. In particular, suppose that the term $M$ is a second order term, then one can define an infinite sequence of term contexts that would call $M$ with a function parameter that would call its argument exactly $k$ times for $k>0$. It turns out that traversals accounting for all those contexts are redundant in the sense that they all belong to the same equivalence class after quotienting. The intuition being that, due to the absence of side-effects, calling the same argument multiple times will always involves the same underlying computation in $M$. This is formalized in Proposition \ref{prop:branching_traversal_normalizing} (shown for ULC but the same argument holds for STLC) which states that the above equality can be maintained when restricting the set of traversals to the subset of \emph{branch traversals} in which such repeatitive Opponent's behaviour is proscribed.
 \end{remark}
 
 \paragraph{Implementation of the normalization procedure}
@@ -462,11 +488,21 @@ The normalization procedure from algorithm \ref{algo:stlc_normalization_by_trave
 
 In this section we aim to establish a similar normalization procedure for the untyped lambda calculus by proving the counterpart of Equation \ref{eqn:pviewcore_paths} for the traversal definition of Table \ref{tab:trav_rules} applied to untyped lambda-terms with a normal form.
 
-\subsection{The View-Path correspondence for ULC}
+\subsection{Normalized paths characterization for ULC}
 
-Because ULC is not strongly-normalizing, traversals are not necessarily finite. There is therefore no notion of `last occurrence' in such traversal, which means that the P-view itself is undefined. We will instead consider P-views of finitary approximations of traversals. In other words, for ULC, the counterpart of the above equation that we want to prove is:
-$$ \Union_{k\geq0} \pview{\core{\travset^k(M)}} = \pathset(\betanf{M}) . $$
-for any untyped lambda term $M$ having a normal form $\betanf{M}$, where $\pathset (\betanf{M})$ denotes the set of \emph{possibly infinite} maximal paths in the infinitary computation tree\footnote{For a formal definition of infinitary computation trees see \cite{Blum17-HomogNotRestriction, Ong2006}} of the normal form of $M$, and  $\travset^k(M)$ denotes the set of traversals of length $k$ at most.
+The counterpart of the path characterization theorem for ULC can be stated as follows:
+\begin{theorem}[Normalized Paths Characterization for ULC]
+For any untyped term $M$ with a normal form $\betanf{M}$ we have:
+$$ \travulc(M)/{\sim} \ \cong\ \pathset(\betanf{M})$$
+where the equivalence classes and the isomorphism are defined similarly as STLC.
+\end{theorem}
+Like for STLC, this result would immediately follow from a proof of the game semantics correspondence conjecture. Instead, we will prove this result based on a standard lambda calculus argument based on the concept of \emph{leftmost linear reduction}. See section \ref{sec:correcness} for the proof.
+
+\begin{remark}
+This result can be generalized to its infinitary version for lambda term $M$ with no normal form:
+$$ \Union_{k\geq0} \pview{\core{\travulc^k(M)}} = \pathset(IT(M)) . $$
+where $\travulc^k(M)$ denotes the set of traversals of length $k$ at most and $\pathset(IT(M))$ denotes the set of \emph{possibly infinite} maximal paths in $IT(M)$, the infinitary computation tree  of the term obtained by reducing beta-redexes ad-infinitum (\ie, the B\"oem tree of $M$ represented as a computation trees). For a formal definition of infinitary computation trees see \cite{Blum17-HomogNotRestriction, Ong2006}.
+\end{remark}
 
 \subsection{Resticting non-determinism}
 
@@ -475,6 +511,7 @@ All the traversal rules are deterministic except the one used to model free vari
 A consequence of this definition is that even for terms having a normal form (and in particular even for beta-normal terms), the set of traversals can be infinite, and traversals can be infinitely long. For example, take the term $\lambda f . f (\lambda x. x)$. For all $k\geq0$, the sequence $\lambda f \cdot f \cdot (\lambda x \cdot  x)^k$ (with appropriate pointers) is a traversal. From a game semantic viewpoint, those traversals accounts for all the possible denotations of the function parameter $f$: indeed, for each $k$, there exists a term that applies its argument $k$ times: $\lambda y . y (y ( \ldots y)) $, and there got to be plays in the game denotation of the term to accounts for those possible arguments.
 
 For the sake of computing the beta-normal form of a term, however, it's only necessary to traverse finitely many finite traversals (provided that the normal form exists). This is achieved by resticting the rule \rulenamet{IVar} to traverse only nodes leading to paths in the computation tree that are yet unexplored. In practice, this can be done as follows: when choosing the next lambda node to visit, one can restrict the choice of the next move to child lambda nodes of the \emph{latest} nodes in the traversal. This intuition is formalized by the notion of \emph{branching traversal} in Definition \ref{dfn:branching_traversals} and Proposition \ref{prop:branching_traversal_normalizing}.
+
 
 \subsubsection{Context-affine traversals}
 
@@ -509,8 +546,7 @@ We define the set of \defname{context-affine traversals} $\travsetaffine$ as the
 
 
 \begin{proposition}[Affine traversals are sufficient for normalization]
-For every traversal $t\in\travulc$ there exists an affine traversal $u \in \travsetaffine$ such that
-$$\pview{\core{u}} = \pview{\core{t}} \ .$$
+For every traversal $t\in\travulc$ there exists an affine traversal $u \in \travsetaffine$ such that $u \sim t$.
 \end{proposition}
 \begin{proof}
 We omit the proof, it's a similar argument to the proof of Proposition \ref{prop:branching_traversal_normalizing} below.
@@ -1427,6 +1463,7 @@ $M \rightarrow_h z ((\lambda w y.y)x) \rightarrow_h z (\lambda y . y)$ which is 
 
 
 \subsection{Traversal Correctness}
+\label{sec:correcness}
 
 Proof idea: ``traversals implement left-most linear reduction''.
 The proof sketch:
