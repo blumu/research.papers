@@ -39,9 +39,8 @@
 \newcommand{\normalizing}{{\sf norm}}
 \newcommand{\branching}{{\sf branch}}
 
-%\newcommand\travset{\mathcal{T}\!rav}
 \newcommand\travsetshort{\mathcal{T}\!r}
-\newcommand{\travsetaffine}{{\travset^\affine}}
+%\newcommand{\travsetaffine}{{\travset^\affine}}
 \newcommand{\travsetbr}{{\travset^\branching}}
 \newcommand{\travsetnorm}{\travset^\normalizing}
 
@@ -93,18 +92,18 @@ Finally we define \emph{leftmost linear reduction} as a generalization of the he
 \section{Background}
 
 Traversals were originally introduced in the context of higher-order recursion schemes \cite{Ong2006} used as generator of order-$0$ structures such as trees.
-The notion was then extended to the more general setting of simply-typed languages and, in particular, to the simply-typed lambda calculus \cite{BlumPhd}, where the non-deterministic rule \rulenamet{IVar} is introduced to account for the presence of free variables. The relationship with Game Semantics is well understood in the typed setting: the set of traversals is in bijection with (the plays of) the interaction game denotation of a term, further the \emph{core projection} operation yields a bijection between the standard game denotation and its standard innocent game denotation (Theorem \ref{thm:correspondence}). This correspondence yields a method to evaluate beta-redexes of a simply-typed lambda term without performing the traditional $\beta$-reduction \cite{danos-head,BlumPhd,BlumGalop2008, Blum-LocalBeta2008}.
+The notion was then extended to the more general setting of simply-typed languages and, in particular, to the simply-typed lambda calculus \cite{BlumPhd}, where the non-deterministic rule \rulenamet{IVar} is introduced to account for the presence of free variables. The relationship with Game Semantics is well understood in the typed setting: the set of traversals is in bijection with (the plays of) the interaction game denotation of a term, further the \emph{core projection} operation yields a bijection between the standard game denotation and its standard innocent game denotation (Theorem \ref{thm:gamesem_correspondence_stlc}). This correspondence yields a method to evaluate beta-redexes of a simply-typed lambda term without performing the traditional $\beta$-reduction \cite{danos-head,BlumPhd,BlumGalop2008, Blum-LocalBeta2008}.
 
 In this paper we show how the game-semantic traversals of STLC \cite{BlumPhd} naturally extend to ULC, and thus yield a method to normalize untyped lambda terms. In the absence of types, eta-long expansion is simply not an option: it would yield an infinite term. We thus opt instead for a more reasonable option: \emph{on-demand eta-expansion}. The idea stems from the following observation: attempting to apply the original STLC traversal rules on an untyped lambda term can lead to situations where the traversal gets ``stuck''. This happens when a sub-term in operator position has an insufficient number of operands to be able to resolve a parameter. For example, STLC traversals would get stuck when trying to resolved the ``$y$ argument'' of $f$ in term $(\lambda f.f)(\lambda y.y)$. The absence of $\eta$-long transform of the term is a notable difference with the traversals for recursion scheme \cite{Ong2006} or the simply-typed lambda calculus \cite{BlumPhd}. This simplifies the presentation as the traversed tree is just a direct representation of the original, unmodified, lambda term.
 
 This adaptation of the game-semantic traversals to the untyped setting has several new ingredients that we will detail in the rest of the paper:
-\begin{compactitem}
+\begin{itemize}
 \item  The `lambda' and `variable' rules are augmented to implement eta-expansion.
  \item The eta-expansion is performed `on-the-fly`, as needed, at each point where the traditional STLC traversal would normally get stuck: whenever there is insufficiently many operands in an application to continue traversing the term.
 \item The concept of ``ghost'' nodes is introduced. Ghost nodes are imaginary nodes in the computation tree that progressively appear as eta-expansions are performed on the sub-terms.
 \item The computation tree itself does not get modified during eta-expansion. Ghost nodes are only added to the traversal and are only ``visible'' in the context where they get introduced.
-\item The `input variable' rule, introduced in \cite{BlumPhd} to model free variables, is constrained by a quantity called the \emph{arity threshold}. This quantity, calculated in linear time from the traversal itself, limits the non-deterministic branching factor of the `input variable' rule. This guarantees that the normalization procedure terminates when the beta-normal form exists.
-\end{compactitem}
+\item The `input variable' rule used to model free variables, is constrained by a quantity called the \emph{arity threshold}. This quantity, calculated in linear time from the traversal itself, limits the non-deterministic branching factor of the rule. This guarantees that the normalization procedure terminates when the beta-normal form exists.
+\end{itemize}
 
 The normalization algorithm presented in this paper was implemented in the HOG tool \cite{Blum-HogTool}. The last section of the paper provides some examples of terms normalized with the algorithm.
 
@@ -113,7 +112,8 @@ The normalization algorithm presented in this paper was implemented in the HOG t
 \subsubsection{Head linear reduction}
 In 2004, Danos and Regnier showed the connection between Game Semantics and \emph{head linear reduction}. The various notions of traversals discussed in this paper, including Berezun-Jones, are all essentially methods based on evaluating the head linear reduction sequence of a lambda term. Traversals start by performing a depth-first search to locate the \emph{head occurrence} of the \emph{hoc redex}. They implement linear substitution by ``jumping'' to the node in the tree that represents the term to be substituted for the head occurrence. At this point the traversal continues as if the head occurrence in the tree was replaced by the subtree representing the argument of the redex. Since all the terms obtained in the head linear reduction sequence are made of sub-terms of the original term, there is no need for environments or closure to evaluate the beta-redex. Instead those can be replaced by some pointer mechanism to capture a given context.
 
-Despite the connection established in this 2004 paper, it's not clear how the head linear reduction helps normalize a term. The \emph{Pointer Abstract Machine} introduced in the same paper, for instance, yields what they call ``\emph{quasi-head normal form (qhn)}'' of the term, not the normal form itself. The resulting \emph{qhn} still needs to be first reduced to head normal form (using head reduction) and then normalized by appealing to the standard $\lambda$-calculus theory that tells us that head reduction terminates. The traversals introduced in the present paper gives an effective algorithm to normalize any untyped lambda term without appealing to the head reduction strategy.
+Despite the connection established in this 2004 paper, it is not explicitely shown how the head linear reduction helps normalize a term. The \emph{Pointer Abstract Machine} introduced in the same paper, for instance, yields what they call ``\emph{quasi-head normal form (qhn)}'' of the term, not the normal form itself. The resulting \emph{qhn} still needs to be first reduced to head normal form (using head reduction) and then normalized by appealing to the standard $\lambda$-calculus theory that tells us that head reduction terminates.
+In this paper we generalize this notion to \emph{leftmost linear reduction}, a strategy that recrusively applies head linear reduction very much like how the standard reduction recursively applies head reduction. We show how \emph{imaginary traversals} introduced in the present paper effectively implement the leftmost linear reduction, which proves soundness of the traversal normalization procedure.
 
 \subsubsection{Traversal of STLC}
 
@@ -383,7 +383,7 @@ If $t$ is a traversal of $M$ then $t$ is also a traversal of $M^t$ and $t$ does 
 By induction on the traversal rules, observing that in the variable rules, the on-the-fly eta-expansion of Definition \ref{def:onthefly_etaexpansion} increments the arity of the justifier node $m$ therefore no ghost variable needs to be introduced while traversing $M^t$.
 \end{proof}
 
-\subsection{Imaginary traversals generalize STLC traversals}
+\subsection{Imaginary traversals subsume STLC traversals}
 
 Let's fix a simply-typed term-in-context $\Gamma \entail M :T$, with typed-context $\Gamma$ (a set of typed variables), and simple type $T$. Its \defname{eta-long form} is defined inductively on the type $T$ and is obtained by recursively eta-expanding every subterm as many times as possible with respect to the type of the subterm \cite{Ong2006,BlumPhd}.
 
@@ -413,10 +413,10 @@ Given a simply-typed term in context $\Gamma \vdash M : T$ we write $\travstlc(\
 The above definition is well-defined:
 \begin{proposition}[ULC and STLC traversals coincide]
 \label{prop:ulc_and_stlc_trav_coincide}
-For any simply-typed term in context $\Gamma \vdash M : T$, let $M^\eta$ denote the \emph{eta-long normal form}:
+For any simply-typed term in context $\Gamma \vdash M : T$, let $\etalf{M}$ denote the \emph{eta-long normal form}:
 \begin{itemize}
-\item[(i)] Traversals in $\travulc(M^\eta)$ (where $M^\eta$ is considered as an untyped term) do not contain any ghost node.
-\item[(ii)] $\travstlc(\Gamma \vdash M : T) = \travulc(M^\eta)$.
+\item[(i)] Traversals in $\travulc(\etalf{M})$ (where $\etalf{M}$ is considered as an untyped term) do not contain any ghost node.
+\item[(ii)] $\travstlc(\Gamma \vdash M : T) = \travulc(\etalf{M})$.
 \end{itemize}
 \end{proposition}
 \begin{proof}
@@ -469,19 +469,22 @@ In \cite{BlumPhd} we formalized the correspondence between the theory of travers
 In other words, the traversal cores are precisely plays from the game denotation of the term.
 Formally:
 \begin{theorem}[Traversal-Play Correspondence for STLC (Theorem 4.96 in \cite{BlumPhd}]
-\label{thm:correspondence}
+\label{thm:gamesem_correspondence_stlc}
 The following two bijections hold for every simply-typed term $\Gamma \entail M :T$:
 \begin{eqnarray*}
- \travstlc(\Gamma \entail M : T) & \cong & \revsem{\Gamma \entail M :T} \\
- \travstlc^\coresymbol(\Gamma \entail M : T) & \cong & \sem{\Gamma \entail M :T} \enspace .
+ \travulc(\etalf{M}) & \cong & \revsem{\Gamma \entail M :T} \\
+ \travulc^\coresymbol(\etalf{M}) & \cong & \sem{\Gamma \entail M :T} \enspace .
 \end{eqnarray*}
-where $\revsem{\Gamma \entail M : T}$ denotes the \emph{revealed game denotation} of $M$, $\sem{\Gamma \entail M : T}$ denotes the innocent game denotation of $M$,
-and $ \travstlc^\coresymbol$ denotes the image of $\travstlc$ by the traversal core function $\coresymbol$ (\ie, set of justified sequences that are \emph{core} of some traversal of $M$).
+where $\revsem{\Gamma \entail M : T}$ and
+$\sem{\Gamma \entail M : T}$
+denote respectively the \emph{revealed game denotation} and \emph{innocent game denotation} of
+$\Gamma \entail M : T$;
+and $\travulc^\coresymbol$ denotes the image of $\travulc$ by $\coresymbol$ (\ie, set of justified sequences that are \emph{core} of some traversal of $M$).
 \end{theorem}
 
 
 \paragraph{Game semantics Correspondence for ULC}
-What would be the equivalent of Theorem \ref{thm:correspondence} in the untyped case? In his thesis, Andrew Ker defined and studied Game models for the untyped lambda calculus \cite{KerThesis}.  We conjecture that the traversal-game semantics isomorphism for STLC also yields between the ULC using traversals from Table \ref{tab:trav_rules} and the game model of ULC from Ker's thesis: we conjecture that there is an isomorphism between the set of imaginary traversals and the revealed game semantics of the ULC term, and further, an isomorphism between the standard game semantics and the set of traversal cores:
+What would be the equivalent of Theorem \ref{thm:gamesem_correspondence_stlc} in the untyped case? In his thesis, Andrew Ker defined and studied Game models for the untyped lambda calculus \cite{KerThesis}.  We conjecture that the traversal-game semantics isomorphism for STLC also yields between the ULC using traversals from Table \ref{tab:trav_rules} and the game model of ULC from Ker's thesis: we conjecture that there is an isomorphism between the set of imaginary traversals and the revealed game semantics of the ULC term, and further, an isomorphism between the standard game semantics and the set of traversal cores:
 
 \begin{conjecture}[Traversal-Play Correspondence for ULC]
 \label{conj:ulc_corresp}
@@ -501,6 +504,8 @@ The argument should follow the same structure as for STLC \cite{BlumPhd} but usi
 
 \section{Normalizing with Traversals}
 In this section we show how traversals can be used to normalize lambda terms.
+We first consider the STLC case and derive an normalization procedure for it.
+Soundness follows immediately from the Game Semantics correspondence of \cite{BlumPhd}. We then spend the rest of the section showing how to extend this normalization procedure to ULC to calculate $\beta$-normal forms of untyped lambda terms when they exist.
 
 Let's first introduce an equivalence relation on traversals:
 \begin{definition}[Quotienting]
@@ -517,12 +522,9 @@ We say that a subset $T$ of $\travulc$ is \defname{complete modulo $\sim$}, or $
 
 Behind this definition is the idea that core P-views capture what it strictly required from traversals to reconstruct the normal form of a term (Proposition \ref{prop:path_charact_stlc} and Theorem \ref{thm:path_charact_ulc}). The quotient helps eliminate `redundant' traversals that have the same core P-view: it is sufficient to exhibit at least one traversal of each $\sim$-equivalence class to cover the entire set of core P-views. In the remaining of this section we explore $\sim$-complete traversals subsets that can be effectively computed.
 
-We first consider the STLC case and derive an normalization procedure for it. We then spend the rest of the section showing how to extend this normalization procedure to ULC to calculate $\beta$-normal forms of untyped lambda terms when they exist.
+\subsection{Normalizing STLC by traversals}
 
-\subsection{Normalizing STLC terms}
-
-The Correspondence Theorem for STLC \cite{BlumPhd} gives the following characterization:
-
+The following characterization is a direct consquence of the Game-Semantic Correspondence Theorem for STLC \cite{BlumPhd}:
 \begin{proposition}[Normalized Paths Characterization for STLC]
 \label{prop:path_charact_stlc}
 For every simply-typed term-in-context $\Gamma\vdash M :T$, let $\etabetalnf{M}$ denote the eta-long beta-normal form of $M$. We have:
@@ -531,18 +533,18 @@ For every simply-typed term-in-context $\Gamma\vdash M :T$, let $\etabetalnf{M}$
 \end{equation*}
 \end{proposition}
 \begin{proof}
- By Theorem \ref{thm:ulc_corresp}, the set of traversals of the beta-normal form of $M$ is precisely the set of cores of traversals of $M$. The Path-View correspondence (Prop.~\ref{prop:pathview_ulc}) and Prop.~\ref{prop:ulc_and_stlc_trav_coincide} then show that the P-views of traversal cores of $M$ give the tree paths of the eta-long beta normal form.
+ By Theorem \ref{thm:gamesem_correspondence_stlc}, the set of traversals of the beta-normal form of $M$ is precisely the set of cores of traversals of $M$. The Path-View correspondence (Prop.~\ref{prop:pathview_ulc}) and Prop.~\ref{prop:ulc_and_stlc_trav_coincide} then show that the P-views of traversal cores of $M$ give the tree paths of the eta-long beta normal form.
 \end{proof}
 
-This suggests a normalization method for STLC term based on enumeration of all traversals, with one caveat: the set of STLC traversals can be infinite! This is because the rule used to traverse free variables provide so much non-determinism that it gives rise to arbitrarily long traversals. Observe, however, that the above bijection holds for the \emph{quotiented} traversal set, thus one does not actually need to enumerate all traversals: it's sufficient to enumerate a $\sim$-complete subset. Algorithm \ref{algo:stlc_normalization_by_traversals} describes such a normalization procedure.
+This characterization suggests a normalization method for STLC term based on enumeration of all traversals, with one caveat: the set of STLC traversals can be infinite! This is because the rule used to traverse free variables provide so much non-determinism that it gives rise to arbitrarily long traversals. Observe, however, that the bijection in the above proposition holds for the \emph{quotiented} traversal set. Thus one does not actually need to enumerate all traversals: it's sufficient to enumerate a $\sim$-complete subset. Algorithm \ref{algo:stlc_normalization_by_traversals} describes such a normalization procedure.
 
 \begin{algorithm}[h]
 \caption{Normalization by traversals for STLC}
 \label{algo:stlc_normalization_by_traversals}
 Let $\Gamma \vdash M : T$ be a simply-typed term.
 \begin{enumerate}
-  \item Calculate $\etalnf{M}$, the eta-long expansion of $M$;
-  \item Enumerate maximal \emph{branching} traversals of $M$ from Def.~\ref{dfn:branching_traversals} over the computation tree of $\etalnf{M}$;
+  \item Calculate $\etalf{M}$, the eta-long expansion of $M$;
+  \item Enumerate maximal \emph{branching} traversals of $M$ from Def.~\ref{dfn:branching_traversals} over the computation tree of $\etalf{M}$;
   \item For each traversal, project it with respect to the tree root to get the traversal core. By the correspondence theorem this yields a play in $\sem{M}$;
   \item Calculate the P-view of the traversal core;
   \item Apply the bijection from the Correspondence Theorem to get the corresponding path in the tree representation of the eta-long $\beta$-nf of $M$;
@@ -562,7 +564,7 @@ The normalization procedure from algorithm \ref{algo:stlc_normalization_by_trave
 
 A normalization procedure based on enumerating all traversals is not practical because the set of traversals can be infinite. This is expected for non-normalizing term such as $\Omega = (\lambda x. x x)(\lambda y. y y)$ which has infinitely long traversals of the form $\lambda x \cdot x \cdot \lambda y \cdot y \cdot x \cdot \lambda y \cdot y \cdot \ldots$ But this is also the case for terms having a normal form. Take for example $M = \lambda f . f (\lambda x. x)$, then for all $k\geq0$ the justified sequence $t_k = \lambda f \cdot f \cdot (\lambda x \cdot  x)^k$ (with appropriate pointers) is a traversal.
 
-The Game Semantics Correspondence explains why there can be infinitely many traversals: The game denotation of a term must allow Opponent's moves accounting for all possible context terms (modelled by the Opponent). Those traversals accounts for all the possible denotations of the function parameter $f$ of $M$: for each $k$, there exists a term that applies its argument $k$ times: $F_k = \lambda g . g (g ( \ldots (g z)))$ with $k$ applications of $g$, and there got to be plays in the game denotation of the term $M$ to accounts for those possible values of argument $f$.
+The Game Semantics Correspondence explains why there can be infinitely many traversals: In the game denotation of a lambda term $M$, at every point in a play where it is Opponent's turn to play, all possible Opponent moves must be accounted for. More generally, the game denotation must allow Opponent's moves modeling the behaviour of \emph{all} contexts that can possibly interact with $M$. The traversals $t_k$ thus accounts for all the possible denotations of the function parameter $f$ of $M$: for each $k$, there exists a term that applies its argument $k$ times: $F_k = \lambda g . g (g ( \ldots (g z)))$ with $k$ applications of $g$, and there got to be plays in the game denotation of the term $M$ to accounts for those possible values of argument $f$.
 
 From a traversal viewpoint, this fact is explained by the
 way free variables are traversed. The rule \rulenamet{IVar} offers two non-deterministic choices:
@@ -579,54 +581,50 @@ Branching traversals restrict the rule \rulenamet{IVar} to traverse only nodes l
 For simply-typed terms in eta-long form, there is a finite number of branching traversals which implies termination of the normalization procedure of algorithm \ref{algo:stlc_normalization_by_traversals}.
 For untyped terms, however, branching traversals can still be infinite because \emph{on-the-fly} eta-expansion in the variable rules is unbounded ($i>0$). In the next section we will show how  this non-determinism can be bounded.
 
-\subsubsection{Context-affine traversals}
 
-A lambda term is \defname{affine} if every bound variable in the term occurs at most once in the term.
+%%%%%%%%%%%%% BEGIN: Context-affine traversals
+% \subsubsection{Context-affine traversals}
 
-\todo{Following two paragraphs are repeats, maybe move to intro section}
-Game-semantic intuition: rule \rulenamet{IVar} from Table \ref{tab:trav_rules} accounts for all possible moves from the opponent. For instance, to model contexts terms like $\lambda f.f(\lambda x.f(\lambda y.y))$, the game denotation of a term $M$ must contain plays with two occurrences of the same O-move representing the two separate occurrences of $f$.
+% A lambda term is \defname{affine} if every bound variable in the term occurs at most once in the term.
 
-In the game denotation of a lambda term $M$, at every point in a given play where it is Opponent's turn to play, all possible Opponent moves are accounted for. This guarantees that the denotation models all possible behaviours of contextual terms interacting with $M$, including behaviours not necessarily representable by a lambda term (e.g., in a typed setting, the context may range over a PCF term or Idealized Algol term).
+% For instance, we will now show that it is enough to consider plays modeling interaction with contexts where bound variables are referenced at most once.
 
-For the sake of computing the beta normal form of a term, however, it is sufficient to only consider sufficiently enough plays to cover all paths of the tree representation of the beta-normal form of the term. For instance, we will now show that it is enough to consider plays modeling interaction with contexts where bound variables are referenced at most once.
+% \begin{definition}[Context-affine traversals]
+% For any traversal $t$ we consider the set of triplets defining all possible lambda nodes enabled by variable nodes in the O-view of $t$:
+% $$ E(t) = \left\{ (m, k, \alpha) \in \NodesVar^\ghostvar\times\nat^1\times \NodesLmd^\ghostlmd |\ \mbox{$m$ occurs in $\oview{t}$ and $m\enables_k\alpha$} \right\}
+% $$
+% and its subset of node whose justification pointer is already present in the O-view:
+% $$ J(t) = \left\{ (m, k, \alpha) \in \NodesVar^\ghostvar\times\nat^1\times \NodesLmd^\ghostlmd
+% |\ \mbox{$\alpha$ is justified by $m$ in $\oview{t}$ with label $k$} \right\}
+% $$
 
-\begin{definition}[Context-affine traversals]
-For any traversal $t$ we consider the set of triplets defining all possible lambda nodes enabled by variable nodes in the O-view of $t$:
-$$ E(t) = \left\{ (m, k, \alpha) \in \NodesVar^\ghostvar\times\nat^1\times \NodesLmd^\ghostlmd |\ \mbox{$m$ occurs in $\oview{t}$ and $m\enables_k\alpha$} \right\}
-$$
-and its subset of node whose justification pointer is already present in the O-view:
-$$ J(t) = \left\{ (m, k, \alpha) \in \NodesVar^\ghostvar\times\nat^1\times \NodesLmd^\ghostlmd
-|\ \mbox{$\alpha$ is justified by $m$ in $\oview{t}$ with label $k$} \right\}
-$$
+% We define the set of \defname{context-affine traversals} $\travsetaffine$ as the subset of $\travulc$ defined by induction with the rules of Table \ref{tab:trav_rules} (substituting $\travsetaffine$ for $\travulc$ everywhere) where the input-variable rule $\rulefont{IVar}$ is constrained as follows:
 
-We define the set of \defname{context-affine traversals} $\travsetaffine$ as the subset of $\travulc$ defined by induction with the rules of Table \ref{tab:trav_rules} (substituting $\travsetaffine$ for $\travulc$ everywhere) where the input-variable rule $\rulefont{IVar}$ is constrained as follows:
+% \infrule[$\rulefont{IVar}_\affine$]
+%      {
+%             t = t_1 \cdot m \cdot t_2 \in \travsetaffine
+%             \andalso t^\omega \in \NodeHjByRoot \inter \NodesVar
+%             \andalso (m,k,\alpha) \in E(t) \setminus J(t)
+%             \andalso k \geq 1
+%      }
+%      {\Pstr[0.5cm]{t_1 \cdot (m){m} \cdot t_2 \cdot (l-m,25:k){\alpha}} \in \travsetaffine}
+% \end{definition}
 
-\infrule[$\rulefont{IVar}_\affine$]
-     {
-            t = t_1 \cdot m \cdot t_2 \in \travsetaffine
-            \andalso t^\omega \in \NodeHjByRoot \inter \NodesVar
-            \andalso (m,k,\alpha) \in E(t) \setminus J(t)
-            \andalso k \geq 1
-     }
-     {\Pstr[0.5cm]{t_1 \cdot (m){m} \cdot t_2 \cdot (l-m,25:k){\alpha}} \in \travsetaffine}
-\end{definition}
-
-
-\begin{proposition}[Context-affine traversals are $\sim$-complete]
-For every traversal $t\in\travulc$ there exists an affine traversal $u \in \travsetaffine$ such that $u \sim t$.
-\end{proposition}
-\begin{proof}
-We omit the proof, it's a similar argument to the proof of Proposition \ref{prop:branching_traversal_normalizing} below.
-\end{proof}
-
+% \begin{proposition}[Context-affine traversals are $\sim$-complete]
+% For every traversal $t\in\travulc$ there exists an affine traversal $u \in \travsetaffine$ such that $u \sim t$.
+% \end{proposition}
+% \begin{proof}
+% We omit the proof, it's a similar argument to the proof of Proposition \ref{prop:branching_traversal_normalizing} below.
+% \end{proof}
+%%%%%%%%%%%%% END: Context-affine traversals %%%
 
 \subsubsection{Branching traversals}
-We now show a stricter result: for the purpose of normalizing a term, it is sufficient to consider traversals where we restrict the non-determinism in rule \rulenamet{IVar} such that the visited lambda nodes is necessarily justified be the immediately preceding input variable node.
-The intuition is that the non-determinism in those two rules corresponds to branching points in a depth-first exploration of the beta-normal form of the term. Because there is no possible side-effect in lambda terms, it is enough to explore each possible branch of the tree in separate traversals.
+We now show that, for the purpose of normalizing a term, it is sufficient to consider traversals where we restrict the non-determinism in rule \rulenamet{IVar} such that the visited lambda node is necessarily justified be the immediately preceding input variable node. The intuition is that the non-determinism in those two rules represents branching points in a depth-first exploration of the beta-normal form of the term. Further, in the absence of side-effect, it is sufficient to explore each possible branch of the tree in separate traversals.
 
 \begin{example}[Kierstead terms]
 From a game semantic point of view, restricting the opponent moves can be interpreted as restricting the set contexts in which the term can be used, and more particularly the set of terms that can be applied to it.
-Like in the affine case, the branching restriction prevents the context from calling the same parameter twice, which eliminates the Kierstead contexts (in which the argument $f$ is called twice). But additionally, it also excludes the context $\lambda f \lambda g . f (\lambda f (\lambda x . g (\lambda y . x)))$ where the the two variables $f$ and $g$ are bound by two consecutive lambdas.
+%Like in the affine case,
+The branching restriction prevents the context from calling the same parameter twice, which eliminates the Kierstead contexts (in which the argument $f$ is called twice). It also excludes the context $\lambda f \lambda g . f (\lambda f (\lambda x . g (\lambda y . x)))$ where the the two variables $f$ and $g$ are bound by two consecutive lambdas.
 \end{example}
 
 \begin{definition}
@@ -828,11 +826,17 @@ $$\Phi : \travsetnorm(M)/{\sim} \ \cong\ \pathset(\betanf{M})$$
 Observe that Conjecture \ref{conj:ulc_corresp} implies this result by the same game-semantic argument used to show characterization for STLC. We prefer instead  an alternative route and prove characterization using a term-rewriting argument based on the \emph{leftmost linear reduction} strategy.
 \begin{proof}[Proof sketch]
 %$$\pview{\core{\travsetnorm(M)}} = \pathset(N) .$$
-It's trivial if $M$ is in beta-normal form.
-For any other untyped term $M$ with a normal form, we consider its head-linear reduction sequence.
-We know from \cite{danos-head} that $M$'s head-linear reduction sequence leads to some term $M'$ in quasi-head normal form, and that if $M'$ has $n>0$ prime redexes then performing $n$ head reductions produces a head normal form $M''$.
-The idea is to show that each of those reduction steps preserves the invariant $\core{\travsetnorm(M)}$.
-The head normal form $M''$ is not necessarily normal, however, but we can then recursively apply the same reduction strategy to each argument of the head variable to get to the normal form.
+It's trivial if $M$ is in beta-normal form by the Path-View correspondence for ULC and since $\core{\travsetnorm(M)} = \travsetnorm(M)$.
+For any other untyped term $M$ with a normal form, we consider its \emph{leftmost linear reduction sequence}.
+Since $M$ is in beta-nf, the reduction sequence terminates by Prop.~\ref{prop:llred_terminates}
+and yields the \emph{quasi normal form} (qnf).
+\todo{Add prop:llred_terminates}
+
+The effect of leftmost linear reduction is essentially to inline the \emph{lloc} variable by its generalized argument (the argument of the generalized redex binding the \emph{lloc} variable).
+The set of traversals before adn after reduction are therefore very close and it's easy to show that the
+invariant $\core{\travsetnorm(M)}$ is preserved.
+
+By Proposition \ref{prop:qnf_nf}, the \emph{qnf} trivially reduces to its beta-nf. It's immediate to show that the invariant $\core{\travsetnorm(M)}$ is preseved by trivial beta-reduction.
 \end{proof}
 
 \begin{remark}
@@ -1241,101 +1245,6 @@ In 2004, Danos and Regnier \cite{danos-head} establish the connection between Ga
 
 Head linear reduction is  a non-standard reduction strategy for the lambda calculus and shed some light studies the connection with Game Semantics.
 
-\subsection{Notes for Neil and Daniil}
-
-Here are some thoughts on comparing the following three approaches
-based on the conversations Neil and I had during his visit to MSR:
-(i) Berezun-Jones (BJ) traversals,
-(ii) Danos-Regnier's Pointer Abstract Machine (PAM) state runs,
-(iii) Blum's game-semantic-inspired imaginary traversals for ULC introduced in this note.
-
-\subsubsection{Normalization}
-
-\begin{itemize}
-  \item Danos-Regnier: PAM implements head-linear reduction. This reduction does not itself normalize the term, it only yields the head-normal form of the term! The paper does not clearly indicate any method to normalize the term based solely on head-linear reduction.
-      In particular in the PAM transition of Section 5.2, step 2, if the hoc variable is free then the machine stops: no transition applies.
-  \item Berezun-Jones: Although not explicitly explained in the paper. Daniil and Neil have a ``read-out procedure''' to reconstruct the term from the traversal. The procedure is based on rewriting rules applied to the traversals.
-  \item Blum: Normalization is performed by exploring all possible paths in the beta-normal form of the term. The algorithm generates one maximal traversal per path in the tree representation of the term. The term can then be uniquely recreated (up to variable naming) from those paths.
-\end{itemize}
-
-\subsubsection{Traversal/Run structure}
-\begin{itemize}
-\item Danos-Regnier: State run. Each state has three components: one pointer, a reference to a variable node, a reference to a subterm.
-\item Berezun-Jones: Traversals of `tokens' with two pointers (control and binding pointers). A tokens is a reference to a node in the AST of the lambda term.
-\item Blum: Traversals are sequences of node with one back pointer. Nodes can either be structural nodes from the `compact' AST of the term (where consecutive lambda nodes and application nodes are bundled together) or imaginary `ghost' nodes. Each node occurrence except the first one has exactly one justification pointer.
-\end{itemize}
-
-\subsubsection{Binding pointers -- PAM pointers -- P-view}
-
-Neil-Daniil's binding pointers represent the ``head $\lambda$-list'' notion in Danos-Regnier paper (page 3): it gives the list of lambda nodes encountered from the variable all the way to the root.
-
-\begin{itemize}
-\item Danos-Regnier: The De Bruijn index of a variable is used to find the binder in the head $\lambda$-list. If index is $k$ (by Lemma 11) the binder can be retrieved by following $k$ pointers in the PAM states. The notion of ``subterm chain'' of a variable correspond to the notion of P-view in Game Semantics.
-
-\item  Berezun-Jones: The De Bruijn index is used to determine how many binding (green) pointers to follow to reach the occurrence of the binder in the traversal.
-
-\item Blum: Traversals are game-semantics inspired (ala Ong) and in particular verify the alternation property. To that end, consecutive binders are bulked together in a single binder node. Given a variable occurrence, its `bulk' binder is located by reading the P-view backward by $k'$ iterations where $k'$ is statically determined as the distance between the variable occurrence and its binder in the computation tree. The label associated with the link determines which exact variable in the `bulk lambda' binds the variable.
-\end{itemize}
-
-\subsubsection{Control pointers -- PAM -- }
-
-\subsubsection{Retrieving application operands: Control pointers -- PAM's redex argument }
-\begin{itemize}
-  \item Danos-Regnier: the operands of a `prime redex' is statically defined from the term's expression (the `argument of a hoc variable', in Section 5.1)
-
-  \item Berezun-Jones: control pointers are used to associate operators to the corresponding operand in an application: for instance if $@_1 (\lambda x .M) N$ is a redex of the tree then any occurrence of $\lambda x$ will point to some previous occurrence of $@_1$ in the traversal. The token representing the operand $N$ can then be statically determined from the AST of the tree.
-      Control pointers always point to $@$ tokens.
-
-  \item Blum: There are two cases:
-     \begin{itemize}
-     \item Structural operands: Same as Ong's traversals: pretty much the same as Berezun-Jones with the only technical difference that consecutive lambda and applications nodes are `bulked' together. In particular, `bulk lambda' nodes point to their parent node (either a variable or an application node $@$). If the variable $x$ of the redex is the $i$th bound variable in the bulk lambda, then the operand is obtained by fetching the $i$th child of the bulk lambda's parent node.
-    \item Eta-expanded operands: When an operand is missing, a ghost lambda node is first introduced with rule \rulenamet{Var} (corresponding to the variable obtained after eta-expanding the operator). Then through repeated application of rule
-        \rulenamet{Lam^\ghostlmd} and \rulenamet{Var}, either a structural node gets eventually materialized, which then represents the operand of the application; or the traversal reaches a ghost variable hereditarily justified by the root. In the latter case, a new variable gets created through eta-expansion to represent the missing operand.
-
-        \emph{Note}: the ghost materialization loop implemented by rule \rulenamet{Lam^\ghostlmd} and \rulenamet{Var} proceeds by calculating the quantity ``$|\alpha|+i-|m|$'' at each iteration which is the exact same quantity ($r-a+l$) used in step 2. (b) of the PAM transition \cite{danos-head}, the ``price to pay for having no stacks or environments''.
-    \end{itemize}
-
-\end{itemize}
-
-
-\subsubsection{Flag + Control pointers -- PAM's ``price to pay''  -- Ghost nodes}
-\begin{itemize}
-  \item Berezun-Jones: Semantics 2, 3, 4 and 5 from section 3 of \cite{JonesBerezunLLL} involve a `flag' boolean parameter that indicates the context of the application (either weak or strong evaluation).
-  \item Danos-Regnier: The `flag' must somehow be present in the iterative loop in step 2(b) of the PAM transition--the ``price to pay for having no stacks or environments'' (Danos-Regnier).
-  \item Blum: The `flag' must be somehow be hidden in the iterative ghost materialization algorithm implemented by the \rulenamet{Var} and \rulenamet{Lam^\ghostlmd} rules. (The ghost nodes being the equivalent of the ``price to pay'' from Danos-Regnier's paper.
-\end{itemize}
-
-
-\subsubsection{Converting other traversals to the imaginary ULC traversals}
-
-\paragraph{From Berezun-Jones}
-
-\begin{enumerate}
-\item Remove single application token $@$ that are immediately followed by a variable.
-\item Merge consecutive application nodes in the traversal, preserve all control pointers pointing to them. Assign link label $0$ if the source of the pointer is in operator position of the $@$, and $i >0$ if is in operand position of the $i$th merged $@$.
-
-Remove all binding and control pointers starting from the $@$ tokens themselves.
-
-\item Merge consecutive lambda tokens $\lambda x_1$, \ldots, $\lambda x_n$, $n>1$ in the traversals into single lambda nodes $\lambda x_1 \ldots x_n$.
- Binding pointers:
- \begin{itemize}
- \item For any binding pointer from some variable token $x$ in the traversal, pointing to one of the merged lambda nodes, replace the link as follows: if $x$ has deBrujin index $i$ then follow $i$ binding pointer in the original sequence. This will lead to some lambda token $\lambda x$. Make the link points instead to the merged lambda node containing that $\lambda x$. Assigned link label $i$ where $i$ is the index of the bound variable in the merged list of $x_1 \ldots x_n$.
- \item Remove all the binding pointers from either lambda or $@$ tokens that are pointing to any of the merged lambda nodes.
- \item Remove all binding pointers from the merged lambda nodes to other nodes.
- \end{itemize}
- Control pointers: preserve only the control pointer associated with the first lambda in the sequence of lambda tokens.
-
-\item Add dummy lambdas $\lambda$ and ghost nodes: for each pair $(x,y)$ of consecutive variable tokens $x$ and $y$, processing the traversal from left to right, reconstruct the ``missing'' dummy and ghost nodes between $x$ and $y$ by applying rules \rulenamet{Lam^\normalizing} and \rulenamet{Var^\normalizing}.
-\\
-
-{\bf IT REMAINS TO PROVE THAT}: by applying those rules repeatedly starting from $x$, we necessarily get back to variable nodes $y$ with the expected justification pointer. The proof will involve formalizing the relationship between (i) flag  and control pointers (ii) ghost nodes.
-\end{enumerate}
-
-\paragraph{From Danos-Regnier}
-
-Take a substitution sequence of a PAM: $((z_0,A_1), (z_1,A_2) \ldots$.
-\todo{type notes}
-%The traversals can be reconstructed as follows:
 
 \section{Correctness proof (draft)}
 
@@ -1550,6 +1459,104 @@ The proof sketch:
 \item Reducing a trivial redex preserves (modulo some traversal prefix) the set of traversals.
 The interesting part of the proof will be to show how the ghost nodes gradually ``materialize'' after each step of the linear reduction, and how the arity threshold gives the right bound for limiting eta-expansion.
 \end{itemize}
+
+\appendix
+
+\section{Notes for Neil and Daniil}
+
+Here are some thoughts on comparing the following three approaches
+based on the conversations Neil and I had during his visit to MSR:
+(i) Berezun-Jones (BJ) traversals,
+(ii) Danos-Regnier's Pointer Abstract Machine (PAM) state runs,
+(iii) Blum's game-semantic-inspired imaginary traversals for ULC introduced in this note.
+
+\subsubsection{Normalization}
+
+\begin{itemize}
+  \item Danos-Regnier: PAM implements head-linear reduction. This reduction does not itself normalize the term, it only yields the head-normal form of the term! The paper does not clearly indicate any method to normalize the term based solely on head-linear reduction.
+      In particular in the PAM transition of Section 5.2, step 2, if the hoc variable is free then the machine stops: no transition applies.
+  \item Berezun-Jones: Although not explicitly explained in the paper. Daniil and Neil have a ``read-out procedure''' to reconstruct the term from the traversal. The procedure is based on rewriting rules applied to the traversals.
+  \item Blum: Normalization is performed by exploring all possible paths in the beta-normal form of the term. The algorithm generates one maximal traversal per path in the tree representation of the term. The term can then be uniquely recreated (up to variable naming) from those paths.
+\end{itemize}
+
+\subsubsection{Traversal/Run structure}
+\begin{itemize}
+\item Danos-Regnier: State run. Each state has three components: one pointer, a reference to a variable node, a reference to a subterm.
+\item Berezun-Jones: Traversals of `tokens' with two pointers (control and binding pointers). A tokens is a reference to a node in the AST of the lambda term.
+\item Blum: Traversals are sequences of node with one back pointer. Nodes can either be structural nodes from the `compact' AST of the term (where consecutive lambda nodes and application nodes are bundled together) or imaginary `ghost' nodes. Each node occurrence except the first one has exactly one justification pointer.
+\end{itemize}
+
+\subsubsection{Binding pointers -- PAM pointers -- P-view}
+
+Neil-Daniil's binding pointers represent the ``head $\lambda$-list'' notion in Danos-Regnier paper (page 3): it gives the list of lambda nodes encountered from the variable all the way to the root.
+
+\begin{itemize}
+\item Danos-Regnier: The De Bruijn index of a variable is used to find the binder in the head $\lambda$-list. If index is $k$ (by Lemma 11) the binder can be retrieved by following $k$ pointers in the PAM states. The notion of ``subterm chain'' of a variable correspond to the notion of P-view in Game Semantics.
+
+\item  Berezun-Jones: The De Bruijn index is used to determine how many binding (green) pointers to follow to reach the occurrence of the binder in the traversal.
+
+\item Blum: Traversals are game-semantics inspired (ala Ong) and in particular verify the alternation property. To that end, consecutive binders are bulked together in a single binder node. Given a variable occurrence, its `bulk' binder is located by reading the P-view backward by $k'$ iterations where $k'$ is statically determined as the distance between the variable occurrence and its binder in the computation tree. The label associated with the link determines which exact variable in the `bulk lambda' binds the variable.
+\end{itemize}
+
+\subsubsection{Control pointers -- PAM -- }
+
+\subsubsection{Retrieving application operands: Control pointers -- PAM's redex argument }
+\begin{itemize}
+  \item Danos-Regnier: the operands of a `prime redex' is statically defined from the term's expression (the `argument of a hoc variable', in Section 5.1)
+
+  \item Berezun-Jones: control pointers are used to associate operators to the corresponding operand in an application: for instance if $@_1 (\lambda x .M) N$ is a redex of the tree then any occurrence of $\lambda x$ will point to some previous occurrence of $@_1$ in the traversal. The token representing the operand $N$ can then be statically determined from the AST of the tree.
+      Control pointers always point to $@$ tokens.
+
+  \item Blum: There are two cases:
+     \begin{itemize}
+     \item Structural operands: Same as Ong's traversals: pretty much the same as Berezun-Jones with the only technical difference that consecutive lambda and applications nodes are `bulked' together. In particular, `bulk lambda' nodes point to their parent node (either a variable or an application node $@$). If the variable $x$ of the redex is the $i$th bound variable in the bulk lambda, then the operand is obtained by fetching the $i$th child of the bulk lambda's parent node.
+    \item Eta-expanded operands: When an operand is missing, a ghost lambda node is first introduced with rule \rulenamet{Var} (corresponding to the variable obtained after eta-expanding the operator). Then through repeated application of rule
+        \rulenamet{Lam^\ghostlmd} and \rulenamet{Var}, either a structural node gets eventually materialized, which then represents the operand of the application; or the traversal reaches a ghost variable hereditarily justified by the root. In the latter case, a new variable gets created through eta-expansion to represent the missing operand.
+
+        \emph{Note}: the ghost materialization loop implemented by rule \rulenamet{Lam^\ghostlmd} and \rulenamet{Var} proceeds by calculating the quantity ``$|\alpha|+i-|m|$'' at each iteration which is the exact same quantity ($r-a+l$) used in step 2. (b) of the PAM transition \cite{danos-head}, the ``price to pay for having no stacks or environments''.
+    \end{itemize}
+
+\end{itemize}
+
+
+\subsubsection{Flag + Control pointers -- PAM's ``price to pay''  -- Ghost nodes}
+\begin{itemize}
+  \item Berezun-Jones: Semantics 2, 3, 4 and 5 from section 3 of \cite{JonesBerezunLLL} involve a `flag' boolean parameter that indicates the context of the application (either weak or strong evaluation).
+  \item Danos-Regnier: The `flag' must somehow be present in the iterative loop in step 2(b) of the PAM transition--the ``price to pay for having no stacks or environments'' (Danos-Regnier).
+  \item Blum: The `flag' must be somehow be hidden in the iterative ghost materialization algorithm implemented by the \rulenamet{Var} and \rulenamet{Lam^\ghostlmd} rules. (The ghost nodes being the equivalent of the ``price to pay'' from Danos-Regnier's paper.
+\end{itemize}
+
+
+\subsubsection{Converting other traversals to the imaginary ULC traversals}
+
+\paragraph{From Berezun-Jones}
+
+\begin{enumerate}
+\item Remove single application token $@$ that are immediately followed by a variable.
+\item Merge consecutive application nodes in the traversal, preserve all control pointers pointing to them. Assign link label $0$ if the source of the pointer is in operator position of the $@$, and $i >0$ if is in operand position of the $i$th merged $@$.
+
+Remove all binding and control pointers starting from the $@$ tokens themselves.
+
+\item Merge consecutive lambda tokens $\lambda x_1$, \ldots, $\lambda x_n$, $n>1$ in the traversals into single lambda nodes $\lambda x_1 \ldots x_n$.
+ Binding pointers:
+ \begin{itemize}
+ \item For any binding pointer from some variable token $x$ in the traversal, pointing to one of the merged lambda nodes, replace the link as follows: if $x$ has deBrujin index $i$ then follow $i$ binding pointer in the original sequence. This will lead to some lambda token $\lambda x$. Make the link points instead to the merged lambda node containing that $\lambda x$. Assigned link label $i$ where $i$ is the index of the bound variable in the merged list of $x_1 \ldots x_n$.
+ \item Remove all the binding pointers from either lambda or $@$ tokens that are pointing to any of the merged lambda nodes.
+ \item Remove all binding pointers from the merged lambda nodes to other nodes.
+ \end{itemize}
+ Control pointers: preserve only the control pointer associated with the first lambda in the sequence of lambda tokens.
+
+\item Add dummy lambdas $\lambda$ and ghost nodes: for each pair $(x,y)$ of consecutive variable tokens $x$ and $y$, processing the traversal from left to right, reconstruct the ``missing'' dummy and ghost nodes between $x$ and $y$ by applying rules \rulenamet{Lam^\normalizing} and \rulenamet{Var^\normalizing}.
+\\
+
+{\bf IT REMAINS TO PROVE THAT}: by applying those rules repeatedly starting from $x$, we necessarily get back to variable nodes $y$ with the expected justification pointer. The proof will involve formalizing the relationship between (i) flag  and control pointers (ii) ghost nodes.
+\end{enumerate}
+
+\paragraph{From Danos-Regnier}
+
+Take a substitution sequence of a PAM: $((z_0,A_1), (z_1,A_2) \ldots$.
+\todo{type notes}
+%The traversals can be reconstructed as follows:
 
 \bibliographystyle{abbrv}
 \bibliography{ulctrav}
