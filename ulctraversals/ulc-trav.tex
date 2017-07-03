@@ -41,9 +41,9 @@
 
 %\newcommand\travset{\mathcal{T}\!rav}
 \newcommand\travsetshort{\mathcal{T}\!r}
-\newcommand{\travsetaffine}{{\travsetshort^\affine}}
-\newcommand{\travsetbr}{{\travsetshort^\branching}}
-\newcommand{\travsetnorm}{\travsetshort^\normalizing}
+\newcommand{\travsetaffine}{{\travset^\affine}}
+\newcommand{\travsetbr}{{\travset^\branching}}
+\newcommand{\travsetnorm}{\travset^\normalizing}
 
 % for succinctness we omit ULC for the symbol representing
 % set of traversals of ULC
@@ -507,41 +507,44 @@ Our ``on-the-fly'' eta-expansion relates to the $Fun : U \rightarrow (U \Rightar
 
 We introduce an equivalence relation on traversals:
 \begin{definition}[Quotienting]
-We introduce the equivalence relation $\sim$ over $\travulc(M)$ defined by $t \sim u$ just if $\pview{\core{t}} = \pview{\core{u}}$, and define $\travulc(M)/{\sim}$ as the set of equivalence classes of $\travulc(M)$.
+We define the \defname{core P-view} function $\Phi$ by
+\begin{align*}
+\Phi : \travulc & \Longrightarrow \justseqset \\
+t & \longmapsto \pview{\core{t}}
+\end{align*}
+
+We defined $\sim$ as the equivalence relation over $\travulc$ induce by $\Phi$. That is, $t \sim u$ just if $\Phi(t) = \Phi(u)$. We write $\travulc/{\sim}$ for the set of equivalence classes of $\travulc$.
 \end{definition}
-
-
 
 \subsection{Normalizing STLC terms}
 
-As mentioned in the introduction, the Correspondence Theorem \ref{thm:ulc_corresp} for STLC yields a method to normalize a simply-typed lambda term. This is formalized by the following characterization theorem.
+The Correspondence Theorem \ref{thm:ulc_corresp} for STLC gives the following path characterization:
 
-\begin{theorem}[Normalized Paths Characterization for STLC]
+\begin{theorem}[Normalized Paths Characterization for STLC \cite{BlumPhd}]
 \label{thm:path_charact_stlc}
-For every simply-typed term-in-context $\Gamma\vdash M :T$, let $\betanf{M}$ denote the normal form of $M$. We have:
+For every simply-typed term-in-context $\Gamma\vdash M :T$, let $\etabetalnf{M}$ denote the eta-long form of the beta-normal form of $M$. We have:
 \begin{equation}
-\travstlc(\Gamma\vdash M :T)/{\sim}\ \cong\ \pathset(\betanf{M}) \label{eqn:pviewcore_paths}
+\Phi : \travstlc(\Gamma\vdash M :T)/{\sim}\ \cong\ \pathset(\etabetalnf{M}) \label{eqn:pviewcore_paths}
 \end{equation}
-where the isomorphism is given by the function $t\in\travstlc \mapsto \pview{\core{t}}$.
 \end{theorem}
 \begin{proof}
-A simply-typed term in beta-normal form is uniquely determined by the maximal paths of its tree representation. By Theorem \ref{thm:ulc_corresp}, the set of traversals of the beta-normal form of $M$ is precisely the set of cores of traversals of $M$. By the Path-P-view correspondence \cite{Ong2006,BlumPhd}, the set of paths in tree of the normal form is given by the set of P-views of traversal cores of $M$. Hence the P-view of cores of maximal traversals of $M$ yields all the maximal paths in the tree representation of the beta-normal form of $M$.
+A simply-typed term in beta-normal form is uniquely determined by the maximal paths of its tree representation. By Theorem \ref{thm:ulc_corresp}, the set of traversals of the beta-normal form of $M$ is precisely the set of cores of traversals of $M$. By the Path-P-view correspondence (Prop.~\ref{prop:pathview_ulc}) and Prop.~ \ref{prop:ulc_and_stlc_trav_coincide}, the set of tree paths of eta-long beta  normal form is given by the set of P-views of traversal cores of $M$. Hence the P-view of cores of traversals of $M$ yields all the paths in the tree of the eta-long beta-normal form of $M$.
 \end{proof}
 
-The above equality suggests a normalization procedure for STLC: enumerating all traversals and taking their core P-view yields all the paths in the beta-normal form which gives the normal form itself. There is just one caveat: the set of STLC traversals can be infinite! This is because the rule used to traverse free variables allows for arbitrarily long traversals.
+The above bijection suggests a normalization procedure for STLC (modulo eta-expansion): enumerate all traversals and take their core P-view; this gives the paths in the eta long beta-normal form, which yields the normal eta-long beta form itself. There is just one caveat: the set of STLC traversals can be infinite! This is because the rule that traverses free variables allows for arbitrarily long traversals.
 Fortunately, one does not need to enumerate all traversals: it's sufficient to enumerate at least one traversal per $\sim$-equivalence class of $\travstlc$.
 
 \paragraph{Quotienting traversals}
-The Game Semantics Correspondence explains the reason why there can be an infinite number of traversals. The game denotation of a term must allow Opponent's moves accounting for all possible context terms (modelled by the Opponent). In particular, suppose that $M$ is an order-$3$ term taking a second-order function $F$ as argument. Then one can define an infinite sequence of term contexts that would pass as argument to $M$ a function that calls its argument exactly $k$ times for $k>0$ (\eg, $\lambda g . g ( g(\ldots (g z)))$ with $k$ applications of $g$).
+The Game Semantics Correspondence explains why there can be infinitely many traversals: The game denotation of a term must allow Opponent's moves accounting for all possible context terms (modelled by the Opponent). In particular, suppose that $M$ takes a second-order function as argument. Then one can define an infinite sequence of term contexts that would pass as argument to $M$ a function that calls its argument exactly $k$ times for $k>0$ (\eg, $\lambda g . g ( g(\ldots (g z)))$ with $k$ applications of $g$).
 
-It turns out that traversals accounting for all those contexts are redundant in the sense that they all belong to the same $\sim$-equivalence class. The intuition being that, due to the absence of side-effects, calling the same argument multiple times will always involves the same underlying computation in $M$. Proposition \ref{prop:branching_traversal_normalizing} formalizes this intuition by showing that the subset of \emph{branching traversals}, which in particular prevents the repetitive behaviour described in the previous paragraph, covers all $\sim$-equivalence classes.
+It turns out that traversals accounting for all those contexts are redundant in the sense that they all belong to the same $\sim$-equivalence class. Indeed, due to the absence of side-effects, calling the same argument multiple times always involves the same underlying computation in $M$. Proposition \ref{prop:branching_traversal_normalizing} formalizes this intuition by showing that the subset of \emph{branching traversals} prevents such repetitive behaviour while still covering all $\sim$-equivalence classes.
 
-Because P-views are effectively computable, the Theorem \ref{thm:path_charact_stlc} yields a normalization procedure for STLC:
+This shows soundness and termination of the following algorithm:
 \begin{algorithm}
 \caption{Normalization by traversals}
 \label{algo:stlc_normalization_by_traversals}
 \begin{enumerate}
-  \item Enumerate maximal \emph{branching} traversals$^{(*)}$ of $M$ (Def \ref{dfn:branching_traversals});
+  \item Enumerate maximal \emph{branching} traversals of $M$ from Def.~\ref{dfn:branching_traversals};
   \item For each traversal, project it with respect to the tree root to get the traversal core. By the correspondence theorem this yields a play in $\sem{M}$;
   \item Calculate the P-view of the traversal core;
   \item Apply the bijection from the Correspondence Theorem to get the corresponding path in the tree representation of the $\beta$-nf of $M$;
@@ -555,24 +558,21 @@ The normalization procedure from algorithm \ref{algo:stlc_normalization_by_trave
 
 \subsection{Normalization in ULC}
 
-In this section we aim to establish a similar normalization procedure untyped lambda terms with a normal form, by proving the counterpart of Equation \ref{eqn:pviewcore_paths} for the imaginary traversals of Table \ref{tab:trav_rules}.
+In this section we show how the normalization procedure of Algorithm \ref{algo:stlc_normalization_by_traversals} gives the $\beta$-normal of an untyped lambda terms if it exists (without eta-long expansion).
 
-\subsection{Normalized paths characterization for ULC}
-
-The counterpart of the path characterization theorem for ULC can be stated as follows:
 \begin{theorem}[Normalized Paths Characterization for ULC]
 For any untyped term $M$ with a normal form $\betanf{M}$ we have:
-$$ \travulc(M)/{\sim} \ \cong\ \pathset(\betanf{M})$$
+$$\Phi : \travulc(M)/{\sim} \ \cong\ \pathset(\betanf{M})$$
 \end{theorem}
 \begin{remark}
-This theorem has an infinitary counterpart for lambda terms with no normal form:
-$$ \Union_{k\geq0} \pview{\core{\travulc^k(M)}} = \pathset(IT(M)) . $$
-where $\travulc^k(M)$ denotes the set of traversals of length $k$ at most and $\pathset(IT(M))$ denotes the set of \emph{possibly infinite} maximal paths in $IT(M)$, the infinitary computation tree of the term obtained by reducing beta-redexes ad-infinitum (\ie, the B\"oem tree of $M$ represented as a computation tree). For a formal definition of infinitary computation trees see \cite{Blum17-HomogNotRestriction, Ong2006}.
+The infinitary counterpart for lambda terms with no normal form (not shown in this paper) can be stated as:
+$$ \Union_{k\geq0} \Phi(\travulc^k(M)/{\sim}) = \pathset(BT(M))$$
+where $\travulc^k(M)$ denotes the set of traversals of length $k$ at most and $\pathset(BT(M))$ denotes the set of \emph{possibly infinite} maximal paths in the B\"oem tree $BT(M)$ of $M$ (the infinitary computation tree of the term obtained by reducing beta-redexes ad-infinitum \cite{barendregt2013lambda}).\footnote{See also \cite{Blum17-HomogNotRestriction, Ong2006} for a formal definition of infinitary computation trees.}
 \end{remark}
 
-Like for STLC, this result would immediately follow from a proof of the game semantics correspondence conjecture. Instead, we will prove this result with a term-rewriting argument based on the \emph{leftmost linear reduction} strategy. See section \ref{sec:correctness} for the proof.
+Observe that the game semantics correspondence conjecture for ULC implies this theorem since the same game-semantic argument used for STLC could be reused. Instead, we choose to prove it using a term-rewriting argument based on the \emph{leftmost linear reduction} strategy (See section \ref{sec:correctness}).
 
-\subsection{Resticting non-determinism}
+\subsection{Restricting non-determinism}
 
 All the traversal rules are deterministic except the one used to model free variables: The rule \rulenamet{IVar} offers two non-deterministic choices: (i) which variable to pick in the O-view,
 (ii) which child lambda node to pick amongst the picked variable's children.
@@ -585,17 +585,17 @@ For the sake of computing the beta-normal form of a term, however, it's only nec
 
 A lambda term is \defname{affine} if every bound variable in the term occurs at most once in the term.
 
-Intuition: in the definition of traversals from Table \ref{tab:trav_rules}, the rule \rulenamet{IVar} is defined so as to account for all possible moves from the opponent O. This is needed to get the isomorphism with the game denotation of a term. For instance this is necessary to model contexts terms like the Kierstead terms $\lambda f.f(\lambda x.f(\lambda y.y))$ and $\lambda f.f(\lambda x.f(\lambda y.x))$. So for any lambda term $M$, its game denotation must contain plays with two occurrences of the same O-move representing the two separate occurrences of $f$.
+Game-semantic intuition: rule \rulenamet{IVar} from Table \ref{tab:trav_rules} accounts for all possible moves from the opponent. For instance, to model contexts terms like $\lambda f.f(\lambda x.f(\lambda y.y))$, the game denotation of a term $M$ must contain plays with two occurrences of the same O-move representing the two separate occurrences of $f$.
 
 In the game denotation of a lambda term $M$, at every point in a given play where it is Opponent's turn to play, all possible Opponent moves are accounted for. This guarantees that the denotation models all possible behaviours of contextual terms interacting with $M$, including behaviours not necessarily representable by a lambda term (e.g., in a typed setting, the context may range over a PCF term or Idealized Algol term).
 
 For the sake of computing the beta normal form of a term, however, it is sufficient to only consider sufficiently enough plays to cover all paths of the tree representation of the beta-normal form of the term. For instance, we will now show that it is enough to consider plays modeling interaction with contexts where bound variables are referenced at most once.
 
 \begin{definition}[Context-affine traversals]
-For any traversal $t$ we will consider the set of triplets defining all possible O-move enabled by variable nodes in the O-view of $t$:
+For any traversal $t$ we consider the set of triplets defining all possible lambda nodes enabled by variable nodes in the O-view of $t$:
 $$ E(t) = \left\{ (m, k, \alpha) \in \NodesVar^\ghostvar\times\nat^1\times \NodesLmd^\ghostlmd |\ \mbox{$m$ occurs in $\oview{t}$ and $m\enables_k\alpha$} \right\}
 $$
-and its subset representing all the justification pointers already present in the O-view of $t$:
+and its subset of node whose justification pointer is already present in the O-view:
 $$ J(t) = \left\{ (m, k, \alpha) \in \NodesVar^\ghostvar\times\nat^1\times \NodesLmd^\ghostlmd
 |\ \mbox{$\alpha$ is justified by $m$ in $\oview{t}$ with label $k$} \right\}
 $$
@@ -613,7 +613,7 @@ We define the set of \defname{context-affine traversals} $\travsetaffine$ as the
 \end{definition}
 
 
-\begin{proposition}[Affine traversals are sufficient for normalization]
+\begin{proposition}[Context-affine traversals suffice (modulo $\sim$)]
 For every traversal $t\in\travulc$ there exists an affine traversal $u \in \travsetaffine$ such that $u \sim t$.
 \end{proposition}
 \begin{proof}
@@ -646,12 +646,15 @@ We define the set of \defname{branching traversals} $\travsetbr$ as the subset o
 \begin{proposition}[Branching traversals are sufficient for normalization]
 \label{prop:branching_traversal_normalizing}
 For every traversal $t\in\travulc$ there exists $u \in \travsetbr$ such that
-$$\pview{\core{u}} = \pview{\core{t}} \ .$$
+$u \sim t$.
 \end{proposition}
 \begin{proof}
 \todo{Type my handwritten notes with proof explaining this in more details.}
 \end{proof}
 
+For terms in eta-long normal form, the on-the-fly eta-expansion traversal rules are never used, therefore branching traversals are bounded in the sense that at a given point, only finitely many nodes can be visited. So for STLC, in particular, the set of branching traversals is finite. This shows that the enumeration of alrgorithm \ref{algo:stlc_normalization_by_traversals} terminates.
+
+In the next section we will explore how to further restrict the non-determinism of rule \rulenamet{IVar} to ensure that the enumeration also terminates for untyped terms with a normal form.
 
 \subsection{Arity threshold and normalizing traversals}
 
@@ -802,7 +805,7 @@ By repeating the argument this shows that all the nodes following $t$ are necess
 
 The weaving property \ref{prop:weaving} leads to the following new definition of traversals:
 \begin{definition}[Normalizing traversals]
-We define the set of \defname{normalizing traversals}, noted $\travsetnorm$ as the set of maximal traversals obtained from the induction rule of Table \ref{tab:trav_rules} where the value $i$ in the rule \rulenamet{IVar} is bounded by the arity of the traversal from Definition \ref{dfn:arity-threshold}:
+We define the set of \defname{normalizing traversals}, noted $\travsetnorm$ as the subset of branching traversals defined by the rules of Def.~\ref{dfn:branching_traversals} where the label $k$ in rule \rulenamet{IVar} is bounded by the arity threshold of the traversal:
 \infrule[$\rulefont{IVar}_\normalizing$]
      { t \cdot n \in \travsetnorm
      \andalso n \in\NodeHjByRoot \inter \NodesVar^\ghostvar
@@ -813,10 +816,10 @@ We define the set of \defname{normalizing traversals}, noted $\travsetnorm$ as t
 Table \ref{tab:normalizing_trav_rules} recapitulates the rules of $\travsetnorm$ using judgement derivation rules where the judgement notations $\istraversal t$ is used to mean $t\in\travsetnorm$.
 \end{definition}
 
-\begin{proposition}[Normalizing traversals are sufficient for normalization]
+\begin{proposition}[Normalizing traversals are sufficient modulo $\sim$]
 \label{prop:normalizing_traversal_normalizing}
 For every traversal $t\in\travulc$ there exists $u \in \travsetnorm$ such that
-$$\pview{\core{u}} = \pview{\core{t}} \ .$$
+$u \sim t$.
 \end{proposition}
 \begin{proof}
 Consequence of Proposition \ref{prop:branching_traversal_normalizing} and Property \ref{prop:weaving}
@@ -864,8 +867,8 @@ where necessarily $\alpha\in\NodesLmd$, since application nodes can only enable 
 where
 \begin{compactitem}[-]
 \item $\child(\alpha)$ denotes the unique child tree node of lambda-node $\alpha$;
-\item $t_1, t_2$ denotes sub-sequences of traversal $t$;
-\item ``visible'' means that the node occurs in the P-view $\pview{t}$ of the traversal (\ie, the sub-sequence read from $t$ backwards by following the justification pointer every other  node).
+\item $t_1, t_2$ denotes traversal sub-sequences;
+\item ``visible'' means that the occurrence is in the P-view  (\ie, the sub-sequence read backwards from $\alpha$ by following the justification pointer every other node).
 \end{compactitem}
 
 \infrule[$\rulefont{Lam^\ghostlmd_\normalizing}$]
@@ -1181,7 +1184,7 @@ t_\epsilon = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda t}\ (n3-n2){t
 \end{landscape}
 
 Keeping only the maximal traversals gives us the following set of maximal normalizing traversals of $M$:
-$$\travsetnorm(M) = \{ t_{11}, t_{121}, t_{122} \}$$
+$$\travsetnorm_{max}(M) = \{ t_{11}, t_{121}, t_{122} \}$$
 
 Hence the set of maximal paths in the beta-normal form of $M$ is given by the traversal core P-views:
 \begin{align*}
