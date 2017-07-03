@@ -496,11 +496,7 @@ and $\travulc^\coresymbol(M)$ denotes the set of traversal cores of $M$.
 \end{conjecture}
 
 \begin{proof}[Proof idea]
-The argument should follow the same structure as for STLC \cite{BlumPhd} but using the Ker's game model of ULC instead of the innocent game model of STLC.
-
-%Rule \rulenamet{IVar} is defined so as to obtain the correspondence with game semantics: the nodes visited by this rule correspond to moves played by the Opponent in the game denotation. (We recall that in Game Semantics, the Opponent represents the environment of the program, or in other words, it models the larger program context in which the program is being executed. In particular, it determines the input data that is provided to the program.)
-
-The ``on-the-fly'' eta-expansion of imaginary traversals relates to the $Fun : U \rightarrow (U \Rightarrow U)$ morphism of Ker's game category where $U$ denotes the maximal arena.
+The argument should follow the same structure as for STLC \cite{BlumPhd} but using the Ker's game model of ULC instead of the innocent game model of STLC. The ``on-the-fly'' eta-expansion of imaginary traversals relates to the $Fun : U \rightarrow (U \Rightarrow U)$ morphism of Ker's game category where $U$ denotes the maximal arena.
 \end{proof}
 
 \section{Normalizing with Traversals}
@@ -510,7 +506,7 @@ Let's first introduce an equivalence relation on traversals:
 \begin{definition}[Quotienting]
 We define the \defname{core P-view} function $\Phi$ as the P-view function $\pview{\_}$ composed with the core projection $\coresymbol$:
 \begin{align*}
-\Phi : \travulc & \Longrightarrow \justseqset \\
+\Phi : \travulc & \longrightarrow \justseqset \\
 t & \longmapsto \pview{\core{t}}
 \end{align*}
 
@@ -519,7 +515,7 @@ We defined $\sim$ as the equivalence relation over $\travulc$ induced by $\Phi$.
 We say that a subset $T$ of $\travulc$ is \defname{complete modulo $\sim$}, or $\sim$-complete, if it contains at least one element for each $\sim$-equivalence class, in which case $T/{\sim} = \travulc/{\sim}$.
 \end{definition}
 
-Behind this definition is the idea that core P-views capture what it strictly required from traversals to reconstruct the normal form of a term. The quotient helps eliminate `redundant' traversals that have the same core P-view: it is sufficient to exhibit at least one traversal of each $\sim$-equivalence class to cover the entire set of core P-views. In the remaining of this section we explore $\sim$-complete traversals subsets that can be effectively computed.
+Behind this definition is the idea that core P-views capture what it strictly required from traversals to reconstruct the normal form of a term (Proposition \ref{prop:path_charact_stlc} and Theorem \ref{thm:path_charact_ulc}). The quotient helps eliminate `redundant' traversals that have the same core P-view: it is sufficient to exhibit at least one traversal of each $\sim$-equivalence class to cover the entire set of core P-views. In the remaining of this section we explore $\sim$-complete traversals subsets that can be effectively computed.
 
 We first consider the STLC case and derive an normalization procedure for it. We then spend the rest of the section showing how to extend this normalization procedure to ULC to calculate $\beta$-normal forms of untyped lambda terms when they exist.
 
@@ -538,7 +534,7 @@ For every simply-typed term-in-context $\Gamma\vdash M :T$, let $\etabetalnf{M}$
  By Theorem \ref{thm:ulc_corresp}, the set of traversals of the beta-normal form of $M$ is precisely the set of cores of traversals of $M$. The Path-View correspondence (Prop.~\ref{prop:pathview_ulc}) and Prop.~\ref{prop:ulc_and_stlc_trav_coincide} then show that the P-views of traversal cores of $M$ give the tree paths of the eta-long beta normal form.
 \end{proof}
 
-This suggests a normalization method for STLC term based on enumeration of all traversals, with one caveat: the set of STLC traversals can be infinite! This is because the rule traversing free variables has so much non-determinism that it gives rise to arbitrarily long traversals. But since the above bijection holds for the quotiented traversal set, one does not actually need to enumerate all traversals: it's sufficient to enumerate a $\sim$-complete subset. Such a normalization procedure is described in Algorithm \ref{algo:stlc_normalization_by_traversals}.
+This suggests a normalization method for STLC term based on enumeration of all traversals, with one caveat: the set of STLC traversals can be infinite! This is because the rule used to traverse free variables provide so much non-determinism that it gives rise to arbitrarily long traversals. Observe, however, that the above bijection holds for the \emph{quotiented} traversal set, thus one does not actually need to enumerate all traversals: it's sufficient to enumerate a $\sim$-complete subset. Algorithm \ref{algo:stlc_normalization_by_traversals} describes such a normalization procedure.
 
 \begin{algorithm}[h]
 \caption{Normalization by traversals for STLC}
@@ -553,6 +549,8 @@ Let $\Gamma \vdash M : T$ be a simply-typed term.
   \item Aggregate all the paths thus obtained to reconstruct the eta-long beta-normal form of $M$.
 \end{enumerate}
 \end{algorithm}
+
+\paragraph{Soundness and termination}
 Soundness of Algorithm \ref{algo:stlc_normalization_by_traversals} is shown by Proposition \ref{prop:path_charact_stlc} and from the fact
 that the beta-normal form of a simply-typed term is uniquely determined by the paths of its tree representation. Termination is implied by Proposition \ref{prop:branching_traversal_normalizing} which shows that branching traversals are $\sim$-complete.
 
@@ -560,29 +558,32 @@ that the beta-normal form of a simply-typed term is uniquely determined by the p
 \paragraph{Implementation of the normalization procedure}
 The normalization procedure from algorithm \ref{algo:stlc_normalization_by_traversals} was first implemented in the HOG tool\cite{BlumGalop2008, BlumPhd}. The tool takes as input any simply-typed lambda term and lets the user interactively generate all the traversals by ``playing the traversal game'' over the tree representation of the term. The tool offers a `worksheet' environment for performing various operations over the traversals, including filtering, views and core projection.
 
-\subsection{Restricting non-determinism}
+\subsection{Restricting traversal non-determinism}
 
-All the traversal rules are deterministic except the one used to model free variables: The rule \rulenamet{IVar} offers two non-deterministic choices:
+A normalization procedure based on enumerating all traversals is not practical because the set of traversals can be infinite. This is expected for non-normalizing term such as $\Omega = (\lambda x. x x)(\lambda y. y y)$ which has infinitely long traversals of the form $\lambda x \cdot x \cdot \lambda y \cdot y \cdot x \cdot \lambda y \cdot y \cdot \ldots$ But this is also the case for terms having a normal form. Take for example $M = \lambda f . f (\lambda x. x)$, then for all $k\geq0$ the justified sequence $t_k = \lambda f \cdot f \cdot (\lambda x \cdot  x)^k$ (with appropriate pointers) is a traversal.
+
+The Game Semantics Correspondence explains why there can be infinitely many traversals: The game denotation of a term must allow Opponent's moves accounting for all possible context terms (modelled by the Opponent). Those traversals accounts for all the possible denotations of the function parameter $f$ of $M$: for each $k$, there exists a term that applies its argument $k$ times: $F_k = \lambda g . g (g ( \ldots (g z)))$ with $k$ applications of $g$, and there got to be plays in the game denotation of the term $M$ to accounts for those possible values of argument $f$.
+
+From a traversal viewpoint, this fact is explained by the
+way free variables are traversed. The rule \rulenamet{IVar} offers two non-deterministic choices:
 \begin{itemize}
-\item[(i)] which variable to pick in the O-view,
-\item[(ii)] which child lambda node to pick amongst the picked variable's children.
+\item[(i)] the variable to pick in the O-view,
+\item[(ii)] the child lambda node to pick amongst the children of variable picked in (i).
 \end{itemize}
-Consequently, even for terms having a normal form (and in particular even for beta-normal terms), the set of traversals can be infinite, and traversals can be infinitely long. For example, take the term $\lambda f . f (\lambda x. x)$. For all $k\geq0$, the sequence $\lambda f \cdot f \cdot (\lambda x \cdot  x)^k$ (with appropriate pointers) is a traversal. From a game semantic viewpoint, those traversals accounts for all the possible denotations of the function parameter $f$: indeed, for each $k$, there exists a term that applies its argument $k$ times: $\lambda y . y (y ( \ldots y)) $, and there got to be plays in the game denotation of the term to accounts for those possible arguments.
+The first choice allows, among others, the repeated pattern described above where the same node $\lambda x$ in the O-view is picked again and again.
 
-For the sake of computing the beta-normal form of a term, however, it's only necessary to traverse finitely many finite traversals (provided that the normal form exists). This is achieved by resticting the rule \rulenamet{IVar} to traverse only nodes leading to paths in the computation tree that are yet unexplored. In practice, this can be done as follows: when choosing the next lambda node to visit, one can restrict the choice of the next move to child lambda nodes of the \emph{latest} nodes in the traversal. This intuition is formalized by the notion of \emph{branching traversal} in Definition \ref{dfn:branching_traversals} and Proposition \ref{prop:branching_traversal_normalizing}.
+Fortunately, traversals accounting for all those contexts are redundant for normalization. Indeed, due to the absence of side-effects, calling the same argument multiple times always involves the same underlying computation in $M$. We formalize this intuition with the notion of \emph{branching traversals} (Definition \ref{dfn:branching_traversals}) which prevent such repetitive behaviour while still covering all $\sim$-equivalence classes (Proposition \ref{prop:branching_traversal_normalizing})
+Branching traversals restrict the rule \rulenamet{IVar} to traverse only nodes leading to paths in the computation tree that are yet unexplored: when choosing the next lambda node to visit, it restricts choice (i) to the \emph{latest} variable node in the traversal, and choice (ii) to child lambda nodes of that variable node.
 
-\paragraph{Quotienting traversals}
-The Game Semantics Correspondence explains why there can be infinitely many traversals: The game denotation of a term must allow Opponent's moves accounting for all possible context terms (modelled by the Opponent).
-
-In particular, suppose that $M$ takes a second-order function as argument. Then one can define an infinite sequence of term contexts that would pass as argument to $M$ a function that calls its argument exactly $k$ times for $k>0$ (\eg, $\lambda g . g ( g(\ldots (g z)))$ with $k$ applications of $g$).
-
-It turns out that traversals accounting for all those contexts are redundant in the sense that they all belong to the same $\sim$-equivalence class. Indeed, due to the absence of side-effects, calling the same argument multiple times always involves the same underlying computation in $M$. Proposition \ref{prop:branching_traversal_normalizing} formalizes this intuition by showing that the subset of \emph{branching traversals} prevents such repetitive behaviour while still covering all $\sim$-equivalence classes.
-
+\paragraph{Bounding traversals non-determinism for ULC}
+For simply-typed terms in eta-long form, there is a finite number of branching traversals which implies termination of the normalization procedure of algorithm \ref{algo:stlc_normalization_by_traversals}.
+For untyped terms, however, branching traversals can still be infinite because \emph{on-the-fly} eta-expansion in the variable rules is unbounded ($i>0$). In the next section we will show how  this non-determinism can be bounded.
 
 \subsubsection{Context-affine traversals}
 
 A lambda term is \defname{affine} if every bound variable in the term occurs at most once in the term.
 
+\todo{Following two paragraphs are repeats, maybe move to intro section}
 Game-semantic intuition: rule \rulenamet{IVar} from Table \ref{tab:trav_rules} accounts for all possible moves from the opponent. For instance, to model contexts terms like $\lambda f.f(\lambda x.f(\lambda y.y))$, the game denotation of a term $M$ must contain plays with two occurrences of the same O-move representing the two separate occurrences of $f$.
 
 In the game denotation of a lambda term $M$, at every point in a given play where it is Opponent's turn to play, all possible Opponent moves are accounted for. This guarantees that the denotation models all possible behaviours of contextual terms interacting with $M$, including behaviours not necessarily representable by a lambda term (e.g., in a typed setting, the context may range over a PCF term or Idealized Algol term).
@@ -634,10 +635,10 @@ We define the set of \defname{branching traversals} $\travsetbr$ as the subset o
 \infrule[$\rulefont{IVar}_\branching$]
      {t \cdot n \in \travsetbr
       \andalso n \in\NodeHjByRoot \inter \NodesVar
-      \andalso n \enables_k \alpha
-      \andalso k \geq 1
+      \andalso n \enables_i \alpha
+      \andalso i \geq 1
      }
-     {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:k){\alpha}} \in \travsetbr}
+     {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:i){\alpha}} \in \travsetbr}
 \end{definition}
 
 \begin{proposition}[Branching traversals are $\sim$-complete]
@@ -796,13 +797,13 @@ By repeating the argument this shows that all the nodes following $t$ are necess
 
 The weaving property \ref{prop:weaving} leads to the following new definition of traversals:
 \begin{definition}[Normalizing traversals]
-We define the set of \defname{normalizing traversals}, noted $\travsetnorm$ as the subset of branching traversals defined by the rules of Def.~\ref{dfn:branching_traversals} where the label $k$ in rule \rulenamet{IVar} is bounded by the arity threshold of the traversal:
+We define the set of \defname{normalizing traversals}, noted $\travsetnorm$ as the subset of branching traversals defined by the rules of Def.~\ref{dfn:branching_traversals} where the label $i$ in rule \rulenamet{IVar} is bounded by the arity threshold of the traversal:
 \infrule[$\rulefont{IVar}_\normalizing$]
      { t \cdot n \in \travsetnorm
      \andalso n \in\NodeHjByRoot \inter \NodesVar^\ghostvar
-     \andalso n \enables_k \ghostlmd
-     \andalso |n| < k \leq \arth(t)}
-     {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:k){\ghostlmd}}\in \travsetnorm}
+     \andalso n \enables_i \ghostlmd
+     \andalso |n| < i \leq \arth(t)}
+     {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:i){\ghostlmd}}\in \travsetnorm}
 
 Table \ref{tab:normalizing_trav_rules} recapitulates the rules of $\travsetnorm$ using judgement derivation rules where the judgement notations $\istraversal t$ is used to mean $t\in\travsetnorm$.
 \end{definition}
@@ -820,6 +821,7 @@ Consequence of Proposition \ref{prop:branching_traversal_normalizing} and Proper
 In the following sections we show how to generalize the normalization procedure of Algorithm~\ref{algo:stlc_normalization_by_traversals} to calculate the $\beta$-normal of an untyped lambda terms if it exists (without eta-long expansion).
 
 \begin{theorem}[Normalized Paths Characterization for ULC]
+\label{thm:path_charact_ulc}
 For any untyped term $M$ having a normal form $\betanf{M}$ we have:
 $$\Phi : \travsetnorm(M)/{\sim} \ \cong\ \pathset(\betanf{M})$$
 \end{theorem}
@@ -1355,7 +1357,7 @@ The \defname{head reduction}, denoted $\rightarrow_{h}$, fires the head redex of
 \subsection{Head-linear reduction}
 We now introduce the head-linear reduction of Danos-Regnier \cite{danos-head}.
 
-In the standard lambda calculus, a redex is necessarily formed by the outermost lambda in operator position of an application: if the operator consists of consecutive lambda abstractions (\eg, as in $(\lambda x \lambda y . M) A_1 A_2$) then the outermost lambda (\eg, $\lambda x$) is the one that will form the redex. The notion of redex can be generalized to allow evaluation of arguments in any order. In particular, one can allow any of the consecutive $\lambda$-abstractions to form a redex (\eg, the abstraction $\lambda y$ and corresponding argument $A_2$ would be a valid redex). This is formalized as follows:
+In the standard lambda calculus, a redex is necessarily formed by the outermost lambda in operator position of an application: if the operator consists of consecutive lambda abstractions (\eg, as in $(\lambda x \lambda y . M) A_1 A_2$) then the outermost lambda (\eg, $\lambda x$) is the one that will form the redex. The notion of redex can be generalized to allow evaluation of arguments in any order. In particular, one can allow any of the consecutive $\lambda$-abstractions to form a redex (\eg, the abstraction $\lambda y$ and corresponding argument $A_2$ would be a valid redex). This is formalized by the notion of \emph{generalized redex} (a generalized version of the \emph{prime redex} of Danos-Regnier):
 
 \begin{definition}[Generalized redex]
 The set of generalized redexes of a term $M$, written $gr(M)$, is a set of pairs $(\lambda x, A)$ where $\lambda x$ is some abstraction in $M$ and $A$ is a subterm called the argument of $\lambda x$. The head $\lambda$ list of $M$, written $\lambda_l(M)$ is a list of lambda abstractions of $M$. They are defined by induction:
@@ -1385,14 +1387,14 @@ The \defname{head-linear reduction} $\rightarrow_{hl}$ is defined as the reducti
 
 \paragraph{Soundness}
 The set of \defname{spine subterms} is defined by induction: a term is a spine subterm of itself; the spine subterms of $U V$ and $\lambda x. U$ are those of $U$.
-A \defname{spine prime redex} is a generalized redex $(\lambda x, A)$ such that the operator of the redex ($\lambda x . U$ for some $U$) is a spine subterm.
+A \defname{prime redex} (ala Danos-Regner) is a generalized redex $(\lambda x, A)$ such that the operator of the redex ($\lambda x . U$ for some $U$) is a spine subterm.
 
 Danos-Reigner showed the following result:
 \begin{theorem}[Soundness and completeness of head-linear reduction \cite{danos-head}]
 \label{thm:danosreigner_headlinred}
 \begin{compactitem}
 \item If $T \rightarrow^*_{hl} T$  then $T$ and $T'$ are $\beta$-equivalent.
-\item If $T$ is in quasi-head normal form and has $n$ spine prime redexes then the head reduction of $T$ leads to a head normal form in exactly $n$ steps.
+\item If $T$ is in quasi-head normal form and has $n$ prime redexes then the head reduction of $T$ leads to a head normal form in exactly $n$ steps.
 \item If $T$ is any term, the head linear reduction of $T$ terminates iff the head reduction of $T$ terminates.
 \end{compactitem}
 \end{theorem}
@@ -1498,7 +1500,7 @@ We have:
 \begin{itemize}
 \item[(i)] If $M \rightarrow_{l} N$ then $M$ and $N$ are beta-equivalent.
 \item[(ii)] $M$ has a beta-normal form if and only if its left-most head linear reduction terminates.
-\item[(iii)] If $M$ is in \emph{quasi normal form} and contains $n$ standard redexes then there is an evaluation strategy that reduces $M$ to its normal form in $n$ beta-reduction steps.
+\item[(iii)] If $M$ is in \emph{quasi normal form} and contains $n$ standard redexes then there is an evaluation strategy that reduces $M$ to its normal form in exactly $n$ beta-reductions.
 \end{itemize}
 \end{theorem}
 \begin{proof}
@@ -1508,17 +1510,17 @@ We have:
 \end{proof}
 \todo{To prove!}
 
-The definition of prime redex from Danos-Regnier corresponds to the \emph{prime spine redexes} in our setting. We generalize the notion of prime redex as follows \todo{this definition might not even be needed after all!}
-\begin{definition}[Prime redexes]
-The set of prime redexes $PR(M)$ of a term $M$ is a subset of the generalized redexes of $M$ defined by induction as follows:
+\begin{definition}[Leftmost redex sequence]
+The leftmost redex sequence $LRS(M)$ of a term $M$ is a sequence of the generalized redexes of $M$ defined by induction as follows:
 \begin{align*}
-PR(v) &= \emptyset \\
-PR(\lambda x . U) &= PR(U)\\
-PR(U V) &=
+LRS(v) &= \emptyset \\
+LRS(\lambda x . U) &= LRS(U)\\
+LRS(U V) &=
     \begin{cases}
-        \{(\lambda x, V) \} \union PR(U) & \mbox{if $\lambda_l(U) = \lambda x \cdot l $} \\
-        PR(U) & \mbox{if $\lambda_l(U) = \epsilon$ and $lloc_M(U)$ is defined} \\
-        PR(U) \union PR(V) & \mbox{if $\lambda_l(U) = \epsilon$ and $lloc_M(U)$ is undefined}
+        (\lambda x, V) \cdot LRS(U) \cdot LRS(V) & \mbox{if $\lambda_l(U) = \lambda x \cdot l$ and $lloc_M(U) =\bot$ } \\
+        (\lambda x, V) \cdot  LRS(U) & \mbox{if $\lambda_l(U) = \lambda x \cdot l $ and $lloc_M(U) \neq \bot$} \\
+        LRS(U) & \mbox{if $\lambda_l(U) = \epsilon$ and $lloc_M(U) \neq \bot$} \\
+        LRS(U) \cdot LRS(V) & \mbox{if $\lambda_l(U) = \epsilon$ and $lloc_M(U) = \bot$}
     \end{cases}
 \end{align*}
 where $v$ ranges over variable occurrences and $U,V$ over subterms of $M$.
@@ -1529,9 +1531,9 @@ Take $M = (\lambda x . z ((\lambda w y . y)x)) U$ for any term $U$.
 Then $M$ is in quasi-head normal form with one prime spine redex $(x,U)$.
 Head reduction gives $M \rightarrow_h z ((\lambda w y. y) U)$.
 
-$M$ is also in quasi normal form. Indeed $lloc_M(M) = lloc_M(N) = lloc_M (\lambda w y . y)$ which is undefined.
-The prime redexes of $M$ are $PR(M) = \{ (\lambda x, U) , (\lambda w, x) \}$.
-Reducing the prime redexes with two head reduction gives
+$M$ is also in quasi normal form. Indeed $lloc_M(M) = lloc_M (\lambda w y . y)$ which is undefined.
+The leftmost redex sequence of $M$ is $LRS(M) = (\lambda x, U) \cdot (\lambda w, x)$.
+Reducing the term with two head reduction gives
 $M \rightarrow_h z ((\lambda w y.y)x) \rightarrow_h z (\lambda y . y)$ which is in normal form.
 \end{example}
 
