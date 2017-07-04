@@ -501,9 +501,21 @@ The argument should follow the same structure as for STLC \cite{BlumPhd} but usi
 \end{proof}
 
 \section{Normalizing with Traversals}
-In this section we show how traversals can be used to normalize lambda terms.
-We first consider the STLC case and derive an normalization procedure for it.
-Soundness follows immediately from the Game Semantics correspondence of \cite{BlumPhd}. We then spend the rest of the section showing how to extend this normalization procedure to ULC to calculate $\beta$-normal forms of untyped lambda terms when they exist.
+
+In this section we show how traversals can be used to normalize lambda terms. The crux of the normalization procedure is the \emph{Path Characterization} result (Proposition \ref{prop:path_charact_stlc} and Theorem \ref{thm:path_charact_ulc})) which states that the set of traversals \emph{core P-views} capture what it strictly required from traversals in order to reconstruct the normal form of a term.
+
+This characterization suggests a normalization method based on enumerating the entire set of traversals. One caveat is that the set of traversals may be infinite! This is because the non-determinism of the free variable rule can give rise to arbitrarily long traversals.
+We show, however, that not all traversals need to be enumerated: it is sufficient to enumerate a subset of traversals that covers all the core P-views.
+
+We introduce the subset of \emph{branching traversals} which verifies this property. For simply typed terms in eta-long form this subset is finite. This yields a normalization procedure for STLC.
+Soundness follows from the Game Semantics correspondence of \cite{BlumPhd}.
+
+We then introduce the subset of \emph{normalizing traversals} which yields a similar normalization procedure for ULC to calculate $\beta$-normal forms of untyped lambda terms when they exist.
+
+
+\subsection{Quotienting}
+
+We introduce a quotient relation that eliminates `redundant' traversals that have identical core P-views: it is sufficient to exhibit at least one traversal of each $\sim$-equivalence class to cover the entire set of core P-views. In the remaining of this section we explore $\sim$-complete traversals subsets that can be effectively computed.
 
 Let's first introduce an equivalence relation on traversals:
 \begin{definition}[Quotienting]
@@ -518,46 +530,6 @@ We defined $\sim$ as the equivalence relation over $\travulc$ induced by $\Phi$.
 We say that a subset $T$ of $\travulc$ is \defname{complete modulo $\sim$}, or $\sim$-complete, if it contains at least one element for each $\sim$-equivalence class, in which case $T/{\sim} = \travulc/{\sim}$.
 \end{definition}
 
-Behind this definition is the idea that core P-views capture what it strictly required from traversals in order to reconstruct the normal form of a term (Proposition \ref{prop:path_charact_stlc} and Theorem \ref{thm:path_charact_ulc}). The quotient helps eliminate `redundant' traversals that have identical core P-views: it is sufficient to exhibit at least one traversal of each $\sim$-equivalence class to cover the entire set of core P-views. In the remaining of this section we explore $\sim$-complete traversals subsets that can be effectively computed.
-
-\subsection{Normalizing STLC by traversals}
-
-The following characterization is a direct consquence of the Game-Semantic Correspondence Theorem for STLC \cite{BlumPhd}:
-\begin{proposition}[Normalized Paths Characterization for STLC]
-\label{prop:path_charact_stlc}
-For every simply-typed term-in-context $\Gamma\vdash M :T$, let $\etabetalnf{M}$ denote the eta-long beta-normal form of $M$. We have:
-\begin{equation*}
-\Phi : \travulc(\etalf{M})/{\sim}\ \cong\ \pathset(\etabetalnf{M})
-\end{equation*}
-\end{proposition}
-\begin{proof}
- Beta-eta equivalent terms have the same game denotation, therefore by Theorem \ref{thm:gamesem_correspondence_stlc}, the set of traversals of the eta-long beta-normal form of $M$ is also given by the set of cores of traversals of $\etalf{M}$. The Path-View correspondence (Prop.~\ref{prop:pathview_ulc}) and Prop.~\ref{prop:ulc_and_stlc_trav_coincide} then show that the P-views of traversal cores of $\etalf{M}$ give the tree paths of the eta-long beta normal form.
-\end{proof}
-
-This characterization suggests a normalization method for STLC term based on enumerating the entire set of traversals. There is just one caveat: the set of STLC traversals may be infinite! This is because the non-determinism of the free variable rule can give rise to arbitrarily long traversals. Observe, however, that the bijection in the above proposition holds for the \emph{quotiented} traversal set. Thus enumerating all traversals is not necessary: it suffices instead to enumerate a $\sim$-complete subset. Algorithm \ref{algo:stlc_normalization_by_traversals} describes such a normalization procedure.
-
-\begin{algorithm}[!h]
-\caption{Normalization by traversals for STLC}
-\label{algo:stlc_normalization_by_traversals}
-Let $\Gamma \vdash M : T$ be a simply-typed term.
-\begin{enumerate}
-  \item Calculate $\etalf{M}$, the eta-long expansion of $M$;
-  \item Enumerate maximal \emph{branching} traversals of $M$ from Def.~\ref{dfn:branching_traversals} over the computation tree of $\etalf{M}$;
-  \item Project each traversal with respect to the tree root to get the \emph{traversal core}. By the correspondence theorem this yields a play in $\sem{M}$;
-  \item Calculate the P-view of the traversal core;
-  \item Apply the bijection from the Correspondence Theorem to get the corresponding maximal path in the tree representation of the eta-long $\beta$-nf of $M$;
-  \item Aggregate all the paths thus obtained to reconstruct the eta-long beta-normal form of $M$.
-\end{enumerate}
-\end{algorithm}
-
-\paragraph{Soundness}
-Soundness of Algorithm \ref{algo:stlc_normalization_by_traversals} is shown by Proposition \ref{prop:path_charact_stlc} and from the fact that a beta-normal term is uniquely determined by the set of maximal paths in its tree representation, and by Proposition \ref{prop:branching_traversal_normalizing} which shows that branching traversals are $\sim$-complete.
-
-\todo{termination}
-
-
-\paragraph{Implementation of the normalization procedure}
-The normalization procedure from algorithm \ref{algo:stlc_normalization_by_traversals} was first implemented in the HOG tool\cite{BlumGalop2008, BlumPhd}. The tool takes as input any simply-typed lambda term and lets the user interactively generate all the traversals by ``playing the traversal game'' over the tree representation of the term. The tool offers a `worksheet' environment for performing various operations over the traversals, including filtering, views and core projection.
 
 \subsection{Restricting traversal non-determinism}
 
@@ -568,13 +540,13 @@ The Game Semantics Correspondence explains why there can be infinitely many trav
 From a traversal viewpoint, this fact is explained by the
 way free variables are traversed. The rule \rulenamet{IVar} offers two non-deterministic choices:
 \begin{itemize}
-\item[(i)] the variable to pick in the O-view,
-\item[(ii)] the child lambda node to pick amongst the children of variable picked in (i).
+\item[(J)] the variable to pick in the O-view (the justifier),
+\item[(L)] the child lambda node to pick amongst the children of variable picked in (J).
 \end{itemize}
 The first choice allows, among others, the repeated pattern described above where the same node $\lambda x$ in the O-view is picked again and again.
 
 Fortunately, traversals accounting for all those contexts are redundant for normalization. Indeed, due to the absence of side-effects, calling the same argument multiple times always involves the same underlying computation in $M$. We formalize this intuition with the notion of \emph{branching traversals} (Definition \ref{dfn:branching_traversals}) which prevent such repetitive behaviour while still covering all $\sim$-equivalence classes (Proposition \ref{prop:branching_traversal_normalizing}).
-Branching traversals restrict the rule \rulenamet{IVar} so as to traverse only nodes leading to paths in the computation tree that are yet unexplored: when choosing the next lambda node to visit, it restricts choice (i) to the \emph{latest} variable node in the traversal, and choice (ii) to child lambda nodes of that variable node.
+Branching traversals restrict the rule \rulenamet{IVar} so as to traverse only nodes leading to paths in the computation tree that are yet unexplored: when choosing the next lambda node to visit, it restricts choice (J) to the \emph{latest} variable node in the traversal, and choice (L) to child lambda nodes of that variable node.
 
 \paragraph{Bounding traversals non-determinism for ULC}
 For simply-typed terms in eta-long form, there is a finite number of branching traversals which implies termination of the normalization procedure of algorithm \ref{algo:stlc_normalization_by_traversals}.
@@ -650,6 +622,48 @@ We will use the subscript `${}_\branching$' to refer to the rule system thus obt
 \end{proof}
 
 For terms in eta-long normal form, the on-the-fly eta-expansion sub-cases of traversal rules are never used, therefore branching traversals are bounded in the sense that at a given point, only finitely many nodes can be visited. This explains the set of branching traversals is finite for terms in eta-long form, which implies that the enumeration of algorithm \ref{algo:stlc_normalization_by_traversals} terminates. In the next section we will explore how to further restrict the non-determinism of rule \rulenamet{IVar} to ensure that the enumeration also terminates for untyped terms with a normal form.
+
+
+\subsection{Normalizing STLC by traversals}
+
+The following characterization is a direct consequence of the Game-Semantic Correspondence Theorem for STLC \cite{BlumPhd}:
+\begin{proposition}[Normalized Paths Characterization for STLC]
+\label{prop:path_charact_stlc}
+For every simply-typed term-in-context $\Gamma\vdash M :T$, let $\etabetalnf{M}$ denote the eta-long beta-normal form of $M$. We have:
+\begin{equation*}
+\Phi : \travulc(\etalf{M})/{\sim}\ \cong\ \pathset(\etabetalnf{M})
+\end{equation*}
+\end{proposition}
+\begin{proof}
+ Beta-eta equivalent terms have the same game denotation, therefore by Theorem \ref{thm:gamesem_correspondence_stlc}, the set of traversals of the eta-long beta-normal form of $M$ is also given by the set of cores of traversals of $\etalf{M}$. The Path-View correspondence (Prop.~\ref{prop:pathview_ulc}) and Prop.~\ref{prop:ulc_and_stlc_trav_coincide} then show that the P-views of traversal cores of $\etalf{M}$ give the tree paths of the eta-long beta normal form.
+\end{proof}
+
+% next sentence is a clone! TODO: rewrite
+This characterization suggests a normalization method for STLC term based on enumerating the entire set of traversals. There is just one caveat: the set of STLC traversals may be infinite! This is because the non-determinism of the free variable rule can give rise to arbitrarily long traversals. Observe, however, that the bijection in the above proposition holds for the \emph{quotiented} traversal set. Thus enumerating all traversals is not necessary: it suffices instead to enumerate a $\sim$-complete subset such as the subset of \emph{branching traversals}. Algorithm \ref{algo:stlc_normalization_by_traversals} describes such a normalization procedure.
+
+\begin{algorithm}[!h]
+\caption{Eta-long normalization by traversals for STLC}
+\label{algo:stlc_normalization_by_traversals}
+Let $\Gamma \vdash M : T$ be a simply-typed term.
+\begin{enumerate}
+  \item Calculate $\etalf{M}$, the eta-long expansion of $M$;
+  \item Enumerate maximal \emph{branching} traversals of $M$ from Def.~\ref{dfn:branching_traversals} over the computation tree of $\etalf{M}$;
+  \item Project each traversal with respect to the tree root to get the \emph{traversal core}. By the correspondence theorem this yields a play in $\sem{M}$;
+  \item Calculate the P-view of the traversal core;
+  \item Apply the bijection from the Correspondence Theorem to get the corresponding maximal path in the tree representation of the eta-long $\beta$-nf of $M$;
+  \item Aggregate all the paths thus obtained to reconstruct the eta-long beta-normal form of $M$.
+\end{enumerate}
+\end{algorithm}
+
+\paragraph{Soundness}
+Soundness of Algorithm \ref{algo:stlc_normalization_by_traversals} is shown by Proposition \ref{prop:path_charact_stlc} and from the fact that a beta-normal term is uniquely determined by the set of maximal paths in its tree representation, and by Proposition \ref{prop:branching_traversal_normalizing} which shows that branching traversals are $\sim$-complete.
+
+\paragraph{Termination}
+\todo{termination}
+
+
+\paragraph{Implementation of the normalization procedure}
+The normalization procedure from algorithm \ref{algo:stlc_normalization_by_traversals} was first implemented in the HOG tool\cite{BlumGalop2008, BlumPhd}. The tool takes as input any simply-typed lambda term and lets the user interactively generate all the traversals by ``playing the traversal game'' over the tree representation of the term. The tool offers a `worksheet' environment for performing various operations over the traversals, including filtering, views and core projection.
 
 \subsection{Arity threshold and normalizing traversals}
 
