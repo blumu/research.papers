@@ -16,6 +16,8 @@
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{bcprules}
 \usepackage{algorithm}
+\usepackage{geometry}
+\usepackage{pdflscape}
 
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}[section]
@@ -78,13 +80,12 @@
 \begin{document}
 \maketitle
 \begin{abstract}
-We introduce a method to normalize untyped lambda terms (when the normal-form exists) using a combination of the theory of traversals, a term-tree traversing techniques inspired from Game Semantics \cite{Ong2006,BlumPhd}, and judicious use of the eta-conversion rule of the lambda calculus.
+We introduce a method to normalize untyped lambda terms, when the normal-form exists, by combining the theory of traversals, a term-tree traversing techniques inspired from Game Semantics \cite{Ong2006,BlumPhd}, and judicious use of the eta-conversion rule of the lambda calculus.
 
-In the simply-typed lambda calculus (STLC), the theory of traversal is only defined for terms in eta-long form \cite{BlumPhd}. This transformation guarantees that application operands always exist when traversing the term. In the (finitary) untyped lambda calculus (ULC), however, eta-long expansion is undefined. Attempting to blindly apply the traversing rules of the STLC on an untyped lambda term therefore leads to situations where the traversal gets `stuck' due to an insufficient number of operands in an application.
+Little modifications to the traversal theory of the simply-typed lambda calculus \cite{BlumPhd} is needed. A notable improvement is that eta-long transformation is unnecessary: we traverse the original unmodified term tree. Blindly applying the original traversal rules on untyped terms, which do not have a (finite) eta-long form, causes traversals to get `stuck' when an application operand is lacking; whereas in a typed setting, eta-long transform ensures that application operands necessarily exist. Relaxing this structural requirement altogether induces the notion of ``imaginary'' nodes: those are nodes that would exist
+ if the subterm with the missing operand were to be eta-expanded. This allows the traversal to proceed.
 
-We show how very little modifications to the traversal theory from the typed settings is required to handle the untyped case: (i) structural restrictions of the typed traversals rules are relaxed; (ii) this induces the notion of ``imaginary'' nodes corresponding to nodes that would exist in the abstract syntax tree of the term if some of its subterms were to be eta-expanded. These relaxations allow the traversal to proceed where the traversals of STLC would get blocked. A notable benefit of this presentation is that eta-long transformation is not needed: the original unmodified term tree is traversed.
-
-We then show how, by bounding the non-determinism of the free variable rule, one can effectively compute a subset of traversals that characterizes the set of paths in the beta-normal form of the term. This yields a normalization algorithm for ULC.
+We show how, by bounding the non-determinism of the free variable rule, one can effectively compute a subset of traversals that characterizes the set of paths in the beta-normal form of the term. This yields a normalization algorithm for untyped terms with a normal form.
 
 Finally we define \emph{leftmost linear reduction} as a generalization of the head linear reduction of Danos-Regnier and show that the traversals theory implements it, which prove correctness of the normalization procedure.
 \end{abstract}
@@ -231,7 +232,7 @@ Let $s$ be a justified sequence of nodes.
       t  & \longmapsto  s\filter\NodeHjByRoot \ .
  \end{align*}
 \end{itemize}
-Observe that if there is a single occurrence $r$ of the tree root in $s$ then $\core{s} = s\filter\NodeHjByRoot = s\filter r$.
+Observe that if $r_1, \ldots r_n$, $n\geq 1$ are the occurrences of the root in $s$ then  $\core{s}$ is also given by the projection of $s$ with respect to those occurrences: $\core{s} = s\filter r_1 \filter \ldots \filter r_n$.
 \end{definition}
 
 The P-view of a justified sequence is the sub-sequence obtained by reading the sequence backwards as follows: (i) if the node being read is a variable node then keep that node and follow its justification pointer (\ie, skip all the occurrences ``underneath that pointer'') (ii) if the node is a lambda node then keep that node and move to the preceding node. Formally:
@@ -256,7 +257,7 @@ We define the \defname{core P-view} as $\pview{\core{s}}$, the P-view of the tra
 
 \section{Traversals}
 
-\subsection{Definition}
+\subsection{Definition and properties}
 
 \begin{definition}[ULC traversals]
 The set of \defname{traversals} of an untyped lambda term $M$, denoted $\travulc(M)$, abbreviated $\travulc$ when the term is clear from context, is the set of justified sequences of nodes over $M$ recursively defined by the rules of Table \ref{tab:trav_rules}.
@@ -271,9 +272,7 @@ A traversal that does not have any extension is a \defname{maximal traversal}.
 
     \item \rulenamet{App} If $t \cdot @$ is a traversal then so is \Pstr[0.4cm]{t \cdot (at) @  \cdot (a-at,40:0) \alpha} where $\alpha\in\NodesLmd$ is $@$'s $0$th child $\lambda$-node.
 
-    \item \rulenamet{Lam} If $t \cdot \alpha$ is a traversal where $\alpha\in\NodesLmd$ then so is
-        $t \cdot \alpha \cdot n$ where $n$
-        denotes $\alpha$'s unique child and its justifier is defined as follows.
+    \item \rulenamet{Lam} If $t \cdot \alpha$ is a traversal where $\alpha\in\NodesLmd$ then so is$t \cdot \alpha \cdot n$ where $n$ denotes $\alpha$'s unique child. Furthermore:
         \begin{compactitem}
             \item \rulenamet{Lam^@} If $n$ is an $@$-node then it has no justifier,
             \item \rulenamet{Lam^{\sf var}} If $n$ is a free variable node then it points
@@ -290,9 +289,8 @@ $$\Pstr[0.5cm]{ t \cdot(alpha){\alpha} \cdot
 \cdot \ldots \cdot
 (gl-n,40:i){\ghostlmd}\cdot (al-alpha,40:{|\alpha| + i - |n|}){\ghostvar}
       \in\travulc}$$
- \end{itemize}
-
-\emph{\bf PROGRAM -- Copy-cat rules \underline{with on-the-fly eta-expansion}}
+\end{itemize}
+\emph{\bf PROGRAM -- Copy-cat rules}
 \begin{itemize}
 \item \rulenamet{Var} If \Pstr[0.5cm]{t \cdot (m){m} \cdot (alpha){\alpha}
     \ldots (n-alpha,50:i){n} \in \travulc} for $i>0$, $n \in \NodesVar^\ghostvar$ hereditarily justified by an $@$-node;
@@ -302,15 +300,15 @@ $$\Pstr[0.5cm]{ t \cdot(alpha){\alpha} \cdot
     \cdot (letai-m,40:i){\beta}
      \in\travulc}$$
 \begin{description}[align=right,labelwidth=2cm]
-\item[Concrete] $i \leq |m|$: $\beta$ is a structural lambda node in $\NodesLmd$ and is the $i$th child of $m$;
-\item[Eta-expanded] $i > |m|$: $\beta$ is a ghost lambda node $\ghostlmd$ representing the $i$th ghost child of $m$.
+\item[Concrete] $i \leq |m|$: $\beta\in\NodesLmd$ is the $i$th child of $m$;
+\item[Eta-expanded] $i > |m|$: $\beta$ is a ghost lambda node $\ghostlmd$.
 \end{description}
 \end{itemize}
 
 \emph{\bf DATA -- Input-variable rules}
 \begin{itemize}
 \item \rulenamet{IVar} If $t \cdot n$ is a traversal where $n \in \NodesVar^\ghostvar$ is hereditarily justified by the root. For every node $m \in \NodesVar^\ghostvar$ occurring in $\oview{t\cdot n}$
-and every $i>1$ we have $t \cdot n \cdot \alpha \in \travulc$ with $\alpha$ pointing to $m$ with label $i$, where:
+and every $i\geq1$ we have $t \cdot n \cdot \alpha \in \travulc$ with $\alpha$ pointing to $m$ with label $i$, where:
 \begin{description}[align=right,labelwidth=2cm]
 \item[Concrete] $i\leq|m|$: $\alpha \in \Nodes_\lambda$ is the $i$th child of $m$;
 \item[Eta-expanded] $i>|m|$: $\alpha$ is a ghost lambda node $\ghostlmd$.
@@ -318,7 +316,7 @@ and every $i>1$ we have $t \cdot n \cdot \alpha \in \travulc$ with $\alpha$ poin
 \end{itemize}
 
 
-\caption{Rules defining the imaginary traversals $\travulc$ of the untyped lambda calculus}
+\caption{Imaginary traversals $\travulc$ of the untyped lambda calculus}
  \label{tab:trav_rules}
 \end{FramedTable}
 
@@ -420,7 +418,7 @@ For any simply-typed term in context $\Gamma \vdash M : T$, let $\etalf{M}$ deno
 \end{itemize}
 \end{proposition}
 \begin{proof}
-(i) Because the term is eta-long expanded, the condition $i>|m|$ in the rules \rulenamet{Var} and \rulenamet{IVar} never holds while traversing the term. (ii) holds because the remaining traversals rules coincide for STLC and ULC.
+(i) Because the term is eta-long expanded, the condition $i>|m|$ in the rules \rulenamet{Var} and \rulenamet{IVar} never holds while traversing the term. (ii) holds because, by definition of $\travstlc$, the remaining traversals rules of STLC and ULC coincide.
 \end{proof}
 
 
@@ -443,11 +441,11 @@ In particular for all $n\in\NodesVar$ and $\alpha\in\NodesLmd$:
 \end{property}
 
 \begin{definition}
-We call \defname{ghost materialization} any application of a traversal rule  where the last occurrence in the traversal before the rule is applied is a ghost nodes ($\ghostvar$ or $\ghostlmd$), and the new node traversed after applying some traversal rule is a structural node of the tree (in $\Nodes$).
+We call \defname{ghost materialization} any application of a traversal rule where the last occurrence in the traversal prior to applying the rule is a ghost node ($\ghostvar$ or $\ghostlmd$), and the node traversed after applying the rule is a structural node of the tree (in $\Nodes$).
 \end{definition}
 
 \begin{remark}[\rulenamet{Var} materialization]
-Observe that among all the rules defined in Table \ref{tab:trav_rules}, the rule \rulenamet{Var} is the only rule that can materialize a structural node in $\Nodes$ from a traversal ending with a ghost node. This means that after traversing ghost nodes, the only way to come back to structural nodes is to visit a ghost variable node $\ghostvar$ with an application of rule \rulenamet{Var} of the following form:
+Observe that among all the rules defined in Table \ref{tab:trav_rules}, the rule \rulenamet{Var} is the only rule that can materialize a structural node in $\Nodes$ from a traversal ending with a ghost node. This means that after traversing ghost nodes, the only way to `come back' to structural nodes is to visit a ghost variable node $\ghostvar$ with an application of rule \rulenamet{Var} of the following form:
 
 $$\rulename{Var}\ \  \Pstr[0.5cm]{ t \cdot(beta){\beta} \cdot
 (y){y} \cdot (l){\alpha}  \ldots (t-l,30:i){\ghostvar}
@@ -455,9 +453,9 @@ $$\rulename{Var}\ \  \Pstr[0.5cm]{ t \cdot(beta){\beta} \cdot
      \in\travulc}$$
 where
 \begin{itemize}
-\item $y \in \NodesVar$
+\item $y \in \NodesVar$,
 \item $\lambda \overline{x} \in \NodesLmd$ is the $i$th child lambda node of $y \in \NodesVar$,
-\item $\alpha$ is either a structural lambda node in $\Nodes_\lambda$ or a ghost lambda node in $\ghostlmd$
+\item $\alpha$ is either a structural lambda node in $\Nodes_\lambda$ or a ghost lambda node in $\ghostlmd$,
 \item $0\leq \alpha < i \leq |y|$.
 \end{itemize}
 \end{remark}
@@ -484,14 +482,14 @@ and $\travulc^\coresymbol$ denotes the image of $\travulc$ by $\coresymbol$ (\ie
 
 
 \paragraph{Game semantics Correspondence for ULC}
-What would be the equivalent of Theorem \ref{thm:gamesem_correspondence_stlc} in the untyped case? In his thesis, Andrew Ker defined and studied Game models for the untyped lambda calculus \cite{KerThesis}.  We conjecture that the traversal-game semantics isomorphism for STLC also yields between the ULC using traversals from Table \ref{tab:trav_rules} and the game model of ULC from Ker's thesis: we conjecture that there is an isomorphism between the set of imaginary traversals and the revealed game semantics of the ULC term, and further, an isomorphism between the standard game semantics and the set of traversal cores:
+What would be the equivalent of Theorem \ref{thm:gamesem_correspondence_stlc} in the untyped case? In his thesis, Andrew Ker defined and studied Game models for the untyped lambda calculus \cite{KerThesis}.  We conjecture that the traversal-game semantics isomorphism for STLC also yields between the ULC using traversals from Table \ref{tab:trav_rules} and the game model of ULC from Ker's thesis: that there is an isomorphism between the set of imaginary traversals and the revealed game semantics of the ULC term, and further, an isomorphism between the standard game semantics and the set of traversal cores:
 
 \begin{conjecture}[Traversal-Play Correspondence for ULC]
 \label{conj:ulc_corresp}
 For every untyped lambda-term $M$ we have the two bijections:
 \begin{eqnarray*}
  \travulc(M) &\cong& \revsem{M} \\
- \travulc^\coresymbol(M) &\cong& \sem{M} \enspace .
+ \travulc^\coresymbol(M) &\cong& \sem{M}
 \end{eqnarray*}
 where $\sem{M}$ denotes the innocent \emph{effectively almost everywhere (EAC)} game denotation of $M$ defined in \cite{KerThesis},
 $\revsem{M}$ denotes the corresponding interaction game denotation where internal moves are not hidden during strategy composition,
@@ -509,7 +507,7 @@ Soundness follows immediately from the Game Semantics correspondence of \cite{Bl
 
 Let's first introduce an equivalence relation on traversals:
 \begin{definition}[Quotienting]
-We define the \defname{core P-view} function $\Phi$ as the P-view function $\pview{\_}$ composed with the core projection $\coresymbol$:
+We introduce the function $\Phi$ giving the core P-view of a traversal: the composition of P-view function $\pview{\_}$ with the core projection $\coresymbol$:
 \begin{align*}
 \Phi : \travulc & \longrightarrow \justseqset \\
 t & \longmapsto \pview{\core{t}}
@@ -520,7 +518,7 @@ We defined $\sim$ as the equivalence relation over $\travulc$ induced by $\Phi$.
 We say that a subset $T$ of $\travulc$ is \defname{complete modulo $\sim$}, or $\sim$-complete, if it contains at least one element for each $\sim$-equivalence class, in which case $T/{\sim} = \travulc/{\sim}$.
 \end{definition}
 
-Behind this definition is the idea that core P-views capture what it strictly required from traversals to reconstruct the normal form of a term (Proposition \ref{prop:path_charact_stlc} and Theorem \ref{thm:path_charact_ulc}). The quotient helps eliminate `redundant' traversals that have the same core P-view: it is sufficient to exhibit at least one traversal of each $\sim$-equivalence class to cover the entire set of core P-views. In the remaining of this section we explore $\sim$-complete traversals subsets that can be effectively computed.
+Behind this definition is the idea that core P-views capture what it strictly required from traversals in order to reconstruct the normal form of a term (Proposition \ref{prop:path_charact_stlc} and Theorem \ref{thm:path_charact_ulc}). The quotient helps eliminate `redundant' traversals that have identical core P-views: it is sufficient to exhibit at least one traversal of each $\sim$-equivalence class to cover the entire set of core P-views. In the remaining of this section we explore $\sim$-complete traversals subsets that can be effectively computed.
 
 \subsection{Normalizing STLC by traversals}
 
@@ -529,32 +527,33 @@ The following characterization is a direct consquence of the Game-Semantic Corre
 \label{prop:path_charact_stlc}
 For every simply-typed term-in-context $\Gamma\vdash M :T$, let $\etabetalnf{M}$ denote the eta-long beta-normal form of $M$. We have:
 \begin{equation*}
-\Phi : \travulc(M)/{\sim}\ \cong\ \pathset(\etabetalnf{M})
+\Phi : \travulc(\etalf{M})/{\sim}\ \cong\ \pathset(\etabetalnf{M})
 \end{equation*}
 \end{proposition}
 \begin{proof}
- By Theorem \ref{thm:gamesem_correspondence_stlc}, the set of traversals of the beta-normal form of $M$ is precisely the set of cores of traversals of $M$. The Path-View correspondence (Prop.~\ref{prop:pathview_ulc}) and Prop.~\ref{prop:ulc_and_stlc_trav_coincide} then show that the P-views of traversal cores of $M$ give the tree paths of the eta-long beta normal form.
+ Beta-eta equivalent terms have the same game denotation, therefore by Theorem \ref{thm:gamesem_correspondence_stlc}, the set of traversals of the eta-long beta-normal form of $M$ is also given by the set of cores of traversals of $\etalf{M}$. The Path-View correspondence (Prop.~\ref{prop:pathview_ulc}) and Prop.~\ref{prop:ulc_and_stlc_trav_coincide} then show that the P-views of traversal cores of $\etalf{M}$ give the tree paths of the eta-long beta normal form.
 \end{proof}
 
-This characterization suggests a normalization method for STLC term based on enumeration of all traversals, with one caveat: the set of STLC traversals can be infinite! This is because the rule used to traverse free variables provide so much non-determinism that it gives rise to arbitrarily long traversals. Observe, however, that the bijection in the above proposition holds for the \emph{quotiented} traversal set. Thus one does not actually need to enumerate all traversals: it's sufficient to enumerate a $\sim$-complete subset. Algorithm \ref{algo:stlc_normalization_by_traversals} describes such a normalization procedure.
+This characterization suggests a normalization method for STLC term based on enumerating the entire set of traversals. There is just one caveat: the set of STLC traversals may be infinite! This is because the non-determinism of the free variable rule can give rise to arbitrarily long traversals. Observe, however, that the bijection in the above proposition holds for the \emph{quotiented} traversal set. Thus enumerating all traversals is not necessary: it suffices instead to enumerate a $\sim$-complete subset. Algorithm \ref{algo:stlc_normalization_by_traversals} describes such a normalization procedure.
 
-\begin{algorithm}[ht]
+\begin{algorithm}[!h]
 \caption{Normalization by traversals for STLC}
 \label{algo:stlc_normalization_by_traversals}
 Let $\Gamma \vdash M : T$ be a simply-typed term.
 \begin{enumerate}
   \item Calculate $\etalf{M}$, the eta-long expansion of $M$;
   \item Enumerate maximal \emph{branching} traversals of $M$ from Def.~\ref{dfn:branching_traversals} over the computation tree of $\etalf{M}$;
-  \item For each traversal, project it with respect to the tree root to get the traversal core. By the correspondence theorem this yields a play in $\sem{M}$;
+  \item Project each traversal with respect to the tree root to get the \emph{traversal core}. By the correspondence theorem this yields a play in $\sem{M}$;
   \item Calculate the P-view of the traversal core;
-  \item Apply the bijection from the Correspondence Theorem to get the corresponding path in the tree representation of the eta-long $\beta$-nf of $M$;
+  \item Apply the bijection from the Correspondence Theorem to get the corresponding maximal path in the tree representation of the eta-long $\beta$-nf of $M$;
   \item Aggregate all the paths thus obtained to reconstruct the eta-long beta-normal form of $M$.
 \end{enumerate}
 \end{algorithm}
 
-\paragraph{Soundness and termination}
-Soundness of Algorithm \ref{algo:stlc_normalization_by_traversals} is shown by Proposition \ref{prop:path_charact_stlc} and from the fact
-that the beta-normal form of a simply-typed term is uniquely determined by the paths of its tree representation. Termination is implied by Proposition \ref{prop:branching_traversal_normalizing} which shows that branching traversals are $\sim$-complete.
+\paragraph{Soundness}
+Soundness of Algorithm \ref{algo:stlc_normalization_by_traversals} is shown by Proposition \ref{prop:path_charact_stlc} and from the fact that a beta-normal term is uniquely determined by the set of maximal paths in its tree representation, and by Proposition \ref{prop:branching_traversal_normalizing} which shows that branching traversals are $\sim$-complete.
+
+\todo{termination}
 
 
 \paragraph{Implementation of the normalization procedure}
@@ -574,8 +573,8 @@ way free variables are traversed. The rule \rulenamet{IVar} offers two non-deter
 \end{itemize}
 The first choice allows, among others, the repeated pattern described above where the same node $\lambda x$ in the O-view is picked again and again.
 
-Fortunately, traversals accounting for all those contexts are redundant for normalization. Indeed, due to the absence of side-effects, calling the same argument multiple times always involves the same underlying computation in $M$. We formalize this intuition with the notion of \emph{branching traversals} (Definition \ref{dfn:branching_traversals}) which prevent such repetitive behaviour while still covering all $\sim$-equivalence classes (Proposition \ref{prop:branching_traversal_normalizing})
-Branching traversals restrict the rule \rulenamet{IVar} to traverse only nodes leading to paths in the computation tree that are yet unexplored: when choosing the next lambda node to visit, it restricts choice (i) to the \emph{latest} variable node in the traversal, and choice (ii) to child lambda nodes of that variable node.
+Fortunately, traversals accounting for all those contexts are redundant for normalization. Indeed, due to the absence of side-effects, calling the same argument multiple times always involves the same underlying computation in $M$. We formalize this intuition with the notion of \emph{branching traversals} (Definition \ref{dfn:branching_traversals}) which prevent such repetitive behaviour while still covering all $\sim$-equivalence classes (Proposition \ref{prop:branching_traversal_normalizing}).
+Branching traversals restrict the rule \rulenamet{IVar} so as to traverse only nodes leading to paths in the computation tree that are yet unexplored: when choosing the next lambda node to visit, it restricts choice (i) to the \emph{latest} variable node in the traversal, and choice (ii) to child lambda nodes of that variable node.
 
 \paragraph{Bounding traversals non-determinism for ULC}
 For simply-typed terms in eta-long form, there is a finite number of branching traversals which implies termination of the normalization procedure of algorithm \ref{algo:stlc_normalization_by_traversals}.
@@ -622,14 +621,17 @@ For untyped terms, however, branching traversals can still be infinite because \
 We now show that, for the purpose of normalizing a term, it is sufficient to consider traversals where we restrict the non-determinism in rule \rulenamet{IVar} such that the visited lambda node is necessarily justified be the immediately preceding input variable node. The intuition is that the non-determinism in those two rules represents branching points in a depth-first exploration of the beta-normal form of the term. Further, in the absence of side-effect, it is sufficient to explore each possible branch of the tree in separate traversals.
 
 \begin{example}[Kierstead terms]
-From a game semantic point of view, restricting the opponent moves can be interpreted as restricting the set contexts in which the term can be used, and more particularly the set of terms that can be applied to it.
+From a game semantic point of view, restricting the opponent moves can be interpreted as restricting the set of contexts in which the term can be used, and more particularly the set of terms that can be applied to it.
 %Like in the affine case,
 The branching restriction prevents the context from calling the same parameter twice, which eliminates the Kierstead contexts (in which the argument $f$ is called twice). It also excludes the context $\lambda f \lambda g . f (\lambda f (\lambda x . g (\lambda y . x)))$ where the the two variables $f$ and $g$ are bound by two consecutive lambdas.
 \end{example}
 
 \begin{definition}
 \label{dfn:branching_traversals}
-We define the set of \defname{branching traversals} $\travsetbr$ as the subset of $\travulc$ defined by induction with the rules of Table \ref{tab:trav_rules} (substituting $\travsetbr$ for $\travulc$ everywhere) with the input-variable rule replaced by:
+We define the set of \defname{branching traversals} $\travsetbr$ as the subset of $\travulc$ defined by induction with the rules of Table \ref{tab:trav_rules} where the justifier node in the
+input-variable rule \rulenamet{IVar} is restricted to be necessarily the last node in the traversal ($m=n$).
+
+We will use the subscript `${}_\branching$' to refer to the rule system thus obtained. Using a `derivation rule'-based presentation, the input variable rule can be stated follows:
 \infrule[$\rulefont{IVar}_\branching$]
      {t \cdot n \in \travsetbr
       \andalso n \in\NodeHjByRoot \inter \NodesVar
@@ -647,7 +649,7 @@ We define the set of \defname{branching traversals} $\travsetbr$ as the subset o
 \todo{Type my handwritten notes with proof explaining this in more details.}
 \end{proof}
 
-For terms in eta-long normal form, the on-the-fly eta-expansion traversal rules are never used, therefore branching traversals are bounded in the sense that at a given point, only finitely many nodes can be visited. So for STLC, in particular, the set of branching traversals is finite, which implies that the enumeration of algorithm \ref{algo:stlc_normalization_by_traversals} terminates. In the next section we will explore how to further restrict the non-determinism of rule \rulenamet{IVar} to ensure that the enumeration also terminates for untyped terms with a normal form.
+For terms in eta-long normal form, the on-the-fly eta-expansion sub-cases of traversal rules are never used, therefore branching traversals are bounded in the sense that at a given point, only finitely many nodes can be visited. This explains the set of branching traversals is finite for terms in eta-long form, which implies that the enumeration of algorithm \ref{algo:stlc_normalization_by_traversals} terminates. In the next section we will explore how to further restrict the non-determinism of rule \rulenamet{IVar} to ensure that the enumeration also terminates for untyped terms with a normal form.
 
 \subsection{Arity threshold and normalizing traversals}
 
@@ -818,36 +820,9 @@ Consequence of Proposition \ref{prop:branching_traversal_normalizing} and Proper
 \subsection{Normalization for ULC}
 
 We can now generalize the normalization procedure of Algorithm~\ref{algo:stlc_normalization_by_traversals} to ULC.
-Algorithm~\ref{algo:ulc_normalization_by_traversals} describe the normalization procedure that computes the $\beta$-normal of an untyped lambda term if it exists (without eta-long expansion).
+Algorithm~\ref{algo:ulc_normalization_by_traversals} describes the normalization procedure that computes the $\beta$-normal of an untyped lambda term if it exists (without eta-long expansion).
 
-\paragraph{Soundness} The following theorem shows soundess of the procedure:
-\begin{theorem}[Normalized Paths Characterization for ULC]
-\label{thm:path_charact_ulc}
-For any untyped term $M$ having a normal form $\betanf{M}$ we have:
-$$\Phi : \travsetnorm(M)/{\sim} \ \cong\ \pathset(\betanf{M})$$
-\end{theorem}
-Observe that Conjecture \ref{conj:ulc_corresp} implies this result by the same game-semantic argument used to show characterization for STLC. We will prefer instead to prove characterization using a term-rewriting argument based on the \emph{leftmost linear reduction} strategy. We sketch the argument below and refer the reader to section \ref{sec:correctness} for the proof.
-\begin{proof}[Proof sketch]
-It's trivial if $M$ is in beta-normal form since $\core{\travsetnorm(M)} = \travsetnorm(M)$ and by the Path-View correspondence for ULC $\pview{\core{\travsetnorm(M)}} = \pathset(N)$.
-For any other untyped term $M$ with a normal form, we consider its \emph{leftmost linear reduction sequence}.
-Since $M$ is in beta-nf, the reduction sequence terminates by Theorem \ref{thm:soundness_leftmostlinearred} and yields the \emph{quasi normal form} (qnf).
-
-The effect of leftmost linear reduction is essentially to inline the \emph{lloc} variable by its generalized argument (the argument of the generalized redex binding the \emph{lloc} variable).
-The traversals before and after reduction are identical up to some node mapping and node merging. One can easily show that the invariant $\core{\travsetnorm(M)}$ is preserved by this mapping.
-
-By Proposition \ref{prop:qnf_nf}, the \emph{qnf} trivially reduces to its beta-nf. It's immediate to show that the invariant $\core{\travsetnorm(M)}$ is preseved by trivial beta-reduction.
-\end{proof}
-
-\paragraph{Termination} If $M$ has a normal form then its set of tree path is finite, therefore by the above theorem so is $\travsetnorm(M)/{\sim}$.
-\todo{show that $\travsetnorm(M)$ contains only a finite number of traversals per $\sim$-equivalence class, therefore $\travsetnorm(M)$ is also finite and therefore the enumeration terminate.}
-
-\begin{remark}
-The infinitary counterpart of the characterization theorem for lambda terms with no normal form (not shown in this paper) can be stated as:
-$$ \Union_{k\geq0} \Phi(\travulc^k(M)/{\sim}) = \pathset(BT(M))$$
-where $\travulc^k(M)$ denotes the set of traversals of length $k$ at most and $\pathset(BT(M))$ denotes the set of \emph{possibly infinite} maximal paths in the B\"oem tree $BT(M)$ of $M$ (the infinitary computation tree of the term obtained by reducing beta-redexes ad-infinitum \cite{barendregt2013lambda}).\footnote{See also \cite{Blum17-HomogNotRestriction, Ong2006} for a formal definition of infinitary computation trees.}
-\end{remark}
-
-\begin{algorithm}[ht]
+\begin{algorithm}[!h]
 \caption{Normalization by traversals for ULC}
 \label{algo:ulc_normalization_by_traversals}
 Let $M$ be an untyped term.
@@ -859,6 +834,35 @@ Let $M$ be an untyped term.
   \item Aggregate all the paths thus obtained to reconstruct the beta-normal form of $M$.
 \end{enumerate}
 \end{algorithm}
+
+\paragraph{Soundness} The following theorem shows soundness of the procedure:
+\begin{theorem}[Normalized Paths Characterization for ULC]
+\label{thm:path_charact_ulc}
+For any untyped term $M$ having a normal form $\betanf{M}$ we have:
+$$\Phi : \travsetnorm(M)/{\sim} \ \cong\ \pathset(\betanf{M})$$
+\end{theorem}
+Observe that Conjecture \ref{conj:ulc_corresp} implies the above by the same game-semantic argument used to show characterization for STLC. We will instead prove the characterization using a term-rewriting argument based on the \emph{leftmost linear reduction} strategy. We sketch the argument below and refer the reader to section \ref{sec:correctness} for the proof.
+\begin{proof}[Proof sketch]
+It's trivial if $M$ is in beta-normal form since $\core{\travsetnorm(M)} = \travsetnorm(M)$ and by the Path-View correspondence for ULC $\pview{\core{\travsetnorm(M)}} = \pathset(N)$.
+For any other untyped term $M$ with a normal form, we consider its \emph{leftmost linear reduction sequence}.
+Since $M$ is in beta-nf, the reduction sequence terminates by Theorem \ref{thm:soundness_leftmostlinearred} and yields the \emph{quasi normal form} (qnf).
+
+The effect of leftmost linear reduction is essentially to inline the \emph{lloc} variable by its generalized argument (the argument of the generalized redex binding the \emph{lloc} variable).
+The traversals before and after reduction are identical up to some node mapping and node merging. One can easily show that the invariant $\core{\travsetnorm(M)}$ is preserved by this mapping.
+
+By Proposition \ref{prop:qnf_nf}, the \emph{qnf} trivially reduces to its beta-nf. It's immediate to show that the invariant $\core{\travsetnorm(M)}$ is preseved by trivial beta-reduction.
+\end{proof}
+
+\paragraph{Termination} If $M$ has a normal form then its set of tree paths is finite, therefore by the above theorem so is $\travsetnorm(M)/{\sim}$.
+\todo{show that $\travsetnorm(M)$ contains only a finite number of traversals per $\sim$-equivalence class, therefore $\travsetnorm(M)$ is also finite and therefore the enumeration terminate.}
+
+\begin{remark}
+The infinitary counterpart of the characterization theorem for lambda terms with no normal form (not shown in this paper) can be stated as:
+$$ \Union_{k\geq0} \Phi(\travulc^k(M)/{\sim}) = \pathset(BT(M))$$
+where $\travulc^k(M)$ denotes the set of traversals of length $k$ at most and $\pathset(BT(M))$ denotes the set of \emph{possibly infinite} maximal paths in the B\"oem tree $BT(M)$ of $M$ (the infinitary computation tree of the term obtained by reducing beta-redexes ad-infinitum \cite{barendregt2013lambda}).\footnote{See also \cite{Blum17-HomogNotRestriction, Ong2006} for a formal definition of infinitary computation trees.}
+\end{remark}
+
+
 
 
 \begin{FramedTable}
@@ -909,7 +913,7 @@ where
 where necessarily $\alpha \in \NodesLmd^\ghostlmd$ and $m \in\NodesVar^\ghostvar$.
 \\
 
-\emph{\bf PROGRAM - Copy-cat rules with on-the-fly eta-expansion}
+\emph{\bf PROGRAM - Copy-cat rules}
 
 \infrule[$\rulefont{Var}_\normalizing$]
     {
@@ -1164,9 +1168,9 @@ The only two maximal normalizing traversals are:
 \item $t_1 = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda u}\ (n3-n2){u}\ (n4-n1){\lambda v}\ (n5-n4){v}\ (n6-n3){\lambda }\ (n7-n0){y_1}\ (n8-n7){\lambda }\ (n9-n2){u}\ (n10-n1){\lambda v}\ (n11-n10){v}\ (n12-n9){{\ghostlmd^{1}}}\ (n13-n8){{\ghostvar^{1}}}\ (n14-n13){{\ghostlmd^{1}}}\ (n15-n12){{\ghostvar^{1}}}\ (n16-n11){\lambda }\ (n17-n0,35){y_2}\ }$
 \item $t_2 = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda u}\ (n3-n2){u}\ (n4-n1){\lambda v}\ (n5-n4){v}\ (n6-n3){\lambda }\ (n7-n0){y_1}\ (n8-n7){{\ghostlmd^{2}}}\ (n9-n6){{\ghostvar^{1}}}\ (n10-n5){\lambda }\ (n11-n0){y_2}\ }$
 \end{itemize}
-Using the STLC traversals, one can traverse $t_1$ all the way to variable $v$ at which point we get stuck due to the lack of operand applied to the last occurrence of $u$ (the one at the bottom of the left branch in the tree). Using ULC rule, that operands gets created on-the-fly through eta-expansion and is represented by ghost lambda node $\ghostlmd^1$.
+Using the STLC traversals, one can traverse $t_1$ all the way to variable $v$ at which point one get stuck due to the lack of operand applied to the last occurrence of $u$ (the occurrence  at the bottom of the left branch in the tree). Using ULC rule, that operands gets created on-the-fly through eta-expansion and is represented by ghost lambda node $\ghostlmd^1$.
 
-The two core P-views give the two paths in the beta-normal form of $M$:
+The two core P-views give the two maximal paths in the beta-normal form of $M$:
 \begin{itemize}
 \item $\pview{\core{t_1}} = \Pstr[0.7cm]{(n0){\lambda }\ (n1-n0){y_1}\ (n2-n1){\lambda }\ (n3-n2){{\ghostvar^{1}}}\ (n4-n3){{\ghostlmd^{1}}}\ (n5-n0){y2}\ }$
 \item $\pview{\core{t_2}} = \Pstr[0.7cm]{(n0){\lambda }\ (n1-n0){y_1}\ (n2-n1){{\ghostlmd^{2}}}\ (n3-n0){y_2}\ }$
@@ -1184,28 +1188,34 @@ Take $M = varity\ two$ where
 \end{align*}
 
 In order to compute the set of normalizing traversals, we apply the traversal rules inductively until an input variable is reached, at which point we eta-expand with rule \rulenamet{IVar} for all possible values of $k$ ranging from $1$ to the arity threshold of the traversal. The first traversal obtained is denoted $t_\epsilon$, and for every sequence of integer $s \in \nat^*$,  the traversal $t_{s \cdot k}$ represents the maximal traversal obtained after extending $t_s$ using one application of the eta-expanded subcase of rule \rulenamet{IVar} with link-label $k \in \nat$.
-This process yields the set of traversals $\{t_\epsilon, t_{11}, t_{12}, t_{121}, t_{122} \}$ represented in the following pages.
+This process yields the set of traversals $\{t_\epsilon, t_{11}, t_{12}, t_{121}, t_{122} \}$. Table \ref{tab:varity2_trav_tesilon} represents $t_\epsilon$ and
+Table \ref{tab:varity2_trav} representsthe three maximal traversals $t_{11}, t_{121}, t_{122}$.
 
-\begin{landscape}
+\begin{table}
+\label{tab:varity2_trav_tesilon}
 \resizebox{1.1\hsize}{!}{$
 t_\epsilon = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda t}\ (n3-n2){t}\ (n4-n1){\lambda s_2 z_2}\ (n5-n4){s_2}\ (n6-n3){\lambda n a x}\ (n7-n6){n}\ (n8-n5){\lambda }\ (n9-n4){s_2}\ (n10-n3){\lambda n a x}\ (n11-n10){n}\ (n12-n9){\lambda }\ (n13-n4){z_2}\ (n14-n3){\lambda a}\ (n15-n14){a}\ (n16-n13){{\ghostlmd^{1}}}\ (n17-n12){{\ghostvar^{1}}}\ (n18-n11){\lambda s z}\ (n19-n10){a}\ (n20-n9){{\ghostlmd^{2}}}\ (n21-n8){{\ghostvar^{1}}}\ (n22-n7){\lambda s z}\ (n23-n6){a}\ (n24-n5){{\ghostlmd^{2}}}\ (n25-n4){{\ghostvar^{3}}}\
 (n26-n3){\lambda z_0}\ (n27-n26){z_0}\ (n28-n25){{\ghostlmd^{1}}}\ (n29-n24){{\ghostvar^{1}}}\
 (n30-n23){\lambda }\ (n31-n22){s}\ (n32-n21){{\ghostlmd^{1}}}\ (n33-n20){{\ghostvar^{1}}}\ (n34-n19){\lambda }\ (n35-n18){s}\ (n36-n17){{\ghostlmd^{1}}}\ (n37-n16){{\ghostvar^{1}}}\ (n38-n15){{\ghostlmd^{1}}}\ (n39-n14){{\ghostvar^{2}}}\ (n40-n13){{\ghostlmd^{2}}}\ (n41-n12){{\ghostvar^{2}}}\ (n42-n11){{\ghostlmd^{2}}}\ (n43-n10){{\ghostvar^{4}}}\ (n44-n9){{\ghostlmd^{4}}}\ (n45-n8){{\ghostvar^{3}}}\ (n46-n7){{\ghostlmd^{3}}}\ (n47-n6){{\ghostvar^{5}}}\ (n48-n5){{\ghostlmd^{5}}}\ (n49-n4){{\ghostvar^{6}}}\ (n50-n3){{\ghostlmd^{6}}}\ (n51-n2){{\ghostvar^{4}}}\ (n52-n1){{\ghostlmd^{4}}}\ (n53-n0){{\ghostvar^{3}}}}$}
+\caption{Traversal $t_\epsilon$ of $varity\ 2$}
+\end{table}
 
-\resizebox{1.1\hsize}{!}{$t_{1} = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda t}\ (n3-n2){t}\ (n4-n1){\lambda s_2 z_2}\ (n5-n4){s_2}\ (n6-n3){\lambda n a x}\ (n7-n6){n}\ (n8-n5){\lambda }\ (n9-n4){s_2}\ (n10-n3){\lambda n a x}\ (n11-n10){n}\ (n12-n9){\lambda }\ (n13-n4){z_2}\ (n14-n3){\lambda a}\ (n15-n14){a}\ (n16-n13){{\ghostlmd^{1}}}\ (n17-n12){{\ghostvar^{1}}}\ (n18-n11){\lambda s z}\ (n19-n10){a}\ (n20-n9){{\ghostlmd^{2}}}\ (n21-n8){{\ghostvar^{1}}}\ (n22-n7){\lambda s z}\ (n23-n6){a}\ (n24-n5){{\ghostlmd^{2}}}\ (n25-n4){{\ghostvar^{3}}}\ (n26-n3){\lambda z_0}\ (n27-n26){z_0}\ (n28-n25){{\ghostlmd^{1}}}\ (n29-n24){{\ghostvar^{1}}}\ (n30-n23){\lambda }\ (n31-n22){s}\ (n32-n21){{\ghostlmd^{1}}}\ (n33-n20){{\ghostvar^{1}}}\ (n34-n19){\lambda }\ (n35-n18){s}\ (n36-n17){{\ghostlmd^{1}}}\ (n37-n16){{\ghostvar^{1}}}\ (n38-n15){{\ghostlmd^{1}}}\ (n39-n14){{\ghostvar^{2}}}\ (n40-n13){{\ghostlmd^{2}}}\ (n41-n12){{\ghostvar^{2}}}\ (n42-n11){{\ghostlmd^{2}}}\ (n43-n10){{\ghostvar^{4}}}\ (n44-n9){{\ghostlmd^{4}}}\ (n45-n8){{\ghostvar^{3}}}\ (n46-n7){{\ghostlmd^{3}}}\ (n47-n6){{\ghostvar^{5}}}\ (n48-n5){{\ghostlmd^{5}}}\ (n49-n4){{\ghostvar^{6}}}\ (n50-n3){{\ghostlmd^{6}}}\ (n51-n2){{\ghostvar^{4}}}\ (n52-n1){{\ghostlmd^{4}}}\ (n53-n0){{\ghostvar^{3}}}\ (n54-n53){{\ghostlmd^{1}}}\ (n55-n52){{\ghostvar^{1}}}\ (n56-n51){{\ghostlmd^{1}}}\ (n57-n50){{\ghostvar^{1}}}\ (n58-n49){{\ghostlmd^{1}}}\ (n59-n48){{\ghostvar^{1}}}\ (n60-n47){{\ghostlmd^{1}}}\ (n61-n46){{\ghostvar^{1}}}\ (n62-n45){{\ghostlmd^{1}}}\ (n63-n44){{\ghostvar^{1}}}\ (n64-n43){{\ghostlmd^{1}}}\ (n65-n42){{\ghostvar^{1}}}\ (n66-n41){{\ghostlmd^{1}}}\ (n67-n40){{\ghostvar^{1}}}\ (n68-n39){{\ghostlmd^{1}}}\ (n69-n38){{\ghostvar^{1}}}\ (n70-n37){{\ghostlmd^{1}}}\ (n71-n36){{\ghostvar^{1}}}\ (n72-n35){{\ghostlmd^{1}}}\ (n73-n34){{\ghostvar^{1}}}\ (n74-n33){{\ghostlmd^{1}}}\ (n75-n32){{\ghostvar^{1}}}\ (n76-n31){{\ghostlmd^{1}}}\ (n77-n30){{\ghostvar^{1}}}\ (n78-n29){{\ghostlmd^{1}}}\ (n79-n28){{\ghostvar^{1}}}\ (n80-n27){{\ghostlmd^{1}}}\ (n81-n26){{\ghostvar^{2}}}\ (n82-n25){{\ghostlmd^{2}}}\ (n83-n24){{\ghostvar^{2}}}\ (n84-n23){\lambda }\ (n85-n6){x}\ (n86-n5){{\ghostlmd^{3}}}\ (n87-n4){{\ghostvar^{4}}}\ (n88-n3){{\ghostlmd^{4}}}\ (n89-n2){{\ghostvar^{2}}}\ (n90-n1){{\ghostlmd^{2}}}\ (n91-n0){{\ghostvar^{1}}}}$}
-
-
-\resizebox{1.1\hsize}{!}{$t_{11} = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda t}\ (n3-n2){t}\ (n4-n1){\lambda s_2 z_2}\ (n5-n4){s_2}\ (n6-n3){\lambda n a x}\ (n7-n6){n}\ (n8-n5){\lambda }\ (n9-n4){s_2}\ (n10-n3){\lambda n a x}\ (n11-n10){n}\ (n12-n9){\lambda }\ (n13-n4){z_2}\ (n14-n3){\lambda a}\ (n15-n14){a}\ (n16-n13){{\ghostlmd^{1}}}\ (n17-n12){{\ghostvar^{1}}}\ (n18-n11){\lambda s z}\ (n19-n10){a}\ (n20-n9){{\ghostlmd^{2}}}\ (n21-n8){{\ghostvar^{1}}}\ (n22-n7){\lambda s z}\ (n23-n6){a}\ (n24-n5){{\ghostlmd^{2}}}\ (n25-n4){{\ghostvar^{3}}}\ (n26-n3){\lambda z_0}\ (n27-n26){z_0}\ (n28-n25){{\ghostlmd^{1}}}\ (n29-n24){{\ghostvar^{1}}}\ (n30-n23){\lambda }\ (n31-n22){s}\ (n32-n21){{\ghostlmd^{1}}}\ (n33-n20){{\ghostvar^{1}}}\ (n34-n19){\lambda }\ (n35-n18){s}\ (n36-n17){{\ghostlmd^{1}}}\ (n37-n16){{\ghostvar^{1}}}\ (n38-n15){{\ghostlmd^{1}}}\ (n39-n14){{\ghostvar^{2}}}\ (n40-n13){{\ghostlmd^{2}}}\ (n41-n12){{\ghostvar^{2}}}\ (n42-n11){{\ghostlmd^{2}}}\ (n43-n10){{\ghostvar^{4}}}\ (n44-n9){{\ghostlmd^{4}}}\ (n45-n8){{\ghostvar^{3}}}\ (n46-n7){{\ghostlmd^{3}}}\ (n47-n6){{\ghostvar^{5}}}\ (n48-n5){{\ghostlmd^{5}}}\ (n49-n4){{\ghostvar^{6}}}\ (n50-n3){{\ghostlmd^{6}}}\ (n51-n2){{\ghostvar^{4}}}\ (n52-n1){{\ghostlmd^{4}}}\ (n53-n0){{\ghostvar^{3}}}\ (n54-n53){{\ghostlmd^{1}}}\ (n55-n52){{\ghostvar^{1}}}\ (n56-n51){{\ghostlmd^{1}}}\ (n57-n50){{\ghostvar^{1}}}\ (n58-n49){{\ghostlmd^{1}}}\ (n59-n48){{\ghostvar^{1}}}\ (n60-n47){{\ghostlmd^{1}}}\ (n61-n46){{\ghostvar^{1}}}\ (n62-n45){{\ghostlmd^{1}}}\ (n63-n44){{\ghostvar^{1}}}\ (n64-n43){{\ghostlmd^{1}}}\ (n65-n42){{\ghostvar^{1}}}\ (n66-n41){{\ghostlmd^{1}}}\ (n67-n40){{\ghostvar^{1}}}\ (n68-n39){{\ghostlmd^{1}}}\ (n69-n38){{\ghostvar^{1}}}\ (n70-n37){{\ghostlmd^{1}}}\ (n71-n36){{\ghostvar^{1}}}\ (n72-n35){{\ghostlmd^{1}}}\ (n73-n34){{\ghostvar^{1}}}\ (n74-n33){{\ghostlmd^{1}}}\ (n75-n32){{\ghostvar^{1}}}\ (n76-n31){{\ghostlmd^{1}}}\ (n77-n30){{\ghostvar^{1}}}\ (n78-n29){{\ghostlmd^{1}}}\ (n79-n28){{\ghostvar^{1}}}\ (n80-n27){{\ghostlmd^{1}}}\ (n81-n26){{\ghostvar^{2}}}\ (n82-n25){{\ghostlmd^{2}}}\ (n83-n24){{\ghostvar^{2}}}\ (n84-n23){\lambda }\ (n85-n6){x}\ (n86-n5){{\ghostlmd^{3}}}\ (n87-n4){{\ghostvar^{4}}}\ (n88-n3){{\ghostlmd^{4}}}\ (n89-n2){{\ghostvar^{2}}}\ (n90-n1){{\ghostlmd^{2}}}\ (n91-n0){{\ghostvar^{1}}}\ (n92-n91){{\ghostlmd^{1}}}\ (n93-n90){{\ghostvar^{1}}}\ (n94-n89){{\ghostlmd^{1}}}\ (n95-n88){{\ghostvar^{1}}}\ (n96-n87){{\ghostlmd^{1}}}\ (n97-n86){{\ghostvar^{1}}}\ (n98-n85){\lambda }\ (n99-n22){s}\ (n100-n21){{\ghostlmd^{1}}}\ (n101-n20){{\ghostvar^{1}}}\ (n102-n19){\lambda }\ (n103-n18){s}\ (n104-n17){{\ghostlmd^{1}}}\ (n105-n16){{\ghostvar^{1}}}\ (n106-n15){{\ghostlmd^{1}}}\ (n107-n14){{\ghostvar^{2}}}\ (n108-n13){{\ghostlmd^{2}}}\ (n109-n12){{\ghostvar^{2}}}\ (n110-n11){{\ghostlmd^{2}}}\ (n111-n10){{\ghostvar^{4}}}\ (n112-n9){{\ghostlmd^{4}}}\ (n113-n8){{\ghostvar^{3}}}\ (n114-n7){{\ghostlmd^{3}}}\ (n115-n6){{\ghostvar^{5}}}\ (n116-n5){{\ghostlmd^{5}}}\ (n117-n4){{\ghostvar^{6}}}\ (n118-n3){{\ghostlmd^{6}}}\ (n119-n2){{\ghostvar^{4}}}\ (n120-n1){{\ghostlmd^{4}}}\ (n121-n0){{\ghostvar^{3}}}}$}
-
-\resizebox{1.1\hsize}{!}{$t_{12} = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda t}\ (n3-n2){t}\ (n4-n1){\lambda s_2 z_2}\ (n5-n4){s_2}\ (n6-n3){\lambda n a x}\ (n7-n6){n}\ (n8-n5){\lambda }\ (n9-n4){s_2}\ (n10-n3){\lambda n a x}\ (n11-n10){n}\ (n12-n9){\lambda }\ (n13-n4){z_2}\ (n14-n3){\lambda a}\ (n15-n14){a}\ (n16-n13){{\ghostlmd^{1}}}\ (n17-n12){{\ghostvar^{1}}}\ (n18-n11){\lambda s z}\ (n19-n10){a}\ (n20-n9){{\ghostlmd^{2}}}\ (n21-n8){{\ghostvar^{1}}}\ (n22-n7){\lambda s z}\ (n23-n6){a}\ (n24-n5){{\ghostlmd^{2}}}\ (n25-n4){{\ghostvar^{3}}}\ (n26-n3){\lambda z_0}\ (n27-n26){z_0}\ (n28-n25){{\ghostlmd^{1}}}\ (n29-n24){{\ghostvar^{1}}}\ (n30-n23){\lambda }\ (n31-n22){s}\ (n32-n21){{\ghostlmd^{1}}}\ (n33-n20){{\ghostvar^{1}}}\ (n34-n19){\lambda }\ (n35-n18){s}\ (n36-n17){{\ghostlmd^{1}}}\ (n37-n16){{\ghostvar^{1}}}\ (n38-n15){{\ghostlmd^{1}}}\ (n39-n14){{\ghostvar^{2}}}\ (n40-n13){{\ghostlmd^{2}}}\ (n41-n12){{\ghostvar^{2}}}\ (n42-n11){{\ghostlmd^{2}}}\ (n43-n10){{\ghostvar^{4}}}\ (n44-n9){{\ghostlmd^{4}}}\ (n45-n8){{\ghostvar^{3}}}\ (n46-n7){{\ghostlmd^{3}}}\ (n47-n6){{\ghostvar^{5}}}\ (n48-n5){{\ghostlmd^{5}}}\ (n49-n4){{\ghostvar^{6}}}\ (n50-n3){{\ghostlmd^{6}}}\ (n51-n2){{\ghostvar^{4}}}\ (n52-n1){{\ghostlmd^{4}}}\ (n53-n0){{\ghostvar^{3}}}\ (n54-n53){{\ghostlmd^{1}}}\ (n55-n52){{\ghostvar^{1}}}\ (n56-n51){{\ghostlmd^{1}}}\ (n57-n50){{\ghostvar^{1}}}\ (n58-n49){{\ghostlmd^{1}}}\ (n59-n48){{\ghostvar^{1}}}\ (n60-n47){{\ghostlmd^{1}}}\ (n61-n46){{\ghostvar^{1}}}\ (n62-n45){{\ghostlmd^{1}}}\ (n63-n44){{\ghostvar^{1}}}\ (n64-n43){{\ghostlmd^{1}}}\ (n65-n42){{\ghostvar^{1}}}\ (n66-n41){{\ghostlmd^{1}}}\ (n67-n40){{\ghostvar^{1}}}\ (n68-n39){{\ghostlmd^{1}}}\ (n69-n38){{\ghostvar^{1}}}\ (n70-n37){{\ghostlmd^{1}}}\ (n71-n36){{\ghostvar^{1}}}\ (n72-n35){{\ghostlmd^{1}}}\ (n73-n34){{\ghostvar^{1}}}\ (n74-n33){{\ghostlmd^{1}}}\ (n75-n32){{\ghostvar^{1}}}\ (n76-n31){{\ghostlmd^{1}}}\ (n77-n30){{\ghostvar^{1}}}\ (n78-n29){{\ghostlmd^{1}}}\ (n79-n28){{\ghostvar^{1}}}\ (n80-n27){{\ghostlmd^{1}}}\ (n81-n26){{\ghostvar^{2}}}\ (n82-n25){{\ghostlmd^{2}}}\ (n83-n24){{\ghostvar^{2}}}\ (n84-n23){\lambda }\ (n85-n6){x}\ (n86-n5){{\ghostlmd^{3}}}\ (n87-n4){{\ghostvar^{4}}}\ (n88-n3){{\ghostlmd^{4}}}\ (n89-n2){{\ghostvar^{2}}}\ (n90-n1){{\ghostlmd^{2}}}\ (n91-n0){{\ghostvar^{1}}}\ (n92-n91){{\ghostlmd^{2}}}\ (n93-n90){{\ghostvar^{2}}}\ (n94-n89){{\ghostlmd^{2}}}\ (n95-n88){{\ghostvar^{2}}}\ (n96-n87){{\ghostlmd^{2}}}\ (n97-n86){{\ghostvar^{2}}}\ (n98-n85){\lambda }\ (n99-n22){z}\ (n100-n21){{\ghostlmd^{2}}}\ (n101-n20){{\ghostvar^{2}}}\ (n102-n19){\lambda }\ (n103-n10){x}\ (n104-n9){{\ghostlmd^{3}}}\ (n105-n8){{\ghostvar^{2}}}\ (n106-n7){{\ghostlmd^{2}}}\ (n107-n6){{\ghostvar^{4}}}\ (n108-n5){{\ghostlmd^{4}}}\ (n109-n4){{\ghostvar^{5}}}\ (n110-n3){{\ghostlmd^{5}}}\ (n111-n2){{\ghostvar^{3}}}\ (n112-n1){{\ghostlmd^{3}}}\ (n113-n0){{\ghostvar^{2}}}}$}
-
-
-\resizebox{1.1\hsize}{!}{$t_{121} =
+\newgeometry{left=1cm,right=2cm, bottom=2cm, top=2cm}
+\begin{landscape}
+\thispagestyle{empty}
+\begin{table}
+% \resizebox{1.1\hsize}{!}{$t_{1} = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda t}\ (n3-n2){t}\ (n4-n1){\lambda s_2 z_2}\ (n5-n4){s_2}\ (n6-n3){\lambda n a x}\ (n7-n6){n}\ (n8-n5){\lambda }\ (n9-n4){s_2}\ (n10-n3){\lambda n a x}\ (n11-n10){n}\ (n12-n9){\lambda }\ (n13-n4){z_2}\ (n14-n3){\lambda a}\ (n15-n14){a}\ (n16-n13){{\ghostlmd^{1}}}\ (n17-n12){{\ghostvar^{1}}}\ (n18-n11){\lambda s z}\ (n19-n10){a}\ (n20-n9){{\ghostlmd^{2}}}\ (n21-n8){{\ghostvar^{1}}}\ (n22-n7){\lambda s z}\ (n23-n6){a}\ (n24-n5){{\ghostlmd^{2}}}\ (n25-n4){{\ghostvar^{3}}}\ (n26-n3){\lambda z_0}\ (n27-n26){z_0}\ (n28-n25){{\ghostlmd^{1}}}\ (n29-n24){{\ghostvar^{1}}}\ (n30-n23){\lambda }\ (n31-n22){s}\ (n32-n21){{\ghostlmd^{1}}}\ (n33-n20){{\ghostvar^{1}}}\ (n34-n19){\lambda }\ (n35-n18){s}\ (n36-n17){{\ghostlmd^{1}}}\ (n37-n16){{\ghostvar^{1}}}\ (n38-n15){{\ghostlmd^{1}}}\ (n39-n14){{\ghostvar^{2}}}\ (n40-n13){{\ghostlmd^{2}}}\ (n41-n12){{\ghostvar^{2}}}\ (n42-n11){{\ghostlmd^{2}}}\ (n43-n10){{\ghostvar^{4}}}\ (n44-n9){{\ghostlmd^{4}}}\ (n45-n8){{\ghostvar^{3}}}\ (n46-n7){{\ghostlmd^{3}}}\ (n47-n6){{\ghostvar^{5}}}\ (n48-n5){{\ghostlmd^{5}}}\ (n49-n4){{\ghostvar^{6}}}\ (n50-n3){{\ghostlmd^{6}}}\ (n51-n2){{\ghostvar^{4}}}\ (n52-n1){{\ghostlmd^{4}}}\ (n53-n0){{\ghostvar^{3}}}\ (n54-n53){{\ghostlmd^{1}}}\ (n55-n52){{\ghostvar^{1}}}\ (n56-n51){{\ghostlmd^{1}}}\ (n57-n50){{\ghostvar^{1}}}\ (n58-n49){{\ghostlmd^{1}}}\ (n59-n48){{\ghostvar^{1}}}\ (n60-n47){{\ghostlmd^{1}}}\ (n61-n46){{\ghostvar^{1}}}\ (n62-n45){{\ghostlmd^{1}}}\ (n63-n44){{\ghostvar^{1}}}\ (n64-n43){{\ghostlmd^{1}}}\ (n65-n42){{\ghostvar^{1}}}\ (n66-n41){{\ghostlmd^{1}}}\ (n67-n40){{\ghostvar^{1}}}\ (n68-n39){{\ghostlmd^{1}}}\ (n69-n38){{\ghostvar^{1}}}\ (n70-n37){{\ghostlmd^{1}}}\ (n71-n36){{\ghostvar^{1}}}\ (n72-n35){{\ghostlmd^{1}}}\ (n73-n34){{\ghostvar^{1}}}\ (n74-n33){{\ghostlmd^{1}}}\ (n75-n32){{\ghostvar^{1}}}\ (n76-n31){{\ghostlmd^{1}}}\ (n77-n30){{\ghostvar^{1}}}\ (n78-n29){{\ghostlmd^{1}}}\ (n79-n28){{\ghostvar^{1}}}\ (n80-n27){{\ghostlmd^{1}}}\ (n81-n26){{\ghostvar^{2}}}\ (n82-n25){{\ghostlmd^{2}}}\ (n83-n24){{\ghostvar^{2}}}\ (n84-n23){\lambda }\ (n85-n6){x}\ (n86-n5){{\ghostlmd^{3}}}\ (n87-n4){{\ghostvar^{4}}}\ (n88-n3){{\ghostlmd^{4}}}\ (n89-n2){{\ghostvar^{2}}}\ (n90-n1){{\ghostlmd^{2}}}\ (n91-n0){{\ghostvar^{1}}}}$}
+\resizebox{1\hsize}{!}{$t_{11} = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda t}\ (n3-n2){t}\ (n4-n1){\lambda s_2 z_2}\ (n5-n4){s_2}\ (n6-n3){\lambda n a x}\ (n7-n6){n}\ (n8-n5){\lambda }\ (n9-n4){s_2}\ (n10-n3){\lambda n a x}\ (n11-n10){n}\ (n12-n9){\lambda }\ (n13-n4){z_2}\ (n14-n3){\lambda a}\ (n15-n14){a}\ (n16-n13){{\ghostlmd^{1}}}\ (n17-n12){{\ghostvar^{1}}}\ (n18-n11){\lambda s z}\ (n19-n10){a}\ (n20-n9){{\ghostlmd^{2}}}\ (n21-n8){{\ghostvar^{1}}}\ (n22-n7){\lambda s z}\ (n23-n6){a}\ (n24-n5){{\ghostlmd^{2}}}\ (n25-n4){{\ghostvar^{3}}}\ (n26-n3){\lambda z_0}\ (n27-n26){z_0}\ (n28-n25){{\ghostlmd^{1}}}\ (n29-n24){{\ghostvar^{1}}}\ (n30-n23){\lambda }\ (n31-n22){s}\ (n32-n21){{\ghostlmd^{1}}}\ (n33-n20){{\ghostvar^{1}}}\ (n34-n19){\lambda }\ (n35-n18){s}\ (n36-n17){{\ghostlmd^{1}}}\ (n37-n16){{\ghostvar^{1}}}\ (n38-n15){{\ghostlmd^{1}}}\ (n39-n14){{\ghostvar^{2}}}\ (n40-n13){{\ghostlmd^{2}}}\ (n41-n12){{\ghostvar^{2}}}\ (n42-n11){{\ghostlmd^{2}}}\ (n43-n10){{\ghostvar^{4}}}\ (n44-n9){{\ghostlmd^{4}}}\ (n45-n8){{\ghostvar^{3}}}\ (n46-n7){{\ghostlmd^{3}}}\ (n47-n6){{\ghostvar^{5}}}\ (n48-n5){{\ghostlmd^{5}}}\ (n49-n4){{\ghostvar^{6}}}\ (n50-n3){{\ghostlmd^{6}}}\ (n51-n2){{\ghostvar^{4}}}\ (n52-n1){{\ghostlmd^{4}}}\ (n53-n0){{\ghostvar^{3}}}\ (n54-n53){{\ghostlmd^{1}}}\ (n55-n52){{\ghostvar^{1}}}\ (n56-n51){{\ghostlmd^{1}}}\ (n57-n50){{\ghostvar^{1}}}\ (n58-n49){{\ghostlmd^{1}}}\ (n59-n48){{\ghostvar^{1}}}\ (n60-n47){{\ghostlmd^{1}}}\ (n61-n46){{\ghostvar^{1}}}\ (n62-n45){{\ghostlmd^{1}}}\ (n63-n44){{\ghostvar^{1}}}\ (n64-n43){{\ghostlmd^{1}}}\ (n65-n42){{\ghostvar^{1}}}\ (n66-n41){{\ghostlmd^{1}}}\ (n67-n40){{\ghostvar^{1}}}\ (n68-n39){{\ghostlmd^{1}}}\ (n69-n38){{\ghostvar^{1}}}\ (n70-n37){{\ghostlmd^{1}}}\ (n71-n36){{\ghostvar^{1}}}\ (n72-n35){{\ghostlmd^{1}}}\ (n73-n34){{\ghostvar^{1}}}\ (n74-n33){{\ghostlmd^{1}}}\ (n75-n32){{\ghostvar^{1}}}\ (n76-n31){{\ghostlmd^{1}}}\ (n77-n30){{\ghostvar^{1}}}\ (n78-n29){{\ghostlmd^{1}}}\ (n79-n28){{\ghostvar^{1}}}\ (n80-n27){{\ghostlmd^{1}}}\ (n81-n26){{\ghostvar^{2}}}\ (n82-n25){{\ghostlmd^{2}}}\ (n83-n24){{\ghostvar^{2}}}\ (n84-n23){\lambda }\ (n85-n6){x}\ (n86-n5){{\ghostlmd^{3}}}\ (n87-n4){{\ghostvar^{4}}}\ (n88-n3){{\ghostlmd^{4}}}\ (n89-n2){{\ghostvar^{2}}}\ (n90-n1){{\ghostlmd^{2}}}\ (n91-n0){{\ghostvar^{1}}}\ (n92-n91){{\ghostlmd^{1}}}\ (n93-n90){{\ghostvar^{1}}}\ (n94-n89){{\ghostlmd^{1}}}\ (n95-n88){{\ghostvar^{1}}}\ (n96-n87){{\ghostlmd^{1}}}\ (n97-n86){{\ghostvar^{1}}}\ (n98-n85){\lambda }\ (n99-n22){s}\ (n100-n21){{\ghostlmd^{1}}}\ (n101-n20){{\ghostvar^{1}}}\ (n102-n19){\lambda }\ (n103-n18){s}\ (n104-n17){{\ghostlmd^{1}}}\ (n105-n16){{\ghostvar^{1}}}\ (n106-n15){{\ghostlmd^{1}}}\ (n107-n14){{\ghostvar^{2}}}\ (n108-n13){{\ghostlmd^{2}}}\ (n109-n12){{\ghostvar^{2}}}\ (n110-n11){{\ghostlmd^{2}}}\ (n111-n10){{\ghostvar^{4}}}\ (n112-n9){{\ghostlmd^{4}}}\ (n113-n8){{\ghostvar^{3}}}\ (n114-n7){{\ghostlmd^{3}}}\ (n115-n6){{\ghostvar^{5}}}\ (n116-n5){{\ghostlmd^{5}}}\ (n117-n4){{\ghostvar^{6}}}\ (n118-n3){{\ghostlmd^{6}}}\ (n119-n2){{\ghostvar^{4}}}\ (n120-n1){{\ghostlmd^{4}}}\ (n121-n0){{\ghostvar^{3}}}}$}
+% \resizebox{1.1\hsize}{!}{$t_{12} = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda t}\ (n3-n2){t}\ (n4-n1){\lambda s_2 z_2}\ (n5-n4){s_2}\ (n6-n3){\lambda n a x}\ (n7-n6){n}\ (n8-n5){\lambda }\ (n9-n4){s_2}\ (n10-n3){\lambda n a x}\ (n11-n10){n}\ (n12-n9){\lambda }\ (n13-n4){z_2}\ (n14-n3){\lambda a}\ (n15-n14){a}\ (n16-n13){{\ghostlmd^{1}}}\ (n17-n12){{\ghostvar^{1}}}\ (n18-n11){\lambda s z}\ (n19-n10){a}\ (n20-n9){{\ghostlmd^{2}}}\ (n21-n8){{\ghostvar^{1}}}\ (n22-n7){\lambda s z}\ (n23-n6){a}\ (n24-n5){{\ghostlmd^{2}}}\ (n25-n4){{\ghostvar^{3}}}\ (n26-n3){\lambda z_0}\ (n27-n26){z_0}\ (n28-n25){{\ghostlmd^{1}}}\ (n29-n24){{\ghostvar^{1}}}\ (n30-n23){\lambda }\ (n31-n22){s}\ (n32-n21){{\ghostlmd^{1}}}\ (n33-n20){{\ghostvar^{1}}}\ (n34-n19){\lambda }\ (n35-n18){s}\ (n36-n17){{\ghostlmd^{1}}}\ (n37-n16){{\ghostvar^{1}}}\ (n38-n15){{\ghostlmd^{1}}}\ (n39-n14){{\ghostvar^{2}}}\ (n40-n13){{\ghostlmd^{2}}}\ (n41-n12){{\ghostvar^{2}}}\ (n42-n11){{\ghostlmd^{2}}}\ (n43-n10){{\ghostvar^{4}}}\ (n44-n9){{\ghostlmd^{4}}}\ (n45-n8){{\ghostvar^{3}}}\ (n46-n7){{\ghostlmd^{3}}}\ (n47-n6){{\ghostvar^{5}}}\ (n48-n5){{\ghostlmd^{5}}}\ (n49-n4){{\ghostvar^{6}}}\ (n50-n3){{\ghostlmd^{6}}}\ (n51-n2){{\ghostvar^{4}}}\ (n52-n1){{\ghostlmd^{4}}}\ (n53-n0){{\ghostvar^{3}}}\ (n54-n53){{\ghostlmd^{1}}}\ (n55-n52){{\ghostvar^{1}}}\ (n56-n51){{\ghostlmd^{1}}}\ (n57-n50){{\ghostvar^{1}}}\ (n58-n49){{\ghostlmd^{1}}}\ (n59-n48){{\ghostvar^{1}}}\ (n60-n47){{\ghostlmd^{1}}}\ (n61-n46){{\ghostvar^{1}}}\ (n62-n45){{\ghostlmd^{1}}}\ (n63-n44){{\ghostvar^{1}}}\ (n64-n43){{\ghostlmd^{1}}}\ (n65-n42){{\ghostvar^{1}}}\ (n66-n41){{\ghostlmd^{1}}}\ (n67-n40){{\ghostvar^{1}}}\ (n68-n39){{\ghostlmd^{1}}}\ (n69-n38){{\ghostvar^{1}}}\ (n70-n37){{\ghostlmd^{1}}}\ (n71-n36){{\ghostvar^{1}}}\ (n72-n35){{\ghostlmd^{1}}}\ (n73-n34){{\ghostvar^{1}}}\ (n74-n33){{\ghostlmd^{1}}}\ (n75-n32){{\ghostvar^{1}}}\ (n76-n31){{\ghostlmd^{1}}}\ (n77-n30){{\ghostvar^{1}}}\ (n78-n29){{\ghostlmd^{1}}}\ (n79-n28){{\ghostvar^{1}}}\ (n80-n27){{\ghostlmd^{1}}}\ (n81-n26){{\ghostvar^{2}}}\ (n82-n25){{\ghostlmd^{2}}}\ (n83-n24){{\ghostvar^{2}}}\ (n84-n23){\lambda }\ (n85-n6){x}\ (n86-n5){{\ghostlmd^{3}}}\ (n87-n4){{\ghostvar^{4}}}\ (n88-n3){{\ghostlmd^{4}}}\ (n89-n2){{\ghostvar^{2}}}\ (n90-n1){{\ghostlmd^{2}}}\ (n91-n0){{\ghostvar^{1}}}\ (n92-n91){{\ghostlmd^{2}}}\ (n93-n90){{\ghostvar^{2}}}\ (n94-n89){{\ghostlmd^{2}}}\ (n95-n88){{\ghostvar^{2}}}\ (n96-n87){{\ghostlmd^{2}}}\ (n97-n86){{\ghostvar^{2}}}\ (n98-n85){\lambda }\ (n99-n22){z}\ (n100-n21){{\ghostlmd^{2}}}\ (n101-n20){{\ghostvar^{2}}}\ (n102-n19){\lambda }\ (n103-n10){x}\ (n104-n9){{\ghostlmd^{3}}}\ (n105-n8){{\ghostvar^{2}}}\ (n106-n7){{\ghostlmd^{2}}}\ (n107-n6){{\ghostvar^{4}}}\ (n108-n5){{\ghostlmd^{4}}}\ (n109-n4){{\ghostvar^{5}}}\ (n110-n3){{\ghostlmd^{5}}}\ (n111-n2){{\ghostvar^{3}}}\ (n112-n1){{\ghostlmd^{3}}}\ (n113-n0){{\ghostvar^{2}}}}$}
+\resizebox{1\hsize}{!}{$t_{121} =
 \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda t}\ (n3-n2){t}\ (n4-n1){\lambda s_2 z_2}\ (n5-n4){s_2}\ (n6-n3){\lambda n a x}\ (n7-n6){n}\ (n8-n5){\lambda }\ (n9-n4){s_2}\ (n10-n3){\lambda n a x}\ (n11-n10){n}\ (n12-n9){\lambda }\ (n13-n4){z_2}\ (n14-n3){\lambda a}\ (n15-n14){a}\ (n16-n13){{\ghostlmd^{1}}}\ (n17-n12){{\ghostvar^{1}}}\ (n18-n11){\lambda s z}\ (n19-n10){a}\ (n20-n9){{\ghostlmd^{2}}}\ (n21-n8){{\ghostvar^{1}}}\ (n22-n7){\lambda s z}\ (n23-n6){a}\ (n24-n5){{\ghostlmd^{2}}}\ (n25-n4){{\ghostvar^{3}}}\ (n26-n3){\lambda z_0}\ (n27-n26){z_0}\ (n28-n25){{\ghostlmd^{1}}}\ (n29-n24){{\ghostvar^{1}}}\ (n30-n23){\lambda }\ (n31-n22){s}\ (n32-n21){{\ghostlmd^{1}}}\ (n33-n20){{\ghostvar^{1}}}\ (n34-n19){\lambda }\ (n35-n18){s}\ (n36-n17){{\ghostlmd^{1}}}\ (n37-n16){{\ghostvar^{1}}}\ (n38-n15){{\ghostlmd^{1}}}\ (n39-n14){{\ghostvar^{2}}}\ (n40-n13){{\ghostlmd^{2}}}\ (n41-n12){{\ghostvar^{2}}}\ (n42-n11){{\ghostlmd^{2}}}\ (n43-n10){{\ghostvar^{4}}}\ (n44-n9){{\ghostlmd^{4}}}\ (n45-n8){{\ghostvar^{3}}}\ (n46-n7){{\ghostlmd^{3}}}\ (n47-n6){{\ghostvar^{5}}}\ (n48-n5){{\ghostlmd^{5}}}\ (n49-n4){{\ghostvar^{6}}}\ (n50-n3){{\ghostlmd^{6}}}\ (n51-n2){{\ghostvar^{4}}}\ (n52-n1){{\ghostlmd^{4}}}\ (n53-n0){{\ghostvar^{3}}}\ (n54-n53){{\ghostlmd^{1}}}\ (n55-n52){{\ghostvar^{1}}}\ (n56-n51){{\ghostlmd^{1}}}\ (n57-n50){{\ghostvar^{1}}}\ (n58-n49){{\ghostlmd^{1}}}\ (n59-n48){{\ghostvar^{1}}}\ (n60-n47){{\ghostlmd^{1}}}\ (n61-n46){{\ghostvar^{1}}}\ (n62-n45){{\ghostlmd^{1}}}\ (n63-n44){{\ghostvar^{1}}}\ (n64-n43){{\ghostlmd^{1}}}\ (n65-n42){{\ghostvar^{1}}}\ (n66-n41){{\ghostlmd^{1}}}\ (n67-n40){{\ghostvar^{1}}}\ (n68-n39){{\ghostlmd^{1}}}\ (n69-n38){{\ghostvar^{1}}}\ (n70-n37){{\ghostlmd^{1}}}\ (n71-n36){{\ghostvar^{1}}}\ (n72-n35){{\ghostlmd^{1}}}\ (n73-n34){{\ghostvar^{1}}}\ (n74-n33){{\ghostlmd^{1}}}\ (n75-n32){{\ghostvar^{1}}}\ (n76-n31){{\ghostlmd^{1}}}\ (n77-n30){{\ghostvar^{1}}}\ (n78-n29){{\ghostlmd^{1}}}\ (n79-n28){{\ghostvar^{1}}}\ (n80-n27){{\ghostlmd^{1}}}\ (n81-n26){{\ghostvar^{2}}}\ (n82-n25){{\ghostlmd^{2}}}\ (n83-n24){{\ghostvar^{2}}}\ (n84-n23){\lambda }\ (n85-n6){x}\ (n86-n5){{\ghostlmd^{3}}}\ (n87-n4){{\ghostvar^{4}}}\ (n88-n3){{\ghostlmd^{4}}}\ (n89-n2){{\ghostvar^{2}}}\ (n90-n1){{\ghostlmd^{2}}}\ (n91-n0){{\ghostvar^{1}}}\ (n92-n91){{\ghostlmd^{2}}}\ (n93-n90){{\ghostvar^{2}}}\ (n94-n89){{\ghostlmd^{2}}}\ (n95-n88){{\ghostvar^{2}}}\ (n96-n87){{\ghostlmd^{2}}}\ (n97-n86){{\ghostvar^{2}}}\ (n98-n85){\lambda }\ (n99-n22){z}\ (n100-n21){{\ghostlmd^{2}}}\ (n101-n20){{\ghostvar^{2}}}\ (n102-n19){\lambda }\ (n103-n10){x}\ (n104-n9){{\ghostlmd^{3}}}\ (n105-n8){{\ghostvar^{2}}}\ (n106-n7){{\ghostlmd^{2}}}\ (n107-n6){{\ghostvar^{4}}}\ (n108-n5){{\ghostlmd^{4}}}\ (n109-n4){{\ghostvar^{5}}}\ (n110-n3){{\ghostlmd^{5}}}\ (n111-n2){{\ghostvar^{3}}}\ (n112-n1){{\ghostlmd^{3}}}\ (n113-n0){{\ghostvar^{2}}}\ (n114-n113){{\ghostlmd^{1}}}\ (n115-n112){{\ghostvar^{1}}}\ (n116-n111){{\ghostlmd^{1}}}\ (n117-n110){{\ghostvar^{1}}}\ (n118-n109){{\ghostlmd^{1}}}\ (n119-n108){{\ghostvar^{1}}}\ (n120-n107){{\ghostlmd^{1}}}\ (n121-n106){{\ghostvar^{1}}}\ (n122-n105){{\ghostlmd^{1}}}\ (n123-n104){{\ghostvar^{1}}}\ (n124-n103){\lambda }\ (n125-n18){s}\ (n126-n17){{\ghostlmd^{1}}}\ (n127-n16){{\ghostvar^{1}}}\ (n128-n15){{\ghostlmd^{1}}}\ (n129-n14){{\ghostvar^{2}}}\ (n130-n13){{\ghostlmd^{2}}}\ (n131-n12){{\ghostvar^{2}}}\ (n132-n11){{\ghostlmd^{2}}}\ (n133-n10){{\ghostvar^{4}}}\ (n134-n9){{\ghostlmd^{4}}}\ (n135-n8){{\ghostvar^{3}}}\ (n136-n7){{\ghostlmd^{3}}}\ (n137-n6){{\ghostvar^{5}}}\ (n138-n5){{\ghostlmd^{5}}}\ (n139-n4){{\ghostvar^{6}}}\ (n140-n3){{\ghostlmd^{6}}}\ (n141-n2){{\ghostvar^{4}}}\ (n142-n1){{\ghostlmd^{4}}}\ (n143-n0){{\ghostvar^{3}}}}$}
 
-\resizebox{1.1\hsize}{!}{$t_{122} =
+\resizebox{1\hsize}{!}{$t_{122} =
 \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda t}\ (n3-n2){t}\ (n4-n1){\lambda s_2 z_2}\ (n5-n4){s_2}\ (n6-n3){\lambda n a x}\ (n7-n6){n}\ (n8-n5){\lambda }\ (n9-n4){s_2}\ (n10-n3){\lambda n a x}\ (n11-n10){n}\ (n12-n9){\lambda }\ (n13-n4){z_2}\ (n14-n3){\lambda a}\ (n15-n14){a}\ (n16-n13){{\ghostlmd^{1}}}\ (n17-n12){{\ghostvar^{1}}}\ (n18-n11){\lambda s z}\ (n19-n10){a}\ (n20-n9){{\ghostlmd^{2}}}\ (n21-n8){{\ghostvar^{1}}}\ (n22-n7){\lambda s z}\ (n23-n6){a}\ (n24-n5){{\ghostlmd^{2}}}\ (n25-n4){{\ghostvar^{3}}}\ (n26-n3){\lambda z_0}\ (n27-n26){z_0}\ (n28-n25){{\ghostlmd^{1}}}\ (n29-n24){{\ghostvar^{1}}}\ (n30-n23){\lambda }\ (n31-n22){s}\ (n32-n21){{\ghostlmd^{1}}}\ (n33-n20){{\ghostvar^{1}}}\ (n34-n19){\lambda }\ (n35-n18){s}\ (n36-n17){{\ghostlmd^{1}}}\ (n37-n16){{\ghostvar^{1}}}\ (n38-n15){{\ghostlmd^{1}}}\ (n39-n14){{\ghostvar^{2}}}\ (n40-n13){{\ghostlmd^{2}}}\ (n41-n12){{\ghostvar^{2}}}\ (n42-n11){{\ghostlmd^{2}}}\ (n43-n10){{\ghostvar^{4}}}\ (n44-n9){{\ghostlmd^{4}}}\ (n45-n8){{\ghostvar^{3}}}\ (n46-n7){{\ghostlmd^{3}}}\ (n47-n6){{\ghostvar^{5}}}\ (n48-n5){{\ghostlmd^{5}}}\ (n49-n4){{\ghostvar^{6}}}\ (n50-n3){{\ghostlmd^{6}}}\ (n51-n2){{\ghostvar^{4}}}\ (n52-n1){{\ghostlmd^{4}}}\ (n53-n0){{\ghostvar^{3}}}\ (n54-n53){{\ghostlmd^{1}}}\ (n55-n52){{\ghostvar^{1}}}\ (n56-n51){{\ghostlmd^{1}}}\ (n57-n50){{\ghostvar^{1}}}\ (n58-n49){{\ghostlmd^{1}}}\ (n59-n48){{\ghostvar^{1}}}\ (n60-n47){{\ghostlmd^{1}}}\ (n61-n46){{\ghostvar^{1}}}\ (n62-n45){{\ghostlmd^{1}}}\ (n63-n44){{\ghostvar^{1}}}\ (n64-n43){{\ghostlmd^{1}}}\ (n65-n42){{\ghostvar^{1}}}\ (n66-n41){{\ghostlmd^{1}}}\ (n67-n40){{\ghostvar^{1}}}\ (n68-n39){{\ghostlmd^{1}}}\ (n69-n38){{\ghostvar^{1}}}\ (n70-n37){{\ghostlmd^{1}}}\ (n71-n36){{\ghostvar^{1}}}\ (n72-n35){{\ghostlmd^{1}}}\ (n73-n34){{\ghostvar^{1}}}\ (n74-n33){{\ghostlmd^{1}}}\ (n75-n32){{\ghostvar^{1}}}\ (n76-n31){{\ghostlmd^{1}}}\ (n77-n30){{\ghostvar^{1}}}\ (n78-n29){{\ghostlmd^{1}}}\ (n79-n28){{\ghostvar^{1}}}\ (n80-n27){{\ghostlmd^{1}}}\ (n81-n26){{\ghostvar^{2}}}\ (n82-n25){{\ghostlmd^{2}}}\ (n83-n24){{\ghostvar^{2}}}\ (n84-n23){\lambda }\ (n85-n6){x}\ (n86-n5){{\ghostlmd^{3}}}\ (n87-n4){{\ghostvar^{4}}}\ (n88-n3){{\ghostlmd^{4}}}\ (n89-n2){{\ghostvar^{2}}}\ (n90-n1){{\ghostlmd^{2}}}\ (n91-n0){{\ghostvar^{1}}}\ (n92-n91){{\ghostlmd^{2}}}\ (n93-n90){{\ghostvar^{2}}}\ (n94-n89){{\ghostlmd^{2}}}\ (n95-n88){{\ghostvar^{2}}}\ (n96-n87){{\ghostlmd^{2}}}\ (n97-n86){{\ghostvar^{2}}}\ (n98-n85){\lambda }\ (n99-n22){z}\ (n100-n21){{\ghostlmd^{2}}}\ (n101-n20){{\ghostvar^{2}}}\ (n102-n19){\lambda }\ (n103-n10){x}\ (n104-n9){{\ghostlmd^{3}}}\ (n105-n8){{\ghostvar^{2}}}\ (n106-n7){{\ghostlmd^{2}}}\ (n107-n6){{\ghostvar^{4}}}\ (n108-n5){{\ghostlmd^{4}}}\ (n109-n4){{\ghostvar^{5}}}\ (n110-n3){{\ghostlmd^{5}}}\ (n111-n2){{\ghostvar^{3}}}\ (n112-n1){{\ghostlmd^{3}}}\ (n113-n0){{\ghostvar^{2}}}\ (n114-n113){{\ghostlmd^{2}}}\ (n115-n112){{\ghostvar^{2}}}\ (n116-n111){{\ghostlmd^{2}}}\ (n117-n110){{\ghostvar^{2}}}\ (n118-n109){{\ghostlmd^{2}}}\ (n119-n108){{\ghostvar^{2}}}\ (n120-n107){{\ghostlmd^{2}}}\ (n121-n106){{\ghostvar^{2}}}\ (n122-n105){{\ghostlmd^{2}}}\ (n123-n104){{\ghostvar^{2}}}\ (n124-n103){\lambda }\ (n125-n18){z}\ (n126-n17){{\ghostlmd^{2}}}\ (n127-n16){{\ghostvar^{2}}}\ (n128-n15){{\ghostlmd^{2}}}\ (n129-n14){{\ghostvar^{3}}}\ (n130-n13){{\ghostlmd^{3}}}\ (n131-n12){{\ghostvar^{3}}}\ (n132-n11){{\ghostlmd^{3}}}\ (n133-n10){{\ghostvar^{5}}}\ (n134-n9){{\ghostlmd^{5}}}\ (n135-n8){{\ghostvar^{4}}}\ (n136-n7){{\ghostlmd^{4}}}\ (n137-n6){{\ghostvar^{6}}}\ (n138-n5){{\ghostlmd^{6}}}\ (n139-n4){{\ghostvar^{7}}}\ (n140-n3){{\ghostlmd^{7}}}\ (n141-n2){{\ghostvar^{5}}}\ (n142-n1){{\ghostlmd^{5}}}\ (n143-n0){{\ghostvar^{4}}}}$}
+\caption{Maximal traversals of $varity\ 2$}
+\end{table}
 \end{landscape}
+\restoregeometry
 
 Keeping only the maximal traversals gives us the following set of maximal normalizing traversals of $M$:
 $$\travsetnorm_{max}(M) = \{ t_{11}, t_{121}, t_{122} \}$$
