@@ -16,6 +16,7 @@
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{bcprules}
 \usepackage{algorithm}
+\usepackage{algorithmic}
 \usepackage{geometry}
 \usepackage{pdflscape}
 
@@ -28,6 +29,9 @@
 \newtheorem{conjecture}{Conjecture}[section]
 \newtheorem{example}{Example}[section]
 \newtheorem{observation}{Observation}[section]
+
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
 
 
 \newcommand\Nodes{N}% set of nodes
@@ -174,7 +178,7 @@ Given an untyped lambda term $M$ we define its \defname{computation tree} as the
 	\end{eqnarray*}
 where the expression `$l\langle t_1, \ldots, t_m \rangle$' for $m \geq 0$ denotes a labelled tree with root labelled $l$ and $m$ ordered children trees $t_1$, \ldots, $t_m$. The underlined label $z$ represents a node label for $m>0$, and a leaf label if $m=0$.
 
-\item We write $\Nodes$ to denote the set of nodes of the computation tree. We write $\NodesVar$ for the set of variable nodes, $\NodesLmd$ for lambda nodes, and $\Nodes_{@}$ for  application nodes.
+\item We write $\Nodes$ to denote the set of nodes of the computation tree. We write $\NodesVar$ for the set of variable nodes, $\NodesLmd$ for lambda nodes, and $\Nodes_@$ for  application nodes.
 
 \item We write $\pathset(M)$ to denote the set of paths in $\ctree(M)$.
 \end{itemize}
@@ -294,7 +298,7 @@ $$\Pstr[0.5cm]{ t \cdot(alpha){\alpha} \cdot
 \begin{itemize}
 \item \rulenamet{Var} If \Pstr[0.5cm]{t \cdot (m){m} \cdot (alpha){\alpha}
     \ldots (n-alpha,50:i){n} \in \travulc} for $i>0$, $n \in \NodesVar^\ghostvar$ hereditarily justified by an $@$-node;
-     $m \in \NodesVar^\ghostvar \union \Nodes_{@}$; and $\alpha \in \NodesLmd^\ghostlmd$ then:
+     $m \in \NodesVar^\ghostvar \union \Nodes_@$; and $\alpha \in \NodesLmd^\ghostlmd$ then:
   $$\Pstr[0.5cm]{ t  \cdot
 (m){m} \cdot (lx){\alpha}  \ldots (x-lx,30:i){n}
     \cdot (letai-m,40:i){\beta}
@@ -383,7 +387,7 @@ By induction on the traversal rules, observing that in the variable rules, the o
 
 \subsection{Imaginary traversals subsume STLC traversals}
 
-Let's fix a simply-typed term-in-context $\Gamma \entail M :T$, with typed-context $\Gamma$ (a set of typed variables), and simple type $T$. Its \defname{eta-long form} is defined inductively on the type $T$ and is obtained by recursively eta-expanding every subterm as many times as possible with respect to the type of the subterm \cite{Ong2006,BlumPhd}. 
+Let's fix a simply-typed term-in-context $\Gamma \entail M :T$, with typed-context $\Gamma$ (a set of typed variables), and simple type $T$. Its \defname{eta-long form} is defined inductively on the type $T$ and is obtained by recursively eta-expanding every subterm as many times as possible with respect to the type of the subterm \cite{Ong2006,BlumPhd}.
 By abuse of language we will say that an untyped term $M$ is in eta-long form if it inhabits a simple type $T$ such that the eta-long expansion of it with respect to $T$ is $M$ itself.
 
 Traversals for simply-typed languages were previously studied in \cite{BlumPhd}.
@@ -621,9 +625,9 @@ Let $t\in \travsetbr$ be a branching traversal. If $t$ is infinite then it neces
 \end{property}
 \begin{proof}
 Suppose $t$ does not contain any ghost node then
-$t$ is obtained without using \rulenamet{Lam^\ghostlmd_\branching} and without the `eta-expansion` subcases of the variable rules. The remaining rules correspond precisely to the traversal rules of 
+$t$ is obtained without using \rulenamet{Lam^\ghostlmd_\branching} and without the `eta-expansion` subcases of the variable rules. The remaining rules correspond precisely to the traversal rules of
 \cite{Ong2006} (where \rulenamet{IVar} is renamed \rulenamet{Sig}).
-We can therefore appeal to the Spinal Decomposition Lemma 
+We can therefore appeal to the Spinal Decomposition Lemma
 \cite[Lemma 14]{Ong2006} which shows that if $t$ is infinite then there is an infinite sequence of prefixes of $t$ whose P-views (the \emph{spine} of $t$) is strictly increasing. By the Path correspondence this means that there is an infinite path in the computation tree of $M$ which gives a contradiction. Hence $t$ is either finite or contains a ghost node.
 \end{proof}
 
@@ -661,24 +665,29 @@ The normalization procedure for STLC is given by Algorithm \ref{algo:stlc_normal
 \begin{algorithm}[!h]
 \caption{Eta-long normalization by traversals for STLC}
 \label{algo:stlc_normalization_by_traversals}
-Let $\Gamma \vdash M : T$ be a simply-typed term.
+\begin{algorithmic}
+\REQUIRE{A term $M$ admitting an eta-long form (and thus inhabiting some simple-type).}
+\ENSURE{The tree of the eta-long beta-normal form of $M$.}
 \begin{enumerate}
-  \item Calculate $\etalf{M}$, the eta-long expansion of $M$;
-  \item Enumerate maximal \emph{branching} traversals of $M$ from Def.~\ref{dfn:branching_traversals} over the computation tree of $\etalf{M}$;
-  \item Project each traversal with respect to the tree root to get the \emph{traversal core}. By the correspondence theorem this yields a play in $\sem{M}$;
-  \item Calculate the P-view of the traversal core;
+  \item Calculate the eta-long form $\etalf{M}$ of $M$;
+  \item Enumerate maximal \emph{branching} traversals of $\etalf{M}$ from Def.~\ref{dfn:branching_traversals};
+  \item For each each enumerated traversal $t$, project it with respect to the tree root to get the \emph{traversal core} $\core{t}$. By the correspondence theorem this yields a play in $\sem{M}$;
+  \item Calculate the P-view of the traversal core $\pview{\core{t}}$;
   \item Apply the bijection from the Correspondence Theorem to get the corresponding maximal path in the tree representation of the eta-long $\beta$-nf of $M$;
-  \item Aggregate all the paths thus obtained to reconstruct the eta-long beta-normal form of $M$.
+  \item Aggregate all the paths thus obtained to reconstruct the underlying tree.
 \end{enumerate}
+\end{algorithmic}
 \end{algorithm}
 
-
-\paragraph{Soundness}
-A beta-normal term is uniquely determined by the set of maximal paths in its tree representation.
-By Proposition \ref{prop:path_charact_stlc}, this set corresponds precisely to the set of core P-views,
+\begin{theorem}[Correctness of STLC normalization]
+Algorithm \ref{algo:stlc_normalization_by_traversals} terminates and returns the eta-long beta-normal form of the input term.
+\end{theorem}
+\begin{proof}
+{\bf Soundness} A beta-normal term is uniquely determined by the set of maximal paths in its tree representation. By Proposition \ref{prop:path_charact_stlc}, this set corresponds precisely to the set of core P-views,
 and by Proposition \ref{prop:branching_traversal_normalizing} its is also given by the core P-views of \emph{branching} traversals.
+{\bf Termination} By Property \ref{prop:etalong_trav_finite} for terms in eta-long form the set of branching traversals is finite and each traversal is itself finite, therefore the enumeration in Algorithm \ref{algo:stlc_normalization_by_traversals} terminates.
+\end{proof}
 
-\paragraph{Termination} By Property \ref{prop:etalong_trav_finite} the set of branching traversals is finite for terms in eta-long form, therefore the enumeration in Algorithm \ref{algo:stlc_normalization_by_traversals} terminates.
 
 \paragraph{Implementation} The normalization procedure from algorithm \ref{algo:stlc_normalization_by_traversals} was first implemented in the HOG tool\cite{BlumGalop2008, BlumPhd}. The tool takes as input any simply-typed lambda term and lets the user interactively generate all the traversals by ``playing the traversal game'' over the tree representation of the term. The tool offers a `worksheet' environment for performing various operations over the traversals, including filtering, views and core projection.
 
@@ -686,7 +695,7 @@ and by Proposition \ref{prop:branching_traversal_normalizing} its is also given 
 
 We showed in the previous section that for eta-long forms, there is a finite number of branching traversals which implies termination of the normalization procedure of Algorithm \ref{algo:stlc_normalization_by_traversals}. In the general case of untyped terms, however, branching traversals can still be infinite because \emph{on-the-fly eta-expansion} in rule $\rulename{IVar}$ is unbounded: the justification label value $i>0$ is unbounded. In this section, we show that, for the purpose of computing beta normal forms, this value can be bounded by a computable quantity called the \defname{arity threshold} of a traversal.
 
-When traversing a lambda term, ghost nodes are introduced on-demand each time an eta-expansion is deemed necessary. 
+When traversing a lambda term, ghost nodes are introduced on-demand each time an eta-expansion is deemed necessary.
 
 % rework
 Recall that our goal is to normalize the term (when it exists) by generating some finite representation of its normal form. We are \emph{not} interested in generating the possibly infinite set of traversals corresponding to the game-semantic denotation of the term. We therefore don't want to eta-expand ad-infinitum: visiting ghost nodes will be useful only if they eventually lead to traversing some structural node of the tree.
@@ -857,16 +866,40 @@ Consequence of Proposition \ref{prop:branching_traversal_normalizing} and Proper
 We now generalize the normalization procedure of Algorithm~\ref{algo:stlc_normalization_by_traversals} to ULC: Algorithm~\ref{algo:ulc_normalization_by_traversals} describes a normalization procedure that computes the $\beta$-normal of an untyped lambda term if it exists.
 
 \begin{algorithm}[!h]
-\caption{Normalization by traversals for ULC}
+\begin{algorithmic}
+\caption{Normalization by traversals for the Untyped Lambda Calculus}
 \label{algo:ulc_normalization_by_traversals}
-Let $M$ be an untyped term.
-\begin{enumerate}
-  \item Enumerate maximal \emph{normalizing} traversals $\travsetnorm(M)$ using the rules of Table~\ref{tab:normalizing_trav_rules};
-  \item For each traversal, project it with respect to the tree root to get the traversal core.
-  \item Take the P-view of the traversal core;
-  \item Apply the bijection from the characterization theorem \ref{thm:path_charact_ulc} to get the corresponding path in the tree representation of the $\beta$-nf of $M$;
-  \item Aggregate all the paths thus obtained to reconstruct the beta-normal form of $M$.
-\end{enumerate}
+\REQUIRE{An untyped term $M$ that has a normal form.}
+\ENSURE{$CT(\betanf{M})$, the tree of the normal form of $M$.}
+\STATE Enumerate all maximal normalizing traversals $\travsetnorm(M)$ using rules of Table~\ref{tab:normalizing_trav_rules}
+\STATE Calculate $C = \{ \pview{\core{t}} \ | \ t \in \travsetnorm(M) \}$
+
+\STATE $(P, L) \leftarrow \parbox[t]{12cm}{Labelled-tree induced by $C$:
+\begin{compactitem}
+\item Paths $P \subseteq \nat^*$ are given by the justified sequences in $C$: child index is $1$ for variable occurrences, and is given by the justification label for lambda nodes.
+\item Label function $L : \nat^* \rightarrow (\Nodes + \ghostvar + \ghostlmd) \times P \times \nat$ defined by $L(n) = (l, b, i)$ where $o$ is the label of the corresponding occurrence in $C$, $b$ is the path to the binder node (given by the justification pointer in $C$), and $i$ is the label of the justification pointer in $C$;
+\end{compactitem}}$
+
+\FORALL{node $n \in P$ (by depth-first enumeration)}
+    \STATE Let $(l,b,i) = L(n)$
+    \IF{$o \in \NodesVar \union \NodesLmd \union \Nodes_@$}
+        \STATE $L'(n) \leftarrow l$
+        \COMMENT{It's either $@$, some variable name $x$, or $\lambda x_1 \ldots x_m$ for $m\geq 0$}
+    \ELSIF{$o = \ghostlmd$}
+        \STATE Let $\alpha$ be a fresh name
+        \COMMENT{\eg, the path from the root to $n$}
+        \STATE $id(n) \leftarrow \alpha$
+        \STATE $arity \leftarrow \max \{ i \ | \ L(v) = (\ghostvar, n, i) \mbox{ for some } v \in P \}$
+        \STATE $L'(n) \leftarrow \lambda \alpha_1 \ldots \alpha_{arity} $
+    \ELSIF{$o = \ghostvar$}
+            \STATE $\alpha \leftarrow id(b)$
+            \COMMENT{Get the base name previously assigned to the binder}
+            \STATE $L'(n) \leftarrow \alpha_i $
+            \COMMENT{Any two variable occurrences sharing same binder and justification label will have the same name.}
+    \ENDIF
+\ENDFOR
+\RETURN The labelled-tree $(P, L')$.
+\end{algorithmic}
 \end{algorithm}
 
 \paragraph{Soundness} Correctness of the normalization procedure is a direct consequence of the Characterization theorem below and the fact that normalizing traversals are $\sim$-complete (Prop.~\ref{prop:normalizing_traversals_simcomplete}):
@@ -964,7 +997,7 @@ where necessarily $\alpha \in \NodesLmd^\ghostlmd$ and $m \in\NodesVar^\ghostvar
             \cdot (letai-m,35:i){\beta}
             }
     }
-where necessarily $m \in \NodesVar^\ghostvar \union \Nodes_{@}$, $\alpha,\beta \in \NodesLmd^\ghostlmd$, and $\beta = \ghostlmd$ iff $i>|m|$.
+where necessarily $m \in \NodesVar^\ghostvar \union \Nodes_@$, $\alpha,\beta \in \NodesLmd^\ghostlmd$, and $\beta = \ghostlmd$ iff $i>|m|$.
 \\
 
 \emph{\bf DATA - Input-variable rules}
