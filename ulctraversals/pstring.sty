@@ -60,7 +60,7 @@
 \ifLoadPGFengine
     % Implement pointer string using pgf
     \RequirePackage{pgfcore}
-    \RequirePackage{pgfbaseshapes}
+    \usepgfmodule{shapes}
 
     % Set the default drawing engine to PGF
     \gdef\@engine{PGF}
@@ -515,7 +515,7 @@ curveto
 % for the definition of the sequence within a \pstr{ } command.
 %
 % It is called in the \pstr@PS and \pstr@PGF macros.
-\gdef\pstr@defineUserCommands{%	
+\gdef\pstr@defineUserCommands{%
 		\def\nd{\@ifstar\ndStar\ndNoStar}
     \def\ndNoStar##1(##2)##3{%
      % print out the text preceding the node specification
