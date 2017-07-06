@@ -19,6 +19,7 @@
 \usepackage{algorithmic}
 \usepackage{geometry}
 \usepackage{pdflscape}
+%\usepackage{paralist}
 
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}[section]
@@ -29,6 +30,9 @@
 \newtheorem{conjecture}{Conjecture}[section]
 \newtheorem{example}{Example}[section]
 \newtheorem{observation}{Observation}[section]
+
+% Change the numbering used for Algorithms
+\renewcommand*{\thealgorithm}{\Alph{algorithm}}
 
 \renewcommand{\algorithmicrequire}{\textbf{Input:}}
 \renewcommand{\algorithmicensure}{\textbf{Output:}}
@@ -335,7 +339,7 @@ Let $M$ be an untyped term.
 \item Let $n$ be a node of the tree of $M$ and $N$ denote the subterm of $M$ rooted at $n$. We write $ETA(M, n)$ to denote the term obtained by substituting
 the subterm $N$ in $M$ with the term $\lambda \theta. N \theta$ for some variable $\theta$ fresh in $N$.
 
-\item Let $M$ be an untyped term and $t$ be a traversal of $M$. We define the \defname{eta-expansion of $M$ with respect to $t$}, written $M^t$, as a term obtained by eta-expanding its subterms according to the rules used to traverse $M$. It is defined by induction on the traversal rules: By convention we define $M^\epsilon = M$. Suppose $t = u \cdot n$ for some node $n$. Let $m = \jp(t)^\omega$ denote the justifier of $n$ if it exists and $i$ denote its link label.  Consider the last rule used to traverse $t$:
+\item Let $M$ be an untyped term and $t$ be a \emph{finite} traversal of $M$. We define the \defname{eta-expansion of $M$ with respect to $t$}, written $M^t$, as a term obtained by eta-expanding its subterms according to the rules used to traverse $M$. It is defined by induction on the traversal rules: By convention we define $M^\epsilon = M$. Suppose $t = u \cdot n$ for some node $n$. Let $m = \jp(t)^\omega$ denote the justifier of $n$ if it exists and $i$ denote its link label.  Consider the last rule used to traverse $t$:
 \begin{equation}
 M^{u \cdot n} =
 \begin{cases}
@@ -360,7 +364,7 @@ We now generalize a known result from the theory of traversals for higher-order 
 
 \begin{proposition}[Path-View correspondence for ULC]
 \label{prop:pathview_ulc}
-Let $M$ be an untyped term and $t$ be a traversal of $M$ then
+Let $M$ be an untyped term and $t$ be a \emph{finite} traversal of $M$ then
 $\pview{t}$ is a path (with associated justification pointers) in the computation tree of the eta-expansion of $M$ with respect to $t$.
 In particular, if $t$ does not contain any ghost node then $\pview{t}$ is a path in the computation tree of $M$.
 \end{proposition}
@@ -379,7 +383,7 @@ The traversal rules are well-defined.
 \end{proof}
 
 \begin{proposition}
-If $t$ is a traversal of $M$ then $t$ is also a traversal of $M^t$ and $t$ does not contain any ghost node.
+If $t$ is a \emph{finite} traversal of $M$ then $t$ is also a traversal of $M^t$ and $t$ does not contain any ghost node.
 \end{proposition}
 \begin{proof}
 By induction on the traversal rules, observing that in the variable rules, the on-the-fly eta-expansion of Definition \ref{def:onthefly_etaexpansion} increments the arity of the justifier node $m$ therefore no ghost variable needs to be introduced while traversing $M^t$.
@@ -615,7 +619,9 @@ The branching restriction prevents the context from calling the same parameter t
  $\travsetbr$ is $\sim$-complete.
 \end{proposition}
 \begin{proof}
-\todo{Type my handwritten notes with proof explaining this in more details.}
+Assume that $t\in\travulc$ then show that there is $u\in\travsetbr$ such that $\pview{\core{t}} = \pview{\core{u}}$.
+Idea: Suppose that there is an input variable node $v$ in $t$ followed by a node that is not justified by $v$, then either $v$ is not in the P-view core in which case we can remove that section of the traversal. Otherwise let $n$ be the occurrence in $t$ of the lambda node following $v$ in the P-view core and  show that all the nodes between $v$ and $n$ can be removed while still obtaining a traversal
+\todo{Finish proof.}
 \end{proof}
 
 The following result will be useful to prove termination of the normalization procedure for STLC:
@@ -648,18 +654,6 @@ By Proposition~\ref{prop:ulc_and_stlc_trav_coincide}, traversals in $\travsetbr(
 
 \subsection{Normalization procedure for eta-long forms (STLC)}
 
-For simply-typed terms in eta-long form, the Paths Characterization result is a direct consequence of the Game-Semantic Correspondence Theorem for STLC \cite{BlumPhd}:
-\begin{proposition}[Normalized Paths Characterization for STLC]
-\label{prop:path_charact_stlc}
-For every simply-typed term-in-context $\Gamma\vdash M :T$, let $\etabetalnf{M}$ denote the eta-long beta-normal form of $M$. We have:
-\begin{equation*}
-\Phi : \travulc(\etalf{M})/{\sim}\ \cong\ \pathset(\etabetalnf{M})
-\end{equation*}
-\end{proposition}
-\begin{proof}
- Beta-eta equivalent terms have the same game denotation, therefore by Theorem \ref{thm:gamesem_correspondence_stlc}, the set of traversals of the eta-long beta-normal form of $M$ is also given by the set of cores of traversals of $\etalf{M}$. The Path-View correspondence (Prop.~\ref{prop:pathview_ulc}) and Prop.~\ref{prop:ulc_and_stlc_trav_coincide} then show that the P-views of traversal cores of $\etalf{M}$ give the tree paths of the eta-long beta normal form.
-\end{proof}
-
 The normalization procedure for STLC is given by Algorithm \ref{algo:stlc_normalization_by_traversals}.
 
 \begin{algorithm}[!ht]
@@ -679,13 +673,41 @@ The normalization procedure for STLC is given by Algorithm \ref{algo:stlc_normal
 \end{algorithmic}
 \end{algorithm}
 
+\subsubsection*{Correctness}
+
+
+% Proof idea: ``traversals implement left-most linear reduction''.
+% The proof sketch:
+% \begin{itemize}
+% \item Show that `leftmost linear reduction' yields the `quasi normal form'.  (Theorem \ref{thm:soundness_leftmostlinearred})
+% \item Observe that if $M$ is beta-normal then (trivially) its set of traversal cores P-views is precisely the set of paths in the tree representation of M
+% \item If $M$ reduces to $N$ using the leftmost linear reduction then the traversal cores P-views of $N$ are isomorphic to the traversals core P-views of $M$.
+% \item Reducing a trivial redex preserves (modulo some traversal prefix) the set of traversals.
+% The interesting part of the proof will be to show how the ghost nodes gradually ``materialize'' after each step of the linear reduction, and how the arity threshold gives the right bound for limiting eta-expansion.
+% \end{itemize}
+
+
+We now state the Paths Characterization of simply-typed terms which is an immediate consequence of the Game-Semantic Correspondence Theorem for STLC \cite{BlumPhd}:
+\begin{proposition}[Normalized Paths Characterization for STLC]
+\label{prop:path_charact_stlc}
+For every simply-typed term-in-context $\Gamma\vdash M :T$, let $\etabetalnf{M}$ denote the eta-long beta-normal form of $M$. We have:
+\begin{equation*}
+\Phi : \travulc(\etalf{M})/{\sim}\ \cong\ \pathset(\etabetalnf{M})
+\end{equation*}
+\end{proposition}
+\begin{proof}
+ Beta-eta equivalent terms have the same game denotation, therefore by Theorem \ref{thm:gamesem_correspondence_stlc}, the set of traversals of the eta-long beta-normal form of $M$ is also given by the set of cores of traversals of $\etalf{M}$. The Path-View correspondence (Prop.~\ref{prop:pathview_ulc}) and Prop.~\ref{prop:ulc_and_stlc_trav_coincide} then show that the P-views of traversal cores of $\etalf{M}$ give the tree paths of the eta-long beta normal form.
+\end{proof}
+
+
+
 \begin{theorem}[Correctness of STLC normalization]
 Algorithm \ref{algo:stlc_normalization_by_traversals} terminates and returns the eta-long beta-normal form of the input term.
 \end{theorem}
 \begin{proof}
-{\bf Soundness} A beta-normal term is uniquely determined by the set of maximal paths in its tree representation. By Proposition \ref{prop:path_charact_stlc}, this set corresponds precisely to the set of core P-views,
+\emph{Soundness} A beta-normal term is uniquely determined by the set of maximal paths in its tree representation. By Proposition \ref{prop:path_charact_stlc}, this set corresponds precisely to the set of core P-views,
 and by Proposition \ref{prop:branching_traversal_normalizing} its is also given by the core P-views of \emph{branching} traversals.
-{\bf Termination} By Property \ref{prop:etalong_trav_finite} for terms in eta-long form the set of branching traversals is finite and each traversal is itself finite, therefore the enumeration in Algorithm \ref{algo:stlc_normalization_by_traversals} terminates.
+\emph{Termination} By Property \ref{prop:etalong_trav_finite} for terms in eta-long form the set of branching traversals is finite and each traversal is itself finite, therefore the enumeration in Algorithm \ref{algo:stlc_normalization_by_traversals} terminates.
 \end{proof}
 
 
@@ -863,12 +885,100 @@ Consequence of Proposition \ref{prop:branching_traversal_normalizing} and Proper
 
 \subsection{Normalization for ULC}
 
-We now generalize the normalization procedure of Algorithm~\ref{algo:stlc_normalization_by_traversals} to ULC: Algorithm~\ref{algo:ulc_normalization_by_traversals} describes a normalization procedure that computes the $\beta$-normal of an untyped lambda term if it exists.
+Algorithm~\ref{algo:ulc_normalization_by_traversals} describes the ULC normalization procedure ULC that computes the $\beta$-normal of an untyped lambda term if it exists. It is a natural generalization of Algorithm~\ref{algo:stlc_normalization_by_traversals} based on \emph{normalizing} traversals instead of \emph{branching} traversals.
 
 \begin{algorithm}[!ht]
 \begin{algorithmic}
 \caption{Normalization by traversals for the Untyped Lambda Calculus}
 \label{algo:ulc_normalization_by_traversals}
+\REQUIRE{An untyped term $M$ that has a normal form.}
+\ENSURE{The tree of the normal form of $M$.}
+Let $M$ be an untyped term.
+\begin{enumerate}
+  \item Enumerate maximal \emph{normalizing} traversals $\travsetnorm(M)$ using the rules of Table~\ref{tab:normalizing_trav_rules};
+  \item For each traversal, project it with respect to the tree root to get the traversal core.
+  \item Take the P-view of the traversal core;
+  \item Apply the bijection from the characterization theorem \ref{thm:path_charact_ulc} to get the corresponding path in the tree representation of the $\beta$-nf of $M$;
+  \item Aggregate all the paths thus obtained to reconstruct the beta-normal form of $M$.
+\end{enumerate}
+\end{algorithmic}
+\end{algorithm}
+
+\subsubsection*{Correctness}
+
+\begin{proposition}[Traversals implement linear reduction]
+\label{prop:ulctrav_impl_linear_reduction}
+Let $M$ be an untyped term.
+\begin{enumerate}[label=(\roman*)]
+\item If $M \rightarrow_l N$ then $\travsetnorm(M)$ and  $\travsetnorm(N)$ are isomorphic;
+\item If $M$ is in quasi normal form and $t$ is a traversal in $\travsetnorm(N)$ then $t$ is finite.
+\item If $M$ is in quasi normal form and has beta-normal form $N$ then the core projection $\coresymbol$ gives a bijection from the maximal traversals of $\travsetnorm(M)$ and the maximal traversals of $\travsetnorm(N)$.
+\end{enumerate}
+\end{proposition}
+\begin{proof}[Proof sketch]
+\todo{proof!}
+(i) The effect of leftmost linear reduction is essentially to inline the \emph{lloc} variable by its generalized argument (the argument of the generalized redex binding the \emph{lloc} variable).
+The traversals before and after reduction are identical up to some node mapping and node merging. One can easily show that the invariant $\core{\travsetnorm(M)}$ is preserved by this mapping.
+
+(ii) idea: If $M$ is in quasi normal form then none of the traversals of $\travsetnorm(M)$ use the \rulenamet{App} rule, therefore traversals are necessarily finite.
+
+(iii) By Proposition \ref{prop:qnf_nf}, the \emph{qnf} trivially reduces to its beta-nf. It's immediate to show that the invariant $\core{\travsetnorm(M)}$ is preseved by trivial beta-reduction.
+
+\end{proof}
+
+\begin{property}
+\label{prop:ulc_travnorm_finite}
+Let $M$ be an untyped term.
+\begin{enumerate}[label=(\roman*)]
+\item All traversals in $\travsetnorm(M)$ are finite;
+\item $\travsetnorm(M)$ is finite.
+\end{enumerate}
+\end{property}
+\begin{proof}
+(i) If $M$ has a normal form then by Theorem \ref{thm:soundness_leftmostlinearred} its linear reduction sequence terminates, and by Prop.~\ref{prop:ulctrav_impl_linear_reduction}(i) the set of traversals of $M$ is isomorphic to the traversals of its quasi normal form. Hence if $M$ has an infinite traversal then so does its \emph{qnf}, which contradicts Prop.~\ref{prop:ulctrav_impl_linear_reduction}(ii).
+(ii) Traversals rules defining $\travsetnorm$ all have bounded non-determinism therefore by (i) $\travsetnorm$ is finite.
+\end{proof}
+
+
+\begin{proposition}
+Algorithm \ref{algo:ulc_normalization_by_traversals} terminates.
+\end{proposition}
+\begin{proof}
+By Prop.~\ref{prop:ulc_travnorm_finite} there is a finite number of traversals in $\travsetnorm$ and each of them can be obtained with finetly many applications of travesal rules.
+\end{proof}
+
+\paragraph{Soundness}
+Since we have not formally established correspondence with Game Semantics in the untyped setting (Conjecture \ref{conj:ulc_corresp}) we instead prove the Characterization Theorem for ULC by appealing to a term-rewriting argument based on the \emph{leftmost linear reduction} strategy \emph{leftmost linear reduction} from Section~\ref{sec:leftmostlinearred}:
+
+\begin{theorem}[Normalized Paths Characterization for ULC]
+\label{thm:path_charact_ulc}
+For any untyped term $M$ having a normal form $N$ we have:
+$$\Phi : \travsetnorm(M)/{\sim} \ \cong\ \pathset(N)$$
+\end{theorem}
+\begin{proof}
+It's trivial if $M$ is in beta-normal form since $\core{\travsetnorm(M)} = \travsetnorm(M)$ and by the Path-View correspondence for ULC $\pview{\core{\travsetnorm(M)}} = \pathset(N)$.
+For any other untyped term $M$ with a normal form, we consider its \emph{leftmost linear reduction sequence}.
+Since $M$ is in beta-nf, the reduction sequence terminates by Theorem \ref{thm:soundness_leftmostlinearred} and yields the \emph{quasi normal form} (qnf). By Prop.~\ref{prop:ulctrav_impl_linear_reduction} the set of traversals is preserved by \emph{linear reduction} thus the set of traversals of the \emph{qnf} is isomorphic to the set of traversals of $M$. By Prop.~\ref{prop:ulctrav_impl_linear_reduction}(iii), the projection $\coresymbol$ yields $\travsetnorm(N)$.
+\end{proof}
+
+Correctness of the normalization procedure is a direct consequence of the Characterization theorem and the fact that normalizing traversals are $\sim$-complete (Prop.~\ref{prop:normalizing_traversals_simcomplete}).
+
+\begin{remark}
+The infinitary counterpart of the characterization theorem for lambda terms with no normal form (not shown in this paper) can be stated as:
+$$ \Union_{k\geq0} \Phi(\travulc^k(M)/{\sim}) = \pathset(BT(M))$$
+where $\travulc^k(M)$ denotes the set of traversals of length $k$ at most and $\pathset(BT(M))$ denotes the set of \emph{possibly infinite} maximal paths in the B\"oem tree $BT(M)$ of $M$ (the infinitary computation tree of the term obtained by reducing beta-redexes ad-infinitum \cite{barendregt2013lambda}).\footnote{See also \cite{Blum17-HomogNotRestriction, Ong2006} for a formal definition of infinitary computation trees.}
+\end{remark}
+
+
+\subsubsection{Reading out the normal form}
+
+For completeness, we include Algorithm \ref{algo:ulc_normalization_by_traversals_with_readout} which gives a more
+detailed description of the normalization procedure with the steps involved in reconstructing the term tree from the set of paths, and in particular how to assign names to the ghost variables.
+
+\begin{algorithm}[!ht]
+\begin{algorithmic}
+\caption{Normalization by traversals for the ULC with term read-out}
+\label{algo:ulc_normalization_by_traversals_with_readout}
 \REQUIRE{An untyped term $M$ that has a normal form.}
 \ENSURE{$CT(\betanf{M})$, the tree of the normal form of $M$.}
 \STATE Enumerate all maximal normalizing traversals $\travsetnorm(M)$ using rules of Table~\ref{tab:normalizing_trav_rules}
@@ -901,36 +1011,6 @@ We now generalize the normalization procedure of Algorithm~\ref{algo:stlc_normal
 \RETURN The labelled-tree $(P, L')$.
 \end{algorithmic}
 \end{algorithm}
-
-\paragraph{Soundness} Correctness of the normalization procedure is a direct consequence of the Characterization theorem below and the fact that normalizing traversals are $\sim$-complete (Prop.~\ref{prop:normalizing_traversals_simcomplete}):
-
-\begin{theorem}[Normalized Paths Characterization for ULC]
-\label{thm:path_charact_ulc}
-For any untyped term $M$ having a normal form $\betanf{M}$ we have:
-$$\Phi : \travsetnorm(M)/{\sim} \ \cong\ \pathset(\betanf{M})$$
-\end{theorem}
-Observe that Conjecture \ref{conj:ulc_corresp} implies the above by the same game-semantic argument used to show characterization for STLC. We will instead prove the characterization using a term-rewriting argument based on the \emph{leftmost linear reduction} strategy. We sketch the argument below and refer the reader to section \ref{sec:correctness} for the proof.
-\begin{proof}[Proof sketch]
-It's trivial if $M$ is in beta-normal form since $\core{\travsetnorm(M)} = \travsetnorm(M)$ and by the Path-View correspondence for ULC $\pview{\core{\travsetnorm(M)}} = \pathset(N)$.
-For any other untyped term $M$ with a normal form, we consider its \emph{leftmost linear reduction sequence}.
-Since $M$ is in beta-nf, the reduction sequence terminates by Theorem \ref{thm:soundness_leftmostlinearred} and yields the \emph{quasi normal form} (qnf).
-
-The effect of leftmost linear reduction is essentially to inline the \emph{lloc} variable by its generalized argument (the argument of the generalized redex binding the \emph{lloc} variable).
-The traversals before and after reduction are identical up to some node mapping and node merging. One can easily show that the invariant $\core{\travsetnorm(M)}$ is preserved by this mapping.
-
-By Proposition \ref{prop:qnf_nf}, the \emph{qnf} trivially reduces to its beta-nf. It's immediate to show that the invariant $\core{\travsetnorm(M)}$ is preseved by trivial beta-reduction.
-\end{proof}
-
-\paragraph{Termination} If $M$ has a normal form then its set of tree paths is finite, therefore by the above theorem so is $\travsetnorm(M)/{\sim}$.
-\todo{show that $\travsetnorm(M)$ contains only a finite number of traversals per $\sim$-equivalence class, therefore $\travsetnorm(M)$ is also finite and therefore the enumeration terminate.}
-
-\begin{remark}
-The infinitary counterpart of the characterization theorem for lambda terms with no normal form (not shown in this paper) can be stated as:
-$$ \Union_{k\geq0} \Phi(\travulc^k(M)/{\sim}) = \pathset(BT(M))$$
-where $\travulc^k(M)$ denotes the set of traversals of length $k$ at most and $\pathset(BT(M))$ denotes the set of \emph{possibly infinite} maximal paths in the B\"oem tree $BT(M)$ of $M$ (the infinitary computation tree of the term obtained by reducing beta-redexes ad-infinitum \cite{barendregt2013lambda}).\footnote{See also \cite{Blum17-HomogNotRestriction, Ong2006} for a formal definition of infinitary computation trees.}
-\end{remark}
-
-
 
 
 \begin{FramedTable}
@@ -1340,7 +1420,8 @@ In 2004, Danos and Regnier \cite{danos-head} establish the connection between Ga
 Head linear reduction is  a non-standard reduction strategy for the lambda calculus and shed some light studies the connection with Game Semantics.
 
 
-\section{Correctness proof (draft)}
+\section{Leftmost linear reduction}
+\label{sec:leftmostlinearred}
 
 \subsection{Background: Lambda calculus and reduction}
 We recall from standard results of the lambda calculus.
@@ -1434,7 +1515,8 @@ where $v$ ranges over variable occurrences in $M$,
 and for any subterm $N$, $lloc_M(N) = \bot$ denotes that $lloc$ is undefined at $N$.
 
 The \defname{leftmost linear variable occurrence} of $M$
-is defined as $lloc_M(M)$ if it exists, otherwise $M$ is said to be in \defname{quasi normal form}, or \emph{qnf} for short. The \defname{leftmost linear reduction} strategy, written $\rightarrow_l$, is defined as the strategy that linearly fires the generalized redex involving the leftmost linear variable occurrence.
+is defined as $lloc_M(M)$ if it exists and the generalized redex it's involved in is called the \defname{lloc redex}, otherwise $M$ is said to be in \defname{quasi normal form}, or \emph{qnf} for short.
+The \defname{leftmost linear reduction} strategy, written $\rightarrow_l$, is defined as the strategy that linearly fires the generalized redex involving the leftmost linear variable occurrence.
 \end{definition}
 
 Leftmost linear reduction proceeds by first locating the left-most variable occurrence and, if it is involved in a redex, linearly fires it. In comparison, the traditional left-most outermost reduction first locates the leftmost redex and then fires it by substituting all the variables involved in it.
@@ -1502,7 +1584,7 @@ If $\lambda_l(U) \neq \epsilon$, then either $U$ contains a redex or $U$ is an a
 We have:
 \begin{itemize}
 \item[(i)] If $M \rightarrow_{l} N$ then $M$ and $N$ are beta-equivalent.
-\item[(ii)] $M$ has a beta-normal form if and only if its left-most head linear reduction terminates.
+\item[(ii)] $M$ has a beta-normal form if and only if its left-most head linear reduction terminates (\ie it has a \emph{qnf}).
 \item[(iii)] If $M$ is in \emph{quasi normal form} and contains $n$ standard redexes then there is an evaluation strategy that reduces $M$ to its normal form in exactly $n$ beta-reductions.
 \end{itemize}
 \end{theorem}
@@ -1539,20 +1621,6 @@ The leftmost redex sequence of $M$ is $LRS(M) = (\lambda x, U) \cdot (\lambda w,
 Reducing the term with two head reduction gives
 $M \rightarrow_h z ((\lambda w y.y)x) \rightarrow_h z (\lambda y . y)$ which is in normal form.
 \end{example}
-
-
-\subsection{Traversal Correctness}
-\label{sec:correctness}
-
-Proof idea: ``traversals implement left-most linear reduction''.
-The proof sketch:
-\begin{itemize}
-\item Show that `leftmost linear reduction' yields the `quasi normal form'.  (Theorem \ref{thm:soundness_leftmostlinearred})
-\item Observe that if $M$ is beta-normal then (trivially) its set of traversal cores P-views is precisely the set of paths in the tree representation of M
-\item If $M$ reduces to $N$ using the leftmost linear reduction then the traversal cores P-views of $N$ are isomorphic to the traversals core P-views of $M$.
-\item Reducing a trivial redex preserves (modulo some traversal prefix) the set of traversals.
-The interesting part of the proof will be to show how the ghost nodes gradually ``materialize'' after each step of the linear reduction, and how the arity threshold gives the right bound for limiting eta-expansion.
-\end{itemize}
 
 \appendix
 
@@ -1651,6 +1719,23 @@ Remove all binding and control pointers starting from the $@$ tokens themselves.
 Take a substitution sequence of a PAM: $((z_0,A_1), (z_1,A_2) \ldots$.
 \todo{type notes}
 %The traversals can be reconstructed as follows:
+
+\subsubsection{Correctness}
+\paragraph{Blum}
+The soundness and termination proof is mainly based on first principles. Not a game semantic argument.
+
+Proof idea: ``traversals implement left-most linear reduction''.
+The proof sketch:
+\begin{itemize}
+\item Show that `leftmost linear reduction' yields the `quasi normal form'.  (Theorem \ref{thm:soundness_leftmostlinearred})
+\item Observe that if $M$ is beta-normal then (trivially) its set of traversal cores P-views is precisely the set of paths in the tree representation of M
+\item If $M$ reduces to $N$ using the leftmost linear reduction then the traversal cores P-views of $N$ are isomorphic to the traversals core P-views of $M$.
+\item Reducing a trivial redex preserves (modulo some traversal prefix) the set of traversals.
+The interesting part of the proof will be to show how the ghost nodes gradually ``materialize'' after each step of the linear reduction, and how the arity threshold gives the right bound for limiting eta-expansion.
+\end{itemize}
+
+\paragraph{From Danos-Regnier}
+Proof based on environments.
 
 \bibliographystyle{abbrv}
 \bibliography{ulctrav}
