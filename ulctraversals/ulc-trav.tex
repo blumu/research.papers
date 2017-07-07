@@ -234,13 +234,8 @@ Let $s$ be a justified sequence of nodes.
 
  \item Let $A$ be a subset of nodes in $\Nodes$, we write $s \filter A$ to denote the subsequence of $s$ obtained by keeping only nodes that are in $A$;
 
- \item We define the \defname{core} of $s$, written $\core{s}$ as the subsequence of $s$ consisting of external nodes:
- \begin{align*}
- \pi \colon \travulc(M) & \longrightarrow \justseqset(M) \\
-      t  & \longmapsto  s\filter\NodeHjByRoot \ .
- \end{align*}
+ \item We will consider the subsequence $s\filter\NodeHjByRoot$ of external nodes (\ie, nodes hereditarily enabled by the root). Observe that if $r_1, \ldots r_n$, $n\geq 1$ are the occurrences of the root in $s$ then it is also given by the projection of $s$ with respect to those occurrences: $s\filter\NodeHjByRoot = s\filter r_1 \filter \ldots \filter r_n$.
 \end{itemize}
-Observe that if $r_1, \ldots r_n$, $n\geq 1$ are the occurrences of the root in $s$ then  $\core{s}$ is also given by the projection of $s$ with respect to those occurrences: $\core{s} = s\filter r_1 \filter \ldots \filter r_n$.
 \end{definition}
 
 The P-view of a justified sequence is the sub-sequence obtained by reading the sequence backwards as follows: (i) if the node being read is a variable node then keep that node and follow its justification pointer (\ie, skip all the occurrences ``underneath that pointer'') (ii) if the node is a lambda node then keep that node and move to the preceding node. Formally:
@@ -260,8 +255,6 @@ $$\begin{array}{rcll}
 \end{array}$$
 The O-view, denoted $\oview{s}$, is defined as the dual of the P-view \cite{Abr02}.
 \end{definition}
-
-We define the \defname{core P-view} as $\pview{\core{s}}$, the P-view of the traversal core.
 
 \section{Traversals}
 
@@ -328,6 +321,38 @@ and every $i\geq1$ we have $t \cdot n \cdot \alpha \in \travulc$ with $\alpha$ p
  \label{tab:trav_rules}
 \end{FramedTable}
 
+Some immediate property that can be shown by induction on the rules:
+\begin{property}
+   For any traversal $t$: $t$ verifies the alternation condition and so does $t\filter\NodeHjByRoot$.
+\end{property}
+
+\paragraph{Traversal core}
+
+We now generalize the notion of \emph{traversal core} from \cite{BlumPhd} to the imaginary traversals.
+The core consists of the subsequence of $s$ consisting of external nodes where the lambda nodes are renamed:
+\begin{definition}[Core projection]
+  \label{labe:coreprojection}
+  For any sequence of variables $x_1 \ldots x_n$, let's denote by $pop_j$ , $j\geq0$ for the operation that removes the first $j$ elements of the sequence: $pop_j (x_1 \ldots x_n) = x_{j+1} \ldots x_n$ if $j<n$, and $pop_j (x_1 \ldots x_n) = \epsilon$ otherwise.
+  We define the traversal core function $\pi \colon \travulc(M) \longrightarrow \justseqset(M)$ by induction on traversals of $M$:
+For any sequence of variables $l \in \mathcal{V}^*$ we define:
+\begin{align*}
+\pi_l \colon \travulc(M) & \longrightarrow \justseqset(M) \\
+ t\cdot x &\longmapsto \coresymbol_l(t) \cdot x & \mbox{if } x\in \NodeHjByRoot \\
+ t\cdot x &\longmapsto \coresymbol_l(t) & \mbox{if } x\not\in\NodeHjByRoot \\
+ t\cdot @ &\longmapsto \coresymbol_{pop_k(l)}(t) & \mbox{where $k = |@|$} \\
+ t\cdot \lambda \overline{x} & \longmapsto \coresymbol_{\epsilon} \cdot \lambda \overline{x} & \mbox{if } \lambda \overline{x}\in \NodeHjByRoot \\
+ t\cdot \lambda \overline{x} & \longmapsto \coresymbol_{\overline{x} \cdot l}(t) & \mbox{if } \lambda \overline{x}\not\in \NodeHjByRoot \ .
+\end{align*}
+
+The accumulating parameter $l = y_1 \ldots y_n$ for some $n\geq0$, is called the sequence of \defname{pending lambdas} (It's technically a sequence of variables but should be interpreted as $\lambda y_1 \ldots y_n$; the $\lambda$ itself is omitted to simplify the above definition.)
+
+We abbreviate $\coresymbol_\epsilon(t)$ as $\core{t}$ and we call it the \defname{core} of $t$.
+We define the \defname{core P-view} as $\pview{\core{t}}$, the P-view of the traversal core.
+\end{definition}
+
+Let's call \defname{weave} a maximal subsequence of consecutive internal nodes (see Definition~\ref{ref:weave}). The \emph{core projection} of a traversal can be succinctly defined as the subsequence of external nodes ($t\filter\NodeHjByRoot$) where each lambda node is renamed by prefixing the \emph{pending lambdas} of the following \emph{weave} to its original label.
+
+
 \paragraph{On-the-fly expansion}
 The following definition explicit the notions of \emph{on-the-fly eta-expansion} implemented by the
 traversal rules \rulenamet{Var} and \rulenamet{IVar}:
@@ -357,6 +382,10 @@ M^{u \cdot n} =
 \end{definition}
 Observe that the tree obtained after eta-expansion with respect to $t$ contains the tree of $M$ itself, therefore paths in the tree of $M$ are also paths in the tree of $M^t$.
 
+\begin{example}
+Take $M = (\lambda u . u\ (y_1\ u)) (\lambda v . v\ y_2)$. Its computation tree is shown in Ex.~\ref{ex:missingoperand}. A valid traversal is $t = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda u}\ (n3-n2){u}\ (n4-n1){\lambda v}\ (n5-n4){v}\ (n6-n3){\lambda }\ (n7-n0){y_1}\ (n8-n7){\lambda }\ (n9-n2){u}\ (n10-n1){\lambda v}\ (n11-n10){v}\ (n12-n9){{\ghostlmd^{1}}}\ (n13-n8){{\ghostvar^{1}}}\ (n14-n13){{\ghostlmd^{1}}}\ (n15-n12){{\ghostvar^{1}}}\ (n16-n11){\lambda }\ (n17-n0,35){y_2}\ }$. The eta expansion of $M$ with respect to $t$ is
+$M^t = (\lambda u . u~(y_1~(\lambda \alpha. u (\lambda \beta.\alpha \beta))) (\lambda v . v~y_2)$.
+\end{example}
 
 
 \paragraph{Path-View correspondence}
@@ -383,16 +412,30 @@ The traversal rules are well-defined.
 \end{proof}
 
 \begin{proposition}
-If $t$ is a \emph{finite} traversal of $M$ then $t$ is also a traversal of $M^t$ and $t$ does not contain any ghost node.
+\label{prop:eta_expanded_trav}
+Let $M$ be an untyped term.
+\begin{enumerate}[label=(\roman*)]
+  \item If $t$ is a \emph{finite} traversal of $M$ then $t$ is also a traversal of $M^t$ and $t$ does not contain any ghost node.
+
+  \item If $u$ is a \emph{finite} traversal of $M^t$ that does not contain any ghost node then $u$ is also a traversal of $M$ (with possibly ghost nodes).
+
+  \item For any finite traversal $t$ of $M$, $\travset{M}$ is (strongly) isomorphic to $\travset{M^t}$ up to node relabelling of occurrences of ghost nodes occurring in $t$.
+\end{enumerate}
 \end{proposition}
 \begin{proof}
-By induction on the traversal rules, observing that in the variable rules, the on-the-fly eta-expansion of Definition \ref{def:onthefly_etaexpansion} increments the arity of the justifier node $m$ therefore no ghost variable needs to be introduced while traversing $M^t$.
+(i) By induction on the traversal rules, observing that in the variable rules, the on-the-fly eta-expansion of Definition~\ref{def:onthefly_etaexpansion} increments the arity of the justifier node $m$, therefore no ghost variable needs to be introduced while traversing $M^t$.
+
+(ii) (iii) \todo{finish}
+
 \end{proof}
 
-\subsection{Imaginary traversals subsume STLC traversals}
+\begin{example}
+Continuing with the example above: the following traversal obtained from $t$ is a valid traversal of $M^t$ where the occurrences corresponding to ghosts in $t$ are underlined:
+$$\Pstr[0.7cm]{(n0){\lambda }~(n1){@}\ (n2-n1){\lambda u}~(n3-n2){u}~(n4-n1){\lambda v}~(n5-n4){v}\ (n6-n3){\bf \lambda}\ (n7-n0){y_1}\ (n8-n7){\bf \lambda}~(n9-n2){u}~(n10-n1){\lambda v}~(n11-n10){v}\ (n12-n9){\underline{\lambda\beta}}~(n13-n8){\underline{\alpha}}~(n14-n13){\underline{\lambda}}~(n15-n12){\underline{\beta}}\ (n16-n11){\lambda}~(n17-n0,35){y_2} }.$$
+\end{example}
 
-Let's fix a simply-typed term-in-context $\Gamma \entail M :T$, with typed-context $\Gamma$ (a set of typed variables), and simple type $T$. Its \defname{eta-long form} is defined inductively on the type $T$ and is obtained by recursively eta-expanding every subterm as many times as possible with respect to the type of the subterm \cite{Ong2006,BlumPhd}.
-By abuse of language we will say that an untyped term $M$ is in eta-long form if it inhabits a simple type $T$ such that the eta-long expansion of it with respect to $T$ is $M$ itself.
+
+\subsection{Imaginary traversals subsume STLC traversals}
 
 Traversals for simply-typed languages were previously studied in \cite{BlumPhd}.
 The traversal rules defined in Table \ref{tab:trav_rules} closely match those of the simply-typed lambda calculus and PCF from \cite{BlumPhd} with some important differences:
@@ -406,13 +449,19 @@ The traversal rules defined in Table \ref{tab:trav_rules} closely match those of
 
   \item[Free variables] Eta-expansion can also occur on free variables, so like for  rule \rulenamet{Var}, the input-variable rule allows for infinitely many eta-expansions ($k>0$).
 
+  \item[Traversl core] In the typed setting, the core is  obtained by just filtering nodes with respect to the tree root. In the untyped settings, additionally, lambda nodes are relabelled.
+
   \item[Traversing ghost nodes] There is an additional rule \rulenamet{Lam^\ghostlmd} for the case where a traversal ends with a ghost lambda node. In the concrete sub-case, rule \rulenamet{Lam} visits the unique child node of the last lambda node in the traversal. In the eta-expanded sub-case where the last node is a ghost lambda node, there is no such child node, so we visit an imaginary one: the variable node that would be created if we were to eta-expand the sub-term under the lambda.
 
    The ghost placeholder $\ghostvar$ thus represents an occurrence of the $j$th variable that would be bound by lambda node $\alpha$ if the sub-term at node $\alpha$ were eta-expanded $i-|n|$ times: hence $j = |\alpha| + i - |n|$.
    (Observe that in this case we necessarily have $i>|n|$ since the $i$th child of $n$ is a ghost variable node.)
 \end{description}
 
-In fact, the STLC traversals rules of \cite{BlumPhd} are just a subset of the imaginary traversal rules of Table \ref{tab:trav_rules}:
+Let's fix a simply-typed term-in-context $\Gamma \entail M :T$, with typed-context $\Gamma$ (a set of typed variables), and simple type $T$. Its \defname{eta-long form} is defined inductively on the type $T$ and is obtained by recursively eta-expanding every subterm as many times as possible with respect to the type of the subterm \cite{Ong2006,BlumPhd}.
+By abuse of language we will say that an untyped term $M$ is in eta-long form if it inhabits a simple type $T$ such that the eta-long expansion of it with respect to $T$ is $M$ itself.
+
+The rules of the STLC traversals from \cite{BlumPhd} consist of a subset of the imaginary traversal rules of Table \ref{tab:trav_rules}.
+
 \begin{definition}[STLC traversal \cite{BlumPhd}]
 Given a simply-typed term in context $\Gamma \vdash M : T$ we write $\travstlc(\Gamma \vdash M : T)$ to denote the set of justified sequences of nodes from the tree of the \emph{eta-long form} of $M$ obtained with the rules of Table \ref{tab:trav_rules} with the exclusion of \rulenamet{Lam^\ghostlmd} and without the `Eta-expanded' sub-cases of rule \rulenamet{Var} and \rulenamet{IVar}.
 \end{definition}
@@ -427,7 +476,9 @@ Let $M$ be an untyped term that inhabits the simple type $T$, that is for some c
 \end{itemize}
 \end{proposition}
 \begin{proof}
-(i) Because the term is eta-long expanded, the condition $i>|m|$ in the rules \rulenamet{Var} and \rulenamet{IVar} never holds while traversing the term. (ii) By definition of $\travstlc$, the remaining traversals rules of STLC and ULC coincide, therefore the equality holds.
+(i) Because the term is eta-long expanded, the condition $i>|m|$ in the rules \rulenamet{Var} and \rulenamet{IVar} never holds while traversing the term.  This is shown by induction on the traversal rules, observing that the arity of an $@$ node is necessarily equal to the arity of the its $0$th child lambda node and that the arity of a variable node with binding index $i$ is necessarily equal to the arity of the $i$th child lambda node of its binder's parent.
+
+(ii) By definition of $\travstlc$, the remaining traversals rules of STLC and ULC coincide, therefore the equality holds.
 \end{proof}
 
 
@@ -622,6 +673,11 @@ The branching restriction prevents the context from calling the same parameter t
 Assume that $t\in\travulc$ then show that there is $u\in\travsetbr$ such that $\pview{\core{t}} = \pview{\core{u}}$.
 Idea: Suppose that there is an input variable node $v$ in $t$ followed by a node that is not justified by $v$, then either $v$ is not in the P-view core in which case we can remove that section of the traversal. Otherwise let $n$ be the occurrence in $t$ of the lambda node following $v$ in the P-view core and  show that all the nodes between $v$ and $n$ can be removed while still obtaining a traversal
 \todo{Finish proof.}
+
+Proof: Take $t\in\travulc$, variable $v\in \NodesVar \union \NodeHjByRoot$.
+Because of Prop.~\ref{prop:eta_expanded_trav}, without loss of generality we can assume
+that $M$ is
+Let
 \end{proof}
 
 The following result will be useful to prove termination of the normalization procedure for STLC:
@@ -726,6 +782,7 @@ Recall that our goal is to normalize the term (when it exists) by generating som
 Intuitively, after a sufficiently large number of eta-expansions, we are guaranteed to keep on traversing ghost nodes that never materialize back to structural nodes. This section formalizes this intuition by introducing the \defname{arity threshold} as the maximum number of times necessary to eta-expand a given subterm (using rule $\rulename{IVar}$) in order to compute the set of paths of the beta-normal form of the term. We will show that such limit is sufficient to characterize the normal form of a lambda term when it exists: the traversal subset is $\sim$-complete.
 
 \begin{definition}[Weave]
+\label{ref:weave}
 We call \defname{weave} of a traversal $t$, any sub-sequence of consecutive nodes from $t$,
 with even length, starting with a lambda nodes and finishing with a variable node both hereditarily justified by the root, and such that all the occurrences in-between are hereditarily justified by an application node (\ie, not by the root).
 
@@ -981,8 +1038,8 @@ detailed description of the normalization procedure with the steps involved in r
 \label{algo:ulc_normalization_by_traversals_with_readout}
 \REQUIRE{An untyped term $M$ that has a normal form.}
 \ENSURE{$CT(\betanf{M})$, the tree of the normal form of $M$.}
-\STATE Enumerate all maximal normalizing traversals $\travsetnorm(M)$ using rules of Table~\ref{tab:normalizing_trav_rules}
-\STATE Calculate $C = \{ \pview{\core{t}} \ | \ t \in \travsetnorm(M) \}$
+\STATE $\travsetnorm(M) \leftarrow $ Enumerate all maximal normalizing traversals using rules of Table~\ref{tab:normalizing_trav_rules}
+\STATE  $C \leftarrow \{ \pview{\core{t}} \ | \ t \in \travsetnorm(M) \}$
 
 \STATE $(P, L) \leftarrow \parbox[t]{12cm}{Labelled-tree induced by $C$:
 \begin{compactitem}
@@ -1280,6 +1337,7 @@ Hence $\betanf{M} = \lambda y s z \cdot s\ (y\ s\ z)$.
 \end{example}
 
 \begin{example}[``Missing operand'' example by Neil Jones]
+\label{ex:missingoperand}
 This small example illustrates how on-the-fly eta-expansion helps resolve the ``missing argument'' problem faced when using the traversal rules of STLC. Take $M = (\lambda u . u\ (y_1\ u)) (\lambda v . v\ y_2)$.
 
 The computation tree is:
@@ -1426,8 +1484,7 @@ Head linear reduction is  a non-standard reduction strategy for the lambda calcu
 \subsection{Background: Lambda calculus and reduction}
 We recall from standard results of the lambda calculus.
 A \defname{redex} is a sub-term of the form $(\lambda x. M) N$.
-Reducing redex $(\lambda x. M) N$, or also \emph{firing} the redex, means substituting all free occurrences of $x$ in $M$ by the term $N$ in which all the free occurrences of $x$ are renamed with a fresh variable name (so as to avoid variable capture). We write this
-$M[N[z/x]/x]$ where $z$ is a fresh variable name and $M[\_/\_]$ denotes capture permitting substitution.
+Reducing redex $(\lambda x. M) N$, or also \emph{firing} the redex, means substituting all free occurrences of $x$ in $M$ by the term $N$ using capture avoiding substitution (the bound variable is renamed afresh when recursively substituting under a lambda).
 
 A term is said to be in \defname{normal form} if it does not contain any redex.
 A term is in \defname{head normal form} if it can be written $\lambda x_1 \ldots x_n . y A_1 \ldots A_m$ for $n,m\geq0$. If a term is not in head normal form then its \defname{head beta-redex} is the left-most redex, otherwise the term does not have any head beta-redex.
@@ -1529,21 +1586,25 @@ But since the left-most occurrence $x$ is involved in the redex $(\lambda x, z)$
 \begin{property}
 \label{prop:lloc_properties}
 Some immediate properties:
-\begin{itemize}
-\item[(i)]
+\begin{enumerate}[label=(\roman*)]
+\item
  If $N$ is a subterm of $M$ then $lloc_N(N) \sqsubseteq lloc_M(N)$;
-\item[(ii)]
+\item
  If $M$ is beta-normal then $lloc_M(M) = \bot$;
- \item[(iii)]
+ \item
  If $U V$ is in quasi normal form then so is $U$.
-\item[(iv)]
+\item
  If $\lambda x . U$ is in quasi normal form then so is $U$.
-\end{itemize}
+ \item If $M$ has a \emph{lloc} redex then $M$ has a redex.
+ \item Suppose $M$ has at least one redex.
+ If all the redexes are trivial then $M$ is in \emph{qnf}, otherwise M has a \emph{lloc} redex.
+\end{enumerate}
 \end{property}
 \begin{proof}
 (i) Immediate from the fact that generalized redexes of $N$ are also generalized redexes of $M$. (ii) If $lloc_M(M) \neq \bot$ then $M$ must contain a generalized redex and therefore must also contain a standard redex hence $M$ is not beta-normal.
 (iii) If $U V$ is in quasi normal form then $lloc_{UV}(UV) = \bot$ so by definition of $lloc$ we must have $lloc_{UV}(U) = \bot$. By (i) since $U$ is a subterm of $UV$ this implies $lloc_{UV}(U) = \bot$.
 (iv) We have $\bot = lloc_{\lambda x . U}(\lambda x . U) = lloc_{\lambda x . U}(U) \sqsupseteq lloc_{U}(U)$.
+(v) and (vi) are immediate from the defintion of \emph{lloc} redex.
 \end{proof}
 
 We say that a standard redex $(\lambda x. N) A$ is \emph{trivial} if $x$ does not occur freely in $N$ in which case the redex can be \emph{trivially reduced} to just $N$.
