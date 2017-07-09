@@ -332,21 +332,23 @@ We now generalize the notion of \emph{traversal core} from \cite{BlumPhd} to the
 The core consists of the subsequence of $s$ consisting of external nodes where the lambda nodes are renamed:
 \begin{definition}[Core projection]
   \label{labe:coreprojection}
-  For any sequence of variables $x_1 \ldots x_n$, let's denote by $pop_j$ , $j\geq0$ for the operation that removes the first $j$ elements of the sequence: $pop_j (x_1 \ldots x_n) = x_{j+1} \ldots x_n$ if $j<n$, and $pop_j (x_1 \ldots x_n) = \epsilon$ otherwise.
-  We define the traversal core function $\pi \colon \travulc(M) \longrightarrow \justseqset(M)$ by induction on traversals of $M$:
-For any sequence of variables $l \in \mathcal{V}^*$ we define:
+  We will consider sequence of variable names in $\mathcal{V}^*$ as stack.
+  For any sequence of variables $\overline{x} = x_1 \ldots x_n$, we define the stack pop operation $pop_j$, $n,j\geq0$ that removes the first $j$ elements of the sequence: $pop_j (x_1 \ldots x_n) = x_{j+1} \ldots x_n$ if $j<n$, and $pop_j (x_1 \ldots x_n) = \epsilon$ otherwise. And for any sequence $\overline{y} = y_1 \ldots y_m$, $m\geq0$ we write $\overline{x}\cdot\overline{y}$ for
+    $x_1 \ldots x_n y_1 \ldots y_n$, the stack obtained after pushing $\overline{x}$ onto $\overline{y}$.
+
+  We define the traversal core function $\pi \colon \travulc(M) \longrightarrow \justseqset(M)$ by induction on the traversal. For any variable name stack $\overline{y} \in \mathcal{V}^*$:
 \begin{align*}
-\pi_l \colon \travulc(M) & \longrightarrow \justseqset(M) \\
- t\cdot x &\longmapsto \coresymbol_l(t) \cdot x & \mbox{if } x\in \NodeHjByRoot \\
- t\cdot x &\longmapsto \coresymbol_l(t) & \mbox{if } x\not\in\NodeHjByRoot \\
- t\cdot @ &\longmapsto \coresymbol_{pop_k(l)}(t) & \mbox{where $k = |@|$} \\
- t\cdot \lambda \overline{x} & \longmapsto \coresymbol_{\epsilon} \cdot \lambda \overline{x} & \mbox{if } \lambda \overline{x}\in \NodeHjByRoot \\
- t\cdot \lambda \overline{x} & \longmapsto \coresymbol_{\overline{x} \cdot l}(t) & \mbox{if } \lambda \overline{x}\not\in \NodeHjByRoot \ .
+\pi_{\overline{y}} \colon \travulc(M) & \longrightarrow \justseqset(M) \\
+ t\cdot x &\longmapsto \coresymbol_{\overline{y}}(t) \cdot x & \mbox{if } x\in \NodeHjByRoot \\
+ t\cdot x &\longmapsto \coresymbol_{\overline{y}}(t) & \mbox{if } x\not\in\NodeHjByRoot \\
+ t\cdot @ &\longmapsto \coresymbol_{pop_k({\overline{y}})}(t) & \mbox{where $k = |@|$} \\
+ t\cdot \lambda \overline{x} & \longmapsto \coresymbol_{\epsilon}(t) \cdot \lambda \overline{x} & \mbox{if } \lambda \overline{x}\in \NodeHjByRoot \\
+ t\cdot \lambda \overline{x} & \longmapsto \coresymbol_{\overline{x} \cdot \overline{y}}(t) & \mbox{if } \lambda \overline{x}\not\in \NodeHjByRoot \ .
 \end{align*}
 
-The accumulating parameter $l = y_1 \ldots y_n$ for some $n\geq0$, is called the sequence of \defname{pending lambdas} (It's technically a sequence of variables but should be interpreted as $\lambda y_1 \ldots y_n$; the $\lambda$ itself is omitted to simplify the above definition.)
+The stack parameter $\overline{y}$ represents the sequence of abstractions $\lambda \overline{y}$ and is therefore called the \defname{stack of pending lambdas}.
 
-We abbreviate $\coresymbol_\epsilon(t)$ as $\core{t}$ and we call it the \defname{core} of $t$.
+We call $\coresymbol_\epsilon(t)$ the \defname{core} of $t$ which we abbreviate as $\core{t}$.
 We define the \defname{core P-view} as $\pview{\core{t}}$, the P-view of the traversal core.
 \end{definition}
 
