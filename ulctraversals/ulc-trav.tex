@@ -222,7 +222,10 @@ We say that an occurrence of a node in a justified sequence is \defname{heredita
 
 We define the set of justified sequences of nodes over $M$, written $\justseqset(M)$, to denote the set of justified sequences of nodes from the computation tree plus the ghost nodes (\ie, $\Nodes + \ghostlmd + \ghostvar$)).
 
-For any justified sequence $t$ we write $t^\omega$ to denote the last occurrence in $t$, and $\jp(t)$ to denote the prefix of $t$ ending at the justifier of the last node of $t$. We say that $t$ is an \defname{extension} of justified sequence $u$ if $u$ is a strict subsequence of $t$ sharing the same justification pointers.
+For any justified sequence $t$ we write $t^\omega$ to denote the last occurrence in $t$. The notion of sequence prefix naturally extends to justified sequences.
+For any occurrence $n$ in $t$ we write $t_{\leq n}$ for the prefix subsequence of $t$ ending at $n$, and $t_{<n}$ for the prefix ending at the occurrence immediately preceding $n$ (or the empty sequence if $n$ is the first occurrence in $t$).
+%and $\jp(t)$ to denote the prefix of $t$ ending at the justifier of the last node of $t$.
+ We say that $t$ is an \defname{extension} of justified sequence $u$ if $u$ is a strict prefix of $t$ sharing the same justification pointers.
 
 We use the standard operations borrowed from Game Semantics on justified sequences \cite{Abr02}.
 
@@ -366,7 +369,7 @@ Let $M$ be an untyped term.
 \item Let $n$ be a node of the tree of $M$ and $N$ denote the subterm of $M$ rooted at $n$. We write $ETA(M, n)$ to denote the term obtained by substituting
 the subterm $N$ in $M$ with the term $\lambda \theta. N \theta$ for some variable $\theta$ fresh in $N$.
 
-\item Let $M$ be an untyped term and $t$ be a \emph{finite} traversal of $M$. We define the \defname{eta-expansion of $M$ with respect to $t$}, written $M^t$, as a term obtained by eta-expanding its subterms according to the rules used to traverse $M$. It is defined by induction on the traversal rules: By convention we define $M^\epsilon = M$. Suppose $t = u \cdot n$ for some node $n$. Let $m = \jp(t)^\omega$ denote the justifier of $n$ if it exists and $i$ denote its link label.  Consider the last rule used to traverse $t$:
+\item Let $M$ be an untyped term and $t$ be a \emph{finite} traversal of $M$. We define the \defname{eta-expansion of $M$ with respect to $t$}, written $M^t$, as a term obtained by eta-expanding its subterms according to the rules used to traverse $M$. It is defined by induction on the traversal rules: By convention we define $M^\epsilon = M$. Suppose $t = u \cdot n$ for some node $n$. Let $m$ denote the justifier of $n$ if it exists and $i$ denote its link label.  Consider the last rule used to traverse $t$:
 \begin{equation}
 M^{u \cdot n} =
 \begin{cases}
@@ -667,19 +670,41 @@ From a game semantic point of view, restricting the opponent moves can be interp
 The branching restriction prevents the context from calling the same parameter twice, which eliminates the Kierstead contexts (in which the argument $f$ is called twice). It also excludes the context $\lambda f \lambda g . f (\lambda f (\lambda x . g (\lambda y . x)))$ where the the two variables $f$ and $g$ are bound by two consecutive lambdas.
 \end{remark}
 
+\begin{property}
+\label{prop:core_truncation_at_externallambda}
+Let $t\in\travstlc$ and $m$ be an occurrence in $t$ of an external $\lambda$-node (\ie, $m \in \NodesLmd\inter\NodeHjByRoot$. Then $\core{t_{<m}} = \core{t}_{<m}$.
+\end{property}
+\begin{proof}
+By an easy induction on $t$ using the fact that when recursively calculating $\coresymbol(t)$, a lambda node hereditarily enabled by the root resets the stack of pending lambdas.
+\end{proof}
+
 \begin{proposition}[Branching traversals are $\sim$-complete]
 \label{prop:branching_traversal_normalizing}
- $\travsetbr$ is $\sim$-complete.
+  $\travsetbr$ is  $\sim$-complete.
 \end{proposition}
 \begin{proof}
-Assume that $t\in\travulc$ then show that there is $u\in\travsetbr$ such that $\pview{\core{t}} = \pview{\core{u}}$.
-Idea: Suppose that there is an input variable node $v$ in $t$ followed by a node that is not justified by $v$, then either $v$ is not in the P-view core in which case we can remove that section of the traversal. Otherwise let $n$ be the occurrence in $t$ of the lambda node following $v$ in the P-view core and  show that all the nodes between $v$ and $n$ can be removed while still obtaining a traversal
-\todo{Finish proof.}
+Assume that $t\in\travulc$. We show by strong induction on $t$ that there is $u\in\travsetbr$ such that $\core{t} = \core{u}$.
+We do a case analysis on the last node $t^\omega$ of $t$.
+\begin{itemize}
+\item $t^\omega\in \NodeHjByRoot$:
 
-Proof: Take $t\in\travulc$, variable $v\in \NodesVar \union \NodeHjByRoot$.
-Because of Prop.~\ref{prop:eta_expanded_trav}, without loss of generality we can assume
-that $M$ is
-Let
+If $t^\omega$ is a variable, a ghost variable or an $@$ node then we can conclude immediately from the induction hypothesis on $t_{<t^\omega}$ and using the rules \rulenamet{Lmd} or \rulenamet{Lmd^\ghostlmd} of $\travsetnorm$.
+
+If $t^\omega$ is a lambda node. If it has no justifier then its the root in which case we conclude by taking  $u=t=t^\omega$. Otherwise let $m$ denote $t^\omega$'s justifier in $t$. By the I.H.~on $t_{\leq m}$ there is $u' \in \travsetnorm$ such that $\core{u'} = \core{t_{\leq m}}$. Take $u = u' \cdot t^\omega$ where $t^\omega$ points to its immediate predecessor $m$. Then $u$ is clearly a $\travsetnorm$-traversal by rule \rulenamet{IVar}. We then have
+\begin{align*}
+\core{u} &= \core{u'} \cdot t^\omega & \mbox{Def.~of $\coresymbol$}\\
+ &= \core{t_{\leq m}} \cdot t^\omega & \mbox{By I.H.~ on $t_{\leq m}$}\\
+ &= \core{t}_{\leq m} \cdot t^\omega & \parbox[t]{8cm}{By Prop.~\ref{prop:core_truncation_at_externallambda} since $m$ is necessarily followed in $t$ by a $\lambda$-node in $\NodeHjByRoot$.}
+\end{align*}
+
+\item $t^\omega\not\in \NodeHjByRoot$: Let $n$ be the last occurrence in $t$ that is in $\NodeHjByRoot$. By definition of the traversal rules, a variable in $\NodeHjByRoot$ is necessarily followed by a lambda node in $\NodeHjByRoot$, therefore $n$ is necessarily a lambda node. By definition of $\coresymbol$, $n$ is therefore also the last occurrence in $\core{t}$ and $\core{t} = \core{t}_{\leq n} = \core{t_{\leq n}}$. Applying the induction hypothesis on $t_{\leq n}$ gives $\core{t_{\leq n}} = \core{u}$.
+%  \begin{align*}
+% \core{t} &= \core{t}_{\leq n} & \parbox[t]{8cm}{by def.~of $\coresymbol$ since $n$ is the last occurrence in $t$ that belongs to $\NodeHjByRoot$, and $n$ is a lambda node}\\
+% &= \core{t_{\leq n}} & \mbox{by def.~ of $\coresymbol$ since all nodes following $n$ are not in $\NodeHjByRoot$} \\
+% &= \core{u} & \mbox{for some $u$, by I.H.~on $t_{\leq n}$}
+% \end{align*}
+
+\end{itemize}
 \end{proof}
 
 The following result will be useful to prove termination of the normalization procedure for STLC:
