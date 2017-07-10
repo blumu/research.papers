@@ -328,36 +328,6 @@ Some immediate property that can be shown by induction on the rules:
 \begin{property}
    For any traversal $t$: $t$ verifies the alternation condition and so does $t\filter\NodeHjByRoot$.
 \end{property}
-
-\paragraph{Traversal core}
-
-We now generalize the notion of \emph{traversal core} from \cite{BlumPhd} to the imaginary traversals.
-The core consists of the subsequence of $s$ consisting of external nodes where the lambda nodes are renamed:
-\begin{definition}[Core projection]
-  \label{labe:coreprojection}
-  We will consider sequence of variable names in $\mathcal{V}^*$ as stack.
-  For any sequence of variables $\overline{x} = x_1 \ldots x_n$, we define the stack pop operation $pop_j$, $n,j\geq0$ that removes the first $j$ elements of the sequence: $pop_j (x_1 \ldots x_n) = x_{j+1} \ldots x_n$ if $j<n$, and $pop_j (x_1 \ldots x_n) = \epsilon$ otherwise. And for any sequence $\overline{y} = y_1 \ldots y_m$, $m\geq0$ we write $\overline{x}\cdot\overline{y}$ for
-    $x_1 \ldots x_n y_1 \ldots y_n$, the stack obtained after pushing $\overline{x}$ onto $\overline{y}$.
-
-  We define the traversal core function $\pi \colon \travulc(M) \longrightarrow \justseqset(M)$ by induction on the traversal. For any variable name stack $\overline{y} \in \mathcal{V}^*$:
-\begin{align*}
-\pi_{\overline{y}} \colon \travulc(M) & \longrightarrow \justseqset(M) \\
- t\cdot x &\longmapsto \coresymbol_{\overline{y}}(t) \cdot x & \mbox{if } x\in \NodeHjByRoot \\
- t\cdot x &\longmapsto \coresymbol_{\overline{y}}(t) & \mbox{if } x\not\in\NodeHjByRoot \\
- t\cdot @ &\longmapsto \coresymbol_{pop_k({\overline{y}})}(t) & \mbox{where $k = |@|$} \\
- t\cdot \lambda \overline{x} & \longmapsto \coresymbol_{\epsilon}(t) \cdot \lambda \overline{x} & \mbox{if } \lambda \overline{x}\in \NodeHjByRoot \\
- t\cdot \lambda \overline{x} & \longmapsto \coresymbol_{\overline{x} \cdot \overline{y}}(t) & \mbox{if } \lambda \overline{x}\not\in \NodeHjByRoot \ .
-\end{align*}
-
-The stack parameter $\overline{y}$ represents the sequence of abstractions $\lambda \overline{y}$ and is therefore called the \defname{stack of pending lambdas}.
-
-We call $\coresymbol_\epsilon(t)$ the \defname{core} of $t$ which we abbreviate as $\core{t}$.
-We define the \defname{core P-view} as $\pview{\core{t}}$, the P-view of the traversal core.
-\end{definition}
-
-Let's call \defname{weave} a maximal subsequence of consecutive internal nodes (see Definition~\ref{ref:weave}). The \emph{core projection} of a traversal can be succinctly defined as the subsequence of external nodes ($t\filter\NodeHjByRoot$) where each lambda node is renamed by prefixing the \emph{pending lambdas} of the following \emph{weave} to its original label.
-
-
 \paragraph{On-the-fly expansion}
 The following definition explicit the notions of \emph{on-the-fly eta-expansion} implemented by the
 traversal rules \rulenamet{Var} and \rulenamet{IVar}:
@@ -392,7 +362,6 @@ Take $M = (\lambda u . u\ (y_1\ u)) (\lambda v . v\ y_2)$. Its computation tree 
 $M^t = (\lambda u . u~(y_1~(\lambda \alpha. u (\lambda \beta.\alpha \beta))) (\lambda v . v~y_2)$.
 \end{example}
 
-
 \paragraph{Path-View correspondence}
 We now generalize a known result from the theory of traversals for higher-order grammars \cite{Ong2006} and simply-typed lambda terms \cite[Proposition 4.29]{BlumPhd} to the untyped setting: The game-semantic concept of `Proponent view' from definition \ref{def:views} corresponds to the concept of `tree path' in the following sense:
 
@@ -416,21 +385,67 @@ The traversal rules are well-defined.
 (ii) Rule \rulenamet{Var}: In the concrete sub-case, $m$ is necessarily itself a structural node since $|m|\geq i>0$, and its $i$th child exists in $\Nodes$ since $m$ as arity greater than $i$.
 \end{proof}
 
+\paragraph{Traversal core}
+
+We now generalize the notion of \emph{traversal core} from \cite{BlumPhd} to the imaginary traversals.
+In the typed setting, the core of a traversal is the subsequence consisting of external nodes. In the untyped setting it is obtained by taking the subsequence of external nodes followed by a relabelling operation on lambda nodes.
+
+We will consider sequence of variable names in $\mathcal{V}^*$ as stack.
+For any sequence of variables $\overline{x} = x_1 \ldots x_n$, we define the stack pop operation $pop_j$, $n,j\geq0$ that removes the first $j$ elements of the sequence: $pop_j (x_1 \ldots x_n) = x_{j+1} \ldots x_n$ if $j<n$, and $pop_j (x_1 \ldots x_n) = \epsilon$ otherwise. And for any sequence $\overline{y} = y_1 \ldots y_m$, $m\geq0$ we write $\overline{x}\overline{y}$ for
+$x_1 \ldots x_n y_1 \ldots y_n$, the stack obtained after pushing the variables $\overline{x}$ onto $\overline{y}$.
+
+\begin{definition}[Core projection]
+  \label{def:coreprojection}
+We first define the partial function $\coresymbol \colon \travulc(M) \longrightarrow \justseqset(M)$ for traversals that do not contain any ghost occurrences then extend the notion to all traversals.
+\begin{itemize}
+\item For any stack $\overline{y} \in \mathcal{V}^*$ of variable names and traversal $t\in\travulc(M)$ we define $\coresymbol (t)$ by induction on $t$:
+\begin{align*}
+\coresymbol_{\overline{y}} \colon \travulc(M) & \longrightarrow \justseqset(M) \\
+ t\cdot x &\longmapsto \coresymbol_{\overline{y}}(t) \cdot x & \mbox{if } x\in \NodeHjByRoot \\
+ t\cdot x &\longmapsto \coresymbol_{\overline{y}}(t) & \mbox{if } x\not\in\NodeHjByRoot \\
+ t\cdot @ &\longmapsto \coresymbol_{pop_k({\overline{y}})}(t) & \mbox{where $k = |@|$} \\
+ t\cdot \lambda \overline{x} & \longmapsto \coresymbol_{\epsilon}(t) \cdot \lambda \overline{x}\overline{y} & \mbox{if } \lambda \overline{x}\in \NodeHjByRoot \\
+ t\cdot \lambda \overline{x} & \longmapsto \coresymbol_{\overline{x} \overline{y}}(t) & \mbox{if } \lambda \overline{x}\not\in \NodeHjByRoot \ .
+\end{align*}
+
+\item We extend $\coresymbol$ to all traversals as follows:
+\begin{align*}
+\coresymbol_{\overline{y}} \colon \travulc(M) & \longrightarrow \justseqset^\eta(M) \\
+ t &\longmapsto \coresymbol_{\overline{y}}(\eta(t))
+\end{align*}
+where $\justseqset^\eta(M)$ be the union of the sets of justified sequences of nodes over eta-expansions of $M$ with respect to all possible traversals:
+$$\justseqset^\eta(M) = \Union_{t\in\travulc(M)} \justseqset(M^t) \ .$$
+\end{itemize}
+
+We call $\coresymbol_\epsilon(t)$ the \defname{core} of $t$ which we abbreviate as $\core{t}$.
+We define the \defname{core P-view} as $\pview{\core{t}}$, the P-view of the traversal core.
+
+\end{definition}
+
+The stack parameter $\overline{y}$ from the above definition represents the sequence of abstractions $\lambda \overline{y}$ and is therefore called the \defname{stack of pending lambdas}. Thus, in words, the \emph{core projection} is given by the subsequence of external nodes where each lambda node label is suffixed with the \emph{pending lambdas} of the maximal consecutive sequence of internal nodes following it.
+
 \begin{proposition}
 \label{prop:eta_expanded_trav}
-Let $M$ be an untyped term.
+Let $M$ be an untyped term and $t$ be a \emph{finite} traversal of $M$.
+We recall that $\ghostvar$ and $\ghostlmd$ denote infinite sets of nodes that are uniquely determined by the enabling relation $\enables$ and associated index. There exists a one-to-one mapping
+  $\eta_t : \Nodes + \ghostvar + \ghostlmd \longrightarrow \Nodes_t + \ghostvar + \ghostlmd$, where $\Nodes_t$ denotes the nodes of tree $CT(M^t)$, with a corresponding \emph{element-wise pointer-preserving} extension to justified sequences (also written $\eta_t$) such that
 \begin{enumerate}[label=(\roman*)]
-  \item If $t$ is a \emph{finite} traversal of $M$ then $t$ is also a traversal of $M^t$ and $t$ does not contain any ghost node.
+  \item For any $u \in \travulc(M)$, $\eta_t(u)$ is a traversal of $M^t$.
 
-  \item If $u$ is a \emph{finite} traversal of $M^t$ that does not contain any ghost node then $u$ is also a traversal of $M$ (with possibly ghost nodes).
+  \item If $v$ is a \emph{finite} traversal of $M^t$ that does not contain any ghost node then there exists a traversal $u$ of $M$ (with possibly ghost nodes) such that $v = \eta_t(u)$.
 
-  \item For any finite traversal $t$ of $M$, $\travset{M}$ is (strongly) isomorphic to $\travset{M^t}$ up to node relabelling of occurrences of ghost nodes occurring in $t$.
+  \item The function $\eta_t$ defines a bijection from $\travset(M)$ to $\travset(M^t)$. (The bijection is strong in the sense that pointers are preserved.)
 \end{enumerate}
 \end{proposition}
 \begin{proof}
-(i) By induction on the traversal rules, observing that in the variable rules, the on-the-fly eta-expansion of Definition~\ref{def:onthefly_etaexpansion} increments the arity of the justifier node $m$, therefore no ghost variable needs to be introduced while traversing $M^t$.
+The tree $CT(M)$ being by definition a subtree of $CT(M^t)$, it induces a one-to-one mapping from $\Nodes(M)$ to $\Nodes(M^t)$.
+We extend it to ghost nodes by mapping ghost occurrences in $t$ to the corresponding node resulting from the eta-expansions of subterms of $M$ in $M^t$, and all other ghost nodes not occurring in $t$ to the corresponding ghost nodes in $CT(M^t)$. The map $\eta_t$ can be formally defined by induction on the traversal $t$, observing that in the variable rules \rulenamet{Var} and \rulenamet{IVar}, the on-the-fly eta-expansion of Definition~\ref{def:onthefly_etaexpansion} increments the arity of the justifier node $m$, therefore the corresponding structural node must exist in $M^t$.
 
-(ii) (iii) \todo{finish}
+(i) By induction on $u$. Reusing the rule used to traverse $u$ in order to traverse $v$. For the case \rulenamet{Var} and \rulenamet{IVar}, the \emph{concrete} sub-case is used instead of the \emph{eta-expanded} subcase when traversing a ghost variable that also appeared in $t$.
+
+(ii) By induction on $v$, applying to $u$ each rule that is applied to $v$. For the case \rulenamet{Var} and \rulenamet{IVar}, if the index $i$ is greater than the arity of the node $m$ in $M$ then the lambda node from $v$ gets replaced by a ghost lambda node in $u$.
+
+(iii) By (i) the function is well defined, it is injective by definition and by (ii) it is surjective.
 
 \end{proof}
 
@@ -683,21 +698,29 @@ By an easy induction on $t$ using the fact that when recursively calculating $\c
   $\travsetbr$ is  $\sim$-complete.
 \end{proposition}
 \begin{proof}
-Assume that $t\in\travulc$. We show by strong induction on $t$ that there is $u\in\travsetbr$ such that $\core{t} = \core{u}$.
+Let $t\in\travulc$ and let's first assume that $t$ does not contain any ghost occurrence. We show by strong induction on $t$ that there is $u\in\travsetbr$ such that $\core{t} = \core{u}$.
 We do a case analysis on the last node $t^\omega$ of $t$.
 \begin{itemize}
-\item $t^\omega\in \NodeHjByRoot$:
+\item $t^\omega\in \NodeHjByRoot$: Suppose $t^\omega$ is a variable or an $@$ node then we can conclude immediately from the induction hypothesis on $t_{<t^\omega}$ and using the rules \rulenamet{Lmd} of $\travsetnorm$.
 
-If $t^\omega$ is a variable, a ghost variable or an $@$ node then we can conclude immediately from the induction hypothesis on $t_{<t^\omega}$ and using the rules \rulenamet{Lmd} or \rulenamet{Lmd^\ghostlmd} of $\travsetnorm$.
-
-If $t^\omega$ is a lambda node. If it has no justifier then its the root in which case we conclude by taking  $u=t=t^\omega$. Otherwise let $m$ denote $t^\omega$'s justifier in $t$. By the I.H.~on $t_{\leq m}$ there is $u' \in \travsetnorm$ such that $\core{u'} = \core{t_{\leq m}}$. Take $u = u' \cdot t^\omega$ where $t^\omega$ points to its immediate predecessor $m$. Then $u$ is clearly a $\travsetnorm$-traversal by rule \rulenamet{IVar}. We then have
+Suppose $t^\omega$ is a lambda node. If it has no justifier then it is the root in which case we conclude by taking  $u=t=t^\omega$. Otherwise let $m$ denote $t^\omega$'s justifier in $t$. By the I.H.~on $t_{\leq m}$ there is $u' \in \travsetnorm$ such that $\core{u'} = \core{t_{\leq m}}$. Take $u = u' \cdot t^\omega$ where $t^\omega$ points to its immediate predecessor $m$. Then $u$ is clearly a $\travsetnorm$-traversal by rule \rulenamet{IVar} and:
 \begin{align*}
-\core{u} &= \core{u'} \cdot t^\omega & \mbox{Def.~of $\coresymbol$}\\
- &= \core{t_{\leq m}} \cdot t^\omega & \mbox{By I.H.~ on $t_{\leq m}$}\\
- &= \core{t}_{\leq m} \cdot t^\omega & \parbox[t]{8cm}{By Prop.~\ref{prop:core_truncation_at_externallambda} since $m$ is necessarily followed in $t$ by a $\lambda$-node in $\NodeHjByRoot$.}
+\pview{\core{u}} &= \pview{\core{u'}} \cdot t^\omega & \mbox{Def.~of $\coresymbol$}\\
+ &= \pview{\core{t_{\leq m}} \cdot t^\omega} & \mbox{By I.H.~ on $t_{\leq m}$}\\
+ &= \pview{\core{t}_{\leq m} \cdot t^\omega} & \parbox[t]{8cm}{By Prop.~\ref{prop:core_truncation_at_externallambda} since $m$ is necessarily followed in $t$ by a $\lambda$-node in $\NodeHjByRoot$.}
 \end{align*}
+Now because $m$ justifies $t^\omega$, by Def.~of P-view we have \emph{up to renaming of lambda variables} $\pview{\core{t}_{\leq m} \cdot t^\omega} = \pview{\core{t}}$. But because $m$ is not a lambda node, its label is preserved by $\coresymbol$ and therefore the equality holds strongly.
 
-\item $t^\omega\not\in \NodeHjByRoot$: Let $n$ be the last occurrence in $t$ that is in $\NodeHjByRoot$. By definition of the traversal rules, a variable in $\NodeHjByRoot$ is necessarily followed by a lambda node in $\NodeHjByRoot$, therefore $n$ is necessarily a lambda node. By definition of $\coresymbol$, $n$ is therefore also the last occurrence in $\core{t}$ and $\core{t} = \core{t}_{\leq n} = \core{t_{\leq n}}$. Applying the induction hypothesis on $t_{\leq n}$ gives $\core{t_{\leq n}} = \core{u}$.
+\item $t^\omega\not\in \NodeHjByRoot$: Let $n$ be the last occurrence in $t$ that is in $\NodeHjByRoot$, and let $m_1 \ldots m_q$, $q>0$ be the occurrences of internal nodes following $n$ in $t$ (so that $m_q = t^\omega$). By definition of the traversal rules, a variable in $\NodeHjByRoot$ is necessarily followed by a lambda node in $\NodeHjByRoot$, therefore $n$ is necessarily a lambda node. By definition of $\coresymbol$, $n$ is therefore also the last occurrence in $\core{t}$ therefore $\core{t} = \core{t}_{\leq n}$.
+But \emph{up to relabelling}, $\core{t}_{\leq n} = \core{t_{\leq n}}$; more precisely, $\core{t}_{\leq n}$ is obtained from $\core{t_{\leq n}}$
+by prepending to $n$'s label the stack of pending lambdas of $t_{>m}$ (the internal nodes following $n$ in $t$). Applying the induction hypothesis on $t_{\leq n}$ gives $\core{t_{\leq n}} = \core{u'}$ for some $u' \in \travsetnorm$.
+To conclude it therefore suffices that to show that $u = u' \cdot m_1 \ldots m_q$ is also a traversal of $\travsetnorm$.
+
+We prove by finite induction on $q$ that $u_{\leq m_q} \in\travsetnorm$ where $m_q$'s justifying node and label are same in $u$ and $t$. For $q=0$, we just apply rule \rulenamet{Lam} on $u'$.
+For $q>0$: by case analysis on the rule used to visit $m_q$ in $t$.
+For structural rules \rulenamet{Root}, \rulenamet{App} and \rulenamet{Lam} it follows immediately by induction.
+Rule \rulenamet{Var}: If $m_q \in \NodesVar$ then by the Path-View correspondence, $\pview{u_{<m_q}}$ is a path in the tree from the root to $m_q$ therefore $m_q$'s binder necessarily occur in $u$, we can therefore conclude using the I.H.~ on $u_{<m_q}$ and applying \rulenamet{Var} on $u_{<m_q}$ to get $u_{\leq m_q}$.
+
 %  \begin{align*}
 % \core{t} &= \core{t}_{\leq n} & \parbox[t]{8cm}{by def.~of $\coresymbol$ since $n$ is the last occurrence in $t$ that belongs to $\NodeHjByRoot$, and $n$ is a lambda node}\\
 % &= \core{t_{\leq n}} & \mbox{by def.~ of $\coresymbol$ since all nodes following $n$ are not in $\NodeHjByRoot$} \\
@@ -705,6 +728,13 @@ If $t^\omega$ is a lambda node. If it has no justifier then its the root in whic
 % \end{align*}
 
 \end{itemize}
+Suppose that $t$ contains ghost occurrences then we consider the term $M^t$.
+By Prop.~\ref{prop:eta_expanded_trav}(i), $\eta(t)$ is a traversal of $M^t$. Hence by the above, there exists $u\in\travsetnorm(M^t)$ such that
+$\pview{\core{u}}=\pview{\core{\eta(t)}}$
+By Prop.~\ref{prop:eta_expanded_trav}(ii),
+there exist a traversal $u'$ of $M$ such that $\eta(t) = \eta(u')$ and because $\eta$ is by definition injective this shows that $t=u'$ is a traversal of $M$
+
+$\pview{\core{t}}=\pview{\core{\eta(t)}}$
 \end{proof}
 
 The following result will be useful to prove termination of the normalization procedure for STLC:
