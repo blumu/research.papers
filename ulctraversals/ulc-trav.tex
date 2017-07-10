@@ -571,7 +571,7 @@ For every untyped lambda-term $M$ we have the two bijections:
  \travulc(M) &\cong& \revsem{M} \\
  \travulc^\coresymbol(M) &\cong& \sem{M}
 \end{eqnarray*}
-where $\sem{M}$ denotes the innocent \emph{effectively almost everywhere (EAC)} game denotation of $M$ defined in \cite{KerThesis},
+where $\sem{M}$ denotes the innocent \emph{effectively almost everywhere copycat(EAC)} game denotation of $M$ defined in \cite{KerThesis},
 $\revsem{M}$ denotes the corresponding interaction game denotation where internal moves are not hidden during strategy composition,
 and $\travulc^\coresymbol(M)$ denotes the set of traversal cores of $M$.
 \end{conjecture}
@@ -597,9 +597,9 @@ We then introduce the subset of \emph{normalizing traversals} which yields a sim
 \subsection{Quotienting}
 
 We introduce a quotient relation that eliminates `redundant' traversals that have identical core P-views: \begin{definition}[Quotienting]
-Let $\Phi$ be the core P-view function: the composition of P-view function $\pview{\_}$ with the core projection $\coresymbol$:
+We define the core P-view function $\Phi$ as the composition of $\pview{\_}\colon \justseqset^\eta \longrightarrow \justseqset^\eta$ with the core projection $\coresymbol\colon\travulc  \longrightarrow \justseqset^\eta$:
 \begin{align*}
-\Phi : \travulc & \longrightarrow \justseqset \\
+\Phi \colon \travulc & \longrightarrow \justseqset^\eta \\
 t & \longmapsto \pview{\core{t}}
 \end{align*}
 
@@ -687,7 +687,7 @@ The branching restriction prevents the context from calling the same parameter t
 
 \begin{property}
 \label{prop:core_truncation_at_externallambda}
-Let $t\in\travstlc$ and $m$ be an occurrence in $t$ of an external $\lambda$-node (\ie, $m \in \NodesLmd\inter\NodeHjByRoot$. Then $\core{t_{<m}} = \core{t}_{<m}$.
+Let $t\in\travulc$ be a traversal which does not contain any ghost occurrence, and $m$ be an occurrence in $t$ of an external $\lambda$-node (\ie, $m \in \NodesLmd\inter\NodeHjByRoot$). Then $\core{t_{<m}} = \core{t}_{<m}$.
 \end{property}
 \begin{proof}
 By an easy induction on $t$ using the fact that when recursively calculating $\coresymbol(t)$, a lambda node hereditarily enabled by the root resets the stack of pending lambdas.
@@ -698,7 +698,7 @@ By an easy induction on $t$ using the fact that when recursively calculating $\c
   $\travsetbr$ is  $\sim$-complete.
 \end{proposition}
 \begin{proof}
-Let $t\in\travulc$ and let's first assume that $t$ does not contain any ghost occurrence. We show by strong induction on $t$ that there is $u\in\travsetbr$ such that $\core{t} = \core{u}$.
+Let $t\in\travulc$ and let's first assume that $t$ does not contain any ghost occurrence. We show by strong induction on $t$ that there is a subsequence $u\in\travsetbr$ of $t$ such that $\pview{\core{t}} = \pview{\core{u}}$.
 We do a case analysis on the last node $t^\omega$ of $t$.
 \begin{itemize}
 \item $t^\omega\in \NodeHjByRoot$: Suppose $t^\omega$ is a variable or an $@$ node then we can conclude immediately from the induction hypothesis on $t_{<t^\omega}$ and using the rules \rulenamet{Lmd} of $\travsetnorm$.
@@ -716,25 +716,21 @@ But \emph{up to relabelling}, $\core{t}_{\leq n} = \core{t_{\leq n}}$; more prec
 by prepending to $n$'s label the stack of pending lambdas of $t_{>m}$ (the internal nodes following $n$ in $t$). Applying the induction hypothesis on $t_{\leq n}$ gives $\core{t_{\leq n}} = \core{u'}$ for some $u' \in \travsetnorm$.
 To conclude it therefore suffices that to show that $u = u' \cdot m_1 \ldots m_q$ is also a traversal of $\travsetnorm$.
 
-We prove by finite induction on $q$ that $u_{\leq m_q} \in\travsetnorm$ where $m_q$'s justifying node and label are same in $u$ and $t$. For $q=0$, we just apply rule \rulenamet{Lam} on $u'$.
+We prove by finite induction on $q$ that $u_{\leq m_q} \in\travsetnorm$ and $m_q$'s justifying node and label are same in $u$ and $t$. For $q=0$, we just apply rule \rulenamet{Lam} on $u'$.
 For $q>0$: by case analysis on the rule used to visit $m_q$ in $t$.
 For structural rules \rulenamet{Root}, \rulenamet{App} and \rulenamet{Lam} it follows immediately by induction.
 Rule \rulenamet{Var}: If $m_q \in \NodesVar$ then by the Path-View correspondence, $\pview{u_{<m_q}}$ is a path in the tree from the root to $m_q$ therefore $m_q$'s binder necessarily occur in $u$, we can therefore conclude using the I.H.~ on $u_{<m_q}$ and applying \rulenamet{Var} on $u_{<m_q}$ to get $u_{\leq m_q}$.
-
-%  \begin{align*}
-% \core{t} &= \core{t}_{\leq n} & \parbox[t]{8cm}{by def.~of $\coresymbol$ since $n$ is the last occurrence in $t$ that belongs to $\NodeHjByRoot$, and $n$ is a lambda node}\\
-% &= \core{t_{\leq n}} & \mbox{by def.~ of $\coresymbol$ since all nodes following $n$ are not in $\NodeHjByRoot$} \\
-% &= \core{u} & \mbox{for some $u$, by I.H.~on $t_{\leq n}$}
-% \end{align*}
-
 \end{itemize}
 Suppose that $t$ contains ghost occurrences then we consider the term $M^t$.
-By Prop.~\ref{prop:eta_expanded_trav}(i), $\eta(t)$ is a traversal of $M^t$. Hence by the above, there exists $u\in\travsetnorm(M^t)$ such that
-$\pview{\core{u}}=\pview{\core{\eta(t)}}$
+By Prop.~\ref{prop:eta_expanded_trav}(i), $\eta_t(t)$ is a traversal of $M^t$. Hence by the above, there exists $u'\in\travsetnorm(M^t)$ such that
+$\pview{\core{u'}}=\pview{\core{\eta_t(t)}}$.
 By Prop.~\ref{prop:eta_expanded_trav}(ii),
-there exist a traversal $u'$ of $M$ such that $\eta(t) = \eta(u')$ and because $\eta$ is by definition injective this shows that $t=u'$ is a traversal of $M$
+there exists $u \in \travulc(M)$ such that
+$u' = \eta_t(u)$. Recall that the normalizing traversals is defined as the subset of traversals where external lambda nodes always point to their immediate predecessor. Therefore since $\eta_t$ is pointer-preserving $u$ must necessarily belong to $\travsetnorm(M)$.
 
-$\pview{\core{t}}=\pview{\core{\eta(t)}}$
+By definition of $\coresymbol$ we have $\core{t} = \core{\eta_t(t)}$, and since $u$ is a subsequence of $t$ we also have $\core{u} = \core{\eta_t(u)}$.
+Hence $\pview{\core{t}}=\pview{\core{\eta_t(t)}}=
+\pview{\core{u'}} = \pview{\core{\eta_t(u)}} = \pview{\core{u}}$.
 \end{proof}
 
 The following result will be useful to prove termination of the normalization procedure for STLC:
@@ -1095,8 +1091,8 @@ detailed description of the normalization procedure with the steps involved in r
 \label{algo:ulc_normalization_by_traversals_with_readout}
 \REQUIRE{An untyped term $M$ that has a normal form.}
 \ENSURE{$CT(\betanf{M})$, the tree of the normal form of $M$.}
-\STATE $\travsetnorm(M) \leftarrow $ Enumerate all maximal normalizing traversals using rules of Table~\ref{tab:normalizing_trav_rules}
-\STATE  $C \leftarrow \{ \pview{\core{t}} \ | \ t \in \travsetnorm(M) \}$
+\STATE $\travsetnorm \leftarrow $ Enumerate all maximal normalizing traversals using rules of Table~\ref{tab:normalizing_trav_rules}
+\STATE  $C \leftarrow \{ \pview{\core{t}} \ | \ t \in \travsetnorm \}$
 
 \STATE $(P, L) \leftarrow \parbox[t]{12cm}{Labelled-tree induced by $C$:
 \begin{compactitem}
@@ -1521,9 +1517,7 @@ In \cite{JonesBerezunLLL}, Daniil Berezun and Neil Jones define a different vers
 
 \subsection{Game semantics connection}
 
-In the lines of what I did in \cite{BlumPhd} on formalizing the isomorphism between the traversal theory and Game Semantics for the simply-typed lambda calculus, PCF and Idealized Algol, a natural question to ask is whether there is a similar connection between the ULC traversals defined in this paper on game models of the untyped lambda calculus.
-
-\todo{give intuition on why this notion of traversals probably coincides with the game model of the untyped lambda calculus by Andrew Ker.}
+In the lines of \cite{BlumPhd} where the connection between the theory of traversals and Game Semantics was formalized for typed languages including the simply-typed lambda calculus, PCF and Idealized Algol, a natural question to ask is whether there is a similar connection between the ULC traversals defined in this paper on game models of the untyped lambda calculus. We conjecture that the Game Semantic correspondence can be generalized to the game model of the untyped lambda calculs introduced in Andrew Ker's thesis \cite{KerThesis} in which lambda-terms are denoted by \emph{effectively almost everywhere copycat} strategy  (Conjecture \ref{conj:ulc_corresp}).
 
 \subsection{Head linear reduction}
 
@@ -1711,7 +1705,6 @@ We have:
 (ii) TODO\todo{Hopefully the proof of (ii) should not involve state machine/stack/environments, ...}
 (iii) The idea consists in reducing the redex `inside-out' from left to right. By Proposition \ref{prop:qnf_nf}(ii), each reduction is trivial and it is easy to see that  $lloc$ is preserved by trivial reduction, therefore each term in the reduction sequence is in \emph{qnf}. The last term in the sequence has no redex therefore it's in beta-normal form.
 \end{proof}
-\todo{To prove!}
 
 \begin{definition}[Leftmost redex sequence]
 The leftmost redex sequence $LRS(M)$ of a term $M$ is a sequence of the generalized redexes of $M$ defined by induction as follows:
