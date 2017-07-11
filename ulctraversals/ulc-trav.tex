@@ -670,7 +670,7 @@ We define the set of \defname{branching traversals} $\travsetbr$ as the subset o
 input-variable rule \rulenamet{IVar} is restricted to be necessarily the last node in the traversal ($m=n$).
 
 We will use the subscript `${}_\branching$' to refer to the rule system thus obtained. Using a `derivation rule'-based presentation, the input variable rule can thus be stated follows:
-\infrule[$\rulefont{IVar}_\branching$]
+\infrule[$\rulefont{IVar_\branching}$]
      {t \cdot n \in \travsetbr
       \andalso n \in\NodeHjByRoot \inter \NodesVar
       \andalso n \enables_i \alpha
@@ -878,7 +878,7 @@ In other words: $b_{q} = |n_1| - |\alpha_1| + |n_2| - |\alpha_2| + \ldots + |n_{
 
 \begin{property}[Weaving]
 \label{prop:weaving}
-Let $t \in \travsetbr$ be a branching traversal ending with a variable node hereditarily justified by the root. Let $2k$ be the length of the weave ending at $t^\omega$ for $k\geq1$. Suppose $t_{max} \in \travsetbr$ is a maximal traversal extension of $t$, in which case by rule $\rulename{IVar}_\branching$, the node immediately after $t$ is a lambda node justified by $t^\omega$ with label $i\geq 1$. Then:
+Let $t \in \travsetbr$ be a branching traversal ending with a variable node hereditarily justified by the root. Let $2k$ be the length of the weave ending at $t^\omega$ for $k\geq1$. Suppose $t_{max} \in \travsetbr$ is a maximal traversal extension of $t$, in which case by rule $\rulename{IVar_\branching}$, the node immediately after $t$ is a lambda node justified by $t^\omega$ with label $i\geq 1$. Then:
 
 \begin{enumerate}
 \item If $i>\arth(t)$ then $t^\omega$ is followed in $t_{max}$ by a weave of length $2k$ consisting only of ghost nodes:
@@ -974,23 +974,42 @@ By repeating the argument this shows that all the nodes following $t$ are necess
 The weaving property \ref{prop:weaving} leads to the following new definition of traversals:
 \begin{definition}[Normalizing traversals]
 \label{def:normalizing_traversals}
-We define the set of \defname{normalizing traversals}, noted $\travsetnorm$ as the subset of branching traversals defined by the rules of Def.~\ref{dfn:branching_traversals} where the label $i$ in rule \rulenamet{IVar} is bounded by the arity threshold of the traversal:
-\infrule[$\rulefont{IVar}_\normalizing$]
+We define the set of \defname{normalizing traversals}, noted $\travsetnorm$ as the subset of branching traversals defined by the rules of Def.~\ref{dfn:branching_traversals} where the label $i$ in rule \rulenamet{IVar} is bounded by the arity threshold of the traversal.
+\infrule[$\rulefont{IVar_\normalizing}$]
      { t \cdot n \in \travsetnorm
      \andalso n \in\NodeHjByRoot \inter \NodesVar^\ghostvar
-     \andalso n \enables_i \ghostlmd
-     \andalso |n| < i \leq \arth(t)}
-     {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:i){\ghostlmd}}\in \travsetnorm}
+     \andalso n \enables_i \alpha
+     \andalso 1 \leq i \leq \arth(t)}
+     {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:i){\alpha}}\in \travsetnorm}
+where $\alpha = \ghostlmd$ just if $i>|n|$.
 
-Table \ref{tab:normalizing_trav_rules} recapitulates the rules of $\travsetnorm$ using judgement derivation rules where the judgement notations $\istraversal t$ is used to mean $t\in\travsetnorm$.
+Table \ref{tab:normalizing_trav_rules} recapitulates the rules of $\travsetnorm$ using judgement derivation rules where the judgement notations ``$\istraversal t$'' means ``$t\in\travsetnorm$''.
 \end{definition}
+
+The following is a direct consequence of Proposition \ref{prop:branching_traversal_normalizing} and the weaving Property \ref{prop:weaving}.
 
 \begin{proposition}[Normalizing traversals are complete modulo $\sim$]
 \label{prop:normalizing_traversals_simcomplete}
 $\travsetnorm$ is $\sim$-complete.
 \end{proposition}
 \begin{proof}
-Consequence of Proposition \ref{prop:branching_traversal_normalizing} and Property \ref{prop:weaving}.
+Let $t\in\travulc$. By Prop.~\ref{prop:branching_traversal_normalizing}
+there is $u\in\travsetbr$ such that $\pview{\core{u}} = \pview{\core{t}}$.
+If $u$ has no ghost node then $u$ necessarily belongs to $u\in\travsetnorm$
+since the restriction in rule \rulenamet{IVar_\normalizing} only applies to the case where a ghost lambda node is traversed (child index $i$ strictly greater than the arity of the node $n$).
+
+If $u$ contains ghost nodes then
+
+%  $\eta_u(u) \in \travulc$ has no ghost.
+% Clearly $\eta_u(u)$ also belongs to $\travsetbr$ since $u$ does.
+%  And $\core{\eta_u(u)} = \core{u}$ by definition of $\coresymbol$.
+Suppose that $u$ is not in $\travsetnorm$ then by Property \ref{prop:weaving}, ,it's necessarily of the form:
+$$u = u_1 \alpha n \ldots \ghostlmd \ghostvar$$
+(without loss of generality we assume $u$ ends with a ghost variable) where $\ghostlmd$ points to $n \in \NodesVar$ and
+$\ghostvar$ points to $\alpha \in \NodesLmd$.
+
+But then $\pview{\core{u}} = \pview{u_1 \alpha } n \ghostlmd \ghostvar$
+\todo{not be really sim-complete, since arbitrarily long eta expanded lambda nodes are excluded! Need a new definition of equivalence classes to convey this.}
 \end{proof}
 
 \subsection{Normalization for ULC}
@@ -1193,7 +1212,7 @@ where necessarily $m \in \NodesVar^\ghostvar \union \Nodes_@$, $\alpha,\beta \in
 \\
 
 \emph{\bf DATA - Input-variable rules}
-\infrule[$\rulefont{IVar}_\normalizing$]
+\infrule[$\rulefont{IVar_\normalizing}$]
      {\istraversal t \cdot n
       \andalso n \in \NodesVar^\ghostvar \inter \NodeHjByRoot
       \andalso n \enables_i \alpha
