@@ -1028,7 +1028,7 @@ Let $M$ be an untyped term.
 \begin{proof}[Proof sketch]
 \todo{proof!}
 (i) The effect of leftmost linear reduction is essentially to inline the \emph{lloc} variable by its generalized argument (the argument of the generalized redex binding the \emph{lloc} variable).
-The traversals before and after reduction are identical up to some node mapping and node merging. One can easily show that the invariant $\core{\travsetnorm(M)}$ is preserved by this mapping.
+The traversals before and after reduction are identical up to some node mapping and node merging. One can show that the invariant $\core{\travsetnorm(M)}$ is preserved, modulo some isomorphism, by this mapping.
 
 (ii) idea: If $M$ is in quasi normal form then none of the traversals of $\travsetnorm(M)$ use the \rulenamet{App} rule, therefore traversals are necessarily finite.
 
@@ -1058,8 +1058,10 @@ By Prop.~\ref{prop:ulc_travnorm_finite} there is a finite number of traversals i
 \end{proof}
 
 \paragraph{Soundness}
-Since we have not formally established correspondence with Game Semantics in the untyped setting (Conjecture \ref{conj:ulc_corresp}) we instead prove the Characterization Theorem for ULC by appealing to a term-rewriting argument based on the \emph{leftmost linear reduction} strategy \emph{leftmost linear reduction} from Section~\ref{sec:leftmostlinearred}:
+We cannot rely on the correspondence with Game Semantics to prove soundness since we have not formally proven such correspondence in the untyped setting (Conjecture \ref{conj:ulc_corresp}). Instead we prove the Characterization Theorem for ULC using a term-rewriting argument based on the \emph{leftmost linear reduction} strategy \emph{leftmost linear reduction} from Section~\ref{sec:leftmostlinearred}:
 
+
+\todo{Rework characterization theorem for new definition of $\coresymbol$ which relabel lambda nodes!}
 \begin{theorem}[Normalized Paths Characterization for ULC]
 \label{thm:path_charact_ulc}
 For any untyped term $M$ having a normal form $N$ we have:
@@ -1694,16 +1696,17 @@ If $\lambda_l(U) \neq \epsilon$, then either $U$ contains a redex or $U$ is an a
 \begin{theorem}[Soundness and completeness of leftmost linear reduction]
 \label{thm:soundness_leftmostlinearred}
 We have:
-\begin{itemize}
-\item[(i)] If $M \rightarrow_{l} N$ then $M$ and $N$ are beta-equivalent.
-\item[(ii)] $M$ has a beta-normal form if and only if its left-most head linear reduction terminates (\ie it has a \emph{qnf}).
-\item[(iii)] If $M$ is in \emph{quasi normal form} and contains $n$ standard redexes then there is an evaluation strategy that reduces $M$ to its normal form in exactly $n$ beta-reductions.
-\end{itemize}
+\begin{enumerate}[label=(\roman*)]
+\item If $M \rightarrow_{l} N$ then $M$ and $N$ are beta-equivalent.
+\item If $M$ is in \emph{quasi normal form} and contains $n$ standard redexes then there is an evaluation strategy that reduces $M$ to its beta-normal form in exactly $n$ (trivial) beta-reductions.
+\item If $M$ has a beta-normal form then it has a \emph{quasi normal form}. (\ie, its left-most head linear reduction terminates).
+\end{enumerate}
 \end{theorem}
 \begin{proof}
 (i) TODO\todo{Proof of (i) is a variation of Danos-Regnier proof for the same result for head-linear reduction.}
-(ii) TODO\todo{Hopefully the proof of (ii) should not involve state machine/stack/environments, ...}
-(iii) The idea consists in reducing the redex `inside-out' from left to right. By Proposition \ref{prop:qnf_nf}(ii), each reduction is trivial and it is easy to see that  $lloc$ is preserved by trivial reduction, therefore each term in the reduction sequence is in \emph{qnf}. The last term in the sequence has no redex therefore it's in beta-normal form.
+(ii) The idea consists in reducing the redex `inside-out' from left to right. By Proposition \ref{prop:qnf_nf}(ii), each reduction is trivial and it is easy to see that  $lloc$ is preserved by trivial reduction, therefore each term in the reduction sequence is in \emph{qnf}. The last term in the sequence has no redex therefore it's in beta-normal form.
+
+(iii) TODO\todo{Hopefully the proof of (ii) should not involve state machine/stack/environments, ...}
 \end{proof}
 
 \begin{definition}[Leftmost redex sequence]
