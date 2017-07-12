@@ -212,15 +212,23 @@ By convention ghost variables and lambda nodes are assigned arity $0$.
 
 \subsection{Justified sequence of nodes}
 
-A \defname{justified sequence} is a sequence of nodes from the computation tree where every node in the sequence, except the first one, has an associated link (the ``justification pointer'' or ``link'') pointing to some previous node occurrence in the sequence (called its ``justifier'') such as the two nodes are related by the enabling relation $\enables$ (the justifier node must enables the node pointing to it).
+A \defname{justified sequence} is a sequence of nodes from the computation tree where every node occurrence $n$ in the sequence, except the first one, has an associated link (the ``justification pointer'') pointing to some previous node occurrence $j$ in the sequence (called its ``justifier'') with an associated ``link label'' $l\geq0$, such as the justifier node enables the node pointing to it by the enabling relation $\enables$ with the corresponding label (\ie, $j \enables_l n$). Such link is represented as follows:
+$$\Pstr[10pt]{ s = \cdots (j){j} \ldots (n-j,25){n} }$$
 
-A justified sequence verifies the \defname{alternation condition} if the first node is a lambda node and subsequent nodes occurrences alternate between (i) a variable or application node (ii) a lambda node. From now on we will only consider justified sequences verifying the alternation condition.
+Whereas the enabling relation is \emph{statically} induced by the structure of the tree, the justification relation is defined on \emph{occurrences} of nodes for a specific justified sequence.
 
-Let's emphasize that,  contrary to the enabling relation which is \emph{statically} induced by the structure of the tree, the justification relation is defined on \emph{occurrences} of nodes for a specific justified sequence.
+We define the set of justified sequences of nodes over $M$, written $\justseqset(M)$, as the justified sequences over $\Nodes + \ghostlmd + \ghostvar$ (the nodes from the computation tree augmented with ghost nodes).
+
+It is sometimes convenient to represent a justification sequence using the \defname{triplet encoding}: a sequence of triplet in $(\Nodes + \ghostlmd + \ghostvar)\times\nat\times\nat$ where the first component gives the node with label, the second component encodes the distance between a node and its justifier in the sequence ($0$ for no pointer), and the third is the link label.
+
+Two justification sequences $s$ and $u$ over $M$ are equal, written $s=u$, if their triplet encoding are the same: their underlying sequences of nodes are identical (same node) and the associated justification pointers are identical (same justifier and same pointer label). Two sequences $s$ and $u$ over two distinct terms $M$ and $N$ are \defname{equal up to renaming}, or $\alpha$-convertible, written $s =_\alpha u$ just if the type of the underlying nodes match in order ($@$-node, variable or lambda node) and they have the same justification pointer (\ie, same link distance and label).
+
+We write $I \cong J$ to denote two subsets $I \subseteq \justseqset(M)$ and $J \subseteq \justseqset(N)$ such that there exists a bijection between $I$ and $J$. We say that $\phi : I\longrightarrow J$ is a \defname{strong bijection} if it is a bijection and further for any $j\in J$, $j =_\alpha \phi(j)$.
+
+
+A justified sequence verifies the \defname{alternation condition} if the first node is a lambda node and subsequent nodes occurrences alternate between (i) a variable or application node (ii) a lambda node.
 
 We say that an occurrence of a node in a justified sequence is \defname{hereditarily justified by some other occurrence} if recursively following justification pointers starting from it leads to that other occurrence in the sequence. Because justification pointers must honor the enabling relation $\enables$ induced by the term structure, if a node occurrence $n$ is hereditarily justified by some occurrence of a node $m\in\Nodes$ then $n$ is necessarily hereditarily enabled by $m$. Further if $m$ occurs only once in the justified sequence then the occurrences hereditarily justified by $m$ are precisely the occurrences of nodes that are hereditarily \emph{enabled} by $m$.
-
-We define the set of justified sequences of nodes over $M$, written $\justseqset(M)$, to denote the set of justified sequences of nodes from the computation tree plus the ghost nodes (\ie, $\Nodes + \ghostlmd + \ghostvar$)).
 
 For any justified sequence $t$ we write $t^\omega$ to denote the last occurrence in $t$. The notion of sequence prefix naturally extends to justified sequences.
 For any occurrence $n$ in $t$ we write $t_{\leq n}$ for the prefix subsequence of $t$ ending at $n$, and $t_{<n}$ for the prefix ending at the occurrence immediately preceding $n$ (or the empty sequence if $n$ is the first occurrence in $t$).
@@ -326,8 +334,16 @@ and every $i\geq1$ we have $t \cdot n \cdot \alpha \in \travulc$ with $\alpha$ p
 
 Some immediate property that can be shown by induction on the rules:
 \begin{property}
-   For any traversal $t$: $t$ verifies the alternation condition and so does $t\filter\NodeHjByRoot$.
+   For any traversal $t$
+   \begin{enumerate}
+   \item $t$ verifies the alternation condition;
+   \item $t\filter\NodeHjByRoot$ is a valid justified sequence (with respect to the enabling relation $\enables$) verifying the alternation condition.
+   \end{enumerate}
 \end{property}
+
+
+
+
 \paragraph{On-the-fly expansion}
 The following definition explicit the notions of \emph{on-the-fly eta-expansion} implemented by the
 traversal rules \rulenamet{Var} and \rulenamet{IVar}:
