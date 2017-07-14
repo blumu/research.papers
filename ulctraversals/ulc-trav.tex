@@ -185,6 +185,8 @@ Given an untyped lambda term $M$ we define its \defname{computation tree} as the
 where the expression `$l\langle t_1, \ldots, t_m \rangle$' for $m \geq 0$ denotes a labelled tree with root labelled $l$ and $m$ ordered children trees $t_1$, \ldots, $t_m$. The underlined label $z$ represents a node label for $m>0$, and a leaf label if $m=0$.
 
 \item We write $\Nodes$ to denote the set of nodes of the computation tree. We write $\NodesVar$ for the set of variable nodes, $\NodesLmd$ for lambda nodes, and $\Nodes_@$ for  application nodes.
+    
+\item For any lambda node $\alpha\in\NodesLmd$ we write $\child(\alpha)$ to denote its unique child node (either an $@$ or variable node).
 \end{itemize}
 \end{definition}
 
@@ -255,7 +257,8 @@ Let $s$ be a justified sequence of nodes.
 \end{itemize}
 \end{definition}
 
-The P-view of a justified sequence is the sub-sequence obtained by reading the sequence backwards as follows: (i) if the node being read is a variable node then keep that node and follow its justification pointer (\ie, skip all the occurrences ``underneath that pointer'') (ii) if the node is a lambda node then keep that node and move to the preceding node. Formally:
+The P-view of a justified sequence is the sub-sequence obtained by reading the sequence backwards 
+and following the justification pointer every other node: (i) if the node being read is a variable node then keep that node and follow its justification pointer (\ie, skip all the occurrences ``underneath that pointer'') (ii) if the node is a lambda node then keep that node and move to the preceding node. Formally:
 \begin{definition}[Views]
 \label{def:views}
 The P-view of a justified sequence $s$, denoted $\pview{s}$ is defined recursively  as follows
@@ -285,17 +288,20 @@ $$\begin{array}{rcll}
 \end{array}$$
 \end{definition}
 
+Given two node occurrences occurrence $n$ and $m$ in a justified sequence $s$, we say that $n$ is \defname{visible at} $m$ just if $n$ occurs in the P-view $\pview{s_{\leq m}}$.
+
 \paragraph{Justified paths of the term tree}
 
 We will consider paths of a term tree as a set of justified sequences. For any term $M$ we define the \defname{set of justified paths} $\pathset(M)$ as the set of justified sequences in $\justseqset(M)$ whose underlying sequences of nodes are paths in the labelled-tree $\ctree(M)$ with associated justification pointers induced by the enabling relation: occurrence of bound variable nodes are justified by their binder node with link label determined by the variable index in the binding node; free variables are justified by the root (the first node in the sequence) with label index determine by the free variable index; and lambda nodes are justified by their parent (the immediate predecessor in the sequence) with label index given by the child index.
 
-This notion is well defined because a variable binder necessarily occurs in the path from it to the root. Further:
+This notion is well defined because a variable binder necessarily occurs in the path from it to the root.
 \begin{property}[Path characterization]
-(i) An untyped term $M$ is uniquely determined by its set of justified paths $\pathset$.
-(ii) Further $M$ is uniquely determined, up to $\alpha$-conversion, by the \emph{structure} (\ie, node types and pointers) of the sequences in $\pathset$.
+\label{prop:tree_path_charact}
+(i) An untyped term $M$ is uniquely determined by the subset of maximal justified paths of $\pathset$.
+(ii) Further $M$ is uniquely determined, up to $\alpha$-conversion, by the \emph{structure} (\ie, node types and pointers) of the maximal justified paths in $\pathset$.
 \end{property}
 \begin{proof}
-(i) follows from the fact that computation trees are in one-to-one correspondence with the standard tree representation of a lambda term. (ii) is due to the fact that variables names are uniquely determined by the justification pointers and their associated label index.
+(i) follows from the fact that computation trees are in one-to-one correspondence with the standard tree representation of a lambda term, and because $\pathset(M)$ is prefix-closed it's uniquely determined by its maximal elements. (ii) is due to the fact that variables names are uniquely determined by the justification pointers and their associated label index.
 \end{proof}
 
 \begin{example}
@@ -663,13 +669,14 @@ We define the core P-view function as the composition of $\pview{\_}\colon \just
 t & \longmapsto \pview{\core{t}}
 \end{align*}
 
-We define $\sim$ as the equivalence relation over $\travulc$ induced by $\pview{\core{\_}}$ up to relabelling. That is, $t \sim u$ just if $\pview{\core{t}} \equiv \pview{\core{u}}$ (same structure but not necessarily the same labels). We write $\travulc/{\sim}$ for the set of equivalence classes of $\travulc$.
+We define $\sim$ as the equivalence relation over $\travulc$ induced by $\pview{\core{\_}}$ up to relabelling (same structure but not necessarily the same labels). Formally: 
+$$t \sim u \quad \mbox{ iff } \quad  \pview{\core{t}} \equiv \pview{\core{u}} .$$
+We write $\travulc/{\sim}$ for the set of equivalence classes of $\travulc$. We can thus identify a $\sim$-equivalence class with the structure of the P-view core of the traversals it contains.
 
-We say that a subset $T$ of $\travulc$ is \defname{complete modulo $\sim$}, or $\sim$-complete, if it contains at least one element for each $\sim$-equivalence class, in which case $T/{\sim} = \travulc/{\sim}$.
+A subset $T\subseteq \travulc$ is \defname{$\sim$-complete} if it contains at least one element for each $\sim$-equivalence class; that is if $T/{\sim} = \travulc/{\sim}$.
 \end{definition}
 
-In the remaining of this section we explore $\sim$-complete traversals subsets that can be effectively computed.
-
+In the next section we will explore a $\sim$-complete traversal subset that can be effectively computed for certain typed lambda terms.
 
 \subsection{Branching traversals}
 
@@ -863,7 +870,7 @@ We now state the Paths Characterization of simply-typed terms which is an immedi
 \label{prop:path_charact_stlc}
 For every simply-typed term-in-context $\Gamma\vdash M :T$, let $\etabetalnf{M}$ denote the eta-long beta-normal form of $M$. We have the following isomorphism:
 \begin{equation*}
-\pview{\core{\_}} : \travulc(\etalf{M})/{\sim}\ \stackrel{\cong}{\longrightarrow} \pathset(\etabetalnf{M})
+\travulc(\etalf{M})/{\sim}\ \cong \pathset(\etabetalnf{M})
 \end{equation*}
 \end{proposition}
 \begin{proof}
@@ -1088,8 +1095,12 @@ Let $M$ be an untyped term.
 \item If $M$ is in quasi normal form and has beta-normal form $N$ then the core projection $\coresymbol$ gives a bijection from the maximal traversals of $\travsetnorm(M)$ and the maximal traversals of $\travsetnorm(N)$.
 \end{enumerate}
 \end{proposition}
+\todo{
+Proof:
+- explain where the relabelling done in $\coresymbol$ is used in the proof!
+- explain where we use the fact that branching traversals are $\sim$-complete (Prop.~\ref{prop:branching_traversal_simcomplete}) and the weaving Property \ref{prop:weaving}???}
+
 \begin{proof}[Proof sketch]
-\todo{proof!}
 (i) The effect of leftmost linear reduction is essentially to inline the \emph{lloc} variable by its generalized argument (the argument of the generalized redex binding the \emph{lloc} variable).
 The sets of traversals $\travsetnorm$ before and after reduction are identical up to some mapping between nodes of the term and its reduct.
 
@@ -1123,28 +1134,24 @@ By Prop.~\ref{prop:ulc_travnorm_finite} there is a finite number of traversals i
 \paragraph{Soundness}
 We cannot rely on the correspondence with Game Semantics to prove soundness since we have not formally proven such correspondence in the untyped setting (Conjecture \ref{conj:ulc_corresp}). Instead we prove the Characterization Theorem for ULC using a term-rewriting argument based on the \emph{leftmost linear reduction} strategy \emph{leftmost linear reduction} from Section~\ref{sec:leftmostlinearred}:
 
-\todo{define aggregate $\vee$}
-
-
-\todo{Rework characterization theorem for new definition of $\coresymbol$ which relabel lambda nodes!}
 \begin{theorem}[Normalized Paths Characterization for ULC]
 \label{thm:path_charact_ulc}
-For any untyped term $M$ having a normal form $N$ we have the following isomorphism
-$$\pview{\core{\_}} : \travsetnorm(M)/{\sim} \ \stackrel{\cong}{\longrightarrow}\ \pathset(N)$$
+For any untyped term $M$ with a normal form $T$ we have the following isomorphism
+$$\travsetnorm(M)/{\sim} \ \cong\ \pathset(T)$$
 \end{theorem}
 \begin{proof}
-It's trivial if $M$ is in beta-normal form since $\core{\travsetnorm(M)} = \travsetnorm(M)$ and by the Path-View correspondence for ULC $\pview{\core{\travsetnorm(M)}} = \pathset(N)$.
-For any other untyped term $M$ with a normal form, we consider its \emph{leftmost linear reduction sequence}.
-Since $M$ is in beta-nf, the reduction sequence terminates by Theorem \ref{thm:soundness_leftmostlinearred} and yields the \emph{quasi normal form} (qnf). By Prop.~\ref{prop:ulctrav_impl_linear_reduction} the set of traversals is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of traversals of the \emph{qnf} is isomorphic to the set of traversals of $M$. By Prop.~\ref{prop:ulctrav_impl_linear_reduction}(iii), the projection $\coresymbol$ yields $\travsetnorm(N)$.
+Let's first assume that $M$ is in beta-normal form. Then its computation tree does not contain any $@$-node, therefore every node is external (\ie, hereditarily enabled by the root).
+Hence the arity threshold of any justified sequences $t$ ending with external variable $x$ is precisely $|x|$, the arity of $x$. A trivial induction on the traversal rules thus show that $\travsetnorm(M) = \pathset(M)$. Since all nodes are externals, the projection $\coresymbol$ and $\pview{\_}$ functions both coincides with the identity function thus $\pview{\core{\travsetnorm(M)}} = \travsetnorm(M) = \pathset(M)$.
+
+Otherwise, since $M$ has a beta-nf, by Theorem \ref{thm:soundness_leftmostlinearred} its \emph{leftmost linear reduction sequence} terminates and yields the \emph{quasi normal form} (qnf). By Prop.~\ref{prop:ulctrav_impl_linear_reduction} the set of traversals is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of traversals of the \emph{qnf} is isomorphic to the set of traversals of $M$. By Prop.~\ref{prop:ulctrav_impl_linear_reduction}(iii), the projection $\coresymbol$ yields $\travsetnorm(T)$.
 \end{proof}
 
-Correctness of the normalization procedure is a consequence of the above Characterization theorem, the fact that branching traversals are $\sim$-complete (Prop.~\ref{prop:branching_traversal_simcomplete}) and the weaving Property \ref{prop:weaving}.
-
-\todo{Detail soundness argument for new definition of $\coresymbol$!}
+Correctness of the normalization procedure then follows from the above theorem
+and the fact that a term is uniquely characterized by its set of paths $\pathset$ (Property \ref{prop:tree_path_charact}).
 
 \begin{remark}
 The infinitary counterpart of the characterization theorem for lambda terms with no normal form (not shown in this paper) can be stated as:
-$$ \Union_{k\geq0} \pview{\core{\travulc^k(M)/{\sim})}} = \pathset(BT(M))$$
+$$ \Union_{k\geq0} \travulc^k(M)/{\sim}) = \pathset(BT(M))$$
 where $\travulc^k(M)$ denotes the set of traversals of length $k$ at most and $\pathset(BT(M))$ denotes the set of \emph{possibly infinite} maximal paths in the B\"oem tree $BT(M)$ of $M$ (the infinitary computation tree of the term obtained by reducing beta-redexes ad-infinitum \cite{barendregt2013lambda}).\footnote{See also \cite{Blum17-HomogNotRestriction, Ong2006} for a formal definition of infinitary computation trees.}
 \end{remark}
 
@@ -1201,9 +1208,7 @@ detailed description of the normalization procedure with the steps involved in r
 
 \infrule[$\rulefont{App}_\normalizing$]
     {\istraversal t \cdot @ \andalso @ \enables_0 \alpha }
-    {\istraversal \Pstr[0.4cm]{t \cdot (at) @  \cdot (a-at,40:0) \alpha}}
-
-where necessarily $\alpha\in\NodesLmd$, since application nodes can only enable lambda-nodes.
+    {\istraversal \Pstr[0.4cm]{t \cdot (at) @  \cdot (a-at,40:0) \alpha} \andalso (\alpha\in\NodesLmd)}
 
 \infrule[$\rulefont{Lam}^@_\normalizing$]
      {\istraversal t \cdot \alpha
@@ -1219,12 +1224,6 @@ where necessarily $\alpha\in\NodesLmd$, since application nodes can only enable 
      \quad \beta \mbox{ visible at } \alpha }
      {\istraversal \Pstr[0.5cm]{u \cdot (beta)\beta \cdot v \cdot \alpha \cdot (n-beta,30:i){\child(\alpha)
      }}}
-where
-\begin{compactitem}[-]
-\item $\child(\alpha)$ denotes the unique child tree node of lambda-node $\alpha$;
-\item $u, v$ denotes traversal sub-sequences;
-\item ``visible'' means that the occurrence is in the P-view  (\ie, the sub-sequence read backwards from $\alpha$ by following the justification pointer every other node).
-\end{compactitem}
 
 \infrule[$\rulefont{Lam^\ghostlmd_\normalizing}$]
     {
@@ -1236,9 +1235,8 @@ where
          \ldots
         (gl-m,40:i){\ghostlmd}\cdot (al-alpha,40:{|\alpha| + i - |m|}){\ghostvar}
            }
+        \andalso (\alpha \in \NodesLmd^\ghostlmd, m \in\NodesVar^\ghostvar)
     }
-where necessarily $\alpha \in \NodesLmd^\ghostlmd$ and $m \in\NodesVar^\ghostvar$.
-\\
 
 \emph{\bf PROGRAM - Copy-cat rules}
 
@@ -1255,9 +1253,8 @@ where necessarily $\alpha \in \NodesLmd^\ghostlmd$ and $m \in\NodesVar^\ghostvar
         (m){m} \cdot (a){\alpha}  \ldots (n-a,30:i){n}
             \cdot (letai-m,35:i){\beta}
             }
+        \andalso (m \in \NodesVar^\ghostvar \union \Nodes_@, \alpha,\beta \in \NodesLmd^\ghostlmd)
     }
-where necessarily $m \in \NodesVar^\ghostvar \union \Nodes_@$, $\alpha,\beta \in \NodesLmd^\ghostlmd$, and $\beta = \ghostlmd$ iff $i>|m|$.
-\\
 
 \emph{\bf DATA - Input-variable rules}
 \infrule[$\rulefont{IVar_\normalizing}$]
@@ -1266,8 +1263,11 @@ where necessarily $m \in \NodesVar^\ghostvar \union \Nodes_@$, $\alpha,\beta \in
       \andalso n \enables_i \alpha
       \andalso 1\leq i \leq \arth(t)
      }
-     {\istraversal \Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,30:i){\alpha}}}
-where necessarily $\alpha \in \NodesLmd$ since variable nodes can only enable lambda nodes.
+     {\istraversal \Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,30:i){\alpha}}
+     \andalso (\alpha \in \NodesLmd)
+     }
+
+where $t, u, v$ range over (subsequences of) justified sequences of nodes.
 
 \caption{Normalizing traversals $\travsetnorm$ of the untyped lambda calculus (ULC).}
 \label{tab:normalizing_trav_rules}
