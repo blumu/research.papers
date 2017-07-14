@@ -185,8 +185,6 @@ Given an untyped lambda term $M$ we define its \defname{computation tree} as the
 where the expression `$l\langle t_1, \ldots, t_m \rangle$' for $m \geq 0$ denotes a labelled tree with root labelled $l$ and $m$ ordered children trees $t_1$, \ldots, $t_m$. The underlined label $z$ represents a node label for $m>0$, and a leaf label if $m=0$.
 
 \item We write $\Nodes$ to denote the set of nodes of the computation tree. We write $\NodesVar$ for the set of variable nodes, $\NodesLmd$ for lambda nodes, and $\Nodes_@$ for  application nodes.
-
-\item We write $\pathset(M)$ to denote the set of paths in $\ctree(M)$.
 \end{itemize}
 \end{definition}
 
@@ -270,11 +268,44 @@ $$\begin{array}{rcll}
         \Pstr{ \pview{s} \cdot (m2){m} \cdot (lmd2-m2,60){n} }
     & \mbox{if $n$ is a lambda node;}
     \\
- \pview{s \cdot n }  &=&  n & \mbox{if $n$ has no pointer}\enspace .
+ \pview{s \cdot n }  &=&  n & \mbox{if $n$ is a lambda node with no pointer.}
 \end{array}$$
-The O-view, denoted $\oview{s}$, is defined as the dual of the P-view \cite{Abr02}.
-\todo{add o-view formal def}
+The O-view, denoted $\oview{s}$, is defined as the dual of the P-view:
+$$\begin{array}{rcll}
+ \oview{\epsilon} &=&  \epsilon \\
+ \oview{s \cdot n }  &=&  \oview{s} \cdot n
+    & \mbox{if $n$ is an $\lambda$-node;}
+    \\
+ \oview{\Pstr[10pt]{s \cdot (m){m} \cdot \ldots \cdot (x-m,30){n}}} &=&
+    \Pstr{ \oview{s} \cdot (m2){m} \cdot (n2-m2,60){n} }
+    & \mbox{if $n$ is a variable node;}
+    \\
+ \oview{s \cdot n }  &=&  n
+    & \mbox{if $n$ is an $@$ node.}
+\end{array}$$
 \end{definition}
+
+\paragraph{Justified paths of the term tree}
+
+We will consider paths of a term tree as a set of justified sequences. For any term $M$ we define the \defname{set of justified paths} $\pathset(M)$ as the set of justified sequences in $\justseqset(M)$ whose underlying sequences of nodes are paths in the labelled-tree $\ctree(M)$ with associated justification pointers induced by the enabling relation: occurrence of bound variable nodes are justified by their binder node with link label determined by the variable index in the binding node; free variables are justified by the root (the first node in the sequence) with label index determine by the free variable index; and lambda nodes are justified by their parent (the immediate predecessor in the sequence) with label index given by the child index.
+
+This notion is well defined because a variable binder necessarily occurs in the path from it to the root. Further:
+\begin{property}[Path characterization]
+(i) An untyped term $M$ is uniquely determined by its set of justified paths $\pathset$.
+(ii) Further $M$ is uniquely determined, up to $\alpha$-conversion, by the \emph{structure} (\ie, node types and pointers) of the sequences in $\pathset$.
+\end{property}
+\begin{proof}
+(i) follows from the fact that computation trees are in one-to-one correspondence with the standard tree representation of a lambda term. (ii) is due to the fact that variables names are uniquely determined by the justification pointers and their associated label index.
+\end{proof}
+
+\begin{example}
+  $\pathset((\lambda x. x y) (\lambda z .z))$ is the prefix closure of 
+  $\{
+  \Pstr{ (r){\lambda} (at){@} (lx-at,30:0){\lambda x} (x-lx,30:1){x} (l2-x,30:1){\lambda} (y-r,40:1){y} },
+  \Pstr{ (r){\lambda} (at){@} (lz-at,35:1){\lambda z} (z-lz,35:1){z}}
+  \}$.
+\end{example}
+
 
 \section{Traversals}
 
@@ -452,7 +483,7 @@ The stack parameter $\overline{y}$ from the above definition represents the sequ
 \begin{proposition}
 \label{prop:eta_expanded_trav}
 Let $M$ be an untyped term and $t$ be a \emph{finite} traversal of $M$.
-Let $\Nodes$ and $\Nodes_t$ denote the nodes of tree $CT(M)$ and $CT(M^t)$ respectively. Then there exists a one-to-one mapping:
+Let $\Nodes$ and $\Nodes_t$ denote the nodes of tree $\ctree(M)$ and $\ctree(M^t)$ respectively. Then there exists a one-to-one mapping:
 $$
 \eta_t : \tilde{\Nodes} \longrightarrow \tilde{\Nodes_t}
 $$
@@ -466,8 +497,8 @@ with implicit \emph{element-wise pointer-preserving} extension to justified sequ
 \end{enumerate}
 \end{proposition}
 \begin{proof}
-The tree $CT(M)$ being by definition a subtree of $CT(M^t)$, it induces a one-to-one mapping from $\Nodes(M)$ to $\Nodes(M^t)$.
-We extend it to ghost nodes by mapping ghost occurrences in $t$ to the corresponding node resulting from the eta-expansions of subterms of $M$ in $M^t$, and all other ghost nodes not occurring in $t$ to the corresponding ghost nodes in $CT(M^t)$. The map $\eta_t$ can be formally defined by induction on the traversal $t$, observing that in the variable rules \rulenamet{Var} and \rulenamet{IVar}, the on-the-fly eta-expansion of Definition~\ref{def:onthefly_etaexpansion} increments the arity of the justifier node $m$, therefore the corresponding structural node must exist in $M^t$.
+The tree $\ctree(M)$ being by definition a subtree of $\ctree(M^t)$, it induces a one-to-one mapping from $\Nodes(M)$ to $\Nodes(M^t)$.
+We extend it to ghost nodes by mapping ghost occurrences in $t$ to the corresponding node resulting from the eta-expansions of subterms of $M$ in $M^t$, and all other ghost nodes not occurring in $t$ to the corresponding ghost nodes in $\ctree(M^t)$. The map $\eta_t$ can be formally defined by induction on the traversal $t$, observing that in the variable rules \rulenamet{Var} and \rulenamet{IVar}, the on-the-fly eta-expansion of Definition~\ref{def:onthefly_etaexpansion} increments the arity of the justifier node $m$, therefore the corresponding structural node must exist in $M^t$.
 
 (i) By induction on $u$. Reusing the rule used to traverse $u$ in order to traverse $v$. For the case \rulenamet{Var} and \rulenamet{IVar}, the \emph{concrete} sub-case is used instead of the \emph{eta-expanded} subcase when traversing a ghost variable that also appeared in $t$.
 
@@ -1128,7 +1159,7 @@ detailed description of the normalization procedure with the steps involved in r
 \caption{Normalization by traversals for the ULC with term read-out}
 \label{algo:ulc_normalization_by_traversals_with_readout}
 \REQUIRE{An untyped term $M$ that has a normal form.}
-\ENSURE{$CT(\betanf{M})$, the tree of the normal form of $M$.}
+\ENSURE{$\ctree(\betanf{M})$, the tree of the normal form of $M$.}
 \STATE $\travsetnorm \leftarrow $ Enumerate all maximal normalizing traversals using rules of Table~\ref{tab:normalizing_trav_rules}
 \STATE  $C \leftarrow \{ \pview{\core{t}} \ | \ t \in \travsetnorm \}$
 
