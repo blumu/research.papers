@@ -930,8 +930,6 @@ We define the \defname{arity threshold} of $t$ as:
 \end{align*}
 \end{definition}
 
-Observe that rule $\rulename{IVar}$ leaves infinitely many choices for the link label: any value greater than $1$. The following result shows that, for calculating paths in the tree representation of the beta-normal form of the term, it suffices to consider link labels that are strictly smaller than the arity threshold.
-
 \begin{remark}[Calculating the arity threshold]
 The arity threshold can be rewritten as:
 \begin{align*}
@@ -939,7 +937,7 @@ The arity threshold can be rewritten as:
 \end{align*}
 where for $1\leq q\leq k-1$ we define $b_q = \sum_{j=1..q} (|n_j| - |\alpha_j|) + |\alpha_q|$.
 
-The $b_q$'s verify the following induction:
+The $b_q$s verify the following induction:
  \begin{align*}
  b_1 &= |n_1| \\
  b_{q+1} &= b_q + |n_{q+1}| - |\alpha_q| & \mbox{$1 \leq q \leq k-2$}
@@ -947,6 +945,7 @@ The $b_q$'s verify the following induction:
 In other words: $b_{q} = |n_1| - |\alpha_1| + |n_2| - |\alpha_2| + \ldots + |n_{q-1}| - |\alpha_q| $. So an algorithm to calculate the arity threshold consists in adding and subtracting the arity of the nodes starting from the last occurrence of the traversal and reading backwards until reaching an external lambda node. The maximal value seen during that summation is the arity threshold.
 \end{remark}
 
+Observe that traversal rule $\rulename{IVar}$ leaves infinitely many choices for the link label: any value greater than $1$. The following property shows that if the link label exceeds the arity threshold then the traversal ends up traversing only ghost nodes that never materialize back to a structural node.
 \begin{property}[Weaving]
 \label{prop:weaving}
 Let $t \in \travsetbr$ be a branching traversal ending with a variable node hereditarily justified by the root. Let $2k$ be the length of the weave ending at $t^\omega$ for $k\geq1$. Suppose $t_{max} \in \travsetbr$ is a maximal traversal extension of $t$, in which case by rule $\rulename{IVar_\branching}$, the node immediately after $t$ is a lambda node justified by $t^\omega$ with label $i\geq 1$. Then:
@@ -1042,10 +1041,11 @@ Since $i_{q-1} > |n_q|$, by rule \rulenamet{Var_\branching} the next node is nec
 By repeating the argument this shows that all the nodes following $t$ are necessarily ghost nodes.
 \end{proof}
 
-The weaving property \ref{prop:weaving} leads to the following new definition of traversals:
+
+This weaving property suggests that traversals in which the variable rule exceeds the arity threshold are not relevant for normalization: this leads to a stricter definition of traversals:
 \begin{definition}[Normalizing traversals]
 \label{def:normalizing_traversals}
-We define the set of \defname{normalizing traversals}, noted $\travsetnorm$ as the subset of branching traversals defined by the rules of Def.~\ref{dfn:branching_traversals} where the label $i$ in rule \rulenamet{IVar} is bounded by the arity threshold of the traversal.
+We define the set of \defname{normalizing traversals}, noted $\travsetnorm$ as the subset of branching traversals defined by the rules of Def.~\ref{dfn:branching_traversals} where the index $i$ in rule \rulenamet{IVar} is bounded by the arity threshold of the traversal.
 \infrule[$\rulefont{IVar_\normalizing}$]
      { t \cdot n \in \travsetnorm
      \andalso n \in\NodeHjByRoot \inter \NodesVar^\ghostvar
@@ -1067,11 +1067,6 @@ $t  = \Pstr[0.5cm]{(l){\lambda x} \cdot (x-l){x} \cdot (gl-x){\ghostlmd} \cdot (
 
 Algorithm~\ref{algo:ulc_normalization_by_traversals} describes the ULC normalization procedure ULC that computes the $\beta$-normal of an untyped lambda term if it exists. It is a natural generalization of Algorithm~\ref{algo:stlc_normalization_by_traversals} based on \emph{normalizing} traversals instead of \emph{branching} traversals.
 
-
-\todo{revisit algo to detail the aggregation of traversal cores within each equivalence class.
-+ Show where we use Theorem \ref{thm:path_charact_ulc}
-  %Apply the bijection from the characterization theorem \ref{thm:path_charact_ulc} to get the corresponding path
-}
 \begin{algorithm}[!ht]
 \begin{algorithmic}
 \caption{Normalization by traversals for the Untyped Lambda Calculus}
@@ -1086,34 +1081,50 @@ Algorithm~\ref{algo:ulc_normalization_by_traversals} describes the ULC normaliza
   \item Interpret the resulting sequence as a path
   in the tree representation of the $\beta$-nf of $M$.
   \end{itemize}
-  \item Aggregate all the paths thus obtained to reconstruct the beta-normal form of $M$, merging variable names as needed.
+  \item Aggregate all the paths thus obtained to reconstruct the tree structure of the beta-normal form of $M$, 
+  \item Assign labels to every node of the tree such that two variable nodes with same binder and same link label have the same variable name.
 \end{enumerate}
 \end{algorithmic}
 \end{algorithm}
 
 \subsubsection*{Correctness}
 
+We cannot rely on the correspondence with Game Semantics to prove correctness of the ULC normalization procedure since we have not formally proven such correspondence in the untyped setting (Conjecture \ref{conj:ulc_corresp}). Instead we will prove the Characterization Theorem for ULC using a term-rewriting argument based on the \emph{leftmost linear reduction} strategy \emph{leftmost linear reduction} from Section~\ref{sec:leftmostlinearred}.
+
+
+We first show that $\sim$-equivalence classes of traversals of $M$ are preserved by \emph{leftmost-linear reduction}.
+
 \begin{proposition}[Traversals implement linear reduction]
 \label{prop:ulctrav_impl_linear_reduction}
 Let $M$ be an untyped term.
 \begin{enumerate}[label=(\roman*)]
 \item If $M \rightarrow_l N$ then $\travsetnorm(M) \cong \travsetnorm(N)$;
-\item If $M$ is in quasi normal form and $t$ is a traversal in $\travsetnorm(N)$ then $t$ is finite.
-\item If $M$ is in quasi normal form and has beta-normal form $N$ then the core projection $\coresymbol$ gives a bijection from the maximal traversals of $\travsetnorm(M)$ and the maximal traversals of $\travsetnorm(N)$.
+\item If $M$ is in \emph{quasi normal form} and has beta-normal form $N$ then $\coresymbol(\travsetnorm(M)) = \coresymbol(\travsetnorm(N))$.
+\item If $M$ is in \emph{quasi normal form} and $t$ is a traversal in $\travsetnorm(N)$ then $t$ is finite.
 \end{enumerate}
 \end{proposition}
 \todo{
 Proof:
-- explain where the relabelling done in $\coresymbol$ is used in the proof!
-- explain where we use the fact that branching traversals are $\sim$-complete (Prop.~\ref{prop:branching_traversal_simcomplete}) and the weaving Property \ref{prop:weaving}???}
+- explain where the relabelling done in $\coresymbol$ is used in the proof! (during trivial reduction of the qnf)
+- explain where we use the fact that branching traversals are $\sim$-complete (Prop.~\ref{prop:branching_traversal_simcomplete}) and the weaving Property \ref{prop:weaving}???
+- Show where we use Theorem \ref{thm:path_charact_ulc}:
+  Apply the bijection from the characterization theorem \ref{thm:path_charact_ulc} to get the corresponding path.
+}
 
 \begin{proof}[Proof sketch]
 (i) The effect of leftmost linear reduction is essentially to inline the \emph{lloc} variable by its generalized argument (the argument of the generalized redex binding the \emph{lloc} variable).
 The sets of traversals $\travsetnorm$ before and after reduction are identical up to some mapping between nodes of the term and its reduct.
 
-(ii) idea: If $M$ is in quasi normal form then none of the traversals of $\travsetnorm(M)$ use the \rulenamet{Var} rule, therefore traversals are necessarily finite.
+(ii) By Theorem \ref{thm:soundness_leftmostlinearred} a \emph{qnf} trivially reduces to its beta-nf: there is a beta reduction sequence $M = M_1 \rightarrow_\beta M_2 \ldots \rightarrow_\beta M_q= N$, $q\geq1$  where for each reduction step, $M_{q+1}$ is obtained by reducing the leftmost standard redex of $M_q$ of the form $(\lambda x . U) T$ such that $U$ does not contain any redex. By Proposition \ref{prop:qnf_nf}(ii), each such redex is trivial: $x$ does not occur freely in $U$ and therefore no substitution is performed to reduce the redex.
 
-(iii) By Proposition \ref{prop:qnf_nf}, the \emph{qnf} trivially reduces to its beta-nf. It's immediate to show that the invariant $\core{\travsetnorm(M)}$ is preseved by trivial beta-reduction.
+We show that $\core{\travsetnorm}$ is an invariant that is preserved by this reduction sequence: we prove by induction on $q$ that $\core{\travsetnorm(M_{q})}=\core{\travsetnorm(M)}$. For $q=1$ we have $M = M_q = N$ so the result holds trivially.
+
+Let $q\geq 1$.
+
+
+By Proposition \ref{prop:qnf_nf}, the \emph{qnf} trivially reduces to its beta-nf. It's immediate to show
+
+(iii) idea: If $M$ is in quasi normal form then none of the traversals of $\travsetnorm(M)$ use the \rulenamet{Var} rule, therefore traversals are necessarily finite.
 
 \end{proof}
 
@@ -1126,7 +1137,7 @@ Let $M$ be an untyped term.
 \end{enumerate}
 \end{property}
 \begin{proof}
-(i) If $M$ has a normal form then by Theorem \ref{thm:soundness_leftmostlinearred} its linear reduction sequence terminates, and by Prop.~\ref{prop:ulctrav_impl_linear_reduction}(i) the set of traversals of $M$ is isomorphic to the traversals of its quasi normal form. Hence if $M$ has an infinite traversal then so does its \emph{qnf}, which contradicts Prop.~\ref{prop:ulctrav_impl_linear_reduction}(ii).
+(i) If $M$ has a normal form then by Theorem \ref{thm:soundness_leftmostlinearred} its linear reduction sequence terminates, and by Prop.~\ref{prop:ulctrav_impl_linear_reduction}(i) the set of traversals of $M$ is isomorphic to the traversals of its quasi normal form. Hence if $M$ has an infinite traversal then so does its \emph{qnf}, which contradicts Prop.~\ref{prop:ulctrav_impl_linear_reduction}(iii).
 (ii) Traversals rules defining $\travsetnorm$ all have bounded non-determinism therefore by (i) $\travsetnorm$ is finite.
 \end{proof}
 
@@ -1138,23 +1149,19 @@ Algorithm \ref{algo:ulc_normalization_by_traversals} terminates.
 By Prop.~\ref{prop:ulc_travnorm_finite} there is a finite number of traversals in $\travsetnorm$ and each of them can be obtained with finetly many applications of travesal rules.
 \end{proof}
 
-\paragraph{Soundness}
-We cannot rely on the correspondence with Game Semantics to prove soundness since we have not formally proven such correspondence in the untyped setting (Conjecture \ref{conj:ulc_corresp}). Instead we prove the Characterization Theorem for ULC using a term-rewriting argument based on the \emph{leftmost linear reduction} strategy \emph{leftmost linear reduction} from Section~\ref{sec:leftmostlinearred}:
-
 \begin{theorem}[Normalized Paths Characterization for ULC]
 \label{thm:path_charact_ulc}
 For any untyped term $M$ with a normal form $T$ we have the following isomorphism
 $$\travsetnorm(M)/{\sim} \ \cong\ \pathset(T)$$
 \end{theorem}
-\begin{proof}
+\begin{proof}[Proof of Theorem \ref{thm:path_charact_ulc}]
 Let's first assume that $M$ is in beta-normal form. Then its computation tree does not contain any $@$-node, therefore every node is external (\ie, hereditarily enabled by the root).
 Hence the arity threshold of any justified sequences $t$ ending with external variable $x$ is precisely $|x|$, the arity of $x$. A trivial induction on the traversal rules thus show that $\travsetnorm(M) = \pathset(M)$. Since all nodes are externals, the projection $\coresymbol$ and $\pview{\_}$ functions both coincides with the identity function thus $\pview{\core{\travsetnorm(M)}} = \travsetnorm(M) = \pathset(M)$.
 
-Otherwise, since $M$ has a beta-nf, by Theorem \ref{thm:soundness_leftmostlinearred} its \emph{leftmost linear reduction sequence} terminates and yields the \emph{quasi normal form} (qnf). By Prop.~\ref{prop:ulctrav_impl_linear_reduction} the set of traversals is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of traversals of the \emph{qnf} is isomorphic to the set of traversals of $M$. By Prop.~\ref{prop:ulctrav_impl_linear_reduction}(iii), the projection $\coresymbol$ yields $\travsetnorm(T)$.
+Otherwise, since $M$ has a beta-nf, by Theorem \ref{thm:soundness_leftmostlinearred} its \emph{leftmost linear reduction sequence} terminates and yields the \emph{quasi normal form} (qnf). By Prop.~\ref{prop:ulctrav_impl_linear_reduction}(i) the set of traversals is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of traversals of the \emph{qnf} is isomorphic to the set of traversals of $M$. By Prop.~\ref{prop:ulctrav_impl_linear_reduction}(ii), taking the projection $\coresymbol$ yields $\travsetnorm(T)$.
 \end{proof}
 
-Correctness of the normalization procedure then follows from the above theorem
-and the fact that a term is uniquely characterized by its set of paths $\pathset$ (Property \ref{prop:tree_path_charact}).
+\paragraph{Soundness} of the normalization procedure then follows from the above theorem and the fact that a term is uniquely characterized by its set of paths $\pathset$ (Property \ref{prop:tree_path_charact}). The last step of the algorithm (assignment of labels to the tree nodes) is sound because by Property \ref{prop:tree_path_charact} justification pointers uniquely determine variables names.
 
 \begin{remark}
 The infinitary counterpart of the characterization theorem for lambda terms with no normal form (not shown in this paper) can be stated as:
@@ -1179,8 +1186,8 @@ detailed description of the normalization procedure with the steps involved in r
 
 \STATE Let \parbox[t]{12cm}{$(P, L)$ be the labelled-tree induced by $C$:
 \begin{compactitem}
-\item Paths $P \subseteq \nat^*$ are given by the justified sequences in $C$: child index is $1$ for variable occurrences, and is given by the justification label for lambda nodes.
-\item Label function $L : \nat^* \rightarrow \tilde{\Nodes} \times P \times \nat$ defined by $L(n) = (l, b, i)$ where $l$ is the label of the corresponding occurrence in $C$, $b$ is the path to the binder node (given by the justification pointer in $C$), and $i$ is the label of the justification pointer in $C$;
+\item Paths $P \subseteq \nat^*$ are given by the justified sequences in $C$: child index is $1$ for variable occurrences, and is given by the justification label for lambda nodes;
+\item Label function $L : \nat^* \rightarrow \tilde{\Nodes} \times P \times \nat$ defined by $L(n) = (l, b, i)$ where $l$ is the label of the corresponding occurrence in $C$, $b$ is the path to the binder node (given by the justification pointer in $C$), and $i$ is the label of the justification pointer in $C$.
 \end{compactitem}}
 
 \FORALL{node $n \in P$ (by depth-first enumeration)}
@@ -1719,10 +1726,10 @@ Some immediate properties:
 \item
  If $M$ is beta-normal then $lloc_M(M) = \bot$;
  \item
- If $U V$ is in quasi normal form then so is $U$.
+ If $U V$ is in quasi normal form then so is $U$;
 \item
- If $\lambda x . U$ is in quasi normal form then so is $U$.
- \item If $M$ has a \emph{lloc} redex then $M$ has a redex.
+ If $\lambda x . U$ is in quasi normal form then so is $U$;
+ \item If $M$ has a \emph{lloc} redex then $M$ has a redex;
  \item Suppose $M$ has at least one redex.
  If all the redexes are trivial then $M$ is in \emph{qnf}, otherwise M has a \emph{lloc} redex.
 \end{enumerate}
@@ -1741,14 +1748,14 @@ We say that a standard redex $(\lambda x. N) A$ is \emph{trivial} if $x$ does no
 Let $M$ be a term in quasi normal form and suppose that $M$ is not in beta-normal form. Then:
 \begin{itemize}
 \item[(i)] If $x$ is a variable occurrence in $M$ involved in a generalized redex of $M$ then $x$ occurs in operand position in a subterm of the form:
-$$(\lambda z .U) A_1 \ldots A_q (\ldots x \ldots) $$
+$$(\lambda z .U) A_1 \ldots A_q (\ldots x \ldots) \qquad q\geq 0$$
 \item[(ii)] Let $(\lambda x . N) A$ be the leftmost standard redex occurring in $M$ such that $N$ does not contain any redex. Then $x$ does not occur freely in $N$.
 \end{itemize}
 \end{proposition}
 \begin{proof}
 \begin{compactitem}
-\item[(i)] By induction on $M$. Suppose $M = v$ for some variable $v$ then the result trivially holds since $M$ has no generalized redex. Suppose $M = \lambda x . U$ then it follows by the induction hypothesis since the generalized redexes of $M$ are those of $U$.
-Suppose $M = U V$. If $x$ occurs in $U$ then we conclude by the induction hypothesis. If $x$ occurs in $V$ then if $V$ is in \emph{qnf} we conclude by the induction hypothesis. Otherwise by definition of $lloc$ we necessarily have $\lambda_l(U) \neq \epsilon$. Hence $U$ is either an abstraction or a redex with possibly multiple applied arguments. Consequently, so is $UV$ which proves (i).
+\item[(i)] By induction on $M$. Suppose $M = v$ for some variable $v$ then the result trivially holds since $M$ has no generalized redex. Suppose $M = \lambda x . U$ then by Property \ref{prop:lloc_properties}(iv) $U$ is in \emph{qnf} and we conclude by the induction hypothesis.    
+    Suppose $M = U V$. If $x$ occurs in $U$ then we conclude by the induction hypothesis ($U$ is in \emph{qnf} by Property \ref{prop:lloc_properties}(iii)). If $x$ occurs in $V$ then if $V$ is in \emph{qnf} we conclude by the induction hypothesis. Otherwise by definition of $lloc$ we necessarily have $\lambda_l(U) \neq \epsilon$. Hence $U$ is either an abstraction or a redex with possibly multiple applied arguments. Consequently, so is $UV$ which proves (i).
 
 \item[(ii)] By induction on $M$. Suppose $M = v$ for some variable $v$ then it trivially holds since $M$ has no redex. Suppose $M = \lambda x . U$ then the result follows by the induction hypothesis since the redexes of $M$ are those of $U$.
 
@@ -1780,7 +1787,7 @@ We have:
 (i) TODO\todo{Proof of (i) is a variation of Danos-Regnier proof for the same result for head-linear reduction.}
 (ii) The idea consists in reducing the redex `inside-out' from left to right. By Proposition \ref{prop:qnf_nf}(ii), each reduction is trivial and it is easy to see that  $lloc$ is preserved by trivial reduction, therefore each term in the reduction sequence is in \emph{qnf}. The last term in the sequence has no redex therefore it's in beta-normal form.
 
-(iii) TODO\todo{Hopefully the proof of (ii) should not involve state machine/stack/environments, ...}
+(iii) TODO: Hopefully the proof of (ii) should not involve state machine/stack/environments, ...
 \end{proof}
 
 \begin{definition}[Leftmost redex sequence]
@@ -1905,8 +1912,7 @@ Remove all binding and control pointers starting from the $@$ tokens themselves.
 \paragraph{From Danos-Regnier}
 
 Take a substitution sequence of a PAM: $((z_0,A_1), (z_1,A_2) \ldots$.
-\todo{type notes}
-%The traversals can be reconstructed as follows:
+(See my handwritten notes.)
 
 \subsubsection{Correctness}
 \paragraph{Blum}
