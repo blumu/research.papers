@@ -185,7 +185,7 @@ Given an untyped lambda term $M$ we define its \defname{computation tree} as the
 where the expression `$l\langle t_1, \ldots, t_m \rangle$' for $m \geq 0$ denotes a labelled tree with root labelled $l$ and $m$ ordered children trees $t_1$, \ldots, $t_m$. The underlined label $z$ represents a node label for $m>0$, and a leaf label if $m=0$.
 
 \item We write $\Nodes$ to denote the set of nodes of the computation tree. We write $\NodesVar$ for the set of variable nodes, $\NodesLmd$ for lambda nodes, and $\Nodes_@$ for  application nodes.
-    
+
 \item For any lambda node $\alpha\in\NodesLmd$ we write $\child(\alpha)$ to denote its unique child node (either an $@$ or variable node).
 \end{itemize}
 \end{definition}
@@ -257,7 +257,7 @@ Let $s$ be a justified sequence of nodes.
 \end{itemize}
 \end{definition}
 
-The P-view of a justified sequence is the sub-sequence obtained by reading the sequence backwards 
+The P-view of a justified sequence is the sub-sequence obtained by reading the sequence backwards
 and following the justification pointer every other node: (i) if the node being read is a variable node then keep that node and follow its justification pointer (\ie, skip all the occurrences ``underneath that pointer'') (ii) if the node is a lambda node then keep that node and move to the preceding node. Formally:
 \begin{definition}[Views]
 \label{def:views}
@@ -305,7 +305,7 @@ This notion is well defined because a variable binder necessarily occurs in the 
 \end{proof}
 
 \begin{example}
-  $\pathset((\lambda x. x y) (\lambda z .z))$ is the prefix closure of 
+  $\pathset((\lambda x. x y) (\lambda z .z))$ is the prefix closure of
   $\{
   \Pstr{ (r){\lambda} (at){@} (lx-at,30:0){\lambda x} (x-lx,30:1){x} (l2-x,30:1){\lambda} (y-r,40:1){y} },
   \Pstr{ (r){\lambda} (at){@} (lz-at,35:1){\lambda z} (z-lz,35:1){z}}
@@ -669,9 +669,9 @@ We define the core P-view function as the composition of $\pview{\_}\colon \just
 t & \longmapsto \pview{\core{t}}
 \end{align*}
 
-We define $\sim$ as the equivalence relation over $\travulc$ induced by $\pview{\core{\_}}$ up to relabelling (same structure but not necessarily the same labels). Formally: 
+We define $\sim$ as the equivalence relation over $\travulc$ induced by $\pview{\core{\_}}$ up to relabelling (same structure but not necessarily the same labels). Formally:
 $$t \sim u \quad \mbox{ iff } \quad  \pview{\core{t}} \equiv \pview{\core{u}} .$$
-We write $\travulc/{\sim}$ for the set of equivalence classes of $\travulc$. We can thus identify a $\sim$-equivalence class with the structure of the P-view core of the traversals it contains.
+We write $\travulc/{\sim}$ for the set of equivalence classes of $\travulc$. We identify a $\sim$-equivalence class with the structure of the P-view core of the traversals it contains.
 
 A subset $T\subseteq \travulc$ is \defname{$\sim$-complete} if it contains at least one element for each $\sim$-equivalence class; that is if $T/{\sim} = \travulc/{\sim}$.
 \end{definition}
@@ -842,11 +842,13 @@ The normalization procedure for STLC is given by Algorithm \ref{algo:stlc_normal
 \ENSURE{The tree of the eta-long beta-normal form of $M$.}
 \begin{enumerate}
   \item Calculate the eta-long form $\etalf{M}$ of $M$;
-  \item Enumerate maximal \emph{branching} traversals of $\etalf{M}$ from Def.~\ref{dfn:branching_traversals};
-  \item For each each enumerated traversal $t$, project it with respect to the tree root to get the \emph{traversal core} $\core{t}$. By the correspondence theorem this yields a play in $\sem{M}$;
+  \item Enumerate maximal \emph{branching} traversals of $\etalf{M}$ from Def.~\ref{dfn:branching_traversals}:
+  \begin{itemize}
+  \item For each traversal $t$, get the \emph{traversal core} $\core{t}$ by removing internal nodes and keeping external nodes;
   \item Calculate the P-view of the traversal core $\pview{\core{t}}$;
-  \item Apply the bijection from the Correspondence Theorem to get the corresponding maximal path in the tree representation of the eta-long $\beta$-nf of $M$;
-  \item Aggregate all the paths thus obtained to reconstruct the underlying tree.
+  \item Interpret $\pview{\core{t}}$ as a path in the tree representation of the eta-long $\beta$-nf of $M$;
+  \end{itemize}
+  \item Aggregate all paths thus obtained to construct the tree representation of the eta-long $\beta$-nf of $M$.
 \end{enumerate}
 \end{algorithmic}
 \end{algorithm}
@@ -868,13 +870,13 @@ The normalization procedure for STLC is given by Algorithm \ref{algo:stlc_normal
 We now state the Paths Characterization of simply-typed terms which is an immediate consequence of the Game-Semantic Correspondence Theorem for STLC \cite{BlumPhd}:
 \begin{proposition}[Normalized Paths Characterization for STLC]
 \label{prop:path_charact_stlc}
-For every simply-typed term-in-context $\Gamma\vdash M :T$, let $\etabetalnf{M}$ denote the eta-long beta-normal form of $M$. We have the following isomorphism:
+For every simply-typed term-in-context $\Gamma\vdash M :T$, let $\etabetalnf{M}$ denote the eta-long beta-normal form of $M$. We have the following equality:
 \begin{equation*}
-\travulc(\etalf{M})/{\sim}\ \cong \pathset(\etabetalnf{M})
+\travulc(\etalf{M})/{\sim}\ = \pathset(\etabetalnf{M})
 \end{equation*}
 \end{proposition}
 \begin{proof}
- Beta-eta equivalent terms have the same game denotation, therefore by Theorem \ref{thm:gamesem_correspondence_stlc}, the set of traversals of the eta-long beta-normal form of $M$ is also given by the set of cores of traversals of $\etalf{M}$. The Path-View correspondence (Prop.~\ref{prop:pathview_ulc}) and Prop.~\ref{prop:ulc_and_stlc_trav_coincide} then show that the P-views of traversal cores of $\etalf{M}$ give the tree paths of the eta-long beta normal form.
+ By soundness of Game Semantics, beta-eta equivalent terms have the same game denotation, therefore by Theorem \ref{thm:gamesem_correspondence_stlc}, the set of traversals of the eta-long beta-normal form of $M$ is also given by the set of cores of traversals of $\etalf{M}$. The Path-View correspondence (Proposition~\ref{prop:pathview_ulc}) and Propostion~\ref{prop:ulc_and_stlc_trav_coincide} then show that the P-views of traversal cores of $\etalf{M}$ give the tree paths of the eta-long beta normal form.
 \end{proof}
 
 
@@ -883,7 +885,7 @@ For every simply-typed term-in-context $\Gamma\vdash M :T$, let $\etabetalnf{M}$
 Algorithm \ref{algo:stlc_normalization_by_traversals} terminates and returns the eta-long beta-normal form of the input term.
 \end{theorem}
 \begin{proof}
-\emph{Soundness} A beta-normal term is uniquely determined by the set of maximal paths in its tree representation. By Proposition \ref{prop:path_charact_stlc}, this set corresponds precisely to the set of core P-views,
+\emph{Soundness} A beta-normal term is uniquely determined by the set of maximal paths in its tree representation (Property \ref{prop:tree_path_charact}). By Proposition \ref{prop:path_charact_stlc}, this set corresponds precisely to the set of core P-views,
 and by Proposition \ref{prop:branching_traversal_simcomplete} its is also given by the core P-views of \emph{branching} traversals.
 \emph{Termination} By Property \ref{prop:etalong_trav_finite} for terms in eta-long form the set of branching traversals is finite and each traversal is itself finite, therefore the enumeration in Algorithm \ref{algo:stlc_normalization_by_traversals} terminates.
 \end{proof}
@@ -1061,25 +1063,30 @@ $t  = \Pstr[0.5cm]{(l){\lambda x} \cdot (x-l){x} \cdot (gl-x){\ghostlmd} \cdot (
  in $\travsetbr$. We have $\pview{\core{t}} = t$ which is not equivalent to  $\pview{\core{u}}$ for any $u$ in $\travsetnorm = \{ \epsilon, \lambda x, \lambda x \cdot x \}.$
 \end{remark}
 
-\subsection{Normalization for ULC}
+\subsection{Normalization procedure for ULC}
 
 Algorithm~\ref{algo:ulc_normalization_by_traversals} describes the ULC normalization procedure ULC that computes the $\beta$-normal of an untyped lambda term if it exists. It is a natural generalization of Algorithm~\ref{algo:stlc_normalization_by_traversals} based on \emph{normalizing} traversals instead of \emph{branching} traversals.
 
 
-\todo{revisit algo to detail the aggregation of traversal cores within each equivalence class.}
+\todo{revisit algo to detail the aggregation of traversal cores within each equivalence class.
++ Show where we use Theorem \ref{thm:path_charact_ulc}
+  %Apply the bijection from the characterization theorem \ref{thm:path_charact_ulc} to get the corresponding path
+}
 \begin{algorithm}[!ht]
 \begin{algorithmic}
 \caption{Normalization by traversals for the Untyped Lambda Calculus}
 \label{algo:ulc_normalization_by_traversals}
 \REQUIRE{An untyped term $M$ that has a normal form.}
-\ENSURE{The tree of the normal form of $M$.}
-Let $M$ be an untyped term.
+\ENSURE{The computation tree of the normal form of $M$.}
 \begin{enumerate}
-  \item Enumerate maximal \emph{normalizing} traversals $\travsetnorm(M)$ using the rules of Table~\ref{tab:normalizing_trav_rules};
-  \item For each traversal, project it by $\coresymbol$ to get the traversal core.
+  \item Enumerate maximal \emph{normalizing} traversals $\travsetnorm(M)$ using the rules of Table~\ref{tab:normalizing_trav_rules}:
+  \begin{itemize}
+  \item For each traversal, project it by $\coresymbol$ to get the traversal core;
   \item Take the P-view of the traversal core;
-  \item Apply the bijection from the characterization theorem \ref{thm:path_charact_ulc} to get the corresponding path in the tree representation of the $\beta$-nf of $M$;
-  \item Aggregate all the paths thus obtained to reconstruct the beta-normal form of $M$.
+  \item Interpret the resulting sequence as a path
+  in the tree representation of the $\beta$-nf of $M$.
+  \end{itemize}
+  \item Aggregate all the paths thus obtained to reconstruct the beta-normal form of $M$, merging variable names as needed.
 \end{enumerate}
 \end{algorithmic}
 \end{algorithm}
@@ -1090,7 +1097,7 @@ Let $M$ be an untyped term.
 \label{prop:ulctrav_impl_linear_reduction}
 Let $M$ be an untyped term.
 \begin{enumerate}[label=(\roman*)]
-\item If $M \rightarrow_l N$ then $\travsetnorm(M)$ and  $\travsetnorm(N)$ are isomorphic;
+\item If $M \rightarrow_l N$ then $\travsetnorm(M) \cong \travsetnorm(N)$;
 \item If $M$ is in quasi normal form and $t$ is a traversal in $\travsetnorm(N)$ then $t$ is finite.
 \item If $M$ is in quasi normal form and has beta-normal form $N$ then the core projection $\coresymbol$ gives a bijection from the maximal traversals of $\travsetnorm(M)$ and the maximal traversals of $\travsetnorm(N)$.
 \end{enumerate}
@@ -1170,11 +1177,11 @@ detailed description of the normalization procedure with the steps involved in r
 \STATE $\travsetnorm \leftarrow $ Enumerate all maximal normalizing traversals using rules of Table~\ref{tab:normalizing_trav_rules}
 \STATE  $C \leftarrow \{ \pview{\core{t}} \ | \ t \in \travsetnorm \}$
 
-\STATE $(P, L) \leftarrow \parbox[t]{12cm}{Labelled-tree induced by $C$:
+\STATE Let \parbox[t]{12cm}{$(P, L)$ be the labelled-tree induced by $C$:
 \begin{compactitem}
 \item Paths $P \subseteq \nat^*$ are given by the justified sequences in $C$: child index is $1$ for variable occurrences, and is given by the justification label for lambda nodes.
-\item Label function $L : \nat^* \rightarrow \tilde{\Nodes} \times P \times \nat$ defined by $L(n) = (l, b, i)$ where $o$ is the label of the corresponding occurrence in $C$, $b$ is the path to the binder node (given by the justification pointer in $C$), and $i$ is the label of the justification pointer in $C$;
-\end{compactitem}}$
+\item Label function $L : \nat^* \rightarrow \tilde{\Nodes} \times P \times \nat$ defined by $L(n) = (l, b, i)$ where $l$ is the label of the corresponding occurrence in $C$, $b$ is the path to the binder node (given by the justification pointer in $C$), and $i$ is the label of the justification pointer in $C$;
+\end{compactitem}}
 
 \FORALL{node $n \in P$ (by depth-first enumeration)}
     \STATE Let $(l,b,i) = L(n)$
