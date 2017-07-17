@@ -1081,7 +1081,7 @@ Algorithm~\ref{algo:ulc_normalization_by_traversals} describes the ULC normaliza
   \item Interpret the resulting sequence as a path
   in the tree representation of the $\beta$-nf of $M$.
   \end{itemize}
-  \item Aggregate all the paths thus obtained to reconstruct the tree structure of the beta-normal form of $M$, 
+  \item Aggregate all the paths thus obtained to reconstruct the tree structure of the beta-normal form of $M$,
   \item Assign labels to every node of the tree such that two variable nodes with same binder and same link label have the same variable name.
 \end{enumerate}
 \end{algorithmic}
@@ -1093,6 +1093,21 @@ We cannot rely on the correspondence with Game Semantics to prove correctness of
 
 
 We first show that $\sim$-equivalence classes of traversals of $M$ are preserved by \emph{leftmost-linear reduction}.
+
+\begin{property}
+\label{prop:qnf_longapply}
+Let $M$ be an untyped term and $y A_1 \ldots A_n$ be a subterm of $M$ for $n\geq1$ where $y$ is a variable not involved in any generalized redex then:
+\begin{align*}
+lloc_M(y A_1 \ldots A_n) &=
+    \begin{cases}
+     lloc_M (A_j) &\mbox{ where } j = \min \{ 1\leq i\leq n \ | \ lloc_M (A_i) \neq \bot\} \\
+     \bot &\mbox{ if } lloc_M(A_i) = \bot \mbox{ for all } 1\leq i\leq n.
+    \end{cases}
+\end{align*}
+\end{property}
+\begin{proof}
+Immediate from the definition of $lloc$ since $\lambda_l(y) = \epsilon$.
+\end{proof}
 
 \begin{proposition}[Traversals implement linear reduction]
 \label{prop:ulctrav_impl_linear_reduction}
@@ -1112,8 +1127,10 @@ Proof:
 }
 
 \begin{proof}[Proof sketch]
-(i) The effect of leftmost linear reduction is essentially to inline the \emph{lloc} variable by its generalized argument (the argument of the generalized redex binding the \emph{lloc} variable).
-The sets of traversals $\travsetnorm$ before and after reduction are identical up to some mapping between nodes of the term and its reduct.
+(i) Proof sketch: The effect of leftmost linear reduction is essentially to inline the \emph{lloc} variable by the argument of the generalized redex involving it. The sets of traversals $\travsetnorm$ before and after reduction are identical up to some mapping between nodes of the term and its reduct.
+
+
+
 
 (ii) By Theorem \ref{thm:soundness_leftmostlinearred} a \emph{qnf} trivially reduces to its beta-nf: there is a beta reduction sequence $M = M_1 \rightarrow_\beta M_2 \ldots \rightarrow_\beta M_q= N$, $q\geq1$  where for each reduction step, $M_{q+1}$ is obtained by reducing the leftmost standard redex of $M_q$ of the form $(\lambda x . U) T$ such that $U$ does not contain any redex. By Proposition \ref{prop:qnf_nf}(ii), each such redex is trivial: $x$ does not occur freely in $U$ and therefore no substitution is performed to reduce the redex.
 
@@ -1124,7 +1141,19 @@ Let $q\geq 1$.
 
 By Proposition \ref{prop:qnf_nf}, the \emph{qnf} trivially reduces to its beta-nf. It's immediate to show
 
-(iii) idea: If $M$ is in quasi normal form then none of the traversals of $\travsetnorm(M)$ use the \rulenamet{Var} rule, therefore traversals are necessarily finite.
+(iii) Suppose $M$ is a \emph{qnf}. We first show that traversals of $\travsetnorm$ do not contain internal variables, and therefore do not make use of the \rulenamet{Var} rule.
+
+Let $t\in\travsetnorm$.
+Suppose that $t$ contains an internal variable then let $x_i$, $i\geq0$ denotes the first such occurence in $t$ with binder $\lambda\overline{x}$. Then $t$ is necessarily of the form $t = \ldots @ \lambda\overline{x} \ldots x_i$.
+Let $U$ be the subterm rooted at $\lambda\overline{x}$. We show that $lloc_M(U) = \bot$
+
+...
+
+Hence $lloc_M(U) = \bot$. But since $x$ is the first occurence of an internal variable in $t$, all the variables occurring in $t_{<x}$ are external variables, and thus not involved in any generalized redex.
+We can then show by induction on the path from the root to $\lambda x$ that necessarily $lloc_M(M) = \bot$. Indeed
+For abstraction node we have by definition of $lloc$ we have $lloc_M(\lambda\overline{x}.$
+
+%, therefore traversals are necessarily finite.
 
 \end{proof}
 
@@ -1691,7 +1720,7 @@ and $\mathcal{V}^\bot(M)$ for $\{\bot \} + \mathcal{V}(M)$ where the bottom elem
 We define the partial function $lloc_M$ from subterms of $M$ to variable occurrences by induction on the subterms of $M$:
 \begin{align*}
 lloc_M(v) &=
-    \begin{cases}
+    \begin{cases}n{cases}
     v &\mbox{if $v$ is involved in a generalized redex in $M$,} \\
     \bot & \mbox {otherwise.}
     \end{cases}  \\
@@ -1754,7 +1783,7 @@ $$(\lambda z .U) A_1 \ldots A_q (\ldots x \ldots) \qquad q\geq 0$$
 \end{proposition}
 \begin{proof}
 \begin{compactitem}
-\item[(i)] By induction on $M$. Suppose $M = v$ for some variable $v$ then the result trivially holds since $M$ has no generalized redex. Suppose $M = \lambda x . U$ then by Property \ref{prop:lloc_properties}(iv) $U$ is in \emph{qnf} and we conclude by the induction hypothesis.    
+\item[(i)] By induction on $M$. Suppose $M = v$ for some variable $v$ then the result trivially holds since $M$ has no generalized redex. Suppose $M = \lambda x . U$ then by Property \ref{prop:lloc_properties}(iv) $U$ is in \emph{qnf} and we conclude by the induction hypothesis.
     Suppose $M = U V$. If $x$ occurs in $U$ then we conclude by the induction hypothesis ($U$ is in \emph{qnf} by Property \ref{prop:lloc_properties}(iii)). If $x$ occurs in $V$ then if $V$ is in \emph{qnf} we conclude by the induction hypothesis. Otherwise by definition of $lloc$ we necessarily have $\lambda_l(U) \neq \epsilon$. Hence $U$ is either an abstraction or a redex with possibly multiple applied arguments. Consequently, so is $UV$ which proves (i).
 
 \item[(ii)] By induction on $M$. Suppose $M = v$ for some variable $v$ then it trivially holds since $M$ has no redex. Suppose $M = \lambda x . U$ then the result follows by the induction hypothesis since the redexes of $M$ are those of $U$.
