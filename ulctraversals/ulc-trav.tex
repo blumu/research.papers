@@ -6,7 +6,7 @@
 \documentclass{article}
 \usepackage{lscape}
 \usepackage{amsmath, amsthm, amssymb}
-\usepackage{a4wide}
+%\usepackage{a4wide}
 \usepackage{gamesem}
 \usepackage{pst-tree}
 \usepackage{enumitem}
@@ -1071,12 +1071,12 @@ Algorithm~\ref{algo:ulc_normalization_by_traversals} describes the ULC normaliza
 \begin{algorithmic}
 \caption{Normalization by traversals for the Untyped Lambda Calculus}
 \label{algo:ulc_normalization_by_traversals}
-\REQUIRE{An untyped term $M$ that has a normal form.}
+\REQUIRE{An untyped term $M$ having a normal form.}
 \ENSURE{The computation tree of the normal form of $M$.}
 \begin{enumerate}
   \item Enumerate maximal \emph{normalizing} traversals $\travsetnorm(M)$ using the rules of Table~\ref{tab:normalizing_trav_rules}:
   \begin{itemize}
-  \item For each traversal, project it by $\coresymbol$ to get the traversal core;
+  \item For each traversal, apply transformation $\coresymbol$ to get the traversal core;
   \item Take the P-view of the traversal core;
   \item Interpret the resulting sequence as a path
   in the tree representation of the $\beta$-nf of $M$.
@@ -1089,10 +1089,9 @@ Algorithm~\ref{algo:ulc_normalization_by_traversals} describes the ULC normaliza
 
 \subsubsection*{Correctness}
 
-We cannot rely on the correspondence with Game Semantics to prove correctness of the ULC normalization procedure since we have not formally proven such correspondence in the untyped setting (Conjecture \ref{conj:ulc_corresp}). Instead we will prove the Characterization Theorem for ULC using a term-rewriting argument based on the \emph{leftmost linear reduction} strategy \emph{leftmost linear reduction} from Section~\ref{sec:leftmostlinearred}.
-
-
-We first show that $\sim$-equivalence classes of traversals of $M$ are preserved by \emph{leftmost-linear reduction}.
+Like in the STLC case, correctness is show via a Path Characterization Theorem.
+Unlike in the STLC case, however, we cannot rely on the correspondence with Game Semantics to show this characterization since we have not formally proven such correspondence in the untyped setting (Conjecture \ref{conj:ulc_corresp}).
+For ULC, we will instead use a term-rewriting argument based on the \emph{leftmost linear reduction} strategy \emph{leftmost linear reduction} from Section~\ref{sec:leftmostlinearred}. We first show that $\sim$-equivalence classes of traversals of $M$ are preserved by \emph{leftmost-linear reduction}.
 
 \begin{property}
 \label{prop:qnf_longapply}
@@ -1119,11 +1118,8 @@ Let $M$ be an untyped term.
 \end{enumerate}
 \end{proposition}
 \todo{
-Proof:
-- explain where the relabelling done in $\coresymbol$ is used in the proof! (during trivial reduction of the qnf)
-- explain where we use the fact that branching traversals are $\sim$-complete (Prop.~\ref{prop:branching_traversal_simcomplete}) and the weaving Property \ref{prop:weaving}???
-- Show where we use Theorem \ref{thm:path_charact_ulc}:
-  Apply the bijection from the characterization theorem \ref{thm:path_charact_ulc} to get the corresponding path.
+- explain where the relabelling done in $\coresymbol$ is used in the proof. Answer: during trivial reduction of the qnf, in (ii).
+- explain where we use the weaving Property \ref{prop:weaving}???
 }
 
 \begin{proof}[Proof sketch]
@@ -1190,7 +1186,7 @@ Hence the arity threshold of any justified sequences $t$ ending with external va
 Otherwise, since $M$ has a beta-nf, by Theorem \ref{thm:soundness_leftmostlinearred} its \emph{leftmost linear reduction sequence} terminates and yields the \emph{quasi normal form} (qnf). By Prop.~\ref{prop:ulctrav_impl_linear_reduction}(i) the set of traversals is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of traversals of the \emph{qnf} is isomorphic to the set of traversals of $M$. By Prop.~\ref{prop:ulctrav_impl_linear_reduction}(ii), taking the projection $\coresymbol$ yields $\travsetnorm(T)$.
 \end{proof}
 
-\paragraph{Soundness} of the normalization procedure then follows from the above theorem and the fact that a term is uniquely characterized by its set of paths $\pathset$ (Property \ref{prop:tree_path_charact}). The last step of the algorithm (assignment of labels to the tree nodes) is sound because by Property \ref{prop:tree_path_charact} justification pointers uniquely determine variables names.
+\paragraph{Soundness} of the normalization procedure then follows from Theorem \ref{thm:path_charact_ulc} and the fact that a term is uniquely characterized by its set of paths $\pathset$ (Property \ref{prop:tree_path_charact}). The last step of the algorithm (assignment of labels to the tree nodes) is sound because by Property \ref{prop:tree_path_charact} justification pointers uniquely determine variables names.
 
 \begin{remark}
 The infinitary counterpart of the characterization theorem for lambda terms with no normal form (not shown in this paper) can be stated as:
@@ -1610,37 +1606,6 @@ Therefore the beta-normal from of $varity\ 2$ is:
 &\equiv_\alpha \lambda x y s z . s (x s (y s z))
 \end{align*}
 \end{example}
-
-\section{Further directions}
-
-\subsection{Higher-order collapsible pushdown automata}
-
-In \cite{Ong2006}, a construction\footnote{This CPDA construction from HORS is implemented in the HOG tool.)}
- is defined that converts a higher-order recursion scheme into an equivalent collapsible higher-order pushdown automaton (in the sense that they generate the same infinite tree). The automaton proceeds by calculating traversals over the tree representation of the higher-order recursion scheme. In that setting, the recursion scheme represents a closed term (no free variable) of order-$0$, and the generated structure is an order-$0$ value (a tree).
-
-Conceivably, there must be some kind of tree-generating automaton that can be used to calculate the set of traversals of an untyped lambda term as defined in this paper. The generated tree would be an order-$0$ tree representation of the beta-normal of a term: each terminal symbol of the automaton would correspond to a ``token'' of the lambda term: either a lambda node (represented by non-terminal of type $o->o$), or a variable node (represented by a non-terminal of type $o^k->o$ where $k\geq0$ is the number of operand applied to the variable in the beta normal form of the term.
-
-In the untyped lambda calculus, though, there is no notion of order, therefore the type-based definition of higher-order pushdown automata, where each non-terminals has a simple-type, would not be appropriate here. The definition of HOCPDA would thus need to be relaxed to allow non-terminals of any type. The construction of the HOPCPDA itself would follow the same lines as \cite{Ong2006} except that $\eta$-long normal expansion is not needed.
-
-\subsection{Connection with compilation of ULC to LLL}
-
-In \cite{JonesBerezunLLL}, Daniil Berezun and Neil Jones define a different version of traversals with notable differences: no ghost lambda nodes, two types of justification pointers: binding pointers and control pointers. Although very similar, the relationship between their notion of traversals and the one defined in this paper is still not formally established. Danos and Regnier's Linear Head reduction paper \cite{danos-head} appears to be the best avenue to establish the connection.
-
-
-\subsection{Game semantics connection}
-
-In the lines of \cite{BlumPhd} where the connection between the theory of traversals and Game Semantics was formalized for typed languages including the simply-typed lambda calculus, PCF and Idealized Algol, a natural question to ask is whether there is a similar connection between the ULC traversals defined in this paper on game models of the untyped lambda calculus. We conjecture that the Game Semantic correspondence can be generalized to the game model of the untyped lambda calculs introduced in Andrew Ker's thesis \cite{KerThesis} in which lambda-terms are denoted by \emph{effectively almost everywhere copycat} strategy  (Conjecture \ref{conj:ulc_corresp}).
-
-\subsection{Head linear reduction}
-
-Traversals have emerged as a constructive method to represent
-Relationship between Game Semantics and
-
-In 2004, Danos and Regnier \cite{danos-head} establish the connection between Game Semantics and the notion of \emph{head-linear reduction}.
-
-Head linear reduction is  a non-standard reduction strategy for the lambda calculus and shed some light studies the connection with Game Semantics.
-
-
 \section{Leftmost linear reduction}
 \label{sec:leftmostlinearred}
 
@@ -1845,6 +1810,39 @@ The leftmost redex sequence of $M$ is $LRS(M) = (\lambda x, U) \cdot (\lambda w,
 Reducing the term with two head reduction gives
 $M \rightarrow_h z ((\lambda w y.y)x) \rightarrow_h z (\lambda y . y)$ which is in normal form.
 \end{example}
+
+
+
+\section{Further directions}
+
+\subsection{Higher-order collapsible pushdown automata}
+
+In \cite{Ong2006}, a construction\footnote{This CPDA construction from HORS is implemented in the HOG tool.)}
+ is defined that converts a higher-order recursion scheme into an equivalent collapsible higher-order pushdown automaton (in the sense that they generate the same infinite tree). The automaton proceeds by calculating traversals over the tree representation of the higher-order recursion scheme. In that setting, the recursion scheme represents a closed term (no free variable) of order-$0$, and the generated structure is an order-$0$ value (a tree).
+
+Conceivably, there must be some kind of tree-generating automaton that can be used to calculate the set of traversals of an untyped lambda term as defined in this paper. The generated tree would be an order-$0$ tree representation of the beta-normal of a term: each terminal symbol of the automaton would correspond to a ``token'' of the lambda term: either a lambda node (represented by non-terminal of type $o->o$), or a variable node (represented by a non-terminal of type $o^k->o$ where $k\geq0$ is the number of operand applied to the variable in the beta normal form of the term.
+
+In the untyped lambda calculus, though, there is no notion of order, therefore the type-based definition of higher-order pushdown automata, where each non-terminals has a simple-type, would not be appropriate here. The definition of HOCPDA would thus need to be relaxed to allow non-terminals of any type. The construction of the HOPCPDA itself would follow the same lines as \cite{Ong2006} except that $\eta$-long normal expansion is not needed.
+
+\subsection{Connection with compilation of ULC to LLL}
+
+In \cite{JonesBerezunLLL}, Daniil Berezun and Neil Jones define a different version of traversals with notable differences: no ghost lambda nodes, two types of justification pointers: binding pointers and control pointers. Although very similar, the relationship between their notion of traversals and the one defined in this paper is still not formally established. Danos and Regnier's Linear Head reduction paper \cite{danos-head} appears to be the best avenue to establish the connection.
+
+
+\subsection{Game semantics connection}
+
+In the lines of \cite{BlumPhd} where the connection between the theory of traversals and Game Semantics was formalized for typed languages including the simply-typed lambda calculus, PCF and Idealized Algol, a natural question to ask is whether there is a similar connection between the ULC traversals defined in this paper on game models of the untyped lambda calculus. We conjecture that the Game Semantic correspondence can be generalized to the game model of the untyped lambda calculs introduced in Andrew Ker's thesis \cite{KerThesis} in which lambda-terms are denoted by \emph{effectively almost everywhere copycat} strategy  (Conjecture \ref{conj:ulc_corresp}).
+
+\subsection{Head linear reduction}
+
+Traversals have emerged as a constructive method to represent
+Relationship between Game Semantics and
+
+In 2004, Danos and Regnier \cite{danos-head} establish the connection between Game Semantics and the notion of \emph{head-linear reduction}.
+
+Head linear reduction is  a non-standard reduction strategy for the lambda calculus and shed some light studies the connection with Game Semantics.
+
+
 
 \appendix
 
