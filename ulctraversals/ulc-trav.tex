@@ -1108,6 +1108,32 @@ lloc_M(y A_1 \ldots A_n) &=
 Immediate from the definition of $lloc$ since $\lambda_l(y) = \epsilon$.
 \end{proof}
 
+A subsequence of a traversal is called a \emph{spinal descent} if it is a path in the computation tree consisting solely of lambda and $@$-nodes, and where each lambda node (except the first one if its the first node in the sequence) is the $0$th child of the preceding $@$-node.
+
+\begin{proposition}
+Let $M$ be a term in quasi-normal form. Let $t$ be a traversal of $M$. Consider any subsequence $u$ of $t$ of the form
+$u = \underline{\lambda \overline{x}} \cdot v \cdot \underline{x}$
+for some subsequence $v$ of $t$, variable node $x$ and lambda node $\lambda \overline{x}$.
+  
+\begin{enumerate}[label=(\roman*)]
+  \item If all nodes in $v$ are internal (\ie, if $u$ is a \emph{weave}) then
+  $u$ is a spinal descent of $M$.
+
+  Further if $v$ is empty then the node following $u$ in $t$ is necessarily a structural child lambda node of $x$ (not a ghost node).
+  
+  \item If $v$ contains at least one external node then all nodes in $v$ are external.
+  Further all nodes in $v$ are structural (no ghost node).
+  
+\end{enumerate}
+\end{proposition}
+\begin{proof}
+(i) This trivially follows from the definition of the traversal rules \rulenamet{App} and \rulenamet{Lam}. If $u$ is empty then the arity threshold of $t$ is precisely $|x|$ therefore rule \rulenamet{IVar} can only be used to visit a structural child of $x$.
+
+(ii) 
+
+\end{proof}
+
+
 \begin{proposition}[Traversals implement linear reduction]
 \label{prop:ulctrav_impl_linear_reduction}
 Let $M$ be an untyped term.
@@ -1685,7 +1711,7 @@ and $\mathcal{V}^\bot(M)$ for $\{\bot \} + \mathcal{V}(M)$ where the bottom elem
 We define the partial function $lloc_M$ from subterms of $M$ to variable occurrences by induction on the subterms of $M$:
 \begin{align*}
 lloc_M(v) &=
-    \begin{cases}n{cases}
+    \begin{cases}
     v &\mbox{if $v$ is involved in a generalized redex in $M$,} \\
     \bot & \mbox {otherwise.}
     \end{cases}  \\
