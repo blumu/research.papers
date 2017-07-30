@@ -948,59 +948,67 @@ In other words: $b_{q} = |n_1| - |\alpha_1| + |n_2| - |\alpha_2| + \ldots + |n_{
 Observe that traversal rule $\rulename{IVar}$ leaves infinitely many choices for the link label: any value greater than $1$. The following property shows that if the link label exceeds the arity threshold then the traversal ends up traversing only ghost nodes that never materialize back to a structural node.
 \begin{property}[Weaving]
 \label{prop:weaving}
-Let $t \in \travsetbr$ be a branching traversal ending with a variable node hereditarily justified by the root. Let $2k$ be the length of the weave ending at $t^\omega$ for $k\geq1$. Suppose $t_{max} \in \travsetbr$ is a maximal traversal extension of $t$, in which case by rule $\rulename{IVar_\branching}$, the node immediately after $t$ is a lambda node justified by $t^\omega$ with label $i\geq 1$. Then:
+Let $t \in \travsetbr$ be a branching traversal ending with a variable node hereditarily justified by the root and $t_{max} \in \travsetbr$ be a maximal traversal extension of $t$. We consider the weave ending at $t^\omega$:
+$\underline{\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ \underline{n_1}$ of length $2k$, for some $k\geq1$, with $n_1 = t^\omega$. By rule $\rulename{IVar_\branching}$, the occurrence $t^\omega$ is necessarily immediately followed by an external lambda node justified by $t^\omega$ with some label $i\geq 1$.
 
-\begin{enumerate}
-\item If $i>\arth(t)$ then $t^\omega$ is followed in $t_{max}$ by a weave of length $2k$ consisting only of ghost nodes:
-$$ t_{max} = \Pstr[0.3cm]{ \cdots
-(ak){\underline{\alpha_k}}\ (nk){n_k}\
-(ak1)\alpha_{k-1}\ (nk1){n_{k-1}}\
-\cdots\
-(a2)\alpha_2\ (n2){n_2}\
-(a1)\alpha_1\ (n1){\underline{t^\omega}}\
-(l1-n1,30:i){\underline{\ghostlmd}}\ (v1-a1,30)\ghostvar\
-(l2-n2,30)\ghostlmd\ (v2-a2,30)\ghostvar\
+%We defined the sequence of labels $(i_j)_{j\geq1}$ as follows:
+%$$ i_{q+1} = i_1 + \sum_{j=1..q} (|\alpha_j| - |n_j|) $$
+
+We then have:
+\begin{enumerate}[label=(\roman*)]
+\item If $i>\arth(t)$ then $t^\omega$ is followed in $t_{max}$ by a weave of length $2k$ consisting only of ghost nodes defined as follows:
+\begin{eqnarray*}
+t_{max} &=& \Pstr[0.3cm]{ \cdots
+ (alpha){\underline{\alpha_k}} \ (nk){n_k} \
+ (alphakm1){\alpha_{k-1}} \
  \cdots\
-(lk1-nk1,30)\ghostlmd\ (vk1-ak1,30)\ghostvar\
-(lk-nk,30)\ghostlmd\ (vk-ak,30){\underline{\ghostvar}} \cdots } $$
+ (a2){\alpha_2}\ (n2){n_2}\ (a1){\alpha_1}\ (n1){\underline{t^\omega}}\
+ (l1-n1,30:i_1){\underline{\ghostlmd}}\
+ (t1-a1,40:i_2){\ghostvar} \ (l2-n2,41:i_2){\ghostlmd}\
+  (t2-a2,45:i_3){\ghostvar} \cdots
+(tkm1-alphakm1,40:i_{k}){\ghostvar} \ (lkm1-nk,43:i_{k}){\ghostlmd}\
+ (tk-alpha,45:i_{k+1}){\underline{\ghostvar}} \cdots }\\
+i_{q+1} &=& i + \sum_{j=1..q} (|\alpha_j| - |n_j|), \quad \mbox{ for $0\leq q\leq k$}
+\end{eqnarray*}
+where underlined occurrences indicate external nodes.
 
-where $\underline{\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ \underline{n_1}$ denotes the weave ending at $n_1 = t^\omega$.
+\item If $i>\arth(t)$ then \emph{all the nodes} following $t^\omega$ in $t_{max}$ are ghost occurrences.
 
-\item If $i>\arth(t)$ then \emph{all the nodes} following $t^\omega$ in any traversal extension of $t$ are ghost nodes.
+\item If $i\leq\arth(t)$ then for some $0 \leq r <k$ and link labels $i_q$, $0\leq q \leq r$ defined as in (i), we have:
+\begin{eqnarray*}
+t_{max} &=& \Pstr[0.3cm]{
+    \underline{\alpha_k}\ n_k \
+    \cdots
+    (alphar){\alpha_r} \ (nr){n_r} \
+    (alpharm1){\alpha_{r-1}} \
+ \cdots\
+ (a2){\alpha_2}\ (n2){n_2}\ (a1){\alpha_1}\ (n1){\underline{t^\omega}}\
+ (l1-n1,30:i_1){\underline{\ghostlmd}}\
+ (t1-a1,40:i_2){\ghostvar} \ (l2-n2,41:i_2){\ghostlmd}\
+  (t2-a2,45:i_3){\ghostvar} \cdots
+(tkm1-alpharm1,40:i_{r}){\ghostvar} \ (lkm1-nr,43:i_{r}){\lambda\overline{x}}\
+\cdots }
+\end{eqnarray*}
+where $\lambda\overline{x}$ is a structural internal lambda node, and consequently $i_r \leq |n_r|$.
 \end{enumerate}
 \end{property}
 \begin{proof}
-(i) Consider the inclusive sub-sequence of nodes from $\alpha$ to $m$. By the alternation property of traversals, it contains $2k$ nodes for some $k\geq1$. Let's write this sequence as a succession of lambda nodes $\alpha_q$ and variable nodes $n_q$, with indices going from $k$ down to $1$. We start indexing from $\alpha$ so that $\alpha_k = \alpha$ and $n_1 = n$.
+(i) By the alternation property of traversals, the last weave of $t$ consists of a succession of lambda nodes $\alpha_q$ and variable or $@$-nodes $n_q$, with indices going from $k$ down to $1$.
 
-We show by finite induction on $k\geq1$ that the first $2k$ nodes after $t^\omega$ are successive pairs of ghost lambda and ghost variable nodes justified in order by $n_1, \alpha_1, n_2, \alpha_2, n_3, \ldots, n_k, \alpha_k$ with respective labels $i_1, i_2, i_2, i_3, i_3, \cdots, i_{k-1}, i_{k-1}, i_k$ defined by:
+We show by finite induction on $1 \leq q \leq k$ that the first $2k$ nodes after $t^\omega$ are successive pairs of ghost lambda and ghost variable nodes justified in order by $n_1, \alpha_1, n_2, \alpha_2, n_3, \ldots, n_k, \alpha_k$ with respective labels $i_1, i_2, i_2, i_3, i_3, \cdots, i_k, i_k, i_{k+1}$ defined by:
 \begin{equation*}
 \left\{
     \begin{aligned}
 i_1 &= i \\
-i_{q+1} &= i_q + |\alpha_q| - |n_q| \hbox{, $1\leq q < k$}.
+i_{q+1} &= i_q + |\alpha_q| - |n_q| \hbox{, $1\leq q \leq k$}.
     \end{aligned}
 \right.
 \end{equation*}
 
-Or equivalently:
-\begin{eqnarray*}
-t_{max} &=& \Pstr[0.3cm]{ \cdots
- (alpha){\alpha_k} \ (nk){n_k} \
- (alphakm1){\alpha_{k-1}} \
- \cdots\
- (a2){\alpha_2}\ (n2){n_2}\ (a1){\alpha_1}\ (n1){t^\omega}\
- (l1-n1,30:i_1){\ghostlmd}\
- (t1-a1,40:i_2){\ghostvar} \ (l2-n2,41:i_2){\ghostlmd}\
-  (t2-a2,45:i_3){\ghostvar} \cdots
-(tkm1-alphakm1,40:i_{k-1}){\ghostvar} \ (lkm1-nk,43:i_{k-1}){\ghostlmd}\
- (tk-alpha,45:i_k){\ghostvar} \cdots }\\
-i_{q+1} &=& i + \sum_{j=1..q} (|\alpha_j| - |n_j|)
-\end{eqnarray*}
-
 \begin{itemize}
 \item Base case $q=1$: Because $t^\omega$ is a ghost variable node hereditarily justified by the root, the only next rule that can be applied is \rulenamet{IVar_\branching}, and by assumption the following node is a ghost lambda node justified by $t^\omega$ with label $i_1 = i$. Then by rule \rulenamet{Lam^\ghostlmd_\branching} the next node is a ghost variable justified by $\alpha$ with label $i_2 = i + |\alpha_1| - |t^\omega|$.
 
-$$ t_{max} = \Pstr[0.3cm]{ \cdots (alpha){\alpha_1}\ (m){t^\omega} (l-m,30:i){\ghostlmd}\ (t-alpha,45:i_2){\ghostvar} \cdots} $$
+$$ t_{max} = \Pstr[0.3cm]{ \cdots (alpha){\alpha_1}\ (m){t^\omega}\ (l-m,30:i){\ghostlmd}\ (t-alpha,45:i_2){\ghostvar} \cdots} $$
 
 \item For $1<q\leq k$, by the induction hypothesis we have:
 $$
@@ -1009,36 +1017,46 @@ t_{max} = \Pstr[0.3cm]{
   (aq){\alpha_q}\
   (nq){n_q} \
   (aqm1){\alpha_{q-1}}\
-  (nqm1){n_{q-1}} \
- \cdots\
+  (nqm1){n_{q-1}}
+ \cdots
  t^\omega\ \cdots
-  (lk-nqm1,35:{i_{q-2}})\ghostlmd\
-  (tq-aqm1,40:{i_{q-1}})\ghostvar\
+  (lk-nqm1,35:{i_{q-1}})\ghostlmd\
+  (tq-aqm1,40:{i_{q}})\ghostvar\
    \cdots
 }
 $$
 
 We then have:
 \begin{align*}
-i_{q-1} &= i + \sum_{j=1..q-2} (|\alpha_j| - |n_j|)
+i_{q} &= i + \sum_{j=1..q-1} (|\alpha_j| - |n_j|)
 &\qquad\hbox{(by induction hypothesis)}\\
-        &> \arth(t) + \sum_{j=1..q-2} (|\alpha_j| - |n_j|)
+        &> \arth(t) + \sum_{j=1..q-1} (|\alpha_j| - |n_j|)
 &\qquad\hbox{(assumption $i> \arth(t)$)} \\
         &= \max_{r=1..k-1} \left( |n_r| + \sum_{j=1..r-1} (|n_j| - |\alpha_j|) \right)
-        + \sum_{j=1..q-2} (|\alpha_j| - |n_j|)
+        + \sum_{j=1..q-1} (|\alpha_j| - |n_j|)
 & \qquad\hbox{(definition of $\arth$)} \\
-    &\geq |n_q| + \sum_{j=1..q-2} (|n_j| - |\alpha_j|) + \sum_{j=1..q-2} (|\alpha_j| - |n_j|)
-&\qquad\hbox{(take $r=q-1$)} \\
+    &\geq |n_q| + \sum_{j=1..q-1} (|n_j| - |\alpha_j|) + \sum_{j=1..q-1} (|\alpha_j| - |n_j|)
+&\qquad\hbox{(take $r=q$)} \\
     &= |n_q|
 \end{align*}
 
 
 By definition of the weave, $\alpha_{q-1}$ is hereditarily justified by an $@$ node.
-Since $i_{q-1} > |n_q|$, by rule \rulenamet{Var_\branching} the next node is necessarily a ghost lambda node justified by $n_q$ with label $i_q$. With rule \rulenamet{Lam^\ghostlmd_\branching} the following node is a ghost variable node $\ghostvar$ justified by $\alpha_q$ and labelled by $i_q = i_{q-1} + |\alpha_{q-1}| -|n_{q-1}|$.
+Since $i_q > |n_q|$, by rule \rulenamet{Var_\branching} the next node is necessarily a ghost lambda node justified by $n_q$ with label $i_q$. With rule \rulenamet{Lam^\ghostlmd_\branching} the following node is a ghost variable node $\ghostvar$ justified by $\alpha_q$ and labelled by $i_{q+1} = i_q + |\alpha_{q}| -|n_{q}|$.
 \end{itemize}
 
 (ii) By (i) the next weave following $t$ consists solely of ghost nodes and ends with a ghost variable $\ghostvar$ hereditarily justified by the root. Since ghost nodes have arity $0$, the arity threshold at that point is $0$. Hence, any label value $j$ chosen to extend the traversal at that point will be strictly greater than the arity threshold: thus by (i) the next weave consists solely of ghost nodes.
-By repeating the argument this shows that all the nodes following $t$ are necessarily ghost nodes.
+Applying the argument repeatedly shows that all the occurrences following $t$ are necessarily ghost nodes.
+
+(iii) Take $r$ to be the smallest $q\geq 1$ such that $i_q\leq |n_q|$, it exists because:
+\begin{align*}
+i \leq \arth(t)
+        &\iff i \leq \max_{q=1..k-1} \left( |n_q| + \sum_{j=1..q-1} (|n_j| - |\alpha_j|) \right)\quad\hbox{(Definition of $\arth(t)$)} \\
+        &\implies i \leq |n_r| + \sum_{j=1..r-1} (|n_j| - |\alpha_j|) \quad \mbox{for some $1 \leq r \leq k-1$} \\
+        &\iff i + \sum_{j=1..r-1} (|\alpha_j| - |n_j|) \leq |n_r| \quad \mbox{for some $1 \leq r \leq k-1$} \\
+        &\iff i_r \leq |n_r| \quad \mbox{for some $1 \leq r \leq k-1$} \quad \mbox{(Definition of $i_r$).}
+\end{align*}
+We then conclude by applying the same argument as (i) for all $q<r$.
 \end{proof}
 
 
@@ -1114,22 +1132,22 @@ A subsequence of a traversal is called a \emph{spinal descent} if it is a path i
 Let $M$ be a term in quasi-normal form. Let $t$ be a traversal of $M$. Consider any subsequence $u$ of $t$ of the form
 $u = \underline{\lambda \overline{x}} \cdot v \cdot \underline{x}$
 for some subsequence $v$ of $t$, variable node $x$ and lambda node $\lambda \overline{x}$.
-  
+
 \begin{enumerate}[label=(\roman*)]
   \item If all nodes in $v$ are internal (\ie, if $u$ is a \emph{weave}) then
   $u$ is a spinal descent of $M$.
 
   Further if $v$ is empty then the node following $u$ in $t$ is necessarily a structural child lambda node of $x$ (not a ghost node).
-  
+
   \item If $v$ contains at least one external node then all nodes in $v$ are external.
   Further all nodes in $v$ are structural (no ghost node).
-  
+
 \end{enumerate}
 \end{proposition}
 \begin{proof}
 (i) This trivially follows from the definition of the traversal rules \rulenamet{App} and \rulenamet{Lam}. If $u$ is empty then the arity threshold of $t$ is precisely $|x|$ therefore rule \rulenamet{IVar} can only be used to visit a structural child of $x$.
 
-(ii) 
+(ii)
 
 \end{proof}
 
