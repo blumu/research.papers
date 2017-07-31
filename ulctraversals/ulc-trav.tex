@@ -1126,30 +1126,125 @@ lloc_M(y A_1 \ldots A_n) &=
 Immediate from the definition of $lloc$ since $\lambda_l(y) = \epsilon$.
 \end{proof}
 
-A subsequence of a traversal is called a \emph{spinal descent} if it is a path in the computation tree consisting solely of lambda and $@$-nodes, and where each lambda node (except the first one if its the first node in the sequence) is the $0$th child of the preceding $@$-node.
+\begin{definition}
+A subsequence of a traversal is called a
+\begin{itemize}
+\item \defname{spinal descent} if it is a path in the computation tree consisting solely of lambda and $@$-nodes, and where each lambda node (except the first one, if the first occurrence is a lambda node) is the $0$th child of the preceding $@$-node.
+\item \defname{pending argument lookup} if it consists of an alternation of ghost lambda nodes and ghost variables nodes, starting with an external ghost lambda node and terminated by a structural internal lambda node in $\NodesLmd$.
+\item \defname{branching descent} if it consists of an alternation of external structural lambda nodes and external structural variable nodes.
+\end{itemize}
+\end{definition}
 
-\begin{proposition}
-Let $M$ be a term in quasi-normal form. Let $t$ be a traversal of $M$. Consider any subsequence $u$ of $t$ of the form
+For any node $n$ of the tree of $M$ we write $M^{(n)}$ for the subterm of $M$ rooted at $n$, and $lloc_M(n)$ to denote $lloc_M(M^{(n)})$.
+
+\begin{property}
+\label{prop:weave_spinaldescent}
+Let $t$ be a non-empty traversal of $M$.
+Consider any subsequence $u$ of $t$ of the form
 $u = \underline{\lambda \overline{x}} \cdot v \cdot \underline{x}$
-for some subsequence $v$ of $t$, variable node $x$ and lambda node $\lambda \overline{x}$.
-
+for some subsequence $v$ of $t$, external structural variable node $x$ and external structural lambda node $\lambda \overline{x}$.
 \begin{enumerate}[label=(\roman*)]
   \item If all nodes in $v$ are internal (\ie, if $u$ is a \emph{weave}) then
   $u$ is a spinal descent of $M$.
 
-  Further if $v$ is empty then the node following $u$ in $t$ is necessarily a structural child lambda node of $x$ (not a ghost node).
+  \item If $v$ is empty then the node following $u$ in $t$, if it exists, is necessarily a structural child lambda node of $x$ (not a ghost node).
 
-  \item If $v$ contains at least one external node then all nodes in $v$ are external.
-  Further all nodes in $v$ are structural (no ghost node).
+  %%\item If the first node in $v$ is external then every node in $v$ is a structural external node.
+\end{enumerate}
+\end{property}
+\begin{proof}
+ (i) It trivially follows from the definition of the traversal rules \rulenamet{App} and \rulenamet{Lam}.
+
+ (ii) If $v$ is empty then the weave ending at $x$
+ is just $\underline{\lambda \overline{x}} \cdot \underline{x}$ therefore
+ the arity threshold of $t$ is precisely $|x|$ and so rule \rulenamet{IVar} can only be used to visit a structural child of $x$, not ghost nodes.
+\end{proof}
+
+\begin{proposition}
+Let $M$ be a term in quasi-normal form. Let $t$ be a non-empty traversal of $M$.
+
+\begin{enumerate}[label=(\Alph*)]
+\item For all external lambda node $\alpha \in \NodesLmd$ occurring in $t$ we have $lloc_M(\alpha) = \bot$.
+
+\item $t$ does not contain any internal variable node;
+
+\item Let $t_{max}$ be a maximal extension of $t$.
+
+    \begin{enumerate}[label=(\alph*)]
+    \item Suppose $t^\omega$ is an external lambda node $\lambda \overline{\eta}$. Then the weave starting at $t^\omega$ is of the form
+    $$\underline{\lambda\overline{\eta}} \cdot u_1 \cdot \underline{x_1}$$ where
+        \begin{itemize}
+        \item $u_1$ is a (possibly empty) \emph{spinal descent} (internal nodes),
+        \item $x_1$ is a structural external variable nodes.
+        \end{itemize}
+
+        % \item Or $u_1$ is non-empty and the weave is of the form
+        % $$ \underline{\lambda\overline{\eta}} \cdot u_1 \cdot \underline{x_1} \cdot w \cdot \lambda\overline{\eta_2} \cdot u_2 \cdot \underline{x_2} $$
+        % where
+        % \begin{itemize}
+        % \item $u_1$ is a \emph{spinal descent} (internal nodes),
+        % \item $w$ is a \emph{pending parameter lookup} (ghost nodes),
+        % \item $\lambda\overline{\eta_2}$ is an internal lambda node
+        %     justified by some $@$ node occurring in $u$,
+        % \item $u_2$ is a \emph{spinal descent} (internal nodes),
+        % \item $x_1,x_2$ are structural external variable nodes.
+        % \end{itemize}
+
+    \item Suppose $t^\omega$ is an external structural variable node $x_1$.
+    Consider the weave immediately preceding $x_1$:
+    $$\underline{\lambda\overline{\eta}} \cdot u_1 \cdot \underline{x_1}$$
+    where $u_1$ is a (possibly empty) \emph{spinal descent} (internal nodes).
+
+    \begin{itemize}
+    \item If $u_1$ is empty then by Property \ref{prop:weave_spinaldescent} the node following $x_1$ is necessarily a structural external lambda node and the next weave is then defined as per case (a) above.
+
+    \item If $u_1$ is not empty then the next weave is of the form
+        $$ \underline{\lambda\overline{\eta}} \cdot u_1 \cdot \underline{x_1} \cdot w \cdot \lambda\overline{\eta_2} \cdot u_2 \cdot \underline{x_2} $$
+        where
+        \begin{itemize}
+        \item $u_1$ is a non-empty \emph{spinal descent} (internal nodes),
+        \item $v$ is a \emph{pending parameter lookup} (ghost nodes) of length shorted than $u_1$,
+        \item $\lambda\overline{\eta_2}$ is an internal lambda node
+            justified by some $@$ node occurring in $u_1$,
+        \item $u_2$ is a \emph{spinal descent} (internal nodes),
+        \item $x_1,x_2$ are structural external variable nodes.
+        \end{itemize}
+    \end{itemize}
+    \end{enumerate}
+
+\item $t$ is finite.
 
 \end{enumerate}
+
 \end{proposition}
 \begin{proof}
-(i) This trivially follows from the definition of the traversal rules \rulenamet{App} and \rulenamet{Lam}. If $u$ is empty then the arity threshold of $t$ is precisely $|x|$ therefore rule \rulenamet{IVar} can only be used to visit a structural child of $x$.
+%By induction on the traversal $t$. It's trivially true for the base case $t = r$ where $r$ is the root of the tree. In particular, because $M$ is in \emph{qnf} we have $lloc_M(r) = \bot$.
 
-(ii)
+%Let's assume all the properties hold for $t$ and consider a traversal extension $t_{ext}$ of $t$.
+
+We prove the rest by case analysis on $t^\omega$.
+
+Suppose $t^\omega = \lambda\overline{\eta}$ is the root of $M$.
+Then
+- (A) $lloc_M(t^\omega) = lloc_M(M)$ which is equal to $\bot$ since
+ $M$ is in \emph{qnf}.
+
+- (B) holds trivially
+
+- (C)
+
+
+C. Suppose $t$ is a singleton then $t^\omega = \lambda\overline{\eta}$ is the root of $M$ so because $M$ is in \emph{qnf} we have $lloc_M(t^\omega) = \bot$.
+
+
+D. (a) (i) Suppose $t$ is a singleton then $t^\omega = \lambda\overline{\eta}$ is the root of $M$ so because $M$ is in \emph{qnf} we have $lloc_M(t^\omega) = \bot$.
+
+
+E.
 
 \end{proof}
+
+
 
 
 \begin{proposition}[Traversals implement linear reduction]
