@@ -1160,24 +1160,21 @@ for some subsequence $v$ of $t$, external structural variable node $x$ and exter
  the arity threshold of $t$ is precisely $|x|$ and so rule \rulenamet{IVar} can only be used to visit a structural child of $x$, not ghost nodes.
 \end{proof}
 
-\begin{proposition}
+\begin{proposition}[Qnf weave decomposition]
 Let $M$ be a term in quasi-normal form. Let $t$ be a non-empty traversal of $M$.
 
 \begin{enumerate}[label=(\Alph*)]
 \item For all external lambda node $\alpha \in \NodesLmd$ occurring in $t$ we have $lloc_M(\alpha) = \bot$.
 
-\item $t$ does not contain any internal variable node;
+\item $t$ does not contain any internal variable node (\ie, all the internal nodes are $@$ nodes);
 
 \item Let $t_{max}$ be a maximal extension of $t$.
 
     \begin{enumerate}[label=(\alph*)]
     \item Suppose $t^\omega$ is an external lambda node $\lambda \overline{\eta}$. Then the weave starting at $t^\omega$ is of the form
     $$\underline{\lambda\overline{\eta}} \cdot u_1 \cdot \underline{x_1}$$ where
-        \begin{itemize}
-        \item $u_1$ is a (possibly empty) \emph{spinal descent} (internal nodes),
-        \item $x_1$ is a structural external variable nodes.
-        \end{itemize}
-
+        $u_1$ is a (possibly empty) \emph{spinal descent} (internal nodes),
+        and $x_1$ is a structural external variable nodes.
         % \item Or $u_1$ is non-empty and the weave is of the form
         % $$ \underline{\lambda\overline{\eta}} \cdot u_1 \cdot \underline{x_1} \cdot w \cdot \lambda\overline{\eta_2} \cdot u_2 \cdot \underline{x_2} $$
         % where
@@ -1191,15 +1188,13 @@ Let $M$ be a term in quasi-normal form. Let $t$ be a non-empty traversal of $M$.
         % \end{itemize}
 
     \item Suppose $t^\omega$ is an external structural variable node $x_1$.
-    Consider the weave immediately preceding $x_1$:
-    $$\underline{\lambda\overline{\eta}} \cdot u_1 \cdot \underline{x_1}$$
-    where $u_1$ is a (possibly empty) \emph{spinal descent} (internal nodes).
-
+    Consider the weave immediately preceding $x_1$: $\underline{\lambda\overline{\eta}} \cdot u_1 \cdot \underline{x_1}$ where $u_1$ is a (possibly empty) \emph{spinal descent} (internal nodes).
     \begin{itemize}
     \item If $u_1$ is empty then by Property \ref{prop:weave_spinaldescent} the node following $x_1$ is necessarily a structural external lambda node and the next weave is then defined as per case (a) above.
 
-    \item If $u_1$ is not empty then the next weave is of the form
-        $$ \underline{\lambda\overline{\eta}} \cdot u_1 \cdot \underline{x_1} \cdot w \cdot \lambda\overline{\eta_2} \cdot u_2 \cdot \underline{x_2} $$
+    \item Otherwise the previous and next weaves are the form:
+        $$ \underbrace{\underline{\lambda\overline{\eta}} \cdot u_1 \cdot \underline{x_1}}_{\parbox[c]{2cm}{previous weave}} \cdot
+        \underbrace{\underline{\ghostlmd} \cdot  v \cdot \lambda\overline{\eta_2} \cdot u_2 \cdot \underline{x_2}}_{\mbox{next weave}} $$
         where
         \begin{itemize}
         \item $u_1$ is a non-empty \emph{spinal descent} (internal nodes),
@@ -1218,9 +1213,14 @@ Let $M$ be a term in quasi-normal form. Let $t$ be a non-empty traversal of $M$.
 
 \end{proposition}
 \begin{proof}
-%By induction on the traversal $t$. It's trivially true for the base case $t = r$ where $r$ is the root of the tree. In particular, because $M$ is in \emph{qnf} we have $lloc_M(r) = \bot$.
+We will show (A), (B) and (C) together.
+For (A) and (B), since (C) shows that the traversal consists of a repeation of weaves of type (a) and (b), it suffices to show that (A) and (B) hold for every weave in the traversal.
 
+%By induction on the traversal $t$. It's trivially true for the base case $t = r$ where $r$ is the root of the tree. In particular, because $M$ is in \emph{qnf} we have $lloc_M(r) = \bot$.
 %Let's assume all the properties hold for $t$ and consider a traversal extension $t_{ext}$ of $t$.
+Case (a): Suppose $\lambda\overline{\eta}$ is the first node in the traversal then it's the root of the tree and therefore by definition $lloc_M(t^\omega) = lloc_M(M)$ which is equal to $\bot$ since
+ $M$ is in \emph{qnf}. Otherwise,
+
 
 We prove the rest by case analysis on $t^\omega$.
 
@@ -1231,16 +1231,13 @@ Then
 
 - (B) holds trivially
 
-- (C)
-
-
 C. Suppose $t$ is a singleton then $t^\omega = \lambda\overline{\eta}$ is the root of $M$ so because $M$ is in \emph{qnf} we have $lloc_M(t^\omega) = \bot$.
 
 
 D. (a) (i) Suppose $t$ is a singleton then $t^\omega = \lambda\overline{\eta}$ is the root of $M$ so because $M$ is in \emph{qnf} we have $lloc_M(t^\omega) = \bot$.
 
 
-E.
+(D)
 
 \end{proof}
 
