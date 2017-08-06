@@ -19,6 +19,8 @@
 \usepackage{algorithmic}
 \usepackage{geometry}
 \usepackage{pdflscape}
+\usepackage{multirow}
+
 %\usepackage{paralist}
 
 \theoremstyle{definition}
@@ -905,24 +907,24 @@ Recall that our goal is to normalize the term (when it exists) by generating som
 
 Intuitively, after a sufficiently large number of eta-expansions, we are guaranteed to keep on traversing ghost nodes that never materialize back to structural nodes. This section formalizes this intuition by introducing the \defname{arity threshold} as the maximum number of times necessary to eta-expand a given subterm (using rule $\rulename{IVar}$) in order to compute the set of paths of the beta-normal form of the term. We will show that such limit is sufficient to characterize the normal form of a lambda term when it exists: the traversal subset is $\sim$-complete.
 
-\begin{definition}[Weave]
-\label{ref:weave}
-We call \defname{weave} of a traversal $t$, any sub-sequence of consecutive nodes from $t$,
+\begin{definition}[Strand]
+\label{ref:strand}
+We call \defname{strand} of a traversal $t$, any sub-sequence of consecutive nodes from $t$,
 with even length, starting with a lambda nodes and finishing with a variable node both hereditarily justified by the root, and such that all the occurrences in-between are hereditarily justified by an application node (\ie, not by the root).
 
-From the parity property of traversals, a weave consists of alternations of lambda nodes and variable/application nodes. It is convenient to represent a weave as follows for some $k\geq 1$ where for $j$ ranging from $k$ down to $1$, $\alpha_j$ is a lambda node in $\NodesLmd^\ghostlmd$ and $n_j$ is a variable/application node in $\NodesVar^\ghostvar$:
+From the parity property of traversals, a strand consists of alternations of lambda nodes and variable/application nodes. It is convenient to represent a strand as follows for some $k\geq 1$ where for $j$ ranging from $k$ down to $1$, $\alpha_j$ is a lambda node in $\NodesLmd^\ghostlmd$ and $n_j$ is a variable/application node in $\NodesVar^\ghostvar$:
 
 $$ t = \cdots \underline{\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ \underline{n_1} \cdots $$
 
-The first and last occurrences of the weave are underlined; the $2k-2$ nodes occurring in between are those that are not hereditarily justified by the root.
+The first and last occurrences of the strand are underlined; the $2k-2$ nodes occurring in between are those that are not hereditarily justified by the root.
 
-For any occurrence $n$ in $t$ that is hereditarily justified by the root, we call \defname{weave ending at $n$} the sequence of nodes ending at $n$ that constitutes a weave. It can be obtained by taking the longest subsequence of nodes preceding $n$ that are not hereditarily justified by the root.
+For any occurrence $n$ in $t$ that is hereditarily justified by the root, we call \defname{strand ending at $n$} the sequence of nodes ending at $n$ that constitutes a strand. It can be obtained by taking the longest subsequence of nodes preceding $n$ that are not hereditarily justified by the root.
 \end{definition}
 
 \begin{definition}[Traversal arity threshold]
 \label{dfn:arity-threshold}
 Let $t$ be traversal ending with a variable node hereditarily justified by the root.
-Let $\underline{\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ \underline{n_1}$ be the weave of $t$ ending at $t^\omega$, (so that $n_1 = t^\omega$) for some $k>0$  where $\alpha_j \in \NodesLmd^\ghostlmd$, and $n_j \in \NodesVar^\ghostvar$ for all $1\leq j\leq k$.
+Let $\underline{\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ \underline{n_1}$ be the strand of $t$ ending at $t^\omega$, (so that $n_1 = t^\omega$) for some $k>0$  where $\alpha_j \in \NodesLmd^\ghostlmd$, and $n_j \in \NodesVar^\ghostvar$ for all $1\leq j\leq k$.
 
 We define the \defname{arity threshold} of $t$ as:
 \begin{align*}
@@ -948,7 +950,7 @@ In other words: $b_{q} = |n_1| - |\alpha_1| + |n_2| - |\alpha_2| + \ldots + |n_{
 Observe that traversal rule $\rulename{IVar}$ leaves infinitely many choices for the link label: any value greater than $1$. The following property shows that if the link label exceeds the arity threshold then the traversal ends up traversing only ghost nodes that never materialize back to a structural node.
 \begin{property}[Weaving]
 \label{prop:weaving}
-Let $t \in \travsetbr$ be a branching traversal ending with a variable node hereditarily justified by the root and $t_{max} \in \travsetbr$ be a maximal traversal extension of $t$. We consider the weave ending at $t^\omega$:
+Let $t \in \travsetbr$ be a branching traversal ending with a variable node hereditarily justified by the root and $t_{max} \in \travsetbr$ be a maximal traversal extension of $t$. We consider the strand ending at $t^\omega$:
 $\underline{\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ \underline{n_1}$ of length $2k$, for some $k\geq1$, with $n_1 = t^\omega$. By rule $\rulename{IVar_\branching}$, the occurrence $t^\omega$ is necessarily immediately followed by an external lambda node justified by $t^\omega$ with some label $i\geq 1$.
 
 %We defined the sequence of labels $(i_j)_{j\geq1}$ as follows:
@@ -956,7 +958,7 @@ $\underline{\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha
 
 We then have:
 \begin{enumerate}[label=(\roman*)]
-\item If $i>\arth(t)$ then $t^\omega$ is followed in $t_{max}$ by a weave of length $2k$ consisting only of ghost nodes defined as follows:
+\item If $i>\arth(t)$ then $t^\omega$ is followed in $t_{max}$ by a strand of length $2k$ consisting only of ghost nodes defined as follows:
 \begin{eqnarray*}
 t_{max} &=& \Pstr[0.3cm]{ \cdots
  (alpha){\underline{\alpha_k}} \ (nk){n_k} \
@@ -993,7 +995,7 @@ where $\lambda\overline{x}$ is a structural internal lambda node, and consequent
 \end{enumerate}
 \end{property}
 \begin{proof}
-(i) By the alternation property of traversals, the last weave of $t$ consists of a succession of lambda nodes $\alpha_q$ and variable or $@$-nodes $n_q$, with indices going from $k$ down to $1$.
+(i) By the alternation property of traversals, the last strand of $t$ consists of a succession of lambda nodes $\alpha_q$ and variable or $@$-nodes $n_q$, with indices going from $k$ down to $1$.
 
 We show by finite induction on $1 \leq q \leq k$ that the first $2k$ nodes after $t^\omega$ are successive pairs of ghost lambda and ghost variable nodes justified in order by $n_1, \alpha_1, n_2, \alpha_2, n_3, \ldots, n_k, \alpha_k$ with respective labels $i_1, i_2, i_2, i_3, i_3, \cdots, i_k, i_k, i_{k+1}$ defined by:
 \begin{equation*}
@@ -1041,11 +1043,11 @@ i_{q} &= i + \sum_{j=1..q-1} (|\alpha_j| - |n_j|)
 \end{align*}
 
 
-By definition of the weave, $\alpha_{q-1}$ is hereditarily justified by an $@$ node.
+By definition of the strand, $\alpha_{q-1}$ is hereditarily justified by an $@$ node.
 Since $i_q > |n_q|$, by rule \rulenamet{Var_\branching} the next node is necessarily a ghost lambda node justified by $n_q$ with label $i_q$. With rule \rulenamet{Lam^\ghostlmd_\branching} the following node is a ghost variable node $\ghostvar$ justified by $\alpha_q$ and labelled by $i_{q+1} = i_q + |\alpha_{q}| -|n_{q}|$.
 \end{itemize}
 
-(ii) By (i) the next weave following $t$ consists solely of ghost nodes and ends with a ghost variable $\ghostvar$ hereditarily justified by the root. Since ghost nodes have arity $0$, the arity threshold at that point is $0$. Hence, any label value $j$ chosen to extend the traversal at that point will be strictly greater than the arity threshold: thus by (i) the next weave consists solely of ghost nodes.
+(ii) By (i) the next strand following $t$ consists solely of ghost nodes and ends with a ghost variable $\ghostvar$ hereditarily justified by the root. Since ghost nodes have arity $0$, the arity threshold at that point is $0$. Hence, any label value $j$ chosen to extend the traversal at that point will be strictly greater than the arity threshold: thus by (i) the next strand consists solely of ghost nodes.
 Applying the argument repeatedly shows that all the occurrences following $t$ are necessarily ghost nodes.
 
 (iii) Take $r$ to be the smallest $q\geq 1$ such that $i_q\leq |n_q|$, it exists because:
@@ -1131,96 +1133,97 @@ A subsequence of a traversal is called a
 \begin{itemize}
 \item \defname{spinal descent} if it is a path in the computation tree consisting solely of lambda and $@$-nodes, and where each lambda node (except the first one, if the first occurrence is a lambda node) is the $0$th child of the preceding $@$-node.
 \item \defname{pending argument lookup} if it consists of an alternation of ghost lambda nodes and ghost variables nodes, starting with an external ghost lambda node and terminated by a structural internal lambda node in $\NodesLmd$.
-\item \defname{branching descent} if it consists of an alternation of external structural lambda nodes and external structural variable nodes.
+\item \defname{branching descent} if it consists of an alternation of external structural lambda nodes and external structural variable nodes;
 \end{itemize}
 \end{definition}
 
 For any node $n$ of the tree of $M$ we write $M^{(n)}$ for the subterm of $M$ rooted at $n$, and $lloc_M(n)$ to denote $lloc_M(M^{(n)})$.
 
+We say that a traversal $t$ is \defname{head-normal} if it ends with a structural lambda node with undefined lloc (\ie, $t^\omega = \lambda\overline\eta$ and $lloc_M(t^\omega) = \bot$).
+
 \begin{property}
-\label{prop:weave_spinaldescent}
+\label{prop:strand_spinaldescent}
 Let $t$ be a non-empty traversal of $M$.
 Consider any subsequence $u$ of $t$ of the form
 $u = \underline{\lambda \overline{x}} \cdot v \cdot \underline{x}$
 for some subsequence $v$ of $t$, external structural variable node $x$ and external structural lambda node $\lambda \overline{x}$.
 \begin{enumerate}[label=(\roman*)]
-  \item If all nodes in $v$ are internal (\ie, if $u$ is a \emph{weave}) then
-  $u$ is a spinal descent of $M$.
-
   \item If $v$ is empty then the node following $u$ in $t$, if it exists, is necessarily a structural child lambda node of $x$ (not a ghost node).
-
-  %%\item If the first node in $v$ is external then every node in $v$ is a structural external node.
 \end{enumerate}
 \end{property}
 \begin{proof}
- (i) It trivially follows from the definition of the traversal rules \rulenamet{App} and \rulenamet{Lam}.
-
- (ii) If $v$ is empty then the weave ending at $x$
+ If $v$ is empty then the strand ending at $x$
  is just $\underline{\lambda \overline{x}} \cdot \underline{x}$ therefore
  the arity threshold of $t$ is precisely $|x|$ and so rule \rulenamet{IVar} can only be used to visit a structural child of $x$, not ghost nodes.
 \end{proof}
 
-\begin{proposition}[Qnf weave decomposition]
-Let $M$ be a term in quasi-normal form. Let $t_{max}$ be a maximal traversal of $M$. Then $t_{max}$ consists of a succession of weaves of one of the following two forms:
-
- \begin{align*}
-    (A) &\ \underline{\lambda\overline{\eta}} \cdot \underline{x_1} \\
-    (B) & \underbrace{\underline{\lambda\overline{\eta}} \cdot u_1 \cdot \underline{x_1}}_{\parbox[c]{2cm}{first weave}} \cdot
-        \underbrace{\underline{\ghostlmd} \cdot  v \cdot \lambda\overline{\eta_2} \cdot u_2 \cdot \underline{x_2}}_{\mbox{second weave}}
- \end{align*}
-
+\begin{proposition}[Qnf strand decomposition]
+\label{prop:qnf_strand_decomposition}
+Let $M$ be a term in quasi-normal form. Let $t_{max}$ be a maximal traversal of $M$. Then $t_{max}$ consists of a succession of strands of the following forms:
+\begin{center}
+\begin{tabular}{lll}
+If the previous strand is & Then next strand is  & Case \\
+\hline \hline \\
+$\epsilon$ & $\underline{\lambda\overline{\eta_1}} \cdot u_1 \cdot \underline{x_1}$ & A\\ \\
+\hline \\
+\multirow{3}{*}{$\underline{\lambda\overline{\eta_1}} \cdot u_1 \cdot \underline{x_1} $}
+ & $\underline{\lambda\overline{\eta_2}} \cdot u_2 \cdot \underline{x_2}$ & B1 \\ \\
+ & $\underline{\ghostlmd} \cdot  v \cdot \lambda\overline{y_2} \cdot u_2 \cdot \underline{x_2}$ & B2 \\ \\
+\hline \\
+\multirow{3}{*}{$\underline{\ghostlmd} \cdot  v \cdot \lambda\overline{y_1} \cdot u_1^+ \cdot \underline{x_1}$}
+& $\underline{\lambda\overline{\eta_2}} \cdot u_2 \cdot \underline{x_2}$ & C1
+\\ \\
+  & $\underline{\ghostlmd} \cdot v \cdot \lambda\overline{y_2} \cdot u_2 \cdot \underline{x_2}$ & C2
+\end{tabular}
+\end{center}
 where
     \begin{itemize}
-    \item $\lambda\overline{\eta}$ is a structural external lambda node,
-
-    \item $u_1$ is a non-empty \emph{spinal descent} (internal nodes),
-    \item $v$ is a \emph{pending parameter lookup} (ghost nodes) of length shorter than $u_1$,
-    \item $\lambda\overline{\eta_2}$ is an internal lambda node
-        justified by some $@$ node occurring in $u_1$,
-    \item $u_2$ is a \emph{spinal descent} (internal nodes),
-    \item $x_1,x_2$ are structural external variable nodes.
+    \item $\lambda\overline{\eta_1}, \lambda\overline{\eta_2}$ are structural external lambda nodes verifying $lloc_M(\lambda\overline\eta_1) = lloc_M(\lambda\overline\eta_2) = \bot$,
+    \item $u_1$ and $u_2$ are possibly empty \emph{spinal descents} (internal nodes),
+    \item $x_1,x_2$ are structural external variable nodes,
+    \item $u_1^+$ is a non-empty \emph{spinal descent} (internal nodes),
+    \item $v$ is a \emph{pending parameter lookup} (ghost nodes) of length shorter than $u_1^+$,
+    \item $\lambda\overline{y_1}$ and $\lambda\overline{y_2}$ are internal lambda nodes verifying $lloc_M(\lambda\overline{y_1}) = lloc_M(\lambda\overline{y_2}) = \bot$,
+    \item $\lambda\overline{y_2}$ is justified by some $@$-node occurring in $u_1^+$.
     \end{itemize}
-
-such that
-\begin{enumerate}[label=(\alph*)]
-\item The $lloc$ at $\lambda\overline\eta$ is undefined (\ie,  $lloc_M(\lambda\overline\eta) = \bot$),
-\item the lambda node $\lambda\overline\eta$ occurs in the path from the last node (either $x_1$ or $x_2$) to the root of the tree.
-\end{enumerate}
-And consequently,
-\begin{enumerate}[label=(\alph*)]
-\item $lloc_M(\alpha) = \bot$ for all external lambda node $\alpha \in \NodesLmd$ occurring in $t$.
-
-\item $t$ does not contain any internal variable node (\ie, all the internal nodes are $@$ nodes);
-
-\item $t_{max}$ is finite.
-
-\end{enumerate}
-
 \end{proposition}
 \begin{proof}
-We prove the result using an inductive argument by showing that any traversal ending with a external structural lambda node with undefined $lloc_M$ can only be extended with weaves of the form (A) or (B), and if a traversal ends with either form then in any maximal extension, it's necessarily followed by an external structural lambda node with undefined $lloc_M$.
+(A) The first strand is obtained by applying the rule \rulenamet{Root} followed by repeated applications of \rulenamet{App} and \rulenamet{Lam}, which yields $u_1$, a path to $\lambda\overline{\eta_1}$ in the tree of $M$. To show that $u_1$ is a spinal descent we need to prove that it does not contain any internal node (only @-node). This must be the case otherwise, since internal variables are by definition involved in some generalized redex, we would have $lloc_M(\underline{\lambda\eta_1}) = z$ where $z$ is the first internal variable occurring in $u_1$, which contradicts $lloc_M(\lambda \overline{\eta}) = lloc_M(M) = \bot$ since $M$ is in \emph{qnf}.
 
-\emph{Base case:} By rule \rulenamet{Root}, a traversal starts with the root node $\lambda \overline{\eta}$ which is, by definition, an external lambda node. By definition we have $lloc_M(\lambda \overline{\eta}) = lloc_M(M)$ which is undefined since $M$ is in \emph{qnf}.
-
-
-\emph{Induction}
-Let $t$ be a traversal ending with external structural lambda node $\lambda \overline{\eta}$. By traversal rule \rulenamet{Lam}, the node following $\lambda \overline{\eta}$ is its child node $n$.
-
-Suppose $n$ is an external variable node $x_1$ then we fall into case (A). Further, by Property \ref{prop:weave_spinaldescent}(ii), the node following $x_1$ is necessarily a structural child lambda node of $x_1$. The subterm rooted at $\lambda \overline\eta$ is of the form $\lambda \overline\eta . x_1 A_1 \ldots A_q$ for some $q\geq1$, and since $lloc_M(\lambda \overline\eta . x_1 A_1 \ldots A_q) = \bot$ and $x_i$ is external we necessarily have $lloc_M(A_j)=\bot$ for all $1\leq j\leq q$. Hence the node following $x_1$ also has undefined $lloc_M$.
-
-Suppose $n$ is internal. Because $lloc_M(\lambda \overline\eta) = \bot$, $n$ cannot be a variable node, otherwise, by definition of internal variables, it would be involved in some generalized redex and we would have
-$lloc_M(\lambda \overline\eta) = lloc_M(\lambda \overline\eta . y A_1 \ldots A_q) = y$ where $y$ is the internal variable labelling $n$.
-Hence $n$ is necessarily an application node $@$.
-By repeating the above argument we obtain the non-empty spinal descent $u_1$ leading to some external variable $x_1$.
-
-Let $\alpha$ denote the node following $x_1$. By rule \rulenamet{IVar}, $\alpha$ is either the $i$th a child lambda node of $x_1$ with $i\leq|x_1|$ or a ghost lambda node with link label $i>|x_1|$.
+(B1) If the node following $x_1$ is a structural node $\lambda\overline{\eta_2}$ then by rule \rulenamet{IVar}, it's a child lambda node of $x_1$.
+Because $u_1$ is a spinal descent, the subterm rooted at $\lambda \overline\eta_1$ is of the form $\lambda \overline\eta_1 . x_1 A_1 \ldots A_q$ for some $q\geq1$, therefore we have $lloc_M(\lambda \overline\eta_1 . x_1 A_1 \ldots A_q) = \bot$. Since $x_1$ is external we necessarily have $lloc_M(A_j)=\bot$ for all $1\leq j\leq q$. Hence $lloc_M(\lambda\overline{\eta_2}) = \bot$. The same logic used for (A) permits to conclude that $u_2$ is a spinal descent to the external node $x_2$.
 
 
+(B2) If the node following $x_1$ is a ghost node then by Property \ref{prop:strand_spinaldescent} $u_1^+$ is necessarily non-empty.
+By the weaving property, $v$ is a pending parameter lookup that is necessarily shorter than $u_1^+$, and $\lambda\overline{y_2}$ is a structural lambda node justified by some node in $u_1^+$.
+
+We now have to show that $lloc_M(\lambda\overline{y_2})=\bot$.
+\todo{...}
 
 
+The sequence $u_2$ is shown to be a spinal descent by the same argument as in (B1).
 
+(C1)
+(C2)
 \end{proof}
 
+\begin{proposition}
+\label{prop:qnf_traversals_are_finite}
+If $M$ is in \emph{quasi normal form} and $t$ is a traversal in $\travsetnorm(N)$ Then.
+\begin{enumerate}[label=(\alph*)]
+\item $lloc_M(\alpha) = \bot$ for all external lambda node $\alpha \in \NodesLmd$ occurring in $t$.
+\item $t$ does not contain any internal variable node (\ie, all the internal nodes are $@$ nodes);
+\item $t$ is finite.
+\end{enumerate}
+\end{proposition}
+\begin{proof}
+(a) and (b) are direct consequences of Proposition~\ref{prop:qnf_strand_decomposition}.
+(c) Let's consider the cases of the strand decomposition of Proposition~\ref{prop:qnf_strand_decomposition}
+observe that in case (A), (B1), because $u_1$ and $u_2$ are spinal descents, the last node in the `next` strand ($x_1$ or $x_2$) must be a descendant (in the computation tree representation of $M$) of the first node from the `previous' strand ($\lambda\overline{\eta_1}$).
+In case (B2), since both $u_1$ and $u_2$ are spinal descents, there are also paths in the tree, therefore since $\lambda\overline{y_2}$ points to $u_1$ we also have that $x_2$ is a descendant of $\lambda\overline{\eta_1}$. In case (C1) and (C2), since $u_1^+$ and $u_2$ are spinal descents, $x_2$ is a descendant of $\lambda\overline{y_2}$, itself a descendant of $\lambda\overline{y_1}$.
+
+Suppose $t$ is infinite, then $t$ is maximal.  Thus if $t_{max}$ was infinite, from the above strand decomposition we can construct an infinite path in the tree of $M$ which contradicts the fact that $M$ is a finitary term.
+\end{proof}
 
 
 
@@ -1230,12 +1233,10 @@ Let $M$ be an untyped term.
 \begin{enumerate}[label=(\roman*)]
 \item If $M \rightarrow_l N$ then $\travsetnorm(M) \cong \travsetnorm(N)$;
 \item If $M$ is in \emph{quasi normal form} and has beta-normal form $N$ then $\coresymbol(\travsetnorm(M)) = \coresymbol(\travsetnorm(N))$.
-\item If $M$ is in \emph{quasi normal form} and $t$ is a traversal in $\travsetnorm(N)$ then $t$ is finite.
 \end{enumerate}
 \end{proposition}
 \todo{
 - explain where the relabelling done in $\coresymbol$ is used in the proof. Answer: during trivial reduction of the qnf, in (ii).
-- explain where we use the weaving Property \ref{prop:weaving}???
 }
 
 \begin{proof}[Proof sketch]
@@ -1252,21 +1253,6 @@ Let $q\geq 1$.
 
 
 By Proposition \ref{prop:qnf_nf}, the \emph{qnf} trivially reduces to its beta-nf. It's immediate to show
-
-(iii) Suppose $M$ is a \emph{qnf}. We first show that traversals of $\travsetnorm$ do not contain internal variables, and therefore do not make use of the \rulenamet{Var} rule.
-
-Let $t\in\travsetnorm$.
-Suppose that $t$ contains an internal variable then let $x_i$, $i\geq0$ denotes the first such occurence in $t$ with binder $\lambda\overline{x}$. Then $t$ is necessarily of the form $t = \ldots @ \lambda\overline{x} \ldots x_i$.
-Let $U$ be the subterm rooted at $\lambda\overline{x}$. We show that $lloc_M(U) = \bot$
-
-...
-
-Hence $lloc_M(U) = \bot$. But since $x$ is the first occurence of an internal variable in $t$, all the variables occurring in $t_{<x}$ are external variables, and thus not involved in any generalized redex.
-We can then show by induction on the path from the root to $\lambda x$ that necessarily $lloc_M(M) = \bot$. Indeed
-For abstraction node we have by definition of $lloc$ we have $lloc_M(\lambda\overline{x}.$
-
-%, therefore traversals are necessarily finite.
-
 \end{proof}
 
 \begin{property}
@@ -1278,7 +1264,7 @@ Let $M$ be an untyped term.
 \end{enumerate}
 \end{property}
 \begin{proof}
-(i) If $M$ has a normal form then by Theorem \ref{thm:soundness_leftmostlinearred} its linear reduction sequence terminates, and by Prop.~\ref{prop:ulctrav_impl_linear_reduction}(i) the set of traversals of $M$ is isomorphic to the traversals of its quasi normal form. Hence if $M$ has an infinite traversal then so does its \emph{qnf}, which contradicts Prop.~\ref{prop:ulctrav_impl_linear_reduction}(iii).
+(i) If $M$ has a normal form then by Theorem \ref{thm:soundness_leftmostlinearred} its linear reduction sequence terminates, and by Prop.~\ref{prop:ulctrav_impl_linear_reduction}(i) the set of traversals of $M$ is isomorphic to the traversals of its quasi normal form. Hence if $M$ has an infinite traversal then so does its \emph{qnf}, which contradicts Proposition~\ref{prop:ulctrav_impl_linear_reductionprop:qnf_traversals_are_finite}.
 (ii) Traversals rules defining $\travsetnorm$ all have bounded non-determinism therefore by (i) $\travsetnorm$ is finite.
 \end{proof}
 
