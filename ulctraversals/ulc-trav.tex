@@ -578,6 +578,7 @@ to prove trigonometry identities: they are introduced intermediately to perform 
 Ghost nodes appear in a traversal when the arity of a node is too low to continue a
 structural traversal of the tree:
 \begin{property}
+\label{prop:ghost_justifier_arity}
 If $\Pstr[0.5cm]{(x){x} \cdots (y-x,30:i){y}} \in \travulc$ then
 $ y \in \ghostvar \union \ghostlmd \iff i > |x|.$
 In particular for all $n\in\NodesVar$ and $\alpha\in\NodesLmd$:
@@ -1215,16 +1216,43 @@ v &= \ghostvar_{k_q} \cdot \ghostlmd_{k_q} \cdot
 \cdots
 \ghostlmd_{k_{r-1}} \cdot \ghostvar_{k_{r-1}}
 \end{align*}
-where for all $r\leq i \leq q$ ghost nodes
-$\ghostvar_{k_i}$ and $\ghostlmd_{k_i}$ points respectively to $\lambda\overline{\xi_i}$ and $@_i$ with link label $k_i\geq1$ uniquely determined from $k$ and the arity of the nodes in $u_1^+$,
-Further, since all the nodes in $v$ are ghost nodes we have:
+where for all $r\leq i \leq q$ the ghost nodes
+$\ghostvar_{k_i}$ and $\ghostlmd_{k_i}$ points respectively to $\lambda\overline{\xi_i}$ and $@_i$ with link label $k_i\geq1$ uniquely determined from $k$ and the arity of the nodes in $u_1^+$ as follows:
+%\begin{align*}
+%k_q &= k + |\lambda\overline{\xi}_q| - |x| \\
+%k_j &= k_q + \sum_{i=j..q-1} (|\lambda\overline{\xi}_{i}| - |@_{i-1}|) \quad \mbox{
+%for $j$ ranging in $r..q-1$.}
+%\end{align*}
+
 \begin{align}
-k_j > |@_j| - |\lambda\overline{\xi_j}| & \quad\mbox{for all $r+1\leq j \leq q$ } \label{eqn:qnfdecomp_kj}\\
+  k_i &= k + |\lambda\overline{\xi}_q| - |x| + \sum_{i\leq j \leq q-1} (|\lambda\overline{\xi}_{j}| - |@_{j+1}|)
+%\\
+%  k_j &= k + |\lambda\overline{\xi}_q| - |x| +
+%  \sum_{i=j..q-1} |\lambda\overline{\xi}_{i}|
+%  - \sum_{i=j..q-1} |@_{i+1}|
+%\\
+%  k_j &= k + |\lambda\overline{\xi}_q| - |x| +
+%  \sum_{i=j..q-1} |\lambda\overline{\xi}_{i}|
+%  - \sum_{i=j+1..q} |@_{i}|
+%\\
+%  k_j &= k + |\lambda\overline{\xi}_q| - |x| +
+%  |\lambda\overline{\xi}_{j}| +
+%  \sum_{i=j+1..q-1} (|\lambda\overline{\xi}_{i}| - |@_{i}|) - |@_{q}|
+\\
+   &= k - |x| + 
+  |\lambda\overline{\xi}_{i}| +
+  \sum_{i+1\leq j\leq q} (|\lambda\overline{\xi}_j| - |@_j|)
+\end{align}
+
+Further, since all the nodes in $v$ are ghost nodes and $\lambda\overline{y_2}$ is not, by Property~\ref{prop:ghost_justifier_arity} we have:
+\begin{align}
+k > |x| \\
+k_i > |@_i| - |\lambda\overline{\xi_i}| & \quad\mbox{for all $r+1\leq i \leq q$ } \label{eqn:qnfdecomp_kj}\\
 k_r \leq |@_r| - |\lambda\overline{\xi_r}|
 \end{align}
 \\
 
-We first show by induction on $q-r$ that $lloc_M(\lambda\overline{\xi_r}) =\bot$ and that the lambda-list at $@_r$ is of size $\sum_{r+1 \leq j\leq q} |@_j| - |\lambda\overline{\xi_j}|$.
+We show by induction on $q-r$ that $lloc_M(\lambda\overline{\xi_r}) =\bot$ and that the lambda-list at $@_r$ is of size $\sum_{r+1 \leq j\leq q} |@_j| - |\lambda\overline{\xi_j}|$.
 \emph{Base case:} If $q=r$ (in which case $v=\epsilon$) then $\lambda\overline{y_2}$ and  $\lambda\overline{\xi_q}$ share the same parent $@_q$, and $\lambda\overline{y_2}$ is the $k_q$th child of $@_q$.
 
 Because $x$ is an external variable we necessarily have $lloc_M(\lambda\overline{\xi_r}) = lloc_M(\lambda\overline{\xi_q}) = lloc_M(\lambda\overline{\xi_q}\ x) = \bot$.
@@ -1240,7 +1268,15 @@ of Eqn.~\ref{eqn:qnfdecomp_kj} we have $k_{r+1} > |@_{r+1}| - |\lambda\overline{
 We can now show that $lloc_M(\lambda\overline{y_2})=\bot$.
 The subterm at $@_r$ is of the form $$(\lambda\overline{\xi_r}. A_0) A_1 \ldots A_{k_{r}-1}\ \lambda\overline{y_2}\ldots A_{|@_r|}$$
 
-By assumption we have that $lloc_M(\lambda\overline{\eta}) =\bot$ therefore since $@_r$ occurs in the spine of $M$, by definition of $lloc_M$ we necessarily have $lloc_M(@_r) =\bot$. We have just shown by the above induction that $lloc_M(\lambda\overline{\xi_r}. A_0) = \bot$, that is the $0$th branch of $@_r$ has undefined lloc. Hence by Property \ref{prop:qnf_longapply}, we necessarily have $lloc_M(\lambda\overline{y_2}) = \bot$.
+By assumption we have that $lloc_M(\lambda\overline{\eta}) =\bot$ therefore since $@_r$ occurs in the spine of $M$, by definition of $lloc_M$ we necessarily have $lloc_M(@_r) =\bot$, (and thus also $lloc_M(\lambda\overline{\xi_r}) = \bot$).
+Further the lambda-list at $\lambda\overline{\xi_r}$ has size
+\begin{align}
+  |\lambda_l(\lambda\overline{\xi_r} . A_0)| &= \sum_{r+1 \leq j\leq q} |@_j| - |\lambda\overline{\xi_j}| \\
+  &= k - |x| + |\lambda\overline{\xi_r}| - k_r \\
+  &> |\lambda\overline{\xi_r}| - k_r \quad (by Eq.\ref{}) \\
+  &> 
+\end{align}
+Hence by Property \ref{prop:qnf_longapply}, we necessarily have $lloc_M(\lambda\overline{y_2}) = \bot$.
 
 The sequence $u_2$ is shown to be a spinal descent by the same argument as in (B1) using the fact that $lloc_M(\lambda\overline{y_2})=\bot$.
 
