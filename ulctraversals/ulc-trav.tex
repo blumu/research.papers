@@ -1154,7 +1154,7 @@ for some subsequence $v$ of $t$, external structural variable node $x$ and exter
 \begin{proof}
  If $v$ is empty then the strand ending at $x$
  is just $\underline{\lambda \overline{x}} \cdot \underline{x}$ therefore
- the arity threshold of $t$ is precisely $|x|$ and so rule \rulenamet{IVar} can only be used to visit a structural child of $x$, not ghost nodes.
+ the arity threshold of $t$ is precisely $|x|$ and so rule \rulenamet{IVar} can only be used to visit a structural child of $x$, and not ghost nodes.
 \end{proof}
 
 \begin{proposition}[Qnf strand decomposition]
@@ -1191,20 +1191,60 @@ where
 (A) The first strand is obtained by applying the rule \rulenamet{Root} followed by repeated applications of \rulenamet{App} and \rulenamet{Lam}, which yields $u_1$, a path to $\lambda\overline{\eta_1}$ in the tree of $M$. To show that $u_1$ is a spinal descent we need to prove that it does not contain any internal node (only @-node). This must be the case otherwise, since internal variables are by definition involved in some generalized redex, we would have $lloc_M(\underline{\lambda\eta_1}) = z$ where $z$ is the first internal variable occurring in $u_1$, which contradicts $lloc_M(\lambda \overline{\eta}) = lloc_M(M) = \bot$ since $M$ is in \emph{qnf}.
 
 (B1) If the node following $x_1$ is a structural node $\lambda\overline{\eta_2}$ then by rule \rulenamet{IVar}, it's a child lambda node of $x_1$.
-Because $u_1$ is a spinal descent, the subterm rooted at $\lambda \overline\eta_1$ is of the form $\lambda \overline\eta_1 . x_1 A_1 \ldots A_q$ for some $q\geq1$, therefore we have $lloc_M(\lambda \overline\eta_1 . x_1 A_1 \ldots A_q) = \bot$. Since $x_1$ is external we necessarily have $lloc_M(A_j)=\bot$ for all $1\leq j\leq q$. Hence $lloc_M(\lambda\overline{\eta_2}) = \bot$. The same logic used for (A) permits to conclude that $u_2$ is a spinal descent to the external node $x_2$.
+Because $u_1$ is a spinal descent, the subterm rooted at $\lambda \overline\eta_1$ is of the form $\lambda \overline\eta_1 . x_1 A_1 \ldots A_q$ for some $q\geq1$, therefore we have $lloc_M(\lambda \overline\eta_1 . x_1 A_1 \ldots A_q) = \bot$. Since $x_1$ is external, by Property \ref{prop:qnf_longapply} we have $lloc_M(A_j)=\bot$ for all $1\leq j\leq q$, so in particular $lloc_M(\lambda\overline{\eta_2}) = \bot$. The same logic used for (A) permits to conclude that $u_2$ is a spinal descent to the external node $x_2$.
 
 
-(B2) If the node following $x_1$ is a ghost node then by Property \ref{prop:strand_spinaldescent} $u_1^+$ is necessarily non-empty.
-By the weaving property, $v$ is a pending parameter lookup that is necessarily shorter than $u_1^+$, and $\lambda\overline{y_2}$ is a structural lambda node justified by some node in $u_1^+$.
+(B2) If the node following $x_1$ is a ghost node then by Property \ref{prop:strand_spinaldescent} $u_1^+$ is necessarily non-empty: we have $u_1^+ =
+@_1 \cdot\lambda\overline{\xi_1} \cdots @_q\cdot \lambda\overline{\xi_1}$ for some $q\geq 1$. By the weaving property \ref{prop:weaving}, $v$ is a \emph{pending parameter lookup} that is necessarily shorter than $u_1^+$, and $\lambda\overline{y_2}$ is a structural lambda node justified by some application node $@_r$ in $u_1^+$ for some $1\leq r \leq q$:
+\begin{align*}
+ t &= \Pstr[10pt]{ 
+(l){\underline{\lambda\overline{\eta}}} \cdot 
+{@_1} \cdot \lambda\overline{\xi_1} \cdot
+\cdots
+(atr){@_r} \lambda\overline{\xi_r} \cdot
+\cdots
+{@_q} \cdot\lambda\overline{\xi_q} \cdot
+(x){\underline{x}}\cdot
+(gl-x,25:k){\ghostlmd}
+\cdot v
+\cdot
+(ly-atr,25:k_r){\lambda\overline{y_2}}
+ } \\
+v &= \ghostvar_{k_q} \cdot \ghostlmd_{k_q} \cdot  
+\ghostvar_{k_{q-1}} \cdot \ghostlmd_{k_{q-1}} \cdot 
+\cdots
+\ghostlmd_{k_{r-1}} \cdot \ghostvar_{k_{r-1}}
+\end{align*}
+where for all $r\leq i \leq q$ ghost nodes
+$\ghostvar_{k_i}$ and $\ghostlmd_{k_i}$ points respectively to $\lambda\overline{\xi_i}$ and $@_i$ with link label $k_i\geq1$ uniquely determined from $k$ and the arity of the nodes in $u_1^+$,
+Further, since all the nodes in $v$ are ghost nodes we have:
+\begin{align}
+k_j > |@_j| - |\lambda\overline{\xi_j}| & \quad\mbox{for all $r+1\leq j \leq q$ } \label{eqn:qnfdecomp_kj}\\
+k_r \leq |@_r| - |\lambda\overline{\xi_r}|
+\end{align}
+\\
 
-We now have to show that $lloc_M(\lambda\overline{y_2})=\bot$.
+We first show by induction on $q-r$ that $lloc_M(\lambda\overline{\xi_r}) =\bot$ and that the lambda-list at $@_r$ is of size $\sum_{r+1 \leq j\leq q} |@_j| - |\lambda\overline{\xi_j}|$.
+\emph{Base case:} If $q=r$ (in which case $v=\epsilon$) then $\lambda\overline{y_2}$ and  $\lambda\overline{\xi_q}$ share the same parent $@_q$, and $\lambda\overline{y_2}$ is the $k_q$th child of $@_q$.
+
+Because $x$ is an external variable we necessarily have $lloc_M(\lambda\overline{\xi_r}) = lloc_M(\lambda\overline{\xi_q}) = lloc_M(\lambda\overline{\xi_q}\ x) = \bot$.
+
+
+The lambda list at $@_r$ is $\lambda_l(@_r) = $
+
+\emph{Induction case:} Suppose it's true for all $r<j\leq q$, then because
+of Eqn.~\ref{eqn:qnfdecomp_kj} we have $k_{r+1} > |@_{r+1}| - |\lambda\overline{\xi_{r+1}}|$
 \todo{...}
+\\
 
+We can now show that $lloc_M(\lambda\overline{y_2})=\bot$.
+The subterm at $@_r$ is of the form $$(\lambda\overline{\xi_r}. A_0) A_1 \ldots A_{k_{r}-1}\ \lambda\overline{y_2}\ldots A_{|@_r|}$$
 
-The sequence $u_2$ is shown to be a spinal descent by the same argument as in (B1).
+By assumption we have that $lloc_M(\lambda\overline{\eta}) =\bot$ therefore since $@_r$ occurs in the spine of $M$, by definition of $lloc_M$ we necessarily have $lloc_M(@_r) =\bot$. We have just shown by the above induction that $lloc_M(\lambda\overline{\xi_r}. A_0) = \bot$, that is the $0$th branch of $@_r$ has undefined lloc. Hence by Property \ref{prop:qnf_longapply}, we necessarily have $lloc_M(\lambda\overline{y_2}) = \bot$.
 
-(C1)
-(C2)
+The sequence $u_2$ is shown to be a spinal descent by the same argument as in (B1) using the fact that $lloc_M(\lambda\overline{y_2})=\bot$.
+
+(C1) \& (C2) %are shown using the same argument as (B1) and (B2).
 \end{proof}
 
 \begin{proposition}
@@ -1232,10 +1272,11 @@ Suppose $t$ is infinite, then $t$ is maximal.  Thus if $t_{max}$ was infinite, f
 Let $M$ be an untyped term.
 \begin{enumerate}[label=(\roman*)]
 \item If $M \rightarrow_l N$ then $\travsetnorm(M) \cong \travsetnorm(N)$;
-\item If $M$ is in \emph{quasi normal form} and has beta-normal form $N$ then $\coresymbol(\travsetnorm(M)) = \coresymbol(\travsetnorm(N))$.
+\item If $M$ is in \emph{qnf} and has beta-normal form $N$ then $\coresymbol(\travsetnorm(M)) = \coresymbol(\travsetnorm(N))$.
 \end{enumerate}
 \end{proposition}
 \todo{
+- finish proof
 - explain where the relabelling done in $\coresymbol$ is used in the proof. Answer: during trivial reduction of the qnf, in (ii).
 }
 
