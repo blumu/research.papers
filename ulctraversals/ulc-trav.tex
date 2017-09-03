@@ -20,6 +20,7 @@
 \usepackage{geometry}
 \usepackage{pdflscape}
 \usepackage{multirow}
+\usepackage{subcaption}
 
 %\usepackage{paralist}
 
@@ -1192,11 +1193,11 @@ where
 (A) The first strand is obtained by applying the rule \rulenamet{Root} followed by repeated applications of \rulenamet{App} and \rulenamet{Lam}, which yields $u_1$, a path to $\lambda\overline{\eta_1}$ in the tree of $M$. To show that $u_1$ is a spinal descent we need to prove that it does not contain any internal node (only @-node). This must be the case otherwise, since internal variables are by definition involved in some generalized redex, we would have $lloc_M(\underline{\lambda\eta_1}) = z$ where $z$ is the first internal variable occurring in $u_1$, which contradicts $lloc_M(\lambda \overline{\eta}) = lloc_M(M) = \bot$ since $M$ is in \emph{qnf}.
 
 (B1) If the node following $x_1$ is a structural node $\lambda\overline{\eta_2}$ then by rule \rulenamet{IVar}, it's a child lambda node of $x_1$.
-Because $u_1$ is a spinal descent, the subterm rooted at $\lambda \overline\eta_1$ is of the form $\lambda \overline\eta_1 . x_1 A_1 \ldots A_q$ for some $q\geq1$, therefore we have $lloc_M(\lambda \overline\eta_1 . x_1 A_1 \ldots A_q) = \bot$. Since $x_1$ is external, by Property \ref{prop:qnf_longapply} we have $lloc_M(A_j)=\bot$ for all $1\leq j\leq q$, so in particular $lloc_M(\lambda\overline{\eta_2}) = \bot$. The same logic used for (A) permits to conclude that $u_2$ is a spinal descent to the external node $x_2$.
+Because $u_1$ is a spinal descent, the subterm rooted at $\lambda \overline\eta_1$ is of the form $\lambda \overline\eta_1 . x_1 A_1 \ldots A_q$ for some $q\geq1$, therefore we have $lloc_M(\lambda \overline\eta_1 . x_1 A_1 \ldots A_q) = \bot$. Since $x_1$ is external, by Property \ref{prop:qnf_longapply} we have $lloc_M(A_j)=\bot$ for all $1\leq j\leq q$, so in particular $lloc_M(\lambda\overline{\eta_2}) = \bot$. The same logic used in (A) lets us conclude that $u_2$ is a spinal descent to external node $x_2$.
 
 
-(B2) If the node following $x_1$ is a ghost node then by Property \ref{prop:strand_spinaldescent} $u_1^+$ is necessarily non-empty: we have $u_1^+ =
-@_1 \cdot\lambda\overline{\xi_1} \cdots @_q\cdot \lambda\overline{\xi_1}$ for some $q\geq 1$. By the weaving property \ref{prop:weaving}, $v$ is a \emph{pending parameter lookup} that is necessarily shorter than $u_1^+$, and $\lambda\overline{y_2}$ is a structural lambda node justified by some application node $@_r$ in $u_1^+$ for some $1\leq r \leq q$:
+(B2) If the node following $x_1$ is a ghost node then by Property \ref{prop:strand_spinaldescent} $u_1$ is necessarily non-empty: we have $u_1^+ =
+@_1 \cdot\lambda\overline{\xi_1} \cdots @_q\cdot \lambda\overline{\xi_q}$ for some $q\geq 1$. By the weaving property \ref{prop:weaving}, the node follwing $x_1$ is itself followed by a \emph{pending parameter lookup} $v$ that is necessarily shorter than $u_1$, and is itself followed by a structural lambda node $\lambda\overline{y_2}$ justified by some application node $@_r$ in $u_1$ for some $1\leq r \leq q$:
 \begin{align*}
  t &= \Pstr[10pt]{
 (l){\underline{\lambda\overline{\eta}}} \cdot
@@ -1214,17 +1215,11 @@ Because $u_1$ is a spinal descent, the subterm rooted at $\lambda \overline\eta_
 v &= \ghostvar_{k_q} \cdot \ghostlmd_{k_q} \cdot
 \ghostvar_{k_{q-1}} \cdot \ghostlmd_{k_{q-1}} \cdot
 \cdots
-\ghostvar_{k_{r-1}} \cdot \ghostlmd_{k_{r-1}} \cdot 
+\ghostvar_{k_{r-1}} \cdot \ghostlmd_{k_{r-1}} \cdot
 \ghostvar_{k_{r}}
 \end{align*}
-where for all $r\leq i \leq q$ the ghost nodes
-$\ghostvar_{k_i}$ and $\ghostlmd_{k_i}$ points respectively to $\lambda\overline{\xi_i}$ and $@_i$ with link label $k_i\geq1$ uniquely determined from $k$ and the arity of the nodes in $u_1^+$ as follows:
-%\begin{align*}
-%k_q &= k + |\lambda\overline{\xi}_q| - |x| \\
-%k_j &= k_q + \sum_{i=j..q-1} (|\lambda\overline{\xi}_{i}| - |@_{i-1}|) \quad \mbox{
-%for $j$ ranging in $r..q-1$.}
-%\end{align*}
-
+where, for all $r\leq i \leq q$, ghost nodes
+$\ghostvar_{k_i}$ and $\ghostlmd_{k_i}$ point respectively to $\lambda\overline{\xi_i}$ and $@_i$ with link label $k_i\geq1$ defined by:
 \begin{align}
   k_i &= k + |\lambda\overline{\xi}_q| - |x| + \sum_{i\leq j < q} (|\lambda\overline{\xi}_{j}| - |@_{j+1}|)
 %\\
@@ -1245,19 +1240,17 @@ $\ghostvar_{k_i}$ and $\ghostlmd_{k_i}$ points respectively to $\lambda\overline
   \sum_{i< j\leq q} (|\lambda\overline{\xi}_j| - |@_j|) \label{eqn:ki_k}
 \end{align}
 
-Further, since all the nodes in $v$ are ghost nodes, by Property~\ref{prop:ghost_justifier_arity} their justification label is greater than the justifier's arity; the opposite holds for $\lambda\overline{y_2}$ which is not a ghost node. Therefore:
-\begin{align}
-k > |x| \\
-k_i > |@_i| - |\lambda\overline{\xi_i}| & \quad\mbox{for all $r+1\leq i \leq q$ } \label{eqn:qnfdecomp_kj}\\
-k_r \leq |@_r| %%- |\lambda\overline{\xi_r}|
-\end{align}
-\\
+We show by induction on $q-r$, the distance in the path from  $\lambda\overline{\xi_r}$ to  $\lambda\overline{\xi_q}$,
+ that $lloc_M(\lambda\overline{\xi_r}) =\bot$ and that the lambda-list at $@_r$ is of size $\sum_{r\leq j\leq q} (|\lambda\overline{\xi_j}| - |@_j|)$.
 
-We show by induction on $q-r$, the distance between $\lambda\overline{\xi_r}$ and $\lambda\overline{\xi_q}$,
- that $lloc_M(\lambda\overline{\xi_r}) =\bot$ and that the lambda-list at $@_r$ is of size $\sum_{r\leq j\leq q} (|@_j| - |\lambda\overline{\xi_j}|)$.
- 
- 
-\emph{Base case:} We have $q=r$ (in which case $v=\epsilon$) and therefore $\lambda\overline{\xi_q}$ and $\lambda\overline{y_2}$ share the same parent $@_q$, they are respectively its $0$th and $k_q$th child as represented in the tree below:
+\emph{Base case:}
+We have $q=r$ (and $v=\epsilon$). The nodes $\lambda\overline{\xi_q}$ and $\lambda\overline{y_2}$ therefore share the same parent $@_q$: they are respectively its $0$th and $k_q$th child as represented in the left tree in Figure \ref{fig:strand_decomposition_proof_induction_base}.
+Because $x$ is an external variable we necessarily have $lloc_M(\lambda\overline{\xi_r}) = lloc_M(\lambda\overline{\xi_q}) = \bot$.
+Further the subterm at $\lambda\overline{\xi_q}$ is head normal therefore its head lambda-list is precisely of length $|\lambda\overline{\xi_q}|$ (the number of variables in the abstraction), and consequently the head lambda-list at $@_r$ is given by $|\lambda\overline{\xi_q}|-|@_q|$.
+
+\begin{figure}[htbp]
+    \centering
+\begin{subfigure}[b]{0.4\textwidth}
 \begin{tikzpicture}[baseline=(root.base),level distance=6ex,inner ysep=0.5mm,sibling distance=10mm]
 \node (root)
 {$\cdots$}
@@ -1276,66 +1269,77 @@ child{node{$@_q$}
              edge from parent node[right]{$k_q$}
         }
         child{node{$\cdots$}}
-    }
-}
-}
-;
-\end{tikzpicture}
-
-Because $x$ is an external variable we necessarily have $lloc_M(\lambda\overline{\xi_r}) = lloc_M(\lambda\overline{\xi_q}) = \bot$.
-Further the subterm at $\lambda\overline{\xi_q}$ is head normal therefore its head lambda-list is precisely of length $|\lambda\overline{\xi_q}|$ (the number of variables in the abstraction), and consequently the head lambda-list at $@_r$ is given by $|\lambda\overline{\xi_q}|-|@_q|$.
-
-\emph{Induction case:} Suppose the I.H.~is true for all $r<j\leq q$.
-\begin{tikzpicture}[baseline=(root.base),level distance=6ex,inner ysep=0.5mm,sibling distance=10mm]
-\node (root)
-{$\cdots$}
-child {node{$\lambda\overline\eta$}
-    child {node{$@_1$}
-        child{node{$\ldots$}
-            child{node{$@_{r}$}
-                child{node{$\lambda\overline{\xi_r}$}
-                    child{node{$\ldots$}
-                        child{node{$@_q$}
-                            child{node{$\lambda \overline\xi_q $}
-                               child {node {$x$}
-                                child{node{\ldots}}}
-                               edge from parent node[above left]{$0$}
-                            }
-                            child{node{$\cdots$}}
-                        }
-                    }
-                }
-                child{node{\ldots}}
-                child{node{$\lambda\overline{y_2}$} 
-                             edge from parent node[right]{$k_r$}
-                }
-                child{node{\ldots}}
-                child{node{} edge from parent node[right]{$|@_r|$}}
-            }
-        }
-        child{node{\ldots}}
-    }
+    } }
 };
 \end{tikzpicture}
+\caption{Base case $q=r$}
+\label{fig:strand_decomposition_proof_basecase}
+\end{subfigure}
+%
+\begin{subfigure}[b]{0.4\textwidth}
+\begin{tikzpicture}[baseline=(root.base),level distance=6ex,inner ysep=0.5mm,sibling distance=10mm]
+    \node (root)
+    {$\cdots$}
+    child {node{$\lambda\overline\eta$}
+        child {node{$@_1$}
+            child{node{$\ldots$}
+                child{node{$@_{r}$}
+                    child{node{$\lambda\overline{\xi_r}$}
+                        child{node{$\ldots$}
+                            child{node{$@_q$}
+                                child{node{$\lambda \overline\xi_q $}
+                                   child {node {$x$}
+                                    child{node{\ldots}}}
+                                   edge from parent node[above left]{$0$}
+                                }
+                                child{node{$\cdots$}}
+                            }
+                        }
+                    }
+                    child{node{\ldots}}
+                    child{node{$\lambda\overline{y_2}$}
+                                 edge from parent node[right]{$k_r$}
+                    }
+                    child{node{\ldots}}
+                    child{node{} edge from parent node[right]{$|@_r|$}}
+                }
+            }
+            child{node{\ldots}}
+        }
+    };
+    \end{tikzpicture}
+\caption{Inductive case $q>r$}
+\label{fig:strand_decomposition_proof_induction}
+\end{subfigure}
+\caption{Sub-tree at $\lambda\overline\eta$ for the base and induction case}
+\end{figure}
 
-
- then because
-of Eqn.~\ref{eqn:qnfdecomp_kj} we have $k_{r+1} > |@_{r+1}| - |\lambda\overline{\xi_{r+1}}|$
-\todo{...}
-\\
-
+\emph{Induction case:}
 We can now show that $lloc_M(\lambda\overline{y_2})=\bot$.
-The subterm at $@_r$ is of the form $$(\lambda\overline{\xi_r}. A_0) A_1 \ldots A_{k_{r}-1}\ \lambda\overline{y_2}\ldots A_{|@_r|}$$
+The subterm at $@_r$ is of the form
+$$(\lambda\overline{\xi_r}. A_0) A_1 \ldots A_{k_{r}-1}\ (\lambda\overline{y_2}. \ldots) \ldots A_{|@_r|}$$
 
 By assumption we have that $lloc_M(\lambda\overline{\eta}) =\bot$ therefore since $@_r$ occurs in the spine of $M$, by definition of $lloc_M$ we necessarily have $lloc_M(@_r) =\bot$, (and thus also $lloc_M(\lambda\overline{\xi_r}) = \bot$).
-Further the lambda-list at $\lambda\overline{\xi_r}$ has size
+
+Let's calculate the length of the lambda list at $\lambda\overline{\xi_r}$.
+
+Further by the induction hypothesis the lambda-list at $\lambda\overline{\xi_r}$ has length $|\lambda\overline{\xi_r}| $
 \begin{align}
-  |\lambda_l(\lambda\overline{\xi_r} . A_0)| &= \sum_{r \leq j\leq q} (|@_j| - |\lambda\overline{\xi_j}|) \\
-  &= k - |x| + |\lambda\overline{\xi_r}| - k_r \quad \mbox{(by Eq.\ref{eqn:ki_k})} \\
-  &> |\lambda\overline{\xi_r}| - k_r  \\
-  &>
+    |\lambda_l(\lambda\overline{\xi_r} . A_0)| &=
+    |\lambda\overline{\xi_r}| + |\lambda_l(A_0)| \\
+&= |\lambda\overline{\xi_r}| + |\lambda_l(@_{r+1})| \quad\mbox{($A_0$ is the subterm rooted at $@_{r+1}$)}\\
+&= |\lambda\overline{\xi_r}| + \sum_{r+1 \leq j\leq q} (|\lambda\overline{\xi_j}| - |@_j|) \quad\mbox{(By induction hypothesis)}\\
+&= |@_r| + \sum_{r \leq j\leq q} (|\lambda\overline{\xi_j}| - |@_j|) \\
+&= |x| - k + k_r \qquad \mbox{(by Eq.\ref{eqn:ki_k} with $i=r$)}
 \end{align}
-Hence by Property \ref{prop:qnf_longapply}, we necessarily have $lloc_M(\lambda\overline{y_2}) = \bot$.
+But because $\lambda\overline{y_2}$ is a structural node by Property~\ref{prop:ghost_justifier_arity} we have $k>|x|$ therefore:
+$$ |\lambda_l(\lambda\overline{\xi_r} . A_0)| < k_r $$
+
+Consequently, in the sub-term $(\lambda\overline{\xi_r} . A_0) A_1 \ldots A_{k_r-1}$, there are more operands than the length of the lambda list of the operator. Thus by definition of the lambda list, we have $\lambda_l((\lambda\overline{\xi_r} . A_0) A_1 \ldots A_{k_r-1}) = \epsilon$.
+Hence we necessarily have $lloc(\lambda\overline{y_2}) = \bot$, otherwise by definition of $lloc$ we would have
+ $lloc((\lambda\overline{\xi_r} . A_0) A_1 \ldots A_{k_r-1} (\lambda\overline{y_2}. \ldots)) = lloc(\lambda\overline{y_2}) \ne \bot$, which would subsequently imply $lloc(\lambda\overline{\eta_1})\ne\bot$, contradicting the assumption.
+
+\todo{TOFINISH}
 
 The sequence $u_2$ is shown to be a spinal descent by the same argument as in (B1) using the fact that $lloc_M(\lambda\overline{y_2})=\bot$.
 
@@ -1400,7 +1404,7 @@ Let $M$ be an untyped term.
 \end{enumerate}
 \end{property}
 \begin{proof}
-(i) If $M$ has a normal form then by Theorem \ref{thm:soundness_leftmostlinearred} its linear reduction sequence terminates, and by Prop.~\ref{prop:ulctrav_impl_linear_reduction}(i) the set of traversals of $M$ is isomorphic to the traversals of its quasi normal form. Hence if $M$ has an infinite traversal then so does its \emph{qnf}, which contradicts Proposition~\ref{prop:ulctrav_impl_linear_reductionprop:qnf_traversals_are_finite}.
+(i) If $M$ has a normal form then by Theorem \ref{thm:soundness_leftmostlinearred} its linear reduction sequence terminates, and by Prop.~\ref{prop:ulctrav_impl_linear_reduction}(i) the set of traversals of $M$ is isomorphic to the traversals of its quasi normal form. Hence if $M$ has an infinite traversal then so does its \emph{qnf}, which contradicts Proposition~\ref{prop:qnf_traversals_are_finite}.
 (ii) Traversals rules defining $\travsetnorm$ all have bounded non-determinism therefore by (i) $\travsetnorm$ is finite.
 \end{proof}
 
@@ -1797,19 +1801,18 @@ This process yields the set of traversals $\{t_\epsilon, t_{11}, t_{12}, t_{121}
 Table \ref{tab:varity2_trav} represents the three maximal traversals $t_{11}, t_{121}, t_{122}$.
 
 \begin{table}
-\label{tab:varity2_trav_epsilon}
 \resizebox{1.1\hsize}{!}{$
 t_\epsilon = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda t}\ (n3-n2){t}\ (n4-n1){\lambda s_2 z_2}\ (n5-n4){s_2}\ (n6-n3){\lambda n a x}\ (n7-n6){n}\ (n8-n5){\lambda }\ (n9-n4){s_2}\ (n10-n3){\lambda n a x}\ (n11-n10){n}\ (n12-n9){\lambda }\ (n13-n4){z_2}\ (n14-n3){\lambda a}\ (n15-n14){a}\ (n16-n13){{\ghostlmd^{1}}}\ (n17-n12){{\ghostvar^{1}}}\ (n18-n11){\lambda s z}\ (n19-n10){a}\ (n20-n9){{\ghostlmd^{2}}}\ (n21-n8){{\ghostvar^{1}}}\ (n22-n7){\lambda s z}\ (n23-n6){a}\ (n24-n5){{\ghostlmd^{2}}}\ (n25-n4){{\ghostvar^{3}}}\
 (n26-n3){\lambda z_0}\ (n27-n26){z_0}\ (n28-n25){{\ghostlmd^{1}}}\ (n29-n24){{\ghostvar^{1}}}\
 (n30-n23){\lambda }\ (n31-n22){s}\ (n32-n21){{\ghostlmd^{1}}}\ (n33-n20){{\ghostvar^{1}}}\ (n34-n19){\lambda }\ (n35-n18){s}\ (n36-n17){{\ghostlmd^{1}}}\ (n37-n16){{\ghostvar^{1}}}\ (n38-n15){{\ghostlmd^{1}}}\ (n39-n14){{\ghostvar^{2}}}\ (n40-n13){{\ghostlmd^{2}}}\ (n41-n12){{\ghostvar^{2}}}\ (n42-n11){{\ghostlmd^{2}}}\ (n43-n10){{\ghostvar^{4}}}\ (n44-n9){{\ghostlmd^{4}}}\ (n45-n8){{\ghostvar^{3}}}\ (n46-n7){{\ghostlmd^{3}}}\ (n47-n6){{\ghostvar^{5}}}\ (n48-n5){{\ghostlmd^{5}}}\ (n49-n4){{\ghostvar^{6}}}\ (n50-n3){{\ghostlmd^{6}}}\ (n51-n2){{\ghostvar^{4}}}\ (n52-n1){{\ghostlmd^{4}}}\ (n53-n0){{\ghostvar^{3}}}}$}
 \caption{Traversal $t_\epsilon$ of $varity\ 2$}
+\label{tab:varity2_trav_epsilon}
 \end{table}
 
 \newgeometry{left=1cm,right=2cm, bottom=2cm, top=2cm}
 \begin{landscape}
 \thispagestyle{empty}
 \begin{table}
-\label{tab:varity2_trav}
 % \resizebox{1.1\hsize}{!}{$t_{1} = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda t}\ (n3-n2){t}\ (n4-n1){\lambda s_2 z_2}\ (n5-n4){s_2}\ (n6-n3){\lambda n a x}\ (n7-n6){n}\ (n8-n5){\lambda }\ (n9-n4){s_2}\ (n10-n3){\lambda n a x}\ (n11-n10){n}\ (n12-n9){\lambda }\ (n13-n4){z_2}\ (n14-n3){\lambda a}\ (n15-n14){a}\ (n16-n13){{\ghostlmd^{1}}}\ (n17-n12){{\ghostvar^{1}}}\ (n18-n11){\lambda s z}\ (n19-n10){a}\ (n20-n9){{\ghostlmd^{2}}}\ (n21-n8){{\ghostvar^{1}}}\ (n22-n7){\lambda s z}\ (n23-n6){a}\ (n24-n5){{\ghostlmd^{2}}}\ (n25-n4){{\ghostvar^{3}}}\ (n26-n3){\lambda z_0}\ (n27-n26){z_0}\ (n28-n25){{\ghostlmd^{1}}}\ (n29-n24){{\ghostvar^{1}}}\ (n30-n23){\lambda }\ (n31-n22){s}\ (n32-n21){{\ghostlmd^{1}}}\ (n33-n20){{\ghostvar^{1}}}\ (n34-n19){\lambda }\ (n35-n18){s}\ (n36-n17){{\ghostlmd^{1}}}\ (n37-n16){{\ghostvar^{1}}}\ (n38-n15){{\ghostlmd^{1}}}\ (n39-n14){{\ghostvar^{2}}}\ (n40-n13){{\ghostlmd^{2}}}\ (n41-n12){{\ghostvar^{2}}}\ (n42-n11){{\ghostlmd^{2}}}\ (n43-n10){{\ghostvar^{4}}}\ (n44-n9){{\ghostlmd^{4}}}\ (n45-n8){{\ghostvar^{3}}}\ (n46-n7){{\ghostlmd^{3}}}\ (n47-n6){{\ghostvar^{5}}}\ (n48-n5){{\ghostlmd^{5}}}\ (n49-n4){{\ghostvar^{6}}}\ (n50-n3){{\ghostlmd^{6}}}\ (n51-n2){{\ghostvar^{4}}}\ (n52-n1){{\ghostlmd^{4}}}\ (n53-n0){{\ghostvar^{3}}}\ (n54-n53){{\ghostlmd^{1}}}\ (n55-n52){{\ghostvar^{1}}}\ (n56-n51){{\ghostlmd^{1}}}\ (n57-n50){{\ghostvar^{1}}}\ (n58-n49){{\ghostlmd^{1}}}\ (n59-n48){{\ghostvar^{1}}}\ (n60-n47){{\ghostlmd^{1}}}\ (n61-n46){{\ghostvar^{1}}}\ (n62-n45){{\ghostlmd^{1}}}\ (n63-n44){{\ghostvar^{1}}}\ (n64-n43){{\ghostlmd^{1}}}\ (n65-n42){{\ghostvar^{1}}}\ (n66-n41){{\ghostlmd^{1}}}\ (n67-n40){{\ghostvar^{1}}}\ (n68-n39){{\ghostlmd^{1}}}\ (n69-n38){{\ghostvar^{1}}}\ (n70-n37){{\ghostlmd^{1}}}\ (n71-n36){{\ghostvar^{1}}}\ (n72-n35){{\ghostlmd^{1}}}\ (n73-n34){{\ghostvar^{1}}}\ (n74-n33){{\ghostlmd^{1}}}\ (n75-n32){{\ghostvar^{1}}}\ (n76-n31){{\ghostlmd^{1}}}\ (n77-n30){{\ghostvar^{1}}}\ (n78-n29){{\ghostlmd^{1}}}\ (n79-n28){{\ghostvar^{1}}}\ (n80-n27){{\ghostlmd^{1}}}\ (n81-n26){{\ghostvar^{2}}}\ (n82-n25){{\ghostlmd^{2}}}\ (n83-n24){{\ghostvar^{2}}}\ (n84-n23){\lambda }\ (n85-n6){x}\ (n86-n5){{\ghostlmd^{3}}}\ (n87-n4){{\ghostvar^{4}}}\ (n88-n3){{\ghostlmd^{4}}}\ (n89-n2){{\ghostvar^{2}}}\ (n90-n1){{\ghostlmd^{2}}}\ (n91-n0){{\ghostvar^{1}}}}$}
 \resizebox{1\hsize}{!}{$t_{11} = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda t}\ (n3-n2){t}\ (n4-n1){\lambda s_2 z_2}\ (n5-n4){s_2}\ (n6-n3){\lambda n a x}\ (n7-n6){n}\ (n8-n5){\lambda }\ (n9-n4){s_2}\ (n10-n3){\lambda n a x}\ (n11-n10){n}\ (n12-n9){\lambda }\ (n13-n4){z_2}\ (n14-n3){\lambda a}\ (n15-n14){a}\ (n16-n13){{\ghostlmd^{1}}}\ (n17-n12){{\ghostvar^{1}}}\ (n18-n11){\lambda s z}\ (n19-n10){a}\ (n20-n9){{\ghostlmd^{2}}}\ (n21-n8){{\ghostvar^{1}}}\ (n22-n7){\lambda s z}\ (n23-n6){a}\ (n24-n5){{\ghostlmd^{2}}}\ (n25-n4){{\ghostvar^{3}}}\ (n26-n3){\lambda z_0}\ (n27-n26){z_0}\ (n28-n25){{\ghostlmd^{1}}}\ (n29-n24){{\ghostvar^{1}}}\ (n30-n23){\lambda }\ (n31-n22){s}\ (n32-n21){{\ghostlmd^{1}}}\ (n33-n20){{\ghostvar^{1}}}\ (n34-n19){\lambda }\ (n35-n18){s}\ (n36-n17){{\ghostlmd^{1}}}\ (n37-n16){{\ghostvar^{1}}}\ (n38-n15){{\ghostlmd^{1}}}\ (n39-n14){{\ghostvar^{2}}}\ (n40-n13){{\ghostlmd^{2}}}\ (n41-n12){{\ghostvar^{2}}}\ (n42-n11){{\ghostlmd^{2}}}\ (n43-n10){{\ghostvar^{4}}}\ (n44-n9){{\ghostlmd^{4}}}\ (n45-n8){{\ghostvar^{3}}}\ (n46-n7){{\ghostlmd^{3}}}\ (n47-n6){{\ghostvar^{5}}}\ (n48-n5){{\ghostlmd^{5}}}\ (n49-n4){{\ghostvar^{6}}}\ (n50-n3){{\ghostlmd^{6}}}\ (n51-n2){{\ghostvar^{4}}}\ (n52-n1){{\ghostlmd^{4}}}\ (n53-n0){{\ghostvar^{3}}}\ (n54-n53){{\ghostlmd^{1}}}\ (n55-n52){{\ghostvar^{1}}}\ (n56-n51){{\ghostlmd^{1}}}\ (n57-n50){{\ghostvar^{1}}}\ (n58-n49){{\ghostlmd^{1}}}\ (n59-n48){{\ghostvar^{1}}}\ (n60-n47){{\ghostlmd^{1}}}\ (n61-n46){{\ghostvar^{1}}}\ (n62-n45){{\ghostlmd^{1}}}\ (n63-n44){{\ghostvar^{1}}}\ (n64-n43){{\ghostlmd^{1}}}\ (n65-n42){{\ghostvar^{1}}}\ (n66-n41){{\ghostlmd^{1}}}\ (n67-n40){{\ghostvar^{1}}}\ (n68-n39){{\ghostlmd^{1}}}\ (n69-n38){{\ghostvar^{1}}}\ (n70-n37){{\ghostlmd^{1}}}\ (n71-n36){{\ghostvar^{1}}}\ (n72-n35){{\ghostlmd^{1}}}\ (n73-n34){{\ghostvar^{1}}}\ (n74-n33){{\ghostlmd^{1}}}\ (n75-n32){{\ghostvar^{1}}}\ (n76-n31){{\ghostlmd^{1}}}\ (n77-n30){{\ghostvar^{1}}}\ (n78-n29){{\ghostlmd^{1}}}\ (n79-n28){{\ghostvar^{1}}}\ (n80-n27){{\ghostlmd^{1}}}\ (n81-n26){{\ghostvar^{2}}}\ (n82-n25){{\ghostlmd^{2}}}\ (n83-n24){{\ghostvar^{2}}}\ (n84-n23){\lambda }\ (n85-n6){x}\ (n86-n5){{\ghostlmd^{3}}}\ (n87-n4){{\ghostvar^{4}}}\ (n88-n3){{\ghostlmd^{4}}}\ (n89-n2){{\ghostvar^{2}}}\ (n90-n1){{\ghostlmd^{2}}}\ (n91-n0){{\ghostvar^{1}}}\ (n92-n91){{\ghostlmd^{1}}}\ (n93-n90){{\ghostvar^{1}}}\ (n94-n89){{\ghostlmd^{1}}}\ (n95-n88){{\ghostvar^{1}}}\ (n96-n87){{\ghostlmd^{1}}}\ (n97-n86){{\ghostvar^{1}}}\ (n98-n85){\lambda }\ (n99-n22){s}\ (n100-n21){{\ghostlmd^{1}}}\ (n101-n20){{\ghostvar^{1}}}\ (n102-n19){\lambda }\ (n103-n18){s}\ (n104-n17){{\ghostlmd^{1}}}\ (n105-n16){{\ghostvar^{1}}}\ (n106-n15){{\ghostlmd^{1}}}\ (n107-n14){{\ghostvar^{2}}}\ (n108-n13){{\ghostlmd^{2}}}\ (n109-n12){{\ghostvar^{2}}}\ (n110-n11){{\ghostlmd^{2}}}\ (n111-n10){{\ghostvar^{4}}}\ (n112-n9){{\ghostlmd^{4}}}\ (n113-n8){{\ghostvar^{3}}}\ (n114-n7){{\ghostlmd^{3}}}\ (n115-n6){{\ghostvar^{5}}}\ (n116-n5){{\ghostlmd^{5}}}\ (n117-n4){{\ghostvar^{6}}}\ (n118-n3){{\ghostlmd^{6}}}\ (n119-n2){{\ghostvar^{4}}}\ (n120-n1){{\ghostlmd^{4}}}\ (n121-n0){{\ghostvar^{3}}}}$}
 % \resizebox{1.1\hsize}{!}{$t_{12} = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda t}\ (n3-n2){t}\ (n4-n1){\lambda s_2 z_2}\ (n5-n4){s_2}\ (n6-n3){\lambda n a x}\ (n7-n6){n}\ (n8-n5){\lambda }\ (n9-n4){s_2}\ (n10-n3){\lambda n a x}\ (n11-n10){n}\ (n12-n9){\lambda }\ (n13-n4){z_2}\ (n14-n3){\lambda a}\ (n15-n14){a}\ (n16-n13){{\ghostlmd^{1}}}\ (n17-n12){{\ghostvar^{1}}}\ (n18-n11){\lambda s z}\ (n19-n10){a}\ (n20-n9){{\ghostlmd^{2}}}\ (n21-n8){{\ghostvar^{1}}}\ (n22-n7){\lambda s z}\ (n23-n6){a}\ (n24-n5){{\ghostlmd^{2}}}\ (n25-n4){{\ghostvar^{3}}}\ (n26-n3){\lambda z_0}\ (n27-n26){z_0}\ (n28-n25){{\ghostlmd^{1}}}\ (n29-n24){{\ghostvar^{1}}}\ (n30-n23){\lambda }\ (n31-n22){s}\ (n32-n21){{\ghostlmd^{1}}}\ (n33-n20){{\ghostvar^{1}}}\ (n34-n19){\lambda }\ (n35-n18){s}\ (n36-n17){{\ghostlmd^{1}}}\ (n37-n16){{\ghostvar^{1}}}\ (n38-n15){{\ghostlmd^{1}}}\ (n39-n14){{\ghostvar^{2}}}\ (n40-n13){{\ghostlmd^{2}}}\ (n41-n12){{\ghostvar^{2}}}\ (n42-n11){{\ghostlmd^{2}}}\ (n43-n10){{\ghostvar^{4}}}\ (n44-n9){{\ghostlmd^{4}}}\ (n45-n8){{\ghostvar^{3}}}\ (n46-n7){{\ghostlmd^{3}}}\ (n47-n6){{\ghostvar^{5}}}\ (n48-n5){{\ghostlmd^{5}}}\ (n49-n4){{\ghostvar^{6}}}\ (n50-n3){{\ghostlmd^{6}}}\ (n51-n2){{\ghostvar^{4}}}\ (n52-n1){{\ghostlmd^{4}}}\ (n53-n0){{\ghostvar^{3}}}\ (n54-n53){{\ghostlmd^{1}}}\ (n55-n52){{\ghostvar^{1}}}\ (n56-n51){{\ghostlmd^{1}}}\ (n57-n50){{\ghostvar^{1}}}\ (n58-n49){{\ghostlmd^{1}}}\ (n59-n48){{\ghostvar^{1}}}\ (n60-n47){{\ghostlmd^{1}}}\ (n61-n46){{\ghostvar^{1}}}\ (n62-n45){{\ghostlmd^{1}}}\ (n63-n44){{\ghostvar^{1}}}\ (n64-n43){{\ghostlmd^{1}}}\ (n65-n42){{\ghostvar^{1}}}\ (n66-n41){{\ghostlmd^{1}}}\ (n67-n40){{\ghostvar^{1}}}\ (n68-n39){{\ghostlmd^{1}}}\ (n69-n38){{\ghostvar^{1}}}\ (n70-n37){{\ghostlmd^{1}}}\ (n71-n36){{\ghostvar^{1}}}\ (n72-n35){{\ghostlmd^{1}}}\ (n73-n34){{\ghostvar^{1}}}\ (n74-n33){{\ghostlmd^{1}}}\ (n75-n32){{\ghostvar^{1}}}\ (n76-n31){{\ghostlmd^{1}}}\ (n77-n30){{\ghostvar^{1}}}\ (n78-n29){{\ghostlmd^{1}}}\ (n79-n28){{\ghostvar^{1}}}\ (n80-n27){{\ghostlmd^{1}}}\ (n81-n26){{\ghostvar^{2}}}\ (n82-n25){{\ghostlmd^{2}}}\ (n83-n24){{\ghostvar^{2}}}\ (n84-n23){\lambda }\ (n85-n6){x}\ (n86-n5){{\ghostlmd^{3}}}\ (n87-n4){{\ghostvar^{4}}}\ (n88-n3){{\ghostlmd^{4}}}\ (n89-n2){{\ghostvar^{2}}}\ (n90-n1){{\ghostlmd^{2}}}\ (n91-n0){{\ghostvar^{1}}}\ (n92-n91){{\ghostlmd^{2}}}\ (n93-n90){{\ghostvar^{2}}}\ (n94-n89){{\ghostlmd^{2}}}\ (n95-n88){{\ghostvar^{2}}}\ (n96-n87){{\ghostlmd^{2}}}\ (n97-n86){{\ghostvar^{2}}}\ (n98-n85){\lambda }\ (n99-n22){z}\ (n100-n21){{\ghostlmd^{2}}}\ (n101-n20){{\ghostvar^{2}}}\ (n102-n19){\lambda }\ (n103-n10){x}\ (n104-n9){{\ghostlmd^{3}}}\ (n105-n8){{\ghostvar^{2}}}\ (n106-n7){{\ghostlmd^{2}}}\ (n107-n6){{\ghostvar^{4}}}\ (n108-n5){{\ghostlmd^{4}}}\ (n109-n4){{\ghostvar^{5}}}\ (n110-n3){{\ghostlmd^{5}}}\ (n111-n2){{\ghostvar^{3}}}\ (n112-n1){{\ghostlmd^{3}}}\ (n113-n0){{\ghostvar^{2}}}}$}
@@ -1819,6 +1822,7 @@ t_\epsilon = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda t}\ (n3-n2){t
 \resizebox{1\hsize}{!}{$t_{122} =
 \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda t}\ (n3-n2){t}\ (n4-n1){\lambda s_2 z_2}\ (n5-n4){s_2}\ (n6-n3){\lambda n a x}\ (n7-n6){n}\ (n8-n5){\lambda }\ (n9-n4){s_2}\ (n10-n3){\lambda n a x}\ (n11-n10){n}\ (n12-n9){\lambda }\ (n13-n4){z_2}\ (n14-n3){\lambda a}\ (n15-n14){a}\ (n16-n13){{\ghostlmd^{1}}}\ (n17-n12){{\ghostvar^{1}}}\ (n18-n11){\lambda s z}\ (n19-n10){a}\ (n20-n9){{\ghostlmd^{2}}}\ (n21-n8){{\ghostvar^{1}}}\ (n22-n7){\lambda s z}\ (n23-n6){a}\ (n24-n5){{\ghostlmd^{2}}}\ (n25-n4){{\ghostvar^{3}}}\ (n26-n3){\lambda z_0}\ (n27-n26){z_0}\ (n28-n25){{\ghostlmd^{1}}}\ (n29-n24){{\ghostvar^{1}}}\ (n30-n23){\lambda }\ (n31-n22){s}\ (n32-n21){{\ghostlmd^{1}}}\ (n33-n20){{\ghostvar^{1}}}\ (n34-n19){\lambda }\ (n35-n18){s}\ (n36-n17){{\ghostlmd^{1}}}\ (n37-n16){{\ghostvar^{1}}}\ (n38-n15){{\ghostlmd^{1}}}\ (n39-n14){{\ghostvar^{2}}}\ (n40-n13){{\ghostlmd^{2}}}\ (n41-n12){{\ghostvar^{2}}}\ (n42-n11){{\ghostlmd^{2}}}\ (n43-n10){{\ghostvar^{4}}}\ (n44-n9){{\ghostlmd^{4}}}\ (n45-n8){{\ghostvar^{3}}}\ (n46-n7){{\ghostlmd^{3}}}\ (n47-n6){{\ghostvar^{5}}}\ (n48-n5){{\ghostlmd^{5}}}\ (n49-n4){{\ghostvar^{6}}}\ (n50-n3){{\ghostlmd^{6}}}\ (n51-n2){{\ghostvar^{4}}}\ (n52-n1){{\ghostlmd^{4}}}\ (n53-n0){{\ghostvar^{3}}}\ (n54-n53){{\ghostlmd^{1}}}\ (n55-n52){{\ghostvar^{1}}}\ (n56-n51){{\ghostlmd^{1}}}\ (n57-n50){{\ghostvar^{1}}}\ (n58-n49){{\ghostlmd^{1}}}\ (n59-n48){{\ghostvar^{1}}}\ (n60-n47){{\ghostlmd^{1}}}\ (n61-n46){{\ghostvar^{1}}}\ (n62-n45){{\ghostlmd^{1}}}\ (n63-n44){{\ghostvar^{1}}}\ (n64-n43){{\ghostlmd^{1}}}\ (n65-n42){{\ghostvar^{1}}}\ (n66-n41){{\ghostlmd^{1}}}\ (n67-n40){{\ghostvar^{1}}}\ (n68-n39){{\ghostlmd^{1}}}\ (n69-n38){{\ghostvar^{1}}}\ (n70-n37){{\ghostlmd^{1}}}\ (n71-n36){{\ghostvar^{1}}}\ (n72-n35){{\ghostlmd^{1}}}\ (n73-n34){{\ghostvar^{1}}}\ (n74-n33){{\ghostlmd^{1}}}\ (n75-n32){{\ghostvar^{1}}}\ (n76-n31){{\ghostlmd^{1}}}\ (n77-n30){{\ghostvar^{1}}}\ (n78-n29){{\ghostlmd^{1}}}\ (n79-n28){{\ghostvar^{1}}}\ (n80-n27){{\ghostlmd^{1}}}\ (n81-n26){{\ghostvar^{2}}}\ (n82-n25){{\ghostlmd^{2}}}\ (n83-n24){{\ghostvar^{2}}}\ (n84-n23){\lambda }\ (n85-n6){x}\ (n86-n5){{\ghostlmd^{3}}}\ (n87-n4){{\ghostvar^{4}}}\ (n88-n3){{\ghostlmd^{4}}}\ (n89-n2){{\ghostvar^{2}}}\ (n90-n1){{\ghostlmd^{2}}}\ (n91-n0){{\ghostvar^{1}}}\ (n92-n91){{\ghostlmd^{2}}}\ (n93-n90){{\ghostvar^{2}}}\ (n94-n89){{\ghostlmd^{2}}}\ (n95-n88){{\ghostvar^{2}}}\ (n96-n87){{\ghostlmd^{2}}}\ (n97-n86){{\ghostvar^{2}}}\ (n98-n85){\lambda }\ (n99-n22){z}\ (n100-n21){{\ghostlmd^{2}}}\ (n101-n20){{\ghostvar^{2}}}\ (n102-n19){\lambda }\ (n103-n10){x}\ (n104-n9){{\ghostlmd^{3}}}\ (n105-n8){{\ghostvar^{2}}}\ (n106-n7){{\ghostlmd^{2}}}\ (n107-n6){{\ghostvar^{4}}}\ (n108-n5){{\ghostlmd^{4}}}\ (n109-n4){{\ghostvar^{5}}}\ (n110-n3){{\ghostlmd^{5}}}\ (n111-n2){{\ghostvar^{3}}}\ (n112-n1){{\ghostlmd^{3}}}\ (n113-n0){{\ghostvar^{2}}}\ (n114-n113){{\ghostlmd^{2}}}\ (n115-n112){{\ghostvar^{2}}}\ (n116-n111){{\ghostlmd^{2}}}\ (n117-n110){{\ghostvar^{2}}}\ (n118-n109){{\ghostlmd^{2}}}\ (n119-n108){{\ghostvar^{2}}}\ (n120-n107){{\ghostlmd^{2}}}\ (n121-n106){{\ghostvar^{2}}}\ (n122-n105){{\ghostlmd^{2}}}\ (n123-n104){{\ghostvar^{2}}}\ (n124-n103){\lambda }\ (n125-n18){z}\ (n126-n17){{\ghostlmd^{2}}}\ (n127-n16){{\ghostvar^{2}}}\ (n128-n15){{\ghostlmd^{2}}}\ (n129-n14){{\ghostvar^{3}}}\ (n130-n13){{\ghostlmd^{3}}}\ (n131-n12){{\ghostvar^{3}}}\ (n132-n11){{\ghostlmd^{3}}}\ (n133-n10){{\ghostvar^{5}}}\ (n134-n9){{\ghostlmd^{5}}}\ (n135-n8){{\ghostvar^{4}}}\ (n136-n7){{\ghostlmd^{4}}}\ (n137-n6){{\ghostvar^{6}}}\ (n138-n5){{\ghostlmd^{6}}}\ (n139-n4){{\ghostvar^{7}}}\ (n140-n3){{\ghostlmd^{7}}}\ (n141-n2){{\ghostvar^{5}}}\ (n142-n1){{\ghostlmd^{5}}}\ (n143-n0){{\ghostvar^{4}}}}$}
 \caption{Maximal traversals of $varity\ 2$}
+\label{tab:varity2_trav}
 \end{table}
 \end{landscape}
 \restoregeometry
