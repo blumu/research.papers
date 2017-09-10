@@ -21,8 +21,8 @@
 \usepackage{pdflscape}
 \usepackage{multirow}
 \usepackage{subcaption}
+\usetikzlibrary{arrows,automata}
 
-%\usepackage{paralist}
 
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}[section]
@@ -1115,21 +1115,6 @@ Like in the STLC case, correctness is show via a Path Characterization Theorem.
 Unlike in the STLC case, however, we cannot rely on the correspondence with Game Semantics to show this characterization since we have not formally proven such correspondence in the untyped setting (Conjecture \ref{conj:ulc_corresp}).
 For ULC, we will instead use a term-rewriting argument based on the \emph{leftmost linear reduction} strategy \emph{leftmost linear reduction} from Section~\ref{sec:leftmostlinearred}. We first show that $\sim$-equivalence classes of traversals of $M$ are preserved by \emph{leftmost-linear reduction}.
 
-\begin{property}
-\label{prop:qnf_longapply}
-Let $M$ be an untyped term and $y A_1 \ldots A_n$ be a subterm of $M$ for $n\geq1$ where $y$ is a variable not involved in any generalized redex then:
-\begin{align*}
-lloc_M(y A_1 \ldots A_n) &=
-    \begin{cases}
-     lloc_M (A_j) &\mbox{ where } j = \min \{ 1\leq i\leq n \ | \ lloc_M (A_i) \neq \bot\} \\
-     \bot &\mbox{ if } lloc_M(A_i) = \bot \mbox{ for all } 1\leq i\leq n.
-    \end{cases}
-\end{align*}
-\end{property}
-\begin{proof}
-Immediate from the definition of $lloc$ since $\lambda_l(y) = \epsilon$.
-\end{proof}
-
 \begin{definition}
 A subsequence of a traversal is called a
 \begin{itemize}
@@ -1159,23 +1144,23 @@ for some subsequence $v$ of $t$, external structural variable node $x$ and exter
  the arity threshold of $t$ is precisely $|x|$ and so rule \rulenamet{IVar} can only be used to visit a structural child of $x$, and not ghost nodes.
 \end{proof}
 
-\begin{proposition}[Qnf strand decomposition]
+\begin{proposition}[Strand decomposition of traversals for Quasi-normal forms]
 \label{prop:qnf_strand_decomposition}
-Let $M$ be a term in quasi-normal form. Let $t_{max}$ be a maximal traversal of $M$. Then $t_{max}$ consists of a succession of strands of the following forms:
+Let $M$ be a term in quasi-normal form. Let $t_{max}$ be a maximal traversal of $M$. Then $t_{max}$ consists of a succession of strands defined by the following rules:
 \begin{center}
-\begin{tabular}{lll}
-If the previous strand is & Then next strand is  & Case \\
+\begin{tabular}{rlll}
+Case & If the previous strand is & Then next strand is either & Transition \\
 \hline \hline \\
-$\epsilon$ & $\underline{\lambda\overline{\eta_1}} \cdot u_1 \cdot \underline{x_1}$ & A\\ \\
+Initialization & $\epsilon$ & $\underline{\lambda\overline{\eta_1}} \cdot u_1 \cdot \underline{x_1}$ & $\rightarrow S$\\ \\
 \hline \\
-\multirow{3}{*}{$\underline{\lambda\overline{\eta_1}} \cdot u_1 \cdot \underline{x_1} $}
- & $\underline{\lambda\overline{\eta_2}} \cdot u_2 \cdot \underline{x_2}$ & B1 \\ \\
- & $\underline{\ghostlmd} \cdot  v \cdot \lambda\overline{y_2} \cdot u_2 \cdot \underline{x_2}$ & B2 \\ \\
+\multirow{3}{*}{Structural argument} & \multirow{3}{*}{$\underline{\lambda\overline{\eta_1}} \cdot u_1 \cdot \underline{x_1} $}
+ & $\underline{\lambda\overline{\eta_2}} \cdot u_2 \cdot \underline{x_2}$ & $S \rightarrow S$ \\ \\
+ & & $\underline{\ghostlmd} \cdot  v \cdot \lambda\overline{y_2} \cdot u_2 \cdot \underline{x_2}$ & $S \rightarrow G$ \\ \\
 \hline \\
-\multirow{3}{*}{$\underline{\ghostlmd} \cdot  v \cdot \lambda\overline{y_1} \cdot u_1 \cdot \underline{x_1}$}
-& $\underline{\lambda\overline{\eta_2}} \cdot u_2 \cdot \underline{x_2}$ & C1
+\multirow{3}{*}{Ghost argument} & \multirow{3}{*}{$\underline{\ghostlmd} \cdot  v \cdot \lambda\overline{y_1} \cdot u_1 \cdot \underline{x_1}$}
+& $\underline{\lambda\overline{\eta_2}} \cdot u_2 \cdot \underline{x_2}$ & $G \rightarrow S$
 \\ \\
-  & $\underline{\ghostlmd} \cdot v \cdot \lambda\overline{y_2} \cdot u_2 \cdot \underline{x_2}$ & C2
+  & & $\underline{\ghostlmd} \cdot v \cdot \lambda\overline{y_2} \cdot u_2 \cdot \underline{x_2}$ & $G \rightarrow G$
 \end{tabular}
 \end{center}
 where
@@ -1187,15 +1172,20 @@ where
     \item $\lambda\overline{y_1}$ and $\lambda\overline{y_2}$ are internal lambda nodes verifying $lloc_M(\lambda\overline{y_1}) = lloc_M(\lambda\overline{y_2}) = \bot$,
     \item $\lambda\overline{y_2}$ is justified by some $@$-node occurring in $u_1$.
     \end{itemize}
+Note we write $S$ to denote a strand of the form $\underline{\lambda\overline{\eta_1}} \cdot u_1 \cdot \underline{x_1}$
+and $G$ to denote a strand of the form $\underline{\ghostlmd} \cdot  v \cdot \lambda\overline{y_2} \cdot u_2 \cdot \underline{x_2}$.
 \end{proposition}
 \begin{proof}
-(A) The first strand is obtained by applying the rule \rulenamet{Root} followed by repeated applications of \rulenamet{App} and \rulenamet{Lam}, which yields $u_1$, a path to $\lambda\overline{\eta_1}$ in the tree of $M$. To show that $u_1$ is a spinal descent we need to prove that it does not contain any internal node (only @-node). This must be the case otherwise, since internal variables are by definition involved in some generalized redex, we would have $lloc_M(\underline{\lambda\eta_1}) = z$ where $z$ is the first internal variable occurring in $u_1$, which contradicts $lloc_M(\lambda \overline{\eta}) = lloc_M(M) = \bot$ since $M$ is in \emph{qnf}.
+\begin{enumerate}
+\item[(Init)] The first strand is obtained by applying the rule \rulenamet{Root} followed by repeated applications of \rulenamet{App} and \rulenamet{Lam}, which yields $u_1$, a path to $\lambda\overline{\eta_1}$ in the tree of $M$. To show that $u_1$ is a spinal descent we need to prove that it does not contain any internal node (only @-node). This must be the case otherwise, since internal variables are by definition involved in some generalized redex, we would have $lloc_M(\underline{\lambda\eta_1}) = z$ where $z$ is the first internal variable occurring in $u_1$, which contradicts $lloc_M(\lambda \overline{\eta}) = lloc_M(M) = \bot$ since $M$ is in \emph{qnf}. The spinal descent $u_1$ is then necessarily terminated by an external variable node $x_1$.
 
-(B1) If the node following $x_1$ is a structural node $\lambda\overline{\eta_2}$ then by rule \rulenamet{IVar}, it's a child lambda node of $x_1$.
-Because $u_1$ is a spinal descent, the subterm rooted at $\lambda \overline\eta_1$ is of the form $\lambda \overline\eta_1 . x_1 A_1 \ldots A_q$ for some $q\geq1$, therefore we have $lloc_M(\lambda \overline\eta_1 . x_1 A_1 \ldots A_q) = \bot$. Since $x_1$ is external, by Property \ref{prop:qnf_longapply} we have $lloc_M(A_j)=\bot$ for all $1\leq j\leq q$, so in particular $lloc_M(\lambda\overline{\eta_2}) = \bot$. The same logic used in (A) lets us conclude that $u_2$ is a spinal descent to external node $x_2$.
+\item[(Structural)] Let the previous strand be of form $\underline{\lambda\overline{\eta_1}} \cdot u_1 \cdot \underline{x_1} $.
 
+If the node following $x_1$ is a structural node $\lambda\overline{\eta_2}$ then by rule \rulenamet{IVar}, it's a child lambda node of $x_1$.
+Because $u_1$ is a spinal descent, the subterm rooted at $\lambda \overline\eta_1$ is of the form $\lambda \overline\eta_1 . x_1 A_1 \ldots A_q$ for some $q\geq1$, therefore we have $lloc_M(\lambda \overline\eta_1 . x_1 A_1 \ldots A_q) = \bot$. Since $x_1$ is external, by Property \ref{prop:qnf_longapply} we have $lloc_M(A_j)=\bot$ for all $1\leq j\leq q$, so in particular $lloc_M(\lambda\overline{\eta_2}) = \bot$. The same logic used in the \emph{Initialization} case lets us conclude that $u_2$ is a spinal descent to external node $x_2$. We have shown that the next strand is of type $S$.
+\\
 
-(B2) If the node following $x_1$ is a ghost node then by Property \ref{prop:strand_spinaldescent} $u_1$ is necessarily non-empty: we have $u_1 =
+Now suppose instead that the node following $x_1$ is a ghost node then by Property \ref{prop:strand_spinaldescent}, $u_1$ is necessarily non-empty: we have $u_1 =
 @_1 \cdot\lambda\overline{\xi_1} \cdots @_q\cdot \lambda\overline{\xi_q}$ for some $q\geq 1$. The subterm at $@_r$,  represented on Figure~\ref{fig:strand_decomposition_proof_induction}, is of the form
 $$(\lambda\overline{\xi_r}. A_0) A_1 \ldots A_{k_{r}-1}\ (\lambda\overline{y_2}. \ldots)A_{k_{r}+1}\ \ldots A_{|@_r|} .$$
 By the weaving property \ref{prop:weaving}(iii), $x_1$ is followed by a \emph{pending parameter lookup} $v$ necessarily shorter than $u_1$ and terminated by a structural lambda node $\lambda\overline{y_2}$ justified by some application node $@_r$ in $u_1$ for some $1\leq r \leq q$:
@@ -1284,53 +1274,91 @@ the desired result $|\lambda_l(\lambda\overline{\xi_{i-1}})| < k_{i-1}$.
 
 \begin{figure}[htbp]
 \centering
-\begin{tikzpicture}[baseline=(root.base),level distance=7ex,inner ysep=0.5mm,sibling distance=15mm]
-    \node (root)
-    {$\cdots$}
-    child {node{$\lambda\overline\eta$}
-        child {node{$@_1$}
+\begin{tikzpicture}[baseline=(root.base),level distance=6.5ex,inner ysep=0.5mm,sibling distance=15mm]
+    \node (root){}
+    child[dashed] {node{$\lambda\overline\eta$}
+        child[solid] {node{$@_1$}
             child{node{$\ldots$}
                 child{node{$@_{r}$}
                     child{node{$\lambda\overline{\xi_r}$}
-                        child{node{$\ldots$}
-                            child{node{$@_q$}
-                                child{node{$\lambda \overline\xi_q $}
-                                   child {node {$x$}
-                                    child{node{\ldots}}}
-                                   edge from parent node[above left]{$0$}
+                        child[dashed]{node{$@_{q-1}$}
+                            child[solid]{node{$\lambda\overline{\xi_{q-1}}$}
+                                child[solid]{node{$@_q$}
+                                    child{node{$\lambda\overline\xi_q$}
+                                        child{node {$x_1$}
+                                            child[dashed,level distance=5ex]{node{}}}
+                                        edge from parent node[above left]{$0$}
+                                    }
+                                    child{node{\ldots}}
+                                    child[dashed]{node{}}
                                 }
-                                child{node{$\cdots$}}
+                                edge from parent node[above left]{$0$}
                             }
+                            child[solid]{node{\ldots}}
+                            child[dashed]{node{}}
                         }
                         edge from parent node[above left]{$0$}
                     }
-                    child{node{\ldots}}
+                    child[dashed]{node{\ldots}}
                     child{node{$\lambda\overline{y_2}$}
-                                 edge from parent node[left]{$k_r$}
+                        child[dashed,level distance=5ex]{node{}}
+                        edge from parent node[left]{$k_r$}
                     }
-                    child{node{\ldots}}
-                    child{node{} edge from parent node[left]{$|@_r|$}}
+                    child[dashed]{node{\ldots}}
+                    child{node{} edge from parent node[right]{$|@_r|$}}
                 }
                 edge from parent node[above left]{$0$}
             }
             child{node{\ldots}}
+            child[dashed]{node{}}
         }
     };
     \end{tikzpicture}
-\caption{Sub-tree at $\lambda\overline\eta$ for a strand of type B2.}
+\caption{Relevant sub-tree for a traversal strand of type $G$ (assuming $q>r+1$).}
 \label{fig:strand_decomposition_proof_induction}
 \end{figure}
 
 We now show that $lloc_M(\lambda\overline{y_2})=\bot$.
 By assumption we have that $lloc_M(\lambda\overline{\eta}) =\bot$ so since $@_r$ occurs in the spine of $M$, by definition of $lloc_M$ we must have $lloc_M(@_r) =\bot$, and thus also $lloc_M(\lambda\overline{\xi_r}) = \bot$. We have just shown that $|\lambda_l(\lambda\overline{\xi_r}| < k_r$, consequently, the sub-term $(\lambda\overline{\xi_r} . A_0) A_1 \ldots A_{k_r-1}$ has more operands than pending lambdas in the operator's lambda list. By definition of lambda list this implies that $\lambda_l((\lambda\overline{\xi_r} . A_0) A_1 \ldots A_{k_r-1})$ is empty. Hence we necessarily have $lloc(\lambda\overline{y_2}) = \bot$, otherwise by definition of $lloc$ we would have
  $lloc((\lambda\overline{\xi_r} . A_0) A_1 \ldots A_{k_r-1} (\lambda\overline{y_2}. \ldots)) = lloc(\lambda\overline{y_2}) \ne \bot$, which subsequently implies $lloc(\lambda\overline{\eta_1})\ne\bot$, contradicting the assumption.
+The sequence $u_2$ is shown to be a spinal descent by the same argument used in the \emph{structural argument} case above, using the fact that $lloc_M(\lambda\overline{y_2})=\bot$. We have thus shown that the next strand is of type $G$.
 
-\todo{TOFINISH}
+\item[(Ghost)] If the node following $x_1$ is a structural node then, like we have shown in case B, the next strand is necessarily a spinal descent of type $S$.
 
-The sequence $u_2$ is shown to be a spinal descent by the same argument as in (B1) using the fact that $lloc_M(\lambda\overline{y_2})=\bot$.
-
-(C1) \& (C2) %are shown using the same argument as (B1) and (B2).
+If the node following $x_1$ is a ghost.
+Like in B, the weaving property shows that the ghost node after $x_1$ is necessarily followed by a \emph{pending parameter lookup} terminated by structural lambda node $\lambda\overline{y_2}$ pointing to some node in $v \cdot \lambda\overline{y_1} \cdot u_1$.
+But since $v$ consists solely of ghost node, the justifier is necessarily in $u_1$. We can thus conclude with the same argument as in B that the next strand is necessarily of type
+$G$.
+\end{enumerate}
 \end{proof}
+
+The diagram on Figure~\ref{fig:qnf_strand_decomposition_statemachine} represents the state machine underpinning the above result. The states represents external nodes of the tree: lambda, ghost lambda or input variable; the bottom two states represent beginning of a new strand in the traversal.
+The solid-arrows represent consecutive applications of deterministic traversal rules while the dashed-arrows represent the two kinds of non-deterministic choices of the \rulenamet{IVar} rule: one for structural child lambda nodes and one for ghost children.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=4cm,
+    semithick]
+\tikzstyle{every state}=[fill=red,draw=none,text=white]
+
+\node[initial,state]
+    (L) {$\lambda$};
+\node[state,fill=white,draw=black,text=black]
+    (V) [above right of=L, xshift=1cm] {$IVar$};
+\node[state,node distance=8cm]
+    (G) [right of=L] {$\ghostlmd$};
+
+\path (L) edge [bend right]          node[right,text width=3cm]{Descent to linear head-occurence} (V)
+      (V) edge [bend right, dashed]  node[left,text width=3cm] {Picked strutural argument ($k\leq|x|$)} (L)
+          edge [bend left, dashed]   node[text width=2cm] {Picked ghost argument ($k>|x|$)} (G)
+      (G) edge                       node {Look-up pending argument} (L)
+;
+\end{tikzpicture}
+\caption{State machine underpinning the \emph{qnf} strand decomposition.}
+\label{fig:qnf_strand_decomposition_statemachine}
+\end{figure}
+
+
 
 \begin{proposition}
 \label{prop:qnf_traversals_are_finite}
@@ -1344,8 +1372,9 @@ If $M$ is in \emph{quasi normal form} and $t$ is a traversal in $\travsetnorm(N)
 \begin{proof}
 (a) and (b) are direct consequences of Proposition~\ref{prop:qnf_strand_decomposition}.
 (c) Let's consider the cases of the strand decomposition of Proposition~\ref{prop:qnf_strand_decomposition}
-observe that in case (A), (B1), because $u_1$ and $u_2$ are spinal descents, the last node in the `next` strand ($x_1$ or $x_2$) must be a descendant (in the computation tree representation of $M$) of the first node from the `previous' strand ($\lambda\overline{\eta_1}$).
-In case (B2), since both $u_1$ and $u_2$ are spinal descents, there are also paths in the tree, therefore since $\lambda\overline{y_2}$ points to $u_1$ we also have that $x_2$ is a descendant of $\lambda\overline{\eta_1}$. In case (C1) and (C2), since $u_1$ and $u_2$ are spinal descents, $x_2$ is a descendant of $\lambda\overline{y_2}$, itself a descendant of $\lambda\overline{y_1}$.
+observe that for the two transitions $\rightarrow S$ and $S \rightarrow S$, because $u_1$ and $u_2$ are spinal descents, the last node in the `next` strand ($x_1$ or $x_2$) must be a descendant (in the computation tree representation of $M$) of the first node from the `previous' strand ($\lambda\overline{\eta_1}$).
+For transition $S\rightarrow G$, since both $u_1$ and $u_2$ are spinal descents, there are also paths in the tree, therefore since $\lambda\overline{y_2}$ points to $u_1$ we also have that $x_2$ is a descendant of $\lambda\overline{\eta_1}$. For transitions
+$G \rightarrow S$ and $G \rightarrow G$, since $u_1$ and $u_2$ are spinal descents, $x_2$ is a descendant of $\lambda\overline{y_2}$, itself a descendant of $\lambda\overline{y_1}$.
 
 Suppose $t$ is infinite, then $t$ is maximal.  Thus if $t_{max}$ was infinite, from the above strand decomposition we can construct an infinite path in the tree of $M$ which contradicts the fact that $M$ is a finitary term.
 \end{proof}
@@ -1938,6 +1967,21 @@ Leftmost linear reduction proceeds by first locating the left-most variable occu
 Take $M = (\lambda x. x x N) z$. We have $M \rightarrow_{hl} (\lambda x. z x N) z$ which is in quasi head normal form because the head variable $z$ is not involved in any generalized redex.
 But since the left-most occurrence $x$ is involved in the redex $(\lambda x, z)$ the leftmost linear reduction gives $(\lambda x. z x N) z \rightarrow_l (\lambda x. z z N) z$.
 \end{example}
+
+\begin{property}
+    \label{prop:qnf_longapply}
+    Let $M$ be an untyped term and $y A_1 \ldots A_n$ be a subterm of $M$ for $n\geq1$ where $y$ is a variable not involved in any generalized redex then:
+    \begin{align*}
+    lloc_M(y A_1 \ldots A_n) &=
+        \begin{cases}
+         lloc_M (A_j) &\mbox{ where } j = \min \{ 1\leq i\leq n \ | \ lloc_M (A_i) \neq \bot\} \\
+         \bot &\mbox{ if } lloc_M(A_i) = \bot \mbox{ for all } 1\leq i\leq n.
+        \end{cases}
+    \end{align*}
+    \end{property}
+    \begin{proof}
+    Immediate from the definition of $lloc$ since $\lambda_l(y) = \epsilon$.
+    \end{proof}
 
 \begin{property}
 \label{prop:lloc_properties}
