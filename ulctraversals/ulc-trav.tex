@@ -31,6 +31,7 @@
 \newtheorem{remark}{Remark}[section]
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{conjecture}{Conjecture}[section]
+\newtheorem{lemma}{Lemma}[section]
 \newtheorem{example}{Example}[section]
 \newtheorem{observation}{Observation}[section]
 
@@ -1240,8 +1241,8 @@ k_r \leq |@_r|
 
 
 In order to prove that $lloc(\lambda\overline{y_2}) =\bot$ we first show that for all $i$ ranging from $r+1$ to $q$ we have
- $k_i>|\lambda_l(\lambda\overline{\xi_i})|$. We prove the result by a finite induction proceeding bottom-up from the lower node
- in the tree $\lambda\overline{\xi_q}$ up to node $\lambda\overline{\xi_r}$.
+ $k_i>|\lambda_l(\lambda\overline{\xi_i})|$. We prove the result by a finite induction proceeding bottom-up from the lower tree node
+ $\lambda\overline{\xi_q}$ up to $\lambda\overline{\xi_r}$.
 
 \emph{Base case:} We have $i=q$. The subterm
 rooted at $\lambda\overline{\xi_q}$ is in head normal form
@@ -1380,6 +1381,32 @@ Suppose $t$ is infinite, then $t$ is maximal.  Thus if $t_{max}$ was infinite, f
 \end{proof}
 
 
+%For any variable occurrence $x$ involved in a generalized redex $(\lambda x, A)$ for some subterm $A$, we will write $arg(x)$ to denote the root node of the $A$ in the term tree.
+%For any node $m\in\Nodes_@$ and index $i\geq0$ we will write $Child(m,i)$ to denote the $i$th child of $m$.
+
+\begin{lemma}[Generalized redex argument lookup]
+\label{lemma:genredex_lookup}
+Let $x$ be a variable occurrence involved in a generalized redex in $gr(M)$.
+\begin{enumerate}[label=(\roman*)]
+    \item The path from the parent node of the redex argument down to $x$'s binder is of the form:
+$$ @_r \cdot \lambda\overline{x_r} \cdots
+@_2 \cdot \lambda\overline{x_2} \cdot @_1 \cdot \lambda\overline{x}$$
+for $r\geq0$, where $@_r$ denotes the parent node of the redex argument, and $\lambda\overline{x}$ denotes $x$'s binder, such that $\lambda x$ is the $i$th lambda in the bulk lambdas $\lambda\overline{x}$.
+
+\item The argument of $x$ is precisely given by the $i_k$th child of node $@_k$ where $k$ is the smallest index verifying $i_k<|@_k|$ and:
+\begin{align*}
+    i_1 &= i \\
+    i_{j+1} &= i_j - |@_j| + |\lambda\overline{x_{j+1}}| \qquad j\geq 0 .
+\end{align*}
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+(i) By definition of generalized redexes and lambda lists (Def.~\ref{dfn:generalized_redex}), $@_r$ necessarily occurs in the path from $\lambda\overline{x}$ to the root. Further the path from $@_r$ to $\lambda\overline{x}$ is necessarily a spinal descent (\ie, it contains only lambda and application nodes, and no variable node). Indeed, if it contained a variable node $z$ then the lambda-list at the subterm rooted at $z$ would be empty, in which case no argument could possibly form a generalized redex with $\lambda x$.
+
+(ii) We show by induction on $k$ that $x$ is the variable abstracted by the $i_k$th lambda in $\lambda_l(\lambda\overline{x_k})$, which implies the result since by definition $\lambda x$ forms a generalized redex with the $i_k$th argument of $@_k$.
+Base case $k=1$. By assumption, $\lambda x$ is the $i$th lambda in the bulk lambda $\lambda\overline{x}$. Let $k\geq 1$. By the induction hypothesis $\lambda x$ is the $i_{k-1}$ lambda in $\lambda_l(\lambda\overline{x_{k-1}})$.
+By definition of $k$ we have $i_{k-1}\geq|@_{k-1}|$, therfore by definition of $\lambda_l$, the long-application $@_{k-1}$ has the effect of popping exactly $|@_{k-1}|$ arguments from the lambda-list, and the following abstraction $\lambda\overline{x_k}$ then adds $|\lambda\overline{x_k}|$ more lambdas in front of the lambda list. Hence $\lambda x$ gets moved to position $i_{k-1} - |@_{k-1}| + |\lambda\overline{x_k}| = i_k$ in the lambda list at $\lambda\overline{x_k}$.
+\end{proof}
 
 \begin{proposition}[Traversals implement linear reduction]
 \label{prop:ulctrav_impl_linear_reduction}
@@ -1394,11 +1421,29 @@ Let $M$ be an untyped term.
 - explain where the relabelling done in $\coresymbol$ is used in the proof. Answer: during trivial reduction of the qnf, in (ii).
 }
 
-\begin{proof}[Proof sketch]
-(i) Proof sketch: The effect of leftmost linear reduction is essentially to inline the \emph{lloc} variable by the argument of the generalized redex involving it. The sets of traversals $\travsetnorm$ before and after reduction are identical up to some mapping between nodes of the term and its reduct.
+\begin{proof}
+(i) The effect of leftmost linear reduction is to substitute the \emph{lloc} variable with the argument of the generalized redex involving it. We show that the sets of traversals $\travsetnorm$ before and after reduction are identical up to some mapping between nodes of the term and its reduct.
+
+Let $x$ denote the leftmost linear variable occurrence in $M$
+and let $(\lambda x, A)$ be the generialized redex involving it. So that $N$ is the term obtained after firing the generalized redex $(\lambda x, A)$ in $M$.
+
+One property of the linear head reduction, is that the reduct contains, modulo relabelling of the \emph{lloc} variable, the original term: thus there exists an injection $\phi$ mapping nodes of $M$ to nodes of $N$ and such that $\phi(x)$ is precisely the root node in $N$ of the subterm subsituted for $x$ in $M$. A trivial induction then shows that for any traversal $t \in \travsetnorm(M)$ that does not contain $x$, the pointwise image $\phi(t)$ is a traversal in $\travsetnorm(N)$, and dually for any traversal of $t' \in \travsetnorm(N)$ that does not contain the node $\phi(x)$ there exists a traversal $t \in \travsetnorm(M)$ such that $\phi(t) = t'$.
+
+Let's now consider a traversal $t$ containing $x$ and show how to define a mapping $\psi: \travsetnorm(M) \rightarrow \travsetnorm(N)$.
+
+Let $\lambda\overline{x}$ denote $x$'s binding lambda node, $k$ denote $x$'s binding index, and $@_a$ denote the parent application node of the subterm $A$.
+By Lemma \ref{lemma:genredex_lookup}, $@_a$ is precisely the lowest application node in the spinal descent from $@_a$ to $\lambda\overline{x}$ verifying $|@_a| >  i_a$, where $i_a = k + \sum_{1\leq j\leq a} (|\lambda\overline{\xi_j}| - |@_j|)$.
+
+This definition matches precisely with the `pending argument lookup' algorithm implicitely implemented by the rules \rulenamet{Lmd} and \rulenamet{Var}: with $i_a$ instantiation of those two rules, the traversal $t_{\geq x}$ gets extended by $2(i_a-1)$ ghost nodes followed by the root node of $A$.
 
 
+%IDEA: Observe first that the nodes of the subterm $A$$ map 1-1 to the nodes of the subterm $\phi(x)$ in $N$.
+% We can therefore defined $\psi$ such that all the nodes in $t$ herediterily justified by the root of $A$ are mapped by $\psi$ to the corresponding nodes in $N$. We omit the full details of the induction which is purely mechanical and straightforward. The idea being that $N$ is obtained by transposing the structure of the subterm $A$ in place of $x$ with the additional relabelling of $x$'s parent $\lambda\overline{y}$ as $\lambda\overline{y}\overline{z}$ where $\lambda\overline{a}$ denotes the root of $A$. The key observation is that this relabelling is innocuous in the sense that all rules applied to $t$ in $M$ can also be applied to $\psi(t)$ in $N$.
 
+\todo{WIP: explain how any traversal extension of $t_{\leq x}$ is necessarily
+also a traversal of $N$.}
+
+%%%%%%%%%%%%%%%%%%
 
 (ii) By Theorem \ref{thm:soundness_leftmostlinearred} a \emph{qnf} trivially reduces to its beta-nf: there is a beta reduction sequence $M = M_1 \rightarrow_\beta M_2 \ldots \rightarrow_\beta M_q= N$, $q\geq1$  where for each reduction step, $M_{q+1}$ is obtained by reducing the leftmost standard redex of $M_q$ of the form $(\lambda x . U) T$ such that $U$ does not contain any redex. By Proposition \ref{prop:qnf_nf}(ii), each such redex is trivial: $x$ does not occur freely in $U$ and therefore no substitution is performed to reduce the redex.
 
@@ -1886,6 +1931,7 @@ We now introduce the head-linear reduction of Danos-Regnier \cite{danos-head}.
 In the standard lambda calculus, a redex is necessarily formed by the outermost lambda in operator position of an application: if the operator consists of consecutive lambda abstractions (\eg, as in $(\lambda x \lambda y . M) A_1 A_2$) then the outermost lambda (\eg, $\lambda x$) is the one that will form the redex. The notion of redex can be generalized to allow evaluation of arguments in any order. In particular, one can allow any of the consecutive $\lambda$-abstractions to form a redex (\eg, the abstraction $\lambda y$ and corresponding argument $A_2$ would be a valid redex). This is formalized by the notion of \emph{generalized redex} (a generalized version of the \emph{prime redex} of Danos-Regnier):
 
 \begin{definition}[Generalized redex]
+\label{dfn:generalized_redex}
 The set of generalized redexes of a term $M$, written $gr(M)$, is a set of pairs $(\lambda x, A)$ where $\lambda x$ is some abstraction in $M$ and $A$ is a subterm called the argument of $\lambda x$. The head $\lambda$ list of $M$, written $\lambda_l(M)$ is a list of lambda abstractions of $M$. They are defined by induction:
 \begin{align*}
 gr(v) &= \emptyset & \lambda_l(v) &= \emptyset\\
