@@ -1424,17 +1424,29 @@ Let $M$ be an untyped term.
 \begin{proof}
 (i) The effect of leftmost linear reduction is to substitute the \emph{lloc} variable with the argument of the generalized redex involving it. We show that the sets of traversals $\travsetnorm$ before and after reduction are identical up to some mapping between nodes of the term and its reduct.
 
+We construct the mapping $\psi: \travsetnorm(M) \rightarrow \travsetnorm(N)$ by induction on the traversal $t \in \travsetnorm(M)$.
+It trivially holds for the empty traversal.
+
+Let $t = t' \cdot n$ be a traversal and suppose that $\psi(t') \in \travsetnorm(N)$.
+
+Suppose that $n$ is not the occurrence $x$.
+One property of the linear head reduction, is that the reduct contains, modulo relabelling of the \emph{lloc} variable, the original term: thus there exists an injection $\phi$ mapping nodes of $M$ to nodes of $N$ and such that $\phi(x)$ is precisely the root node in $N$ of the subterm subsituted for $x$ in $M$.
+
+
 Let $x$ denote the leftmost linear variable occurrence in $M$
 and let $(\lambda x, A)$ be the generialized redex involving it. So that $N$ is the term obtained after firing the generalized redex $(\lambda x, A)$ in $M$.
 
-One property of the linear head reduction, is that the reduct contains, modulo relabelling of the \emph{lloc} variable, the original term: thus there exists an injection $\phi$ mapping nodes of $M$ to nodes of $N$ and such that $\phi(x)$ is precisely the root node in $N$ of the subterm subsituted for $x$ in $M$. A trivial induction then shows that for any traversal $t \in \travsetnorm(M)$ that does not contain $x$, the pointwise image $\phi(t)$ is a traversal in $\travsetnorm(N)$, and dually for any traversal of $t' \in \travsetnorm(N)$ that does not contain the node $\phi(x)$ there exists a traversal $t \in \travsetnorm(M)$ such that $\phi(t) = t'$.
 
-Let's now consider a traversal $t$ containing $x$ and show how to define a mapping $\psi: \travsetnorm(M) \rightarrow \travsetnorm(N)$.
+A trivial induction then shows that for any traversal $t \in \travsetnorm(M)$ that does not contain $x$, the pointwise image $\phi(t)$ is a traversal in $\travsetnorm(N)$, and dually for any traversal of $t' \in \travsetnorm(N)$ that does not contain the node $\phi(x)$ there exists a traversal $t \in \travsetnorm(M)$ such that $\phi(t) = t'$. For traversal not containing $x$ we can just take $\psi(t) = \phi(t)$.
+
+Let $t$ be a traversal containing $x$ and suppose that $\psi(t) \in \travsetnorm(N)$
 
 Let $\lambda\overline{x}$ denote $x$'s binding lambda node, $k$ denote $x$'s binding index, and $@_a$ denote the parent application node of the subterm $A$.
 By Lemma \ref{lemma:genredex_lookup}, $@_a$ is precisely the lowest application node in the spinal descent from $@_a$ to $\lambda\overline{x}$ verifying $|@_a| >  i_a$, where $i_a = k + \sum_{1\leq j\leq a} (|\lambda\overline{\xi_j}| - |@_j|)$.
 
 This definition matches precisely with the `pending argument lookup' algorithm implicitely implemented by the rules \rulenamet{Lmd} and \rulenamet{Var}: with $i_a$ instantiation of those two rules, the traversal $t_{\geq x}$ gets extended by $2(i_a-1)$ ghost nodes followed by the root node of $A$.
+
+In $N$, the traversal $$
 
 
 %IDEA: Observe first that the nodes of the subterm $A$$ map 1-1 to the nodes of the subterm $\phi(x)$ in $N$.
