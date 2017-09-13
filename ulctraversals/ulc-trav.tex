@@ -935,19 +935,25 @@ We define the \defname{arity threshold} of $t$ as:
 \end{align*}
 \end{definition}
 
+We will use the abbreviation $ \delta_j = |n_j| - |\alpha_j|$
+so that the arity threshold can be more concisely expressed as:
+\begin{align*}
+    \arth(t) &= \max_{q=1..k-1} \left( |n_q| + \sum_{j=1..q-1} \delta_j \right) \\
+    &= \max_{q=1..k-1} \left( |\alpha_q| + \sum_{j=1..q} \delta_j\right)
+\end{align*}
+
+
 \begin{remark}[Calculating the arity threshold]
 The arity threshold can be rewritten as:
 \begin{align*}
-\arth(t) &= \max_{q=1..k-1} b_q \ .
+\arth(t) &= \max_{q=1..k-1} b_q
 \end{align*}
-where for $1\leq q\leq k-1$ we define $b_q = \sum_{j=1..q} (|n_j| - |\alpha_j|) + |\alpha_q|$.
-
-The $b_q$s verify the following induction:
+where we define $b_q = |\alpha_q| + \sum_{j=1..q} \delta_j = |n_1| - |\alpha_1| + |n_2| - |\alpha_2| + \ldots + |n_{q-1}| - |\alpha_{q-1}| + |n_q|$, for $1\leq q\leq k-1$ or equivalently by the induction:
  \begin{align*}
  b_1 &= |n_1| \\
  b_{q+1} &= b_q + |n_{q+1}| - |\alpha_q| & \mbox{$1 \leq q \leq k-2$}
  \end{align*}
-In other words: $b_{q} = |n_1| - |\alpha_1| + |n_2| - |\alpha_2| + \ldots + |n_{q-1}| - |\alpha_q| $. So an algorithm to calculate the arity threshold consists in adding and subtracting the arity of the nodes starting from the last occurrence of the traversal and reading backwards until reaching an external lambda node. The maximal value seen during that summation is the arity threshold.
+Thus an algorithm to calculate the arity threshold consists in adding and subtracting the arity of the nodes starting from the last variable occurrence in the traversal strand and reading backwards until reaching the previous external variable. The maximal value calculated in that summation is precisely the arity threshold.
 \end{remark}
 
 Observe that traversal rule $\rulename{IVar}$ leaves infinitely many choices for the link label: any value greater than $1$. The following property shows that if the link label exceeds the arity threshold then the traversal ends up traversing only ghost nodes that never materialize back to a structural node.
@@ -973,7 +979,7 @@ t_{max} &=& \Pstr[0.3cm]{ \cdots
   (t2-a2,45:i_3){\ghostvar} \cdots
 (tkm1-alphakm1,40:i_{k}){\ghostvar} \ (lkm1-nk,43:i_{k}){\ghostlmd}\
  (tk-alpha,45:i_{k+1}){\underline{\ghostvar}} \cdots }\\
-i_{q+1} &=& i + \sum_{j=1..q} (|\alpha_j| - |n_j|), \quad \mbox{ for $0\leq q\leq k$}
+i_{q+1} &=& i + \sum_{j=1..q} (|\alpha_j| - |n_j|) = i - \sum_{j=1..q} \delta_j, \quad \mbox{ for $0\leq q\leq k$}
 \end{eqnarray*}
 where underlined occurrences indicate external nodes.
 
@@ -1015,7 +1021,7 @@ i_{q+1} &= i_q + |\alpha_q| - |n_q| \hbox{, $1\leq q \leq k$}.
 
 $$ t_{max} = \Pstr[0.3cm]{ \cdots (alpha){\alpha_1}\ (m){t^\omega}\ (l-m,30:i){\ghostlmd}\ (t-alpha,45:i_2){\ghostvar} \cdots} $$
 
-\item For $1<q\leq k$, by the induction hypothesis we have:
+\item Let $1<q< k$, applying the induction hypothesis on $q$ gives:
 $$
 t_{max} = \Pstr[0.3cm]{
    \cdots
@@ -1031,16 +1037,16 @@ t_{max} = \Pstr[0.3cm]{
 }
 $$
 
-We then have:
+We then have $i_{q} > |n_q|$ since:
 \begin{align*}
-i_{q} &= i + \sum_{j=1..q-1} (|\alpha_j| - |n_j|)
+i_{q} &= i - \sum_{j=1..q-1} \delta_j
 &\qquad\hbox{(by induction hypothesis)}\\
-        &> \arth(t) + \sum_{j=1..q-1} (|\alpha_j| - |n_j|)
+    &> \arth(t) - \sum_{j=1..q-1} \delta_j
 &\qquad\hbox{(assumption $i> \arth(t)$)} \\
-        &= \max_{r=1..k-1} \left( |n_r| + \sum_{j=1..r-1} (|n_j| - |\alpha_j|) \right)
-        + \sum_{j=1..q-1} (|\alpha_j| - |n_j|)
+        &= \max_{r=1..k-1} \left( |n_r| + \sum_{j=1..r-1} \delta_j \right)
+        - \sum_{j=1..q-1} \delta_j
 & \qquad\hbox{(definition of $\arth$)} \\
-    &\geq |n_q| + \sum_{j=1..q-1} (|n_j| - |\alpha_j|) + \sum_{j=1..q-1} (|\alpha_j| - |n_j|)
+    &\geq |n_q| + \sum_{j=1..q-1} \delta_j - \sum_{j=1..q-1} \delta_j
 &\qquad\hbox{(take $r=q$)} \\
     &= |n_q|
 \end{align*}
@@ -1056,9 +1062,9 @@ Applying the argument repeatedly shows that all the occurrences following $t$ ar
 (iii) Take $r$ to be the smallest $q\geq 1$ such that $i_q\leq |n_q|$, it exists because:
 \begin{align*}
 i \leq \arth(t)
-        &\iff i \leq \max_{q=1..k-1} \left( |n_q| + \sum_{j=1..q-1} (|n_j| - |\alpha_j|) \right)\quad\hbox{(Definition of $\arth(t)$)} \\
-        &\implies i \leq |n_r| + \sum_{j=1..r-1} (|n_j| - |\alpha_j|) \quad \mbox{for some $1 \leq r \leq k-1$} \\
-        &\iff i + \sum_{j=1..r-1} (|\alpha_j| - |n_j|) \leq |n_r| \quad \mbox{for some $1 \leq r \leq k-1$} \\
+        &\iff i \leq \max_{q=1..k-1} \left( |n_q| + \sum_{j=1..q-1} \delta_j \right)\quad\hbox{(Definition of $\arth(t)$)} \\
+        &\implies i \leq |n_r| + \sum_{j=1..r-1} \delta_j \quad \mbox{for some $1 \leq r \leq k-1$} \\
+        &\iff i - \sum_{j=1..r-1} \delta_j \leq |n_r| \quad \mbox{for some $1 \leq r \leq k-1$} \\
         &\iff i_r \leq |n_r| \quad \mbox{for some $1 \leq r \leq k-1$} \quad \mbox{(Definition of $i_r$).}
 \end{align*}
 We then conclude by applying the same argument as (i) for all $q<r$.
@@ -1446,7 +1452,7 @@ By Lemma \ref{lemma:genredex_lookup}, $@_a$ is precisely the lowest application 
 
 This definition matches precisely with the `pending argument lookup' algorithm implicitely implemented by the rules \rulenamet{Lmd} and \rulenamet{Var}: with $i_a$ instantiation of those two rules, the traversal $t_{\geq x}$ gets extended by $2(i_a-1)$ ghost nodes followed by the root node of $A$.
 
-In $N$, the traversal $$
+In $N$, the traversal $ $
 
 
 %IDEA: Observe first that the nodes of the subterm $A$$ map 1-1 to the nodes of the subterm $\phi(x)$ in $N$.
