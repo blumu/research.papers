@@ -1389,7 +1389,6 @@ Suppose $t$ is infinite, then $t$ is maximal.  Thus if $t_{max}$ was infinite, f
 
 %For any variable occurrence $x$ involved in a generalized redex $(\lambda x, A)$ for some subterm $A$, we will write $arg(x)$ to denote the root node of the $A$ in the term tree.
 %For any node $m\in\Nodes_@$ and index $i\geq0$ we will write $Child(m,i)$ to denote the $i$th child of $m$.
-
 \begin{lemma}[Generalized redex argument lookup]
 \label{lemma:genredex_lookup}
 Let $x$ be a variable occurrence involved in a generalized redex in $gr(M)$.
@@ -1399,7 +1398,7 @@ $$ @_r \cdot \lambda\overline{x_r} \cdots
 @_2 \cdot \lambda\overline{x_2} \cdot @_1 \cdot \lambda\overline{x}$$
 for $r\geq0$, where $@_r$ denotes the parent node of the redex argument, and $\lambda\overline{x}$ denotes $x$'s binder, such that $\lambda x$ is the $i$th lambda in the bulk lambdas $\lambda\overline{x}$.
 
-\item The argument of $x$ is precisely given by the $i_k$th child of node $@_k$ where $k$ is the smallest index verifying $i_k<|@_k|$ and:
+\item The argument of $x$ is precisely given by the $i_k$th child of node $@_k$ where $k$ is the smallest index verifying $i_k<|@_k|$ where:
 \begin{align*}
     i_1 &= i \\
     i_{j+1} &= i_j - |@_j| + |\lambda\overline{x_{j+1}}| \qquad j\geq 0 .
@@ -1418,9 +1417,10 @@ By definition of $k$ we have $i_{k-1}\geq|@_{k-1}|$, therfore by definition of $
 \label{prop:ulctrav_impl_linear_reduction}
 Let $M$ be an untyped term.
 \begin{enumerate}[label=(\roman*)]
-\item If $M \rightarrow_l N$ then $\travsetnorm(M) \cong \travsetnorm(N)$;
+\item If $M \rightarrow_l N$ then $\pi(\travsetnorm(M)) \cong \pi(\travsetnorm(N))$;
 \item If $M$ is in \emph{qnf} and has beta-normal form $N$ then $\coresymbol(\travsetnorm(M)) = \coresymbol(\travsetnorm(N))$.
 \end{enumerate}
+where $\coresymbol$ denotes the core projection of Def\ref{def:coreprojection}.
 \end{proposition}
 \todo{
 - finish proof
@@ -1430,17 +1430,18 @@ Let $M$ be an untyped term.
 \begin{proof}
 (i) The effect of leftmost linear reduction is to substitute the \emph{lloc} variable with the argument of the generalized redex involving it. We show that the sets of traversals $\travsetnorm$ before and after reduction are identical up to some mapping between nodes of the term and its reduct.
 
-We construct the mapping $\psi: \travsetnorm(M) \rightarrow \travsetnorm(N)$ by induction on the traversal $t \in \travsetnorm(M)$.
-It trivially holds for the empty traversal.
-
-Let $t = t' \cdot n$ be a traversal and suppose that $\psi(t') \in \travsetnorm(N)$.
-
-Suppose that $n$ is not the occurrence $x$.
-One property of the linear head reduction, is that the reduct contains, modulo relabelling of the \emph{lloc} variable, the original term: thus there exists an injection $\phi$ mapping nodes of $M$ to nodes of $N$ and such that $\phi(x)$ is precisely the root node in $N$ of the subterm subsituted for $x$ in $M$.
-
-
 Let $x$ denote the leftmost linear variable occurrence in $M$
 and let $(\lambda x, A)$ be the generialized redex involving it. So that $N$ is the term obtained after firing the generalized redex $(\lambda x, A)$ in $M$.
+
+We first prove the left-right inclusion by constructing inductively a mapping $\psi: \travsetnorm(M) \rightarrow \travsetnorm(N)$ such that for all $t \in \travsetnorm(M)$ there exists $u\in\travsetnorm(N)$ such that $\pi(\psi(t)) =\pi(u)$.
+
+By induction on the traversal. It trivially holds for the empty, singleton and two-element traversals.
+Let $t = t' \cdot n$ be a traversal in $\travsetnorm(M)$ where $t' = t'' \cdot m$ and suppose that there exists $u' \in \travsetnorm(N)$ such that $\pi(u') = \pi(\psi(t'))$.
+
+Suppose that $n$ is not hereditarily enabled by $x$
+
+the occurrence $x$.
+One property of the linear head reduction, is that the reduct contains, modulo relabelling of the \emph{lloc} variable, the original term: thus there exists an injection $\phi$ mapping nodes of $M$ to nodes of $N$ and such that $\phi(x)$ is precisely the root node in $N$ of the subterm subsituted for $x$ in $M$.
 
 
 A trivial induction then shows that for any traversal $t \in \travsetnorm(M)$ that does not contain $x$, the pointwise image $\phi(t)$ is a traversal in $\travsetnorm(N)$, and dually for any traversal of $t' \in \travsetnorm(N)$ that does not contain the node $\phi(x)$ there exists a traversal $t \in \travsetnorm(M)$ such that $\phi(t) = t'$. For traversal not containing $x$ we can just take $\psi(t) = \phi(t)$.
