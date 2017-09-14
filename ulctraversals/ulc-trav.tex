@@ -90,7 +90,6 @@
 \title{Imaginary Traversals and Leftmost Linear Reduction [Draft]}
 
 \begin{document}
-\maketitle
 \begin{abstract}
 We introduce a method to normalize untyped lambda terms, when the normal-form exists, by combining the theory of traversals, a term-tree traversing techniques inspired from Game Semantics \cite{Ong2006,BlumPhd}, and judicious use of the eta-conversion rule of the lambda calculus.
 
@@ -1413,6 +1412,9 @@ Base case $k=1$. By assumption, $\lambda x$ is the $i$th lambda in the bulk lamb
 By definition of $k$ we have $i_{k-1}\geq|@_{k-1}|$, therfore by definition of $\lambda_l$, the long-application $@_{k-1}$ has the effect of popping exactly $|@_{k-1}|$ arguments from the lambda-list, and the following abstraction $\lambda\overline{x_k}$ then adds $|\lambda\overline{x_k}|$ more lambdas in front of the lambda list. Hence $\lambda x$ gets moved to position $i_{k-1} - |@_{k-1}| + |\lambda\overline{x_k}| = i_k$ in the lambda list at $\lambda\overline{x_k}$.
 \end{proof}
 
+
+We now show that normalizing traversals implement substitution in the sense that
+the sets of traversals $\travsetnorm$ before and after reduction are identical up to some mapping between nodes of the term and its reduct.
 \begin{proposition}[Traversals implement linear reduction]
 \label{prop:ulctrav_impl_linear_reduction}
 Let $M$ be an untyped term.
@@ -1428,32 +1430,118 @@ where $\coresymbol$ denotes the core projection of Def\ref{def:coreprojection}.
 }
 
 \begin{proof}
-(i) The effect of leftmost linear reduction is to substitute the \emph{lloc} variable with the argument of the generalized redex involving it. We show that the sets of traversals $\travsetnorm$ before and after reduction are identical up to some mapping between nodes of the term and its reduct.
-
-Let $x$ denote the leftmost linear variable occurrence in $M$
+(i) Let $x$ denote the leftmost linear variable occurrence in $M$
 and let $(\lambda x, A)$ be the generialized redex involving it. So that $N$ is the term obtained after firing the generalized redex $(\lambda x, A)$ in $M$.
+A property of the linear head reduction, is that, modulo subsitution of the \emph{lloc} variable, the reduct contains the original term: this induces an implicit injection $\phi$ from nodes of $M$ to nodes of $N$ and such that $\phi(x)$ is precisely the root node in $N$ of the subterm subsituted for $x$ in $M$.
+In what follows we will thus assume that traversals of $M$ are constituted of nodes from the tree of $N$, so that traversals of $M$ and $N$ are generated from the same set of nodes.
 
-We first prove the left-right inclusion by constructing inductively a mapping $\psi: \travsetnorm(M) \rightarrow \travsetnorm(N)$ such that for all $t \in \travsetnorm(M)$ there exists $u\in\travsetnorm(N)$ such that $\pi(\psi(t)) =\pi(u)$.
+We prove the result using a weak bisimulation arguments between traversals of $M$ and $N$. For any two traversals $t$ and $t'$ we write $t \rightarrow_M t'$ if $t$ can be extended to $t'$ by instantiating one of the traversal rule induced from the tree of $M$ (and respectively $\rightarrow_N$ for $N$). We say that two traversals $t_1$ and $t_2$ are bisimilar just if $\coresymbol(t_1)=\coresymbol(t_2)$.
 
-By induction on the traversal. It trivially holds for the empty, singleton and two-element traversals.
-Let $t = t' \cdot n$ be a traversal in $\travsetnorm(M)$ where $t' = t'' \cdot m$ and suppose that there exists $u' \in \travsetnorm(N)$ such that $\pi(u') = \pi(\psi(t'))$.
+The result amounts to showing that the two sets
+$\travsetnorm(M)$ and $\travsetnorm(N)$ are weakly bisimilar: (i) for all traversals $t, t' \in \travsetnorm(N)$ and $u \in \travsetnorm(M)$, if $t \sim_p u$ and $t'$ immediately extends $t'$ then there exists $u' \in \travsetnorm(M)$ that (not necessarily immediately) extends $u$ such that $u' \sim_p t'$. (ii) reciprocally the same holds after subsituting $M$ for $N$.
+
+By induction and case analysis on the traversals rules.
+The empty and singleton traversals are trivially bisimilar. Inductive case: The first direction is immediate for any traversal that does not contain the variable occurrence $x$; the second direction is immediate for traversals that do not contain the root of $A$.
+
+The interesting case occurs when a traversal reaches the \emph{lloc} variable $x$ in $M$ (resp. the root of $A$ in $N$). Let's analyze the effect of firing the leftmost linear substitution on the compuation tree of the term. Three sub-cases shall be considered:
+\begin{description}
+    \item[$x$ is unapplied] (and thus has null arity $|x|$)
+    The subterm $A$ gets plugged in the tree in place of $x$ and its parent lambda node label gets concatenated with the label of $A$'s root node.
+    \item[$x$ has at least one operand and $A$ is not an abstraction]
+    $A$ is an application so its parent node is a dummy lambda: $A = \lambda. A'$. The tree of $N$ is obtained by preserving $x$'s parent lambda node, substituting $x$ with the root of $A'$ (either another variable or an $@$-node) and prepending $A'$'s children to existing $x$'s children.
+    \item[$x$ has at least one operand and $A$ is an abstraction]
+    This case is represented on Figure~\ref{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument}, $x$ gets replaced by an $@$-node and $A$ gets added as its first child subterm.
+\end{description}
+
+For succinctness we will only treat the third case which is the most complex one.
+%%%%%%%%%%%
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[baseline=(root.base),level distance=5ex,inner ysep=0.5mm,sibling distance=8mm]
+\node (root){}
+        child[dashed]{node{$@_{a}$}
+            child[solid]{node{$\lambda\overline{\xi}$}
+                child[dashed]{node{$@$}
+                    child{node{$\lambda\ldots$}
+                        child[solid]{node{$@$}
+                            child[solid]{node{$\lambda\overline{z}$}
+                                child[solid,level distance=5ex]{node {$x$}
+                                    child{node{$B_1$}}
+                                    child{node{$\ldots$}}
+                                    child{node{$B_q$}}
+                                    }
+                                edge from parent node[above left]{$0$}
+                            }
+                            child[dashed]{node{}}
+                        }
+                    }
+                    child[dashed]{node{}}
+                }
+                edge from parent node[above left]{$0$}
+            }
+            child[dashed]{node{\ldots}}
+            child[solid]{node{$\lambda\overline{y}$}
+                child{node{$A'$}}
+            }
+            child[dashed]{node{\ldots}}
+        }
+;
+\node (root2) at (7,0) {}
+    child[dashed]{node{$@_{a}$}
+        child[solid]{node{$\lambda\overline{\xi}$}
+            child[dashed]{node{$@$}
+                child{node{$\lambda\ldots$}
+                    child[solid]{node{$@$}
+                        child[solid]{node{$\lambda\overline{z}$}
+                            child[solid,level distance=5ex]{node {$@$}
+                                child{node{$\lambda\overline{y}$}
+                                    child{node{$A'$}}
+                                }
+                                child{node{$B_1$}}
+                                child{node{$\ldots$}}
+                                child{node{$B_q$}}
+                                }
+                            edge from parent node[above left]{$0$}
+                        }
+                        child[dashed]{node{}}
+                    }
+                }
+                child[dashed]{node{}}
+            }
+            edge from parent node[above left]{$0$}
+        }
+        child[dashed]{node{\ldots}}
+        child[solid]{node{$\lambda\overline{y}$}
+            child{node{$A'$}}
+        }
+        child[dashed]{node{\ldots}}
+    }
+;
+\end{tikzpicture}
+\caption{Linearly firing the generalized redex $(\lambda x, A)$ for the occurrence $x$ in $M$ (left tree) yields $N$ (right tree). Case with $|x|>0$ and $A$ is an abstraction $\lambda\overline{y} . A'$.}
+\label{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument}
+\end{figure}
+
+First direction: Let $u, u' \in \travsetnorm(N)$, $t\in\travsetnorm(M)$ such that $t \sim_p u$ and $u \rightarrow_N u'$ and suppose that $t$ ends with $x$.
+%%%%%%%%%%%%%
+Let $\lambda\overline{x}$ denote $x$'s binding lambda node, $k$ denote $x$'s binding index, and $@_a$ denote the parent application node of the subterm $A$.
+By Lemma \ref{lemma:genredex_lookup}, $@_a$ is precisely the lowest application node in the spinal descent from $@_a$ to $\lambda\overline{x}$ verifying $|@_a| >  i_a$, where $i_a = k + \sum_{1\leq j\leq a} (|\lambda\overline{\xi_j}| - |@_j|)$. This definition matches precisely with the `pending argument lookup' algorithm that is implicitely implemented by the rules \rulenamet{Lmd} and \rulenamet{Var}: with exactly $i_a$ instantiations of those two rules, the traversal $t$ gets extended by $2(i_a-1)$ ghost nodes followed by the root node of $A$:
+$$ t' = t_{<x} \cdot x \cdot v \cdot \lambda\overline{y} $$
+where $v$ is a spinal descent in $M$. The nodes in $v$ are all ghost nodes and are all external since they are all justified by nodes in the spinal descent, $x$ is also external since it's involved in a redex, and $\lambda\overline{y}$ is external since its parent is an $@$-node. Consequently by definition of $\coresymbol$ we have
+\begin{align*}
+\coresymbol(t') &= \coresymbol(t_{<x}) \\
+                &= \coresymbol(u_{<x}) \\
+                &= \coresymbol(u_{<x} \cdot \lambda\overline{y}) \\
+                &= \coresymbol(u)
+\end{align*}
+Hence $t'\sim_p u$.
+%%%%%%%%%
 
 Suppose that $n$ is not hereditarily enabled by $x$
-
 the occurrence $x$.
-One property of the linear head reduction, is that the reduct contains, modulo relabelling of the \emph{lloc} variable, the original term: thus there exists an injection $\phi$ mapping nodes of $M$ to nodes of $N$ and such that $\phi(x)$ is precisely the root node in $N$ of the subterm subsituted for $x$ in $M$.
-
-
-A trivial induction then shows that for any traversal $t \in \travsetnorm(M)$ that does not contain $x$, the pointwise image $\phi(t)$ is a traversal in $\travsetnorm(N)$, and dually for any traversal of $t' \in \travsetnorm(N)$ that does not contain the node $\phi(x)$ there exists a traversal $t \in \travsetnorm(M)$ such that $\phi(t) = t'$. For traversal not containing $x$ we can just take $\psi(t) = \phi(t)$.
 
 Let $t$ be a traversal containing $x$ and suppose that $\psi(t) \in \travsetnorm(N)$
-
-Let $\lambda\overline{x}$ denote $x$'s binding lambda node, $k$ denote $x$'s binding index, and $@_a$ denote the parent application node of the subterm $A$.
-By Lemma \ref{lemma:genredex_lookup}, $@_a$ is precisely the lowest application node in the spinal descent from $@_a$ to $\lambda\overline{x}$ verifying $|@_a| >  i_a$, where $i_a = k + \sum_{1\leq j\leq a} (|\lambda\overline{\xi_j}| - |@_j|)$.
-
-This definition matches precisely with the `pending argument lookup' algorithm implicitely implemented by the rules \rulenamet{Lmd} and \rulenamet{Var}: with $i_a$ instantiation of those two rules, the traversal $t_{\geq x}$ gets extended by $2(i_a-1)$ ghost nodes followed by the root node of $A$.
-
-In $N$, the traversal $ $
 
 
 %IDEA: Observe first that the nodes of the subterm $A$$ map 1-1 to the nodes of the subterm $\phi(x)$ in $N$.
