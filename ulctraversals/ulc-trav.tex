@@ -127,7 +127,7 @@ The normalization algorithm presented in this paper was implemented in the HOG t
 In 2004, Danos and Regnier showed the connection between Game Semantics and \emph{head linear reduction}. The various notions of traversals discussed in this paper, including Berezun-Jones, are all essentially methods based on evaluating the head linear reduction sequence of a lambda term. Traversals start by performing a depth-first search to locate the \emph{head occurrence} of the \emph{hoc redex}. They implement linear substitution by ``jumping'' to the node in the tree that represents the term to be substituted for the head occurrence. At this point the traversal continues as if the head occurrence in the tree was replaced by the subtree representing the argument of the redex. Since all the terms obtained in the head linear reduction sequence are made of sub-terms of the original term, there is no need for environments or closure to evaluate the beta-redex. Instead those can be replaced by some pointer mechanism to capture a given context.
 
 Despite the connection established in this 2004 paper, it is not explicitely shown how the head linear reduction helps normalize a term. The \emph{Pointer Abstract Machine} introduced in the same paper, for instance, yields what they call ``\emph{quasi-head normal form (qhn)}'' of the term, not the normal form itself. The resulting \emph{qhn} still needs to be first reduced to head normal form (using head reduction) and then normalized by appealing to the standard $\lambda$-calculus theory that tells us that head reduction terminates.
-In this paper we generalize this notion to \emph{leftmost linear reduction}, a strategy that recrusively applies head linear reduction very much like how the standard reduction recursively applies head reduction. We show how \emph{imaginary traversals} introduced in the present paper effectively implement the leftmost linear reduction, which proves soundness of the traversal normalization procedure.
+In this paper we generalize this notion to \emph{leftmost linear reduction}, a strategy that recursively applies head linear reduction very much like how the standard reduction recursively applies head reduction. We show how \emph{imaginary traversals} introduced in the present paper effectively implement the leftmost linear reduction, which proves soundness of the traversal normalization procedure.
 
 \subsubsection{Traversal of STLC}
 
@@ -1420,40 +1420,38 @@ the sets of traversals $\travsetnorm$ before and after reduction are identical u
 Let $M$ be an untyped term.
 \begin{enumerate}[label=(\roman*)]
 \item If $M \rightarrow_l N$ then $\pi(\travsetnorm(M)) \cong \pi(\travsetnorm(N))$;
-\item If $M$ is in \emph{qnf} and has beta-normal form $N$ then $\coresymbol(\travsetnorm(M)) = \coresymbol(\travsetnorm(N))$.
+\item If $M$ is in \emph{qnf} and has beta-normal form $N$ then $\coresymbol(\travsetnorm(M)) \cong \coresymbol(\travsetnorm(N))$.
 \end{enumerate}
-where $\coresymbol$ denotes the core projection of Def\ref{def:coreprojection}.
+where $\coresymbol$ denotes the core projection of Def.~\ref{def:coreprojection}.
 \end{proposition}
-\todo{
-- finish proof
-- explain where the relabelling done in $\coresymbol$ is used in the proof. Answer: during trivial reduction of the qnf, in (ii).
-}
-
 \begin{proof}
-(i) Let $x$ denote the leftmost linear variable occurrence in $M$
-and let $(\lambda x, A)$ be the generialized redex involving it. So that $N$ is the term obtained after firing the generalized redex $(\lambda x, A)$ in $M$.
-A property of the linear head reduction, is that, modulo subsitution of the \emph{lloc} variable, the reduct contains the original term: this induces an implicit injection $\phi$ from nodes of $M$ to nodes of $N$ and such that $\phi(x)$ is precisely the root node in $N$ of the subterm subsituted for $x$ in $M$.
-In what follows we will thus assume that traversals of $M$ are constituted of nodes from the tree of $N$, so that traversals of $M$ and $N$ are generated from the same set of nodes.
+(i) We show the equality using a bisimulation argument where traversals rules define the transitions of a state transition system and traversals themselves represent the states.
 
-We prove the result using a weak bisimulation arguments between traversals of $M$ and $N$. For any two traversals $t$ and $t'$ we write $t \rightarrow_M t'$ if $t$ can be extended to $t'$ by instantiating one of the traversal rule induced from the tree of $M$ (and respectively $\rightarrow_N$ for $N$). We say that two traversals $t_1$ and $t_2$ are bisimilar just if $\coresymbol(t_1)=\coresymbol(t_2)$.
-
-The result amounts to showing that the two sets
-$\travsetnorm(M)$ and $\travsetnorm(N)$ are weakly bisimilar: (i) for all traversals $t, t' \in \travsetnorm(N)$ and $u \in \travsetnorm(M)$, if $t \sim_p u$ and $t'$ immediately extends $t'$ then there exists $u' \in \travsetnorm(M)$ that (not necessarily immediately) extends $u$ such that $u' \sim_p t'$. (ii) reciprocally the same holds after subsituting $M$ for $N$.
-
-By induction and case analysis on the traversals rules.
-The empty and singleton traversals are trivially bisimilar. Inductive case: The first direction is immediate for any traversal that does not contain the variable occurrence $x$; the second direction is immediate for traversals that do not contain the root of $A$.
-
-The interesting case occurs when a traversal reaches the \emph{lloc} variable $x$ in $M$ (resp. the root of $A$ in $N$). Let's analyze the effect of firing the leftmost linear substitution on the compuation tree of the term. Three sub-cases shall be considered:
+Let $x$ denote the leftmost linear variable occurrence in $M$
+and let $(\lambda x, A)$ be the generalized redex involving it, so that $N$ is the term obtained after firing the generalized redex $(\lambda x, A)$ in $M$.
+Let's look at how leftmost linear substitution affects the computation tree of the term. Three sub-cases shall be considered:
 \begin{description}
-    \item[$x$ is unapplied] (and thus has null arity $|x|$)
-    The subterm $A$ gets plugged in the tree in place of $x$ and its parent lambda node label gets concatenated with the label of $A$'s root node.
-    \item[$x$ has at least one operand and $A$ is not an abstraction]
+    \item[1 -- $x$ has at least one operand and $A$ is an abstraction]
+    This case is represented on Figure~\ref{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument}: the label of node $x$ gets replaced by $@$, its existing children are preserved, and $A$ gets prepended as its $0$th child.
+    \item[2 -- $x$ has at least one operand and $A$ is not an abstraction]
     $A$ is an application so its parent node is a dummy lambda: $A = \lambda. A'$. The tree of $N$ is obtained by preserving $x$'s parent lambda node, substituting $x$ with the root of $A'$ (either another variable or an $@$-node) and prepending $A'$'s children to existing $x$'s children.
-    \item[$x$ has at least one operand and $A$ is an abstraction]
-    This case is represented on Figure~\ref{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument}, $x$ gets replaced by an $@$-node and $A$ gets added as its first child subterm.
+    \item[3 --- $x$ is unapplied] (and thus has null arity $|x|$)
+    The subterm $A$ gets plugged in the tree in place of $x$ and its parent lambda node label gets concatenated with the label of $A$'s root node.
 \end{description}
 
-For succinctness we will only treat the third case which is the most complex one.
+A property of the linear head reduction is that the reduct contains the original term itself, modulo alpha conversion and relabelling of the \emph{lloc} node. This induces an implicit injection $\phi$ from nodes of the reduct $N$ to those of $M$ such that  $\phi$ maps nodes from $N$ that are not already present in $M$ to nodes of the argument $A$ in $M$. We can thus identify nodes from the term tree of $N$ with the corresponding nodes in the term tree of $M$, and treat traversals of both $M$ and $N$ as justified sequences over a common set of nodes.
+
+We write $\travsetnorm_\dagger(M)$ to denote the subset of traversals of $\travsetnorm(M)$ ending with either a structural node (\ie, not a ghost) or an external ghost (\ie a ghost node hereditarily justified by the root).
+Since the operation $\coresymbol$, by definition, removes all the internal nodes in a traversal, it suffices to prove the equality:
+\begin{equation}
+    \travsetnorm_{\dagger}(M) = \travsetnorm_{\dagger}(N) \label{eqn:travesetnorm_dagger_eq}
+\end{equation}
+Proving the above equality amounts to establishing a bisimilarity relation between the two sets. For any two traversals $t$ and $t'$ in $\travsetnorm_\dagger(M)$ we write $t \rightarrow_M t'$ if $t'$ is a minimal extension of $t$ that remains in $\travsetnorm_\dagger(M)$ (That is $t'$ extends $t$ using rules from Table~\ref
+{tab:normalizing_trav_rules} and all the occurrences following $t$ except the last node in $t'$ are either ghost nodes or internal nodes).
+%We write $\rightarrow_M^*$ to denote the reflexive transitive closure of $\rightarrow_M$.
+
+We say that two traversals $t$ and $u$ in $\travsetnorm_\dagger$ are \emph{bisimilar}, written $t \sim_p u$, just if they have the same core projection ($\coresymbol_\alpha(t)=\coresymbol_\alpha(u)$ for any sequence of variable names $\alpha$) and their last occurence are equal modulo $\phi$. That is for all traversals $t, t' \in \travsetnorm_\dagger(N)$ and $u \in \travsetnorm_\dagger(M)$, if $t \sim_p u$ and $t \rightarrow_M t'$ then there is $u' \in \travsetnorm_\dagger(M)$ such that
+$u \rightarrow_M u'$ and $u' \sim_p t'$; and reciprocally the same holds when exchanging $M$ and $N$.
 %%%%%%%%%%%
 
 \begin{figure}[htbp]
@@ -1494,9 +1492,9 @@ For succinctness we will only treat the third case which is the most complex one
                 child{node{$\lambda\ldots$}
                     child[solid]{node{$@$}
                         child[solid]{node{$\lambda\overline{z}$}
-                            child[solid,level distance=5ex]{node {$@$}
-                                child{node{$\lambda\overline{y}$}
-                                    child{node{$A'$}}
+                            child[solid,level distance=5ex]{node {$@_x$}
+                                child{node{$\lambda\overline{y_2}$}
+                                    child{node{$A'[\overline{y}\leftarrow\overline{y_2}]$}}
                                 }
                                 child{node{$B_1$}}
                                 child{node{$\ldots$}}
@@ -1519,30 +1517,47 @@ For succinctness we will only treat the third case which is the most complex one
     }
 ;
 \end{tikzpicture}
-\caption{Linearly firing the generalized redex $(\lambda x, A)$ for the occurrence $x$ in $M$ (left tree) yields $N$ (right tree). Case with $|x|>0$ and $A$ is an abstraction $\lambda\overline{y} . A'$.}
+\caption{Reduction $M\rightarrow_l N$: Linearly firing the generalized redex $(\lambda x, A)$ for occurrence $x$ in $M$ (left) yields $N$ (right) for fresh variables $\overline{y_2}$. Case where node $x$ has operands and $A$ is an abstraction $\lambda\overline{y} . A'$.}
 \label{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument}
 \end{figure}
 
-First direction: Let $u, u' \in \travsetnorm(N)$, $t\in\travsetnorm(M)$ such that $t \sim_p u$ and $u \rightarrow_N u'$ and suppose that $t$ ends with $x$.
+We proceed by induction. The empty and singleton traversals are trivially bisimilar. Inductive case: Let $u, u' \in \travsetnorm_\dagger(N)$, $t\in\travsetnorm_\dagger(M)$ such that $t \sim_p u$ and $u \rightarrow_N u'$. The result is immediate if $t$ does not contain the occurrence $x$; and the opposite direction is immediate for any traversal $u$ that do not contain  $\phi^{-1}(x)$. The interesting case occurs when a traversal reaches the \emph{lloc} variable $x$ in $M$ (resp.~$\phi^{-1}(x)$ in $N$).
+
+Suppose that $t$ ends with $x$.
+
+%%%%%%%% CASE 1
+Case 1: This is the situation represented in Figure~\ref{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument} where $x$ has operand, $A$ is an abstraction and $\phi(@_x) = x$. Let $\lambda\overline{x}$ denote $x$'s binding lambda node in $M$, $k$ denote $x$'s binding index, and $@_a$ denote the parent application node of the subterm $A$.
+
+Since $t\sim_p u$ the last node in $u$ is necessarily $@_x$, and by rule \rulenamet{App}, since $u \rightarrow_N u'$ we necessarily have $u' = u \cdot \lambda\overline{y_2}$.
+
 %%%%%%%%%%%%%
-Let $\lambda\overline{x}$ denote $x$'s binding lambda node, $k$ denote $x$'s binding index, and $@_a$ denote the parent application node of the subterm $A$.
-By Lemma \ref{lemma:genredex_lookup}, $@_a$ is precisely the lowest application node in the spinal descent from $@_a$ to $\lambda\overline{x}$ verifying $|@_a| >  i_a$, where $i_a = k + \sum_{1\leq j\leq a} (|\lambda\overline{\xi_j}| - |@_j|)$. This definition matches precisely with the `pending argument lookup' algorithm that is implicitely implemented by the rules \rulenamet{Lmd} and \rulenamet{Var}: with exactly $i_a$ instantiations of those two rules, the traversal $t$ gets extended by $2(i_a-1)$ ghost nodes followed by the root node of $A$:
-$$ t' = t_{<x} \cdot x \cdot v \cdot \lambda\overline{y} $$
-where $v$ is a spinal descent in $M$. The nodes in $v$ are all ghost nodes and are all external since they are all justified by nodes in the spinal descent, $x$ is also external since it's involved in a redex, and $\lambda\overline{y}$ is external since its parent is an $@$-node. Consequently by definition of $\coresymbol$ we have
+Let $@_j$ and $\lambda\overline{\xi_j}$ for $1\leq j\leq a$ denote the application and lambda nodes in the spinal descent from $@_a$ to $x$'s binder so that $\lambda\overline{\xi_1}$ is $x$'s binder and $@_1$ its parent.
+By Lemma \ref{lemma:genredex_lookup}, $@_a$ is precisely the lowest application node in the spinal descent from $@_a$ to $\lambda\overline{x}$ verifying $|@_a| >  i_a$, where $i_a = k + \sum_{1\leq j< a} (|\lambda\overline{\xi_j}| - |@_j|)$. This definition matches precisely with the `pending argument lookup' algorithm that is implicitely implemented by the rules \rulenamet{Lmd} and \rulenamet{Var}: with exactly $i_a$ instantiations of those two rules, the traversal $t$ gets extended by $2(i_a-1)$ ghost nodes followed by the root node of $A$ in $M$, thus:
+$$ t \rightarrow_M t' = t \cdot v \cdot \lambda\overline{y} $$
+where $v$ is a \emph{pending argument lookup} consisting of external ghost nodes whose justifiers belong to a spinal descent in $M$. The node $\lambda\overline{y}$ is also external since its parent is an $@$-node. Consequently for any sequence of variable names $\alpha$ we have:
 \begin{align*}
-\coresymbol(t') &= \coresymbol(t_{<x}) \\
-                &= \coresymbol(u_{<x}) \\
-                &= \coresymbol(u_{<x} \cdot \lambda\overline{y}) \\
-                &= \coresymbol(u)
+\coresymbol_\alpha(t') &= \coresymbol_\alpha(t \cdot v \cdot \lambda\overline{y}) & \mbox{(Def.~of $t'$)} \\
+                &= \coresymbol_{\alpha \cdot \overline{y}}(t) & \mbox{(def of $\coresymbol$)} \\
+                &= \coresymbol_{\alpha \cdot \overline{y}}(u) & \mbox{($t$ and $u$ bisimilar by I.H.)}\\
+                &\cong \coresymbol_{\alpha \cdot \overline{y_2}}(u) & \mbox{(alpha conversion)}\\
+                &= \coresymbol_\alpha(u \cdot \lambda\overline{y_2}) & \mbox{(def of $\coresymbol$)}\\
+                &= \coresymbol_\alpha(u') & \mbox{(def of $u'$)}
 \end{align*}
-Hence $t'\sim_p u$.
+and since $\phi(\lambda\overline{y_2}) = \lambda\overline{y}$ we thus have $t'\sim_p u'$.
+%%
+
+Reciprocally: suppose $u \in \travsetnorm_\dagger(N)$ ends with $@_x$ and $t \sim_p u$. Then $t$ must end with $x$. Suppose $t \rightarrow_M t'$ then $t'$ is necessarily of form $t \cdot v\cdot \lambda\overline{y}$ where $v$ consists solely of internal ghost nodes. We can thus just take $u' = u \cdot \lambda\overline{y_2}.$
 %%%%%%%%%
 
-Suppose that $n$ is not hereditarily enabled by $x$
-the occurrence $x$.
+Because the enabling relation $\enables$ in $A'$ is preserved after substitution and alpha-conversion in the subterm $A'[\overline{y}\leftarrow\overline{y_2}]$, the subsequent traversal of the argument $A'$ in $M$ can be bisimulated by traversing $A'[\overline{y}\leftarrow\overline{y_2}]$ in the reduct $N$ using the exact same traversal rules. We omit the detail of this proof which are straightforward.
 
-Let $t$ be a traversal containing $x$ and suppose that $\psi(t) \in \travsetnorm(N)$
+%%%%%%%% CASE 2
+Case 2: If $x$ has operands and $A$ is an application ($|\overline{y}|=0$) then the proof is similar to the previous case except that the node corresponding to $x$ in the reduct $N$ is either an application node (if $A$ is a redex) or a variable node (if $A$ is in head-normal form).
 
+
+%%%%%%% CASE 3
+Case 3: $x$ is unapplied ($|x|=0$). This is the situation where the relabelling performed by the operation $\coresymbol$ comes into play: the parent lambda node $\lambda\overline{z}$ of $x$ in $M$ becomes $\lambda\overline{z}\overline{y}$ in $N$.
+Traversals of $M$ the form $t = \ldots \lambda\overline{z}\cdot x \cdot v \cdot \lambda\overline{y} \cdot n \cdot \ldots$ are bisimilar to traversals $u = \ldots \lambda\overline{z}\overline{y}\cdot n \ldots$.
 
 %IDEA: Observe first that the nodes of the subterm $A$$ map 1-1 to the nodes of the subterm $\phi(x)$ in $N$.
 % We can therefore defined $\psi$ such that all the nodes in $t$ herediterily justified by the root of $A$ are mapped by $\psi$ to the corresponding nodes in $N$. We omit the full details of the induction which is purely mechanical and straightforward. The idea being that $N$ is obtained by transposing the structure of the subterm $A$ in place of $x$ with the additional relabelling of $x$'s parent $\lambda\overline{y}$ as $\lambda\overline{y}\overline{z}$ where $\lambda\overline{a}$ denotes the root of $A$. The key observation is that this relabelling is innocuous in the sense that all rules applied to $t$ in $M$ can also be applied to $\psi(t)$ in $N$.
@@ -1557,7 +1572,9 @@ also a traversal of $N$.}
 We show that $\core{\travsetnorm}$ is an invariant that is preserved by this reduction sequence: we prove by induction on $q$ that $\core{\travsetnorm(M_{q})}=\core{\travsetnorm(M)}$. For $q=1$ we have $M = M_q = N$ so the result holds trivially.
 
 Let $q\geq 1$.
-
+\todo{
+explain where the relabelling done in $\coresymbol$ is used during trivial reduction of the qnf.
+}
 
 By Proposition \ref{prop:qnf_nf}, the \emph{qnf} trivially reduces to its beta-nf. It's immediate to show
 \end{proof}
