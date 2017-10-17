@@ -1,4 +1,23 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-    "editor.wordWrap": "bounded"
+    "editor.wordWrap": "bounded",
+    "latex-workshop.latex.toolchain": [
+        {
+            "command": "pdflatex",
+            "args": [
+                "-synctex=1",
+                "-interaction=nonstopmode",
+                "-enable-installer",
+                "-aux-directory=TexAux",
+                "%DOC%"
+            ]
+        },
+        {
+            "command":
+            "bibtex",
+            "args":[
+                "TexAux\\%DOCFILE%"
+            ]
+        }
+    ]
 }
