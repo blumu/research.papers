@@ -405,7 +405,7 @@ Let $M$ be an untyped term.
 \item Let $n$ be a node of the tree of $M$ and $N$ denote the subterm of $M$ rooted at $n$. We write $ETA(M, n)$ to denote the term obtained by substituting
 the subterm $N$ in $M$ with the term $\lambda \theta. N \theta$ for some variable $\theta$ fresh in $N$.
 
-\item Let $M$ be an untyped term and $t$ be a \emph{finite} traversal of $M$. We define the \defname{eta-expansion of $M$ with respect to $t$}, written $M^t$, as a term obtained by eta-expanding its subterms according to the rules used to traverse $M$. It is defined by induction on the traversal rules: By convention we define $M^\epsilon = M$. Suppose $t = u \cdot n$ for some node $n$. Let $m$ denote the justifier of $n$ if it exists and $i$ denote its link label.  Consider the last rule used to traverse $t$:
+\item Let $M$ be an untyped term and $t$ be a \emph{finite} traversal of $M$. The \defname{eta-expansion of $M$ with respect to $t$}, written $M^t$, is a term obtained by eta-expanding some of the subterms of $M$ according to the rules used to produce traversal $t$. We define $M^t$ inductively and by case analysis on the last rule used to traverse $t$. By convention we set $M^\epsilon = M$. Let $t = u \cdot n$ for some node $n$, $m$ denote the justifier of $n$ if it exists, and $i$ denote its link label.
 \begin{equation}
 M^{u \cdot n} =
 \begin{cases}
@@ -451,59 +451,21 @@ The traversal rules are well-defined.
 (ii) Rule \rulenamet{Var}: In the concrete sub-case, $m$ is necessarily itself a structural node since $|m|\geq i>0$, and its $i$th child exists in $\Nodes$ since $m$ as arity greater than $i$.
 \end{proof}
 
-\paragraph{Traversal core}
-
-We now generalize the notion of \emph{traversal core} from \cite{BlumPhd} to the imaginary traversals.
-In the typed setting, the core of a traversal is the subsequence consisting of external nodes. In the untyped setting it is obtained by taking the subsequence of external nodes followed by a relabelling operation on lambda nodes.
-
-We will consider sequence of variable names in $\mathcal{V}^*$ as stack.
-For any sequence of variables $\overline{x} = x_1 \ldots x_n$, we define the stack pop operation $pop_j$, $n,j\geq0$ that removes the first $j$ elements of the sequence: $pop_j (x_1 \ldots x_n) = x_{j+1} \ldots x_n$ if $j<n$, and $pop_j (x_1 \ldots x_n) = \epsilon$ otherwise. And for any sequence $\overline{y} = y_1 \ldots y_m$, $m\geq0$ we write $\overline{x}\overline{y}$ for
-$x_1 \ldots x_n y_1 \ldots y_n$, the stack obtained after pushing the variables $\overline{x}$ onto $\overline{y}$.
-
-\begin{definition}[Core projection]
-  \label{def:coreprojection}
-We first define the partial function $\coresymbol \colon \travulc(M) \longrightarrow \justseqset(M)$ for traversals that do not contain any ghost occurrences then extend the notion to all traversals.
-\begin{itemize}
-\item For any stack $\overline{y} \in \mathcal{V}^*$ of variable names and traversal $t\in\travulc(M)$ we define $\coresymbol (t)$ by induction on $t$:
-\begin{align*}
-\coresymbol_{\overline{y}} \colon \travulc(M) & \longrightarrow \justseqset(M) \\
- t\cdot x &\longmapsto \coresymbol_{\epsilon}(t) \cdot x & \mbox{if } x\in \NodeHjByRoot \\
- t\cdot x &\longmapsto \coresymbol_{pop_{|x|}(\overline{y})}(t) & \mbox{if } x\not\in\NodeHjByRoot \\
- t\cdot @ &\longmapsto \coresymbol_{pop_{|@|}(\overline{y})}(t) \\
- t\cdot \lambda \overline{x} & \longmapsto \coresymbol_{\epsilon}(t) \cdot \lambda \overline{x}\overline{y} & \mbox{if } \lambda \overline{x}\in \NodeHjByRoot \\
- t\cdot \lambda \overline{x} & \longmapsto \coresymbol_{\overline{x} \overline{y}}(t) & \mbox{if } \lambda \overline{x}\not\in \NodeHjByRoot \ .
-\end{align*}
-
-\item We extend $\coresymbol$ to all traversals as follows:
-\begin{align*}
-\coresymbol_{\overline{y}} \colon \travulc(M) & \longrightarrow \justseqset^\eta(M) \\
- t &\longmapsto \coresymbol_{\overline{y}}(\eta(t))
-\end{align*}
-where $\justseqset^\eta(M)$ be the union of the sets of justified sequences of nodes over eta-expansions of $M$ with respect to all possible traversals:
-$$\justseqset^\eta(M) = \Union_{t\in\travulc(M)} \justseqset(M^t) \ .$$
-\end{itemize}
-
-We call $\coresymbol_\epsilon(t)$ the \defname{core} of $t$ which we abbreviate as $\core{t}$.
-We define the \defname{core P-view} as $\pview{\core{t}}$, the P-view of the traversal core.
-
-\end{definition}
-
-The stack parameter $\overline{y}$ from the above definition represents the sequence of abstractions $\lambda \overline{y}$ and is therefore called the \defname{stack of pending lambdas}. Thus, in words, the \emph{core projection} is given by the subsequence of external nodes where each lambda node label is suffixed with the \emph{pending lambdas} of the maximal consecutive sequence of internal nodes following it.
 
 \begin{proposition}
-\label{prop:eta_expanded_trav}
+    \label{prop:eta_expanded_trav}
 Let $M$ be an untyped term and $t$ be a \emph{finite} traversal of $M$.
-Let $\Nodes$ and $\Nodes_t$ denote the nodes of tree $\ctree(M)$ and $\ctree(M^t)$ respectively. Then there exists a one-to-one mapping:
+Let $\Nodes$ and $\Nodes_t$ denote the nodes of tree $\ctree(M)$ and $\ctree(M^t)$ respectively. There exists a one-to-one mapping
 $$
 \eta_t : \tilde{\Nodes} \longrightarrow \tilde{\Nodes_t}
 $$
-with implicit \emph{element-wise pointer-preserving} extension to justified sequences $\eta_t : \mathcal{J}(M) \longrightarrow \mathcal{J}(M^t)$ such that:
+such that its implicit \emph{element-wise pointer-preserving} extension to justified sequences $\eta_t : \mathcal{J}(M) \longrightarrow \mathcal{J}(M^t)$ verifies the following properties:
 \begin{enumerate}[label=(\roman*)]
-  \item For any $u \in \travulc(M)$, $\eta_t(u)$ is a traversal of $M^t$.
+    \item For any $u \in \travulc(M)$, $\eta_t(u)$ is a traversal of $M^t$.
 
-  \item If $v$ is a \emph{finite} traversal of $M^t$ that does not contain any ghost node then there exists a traversal $u$ of $M$ (with possibly ghost nodes) such that $v = \eta_t(u)$.
+    \item If $v$ is a \emph{finite} traversal of $M^t$ that does not contain any ghost node then there exists a traversal $u$ of $M$ (with possibly ghost nodes) such that $v = \eta_t(u)$.
 
-  \item The restriction of $\eta_t$ to $\travset(M)$ defines a bijection with $\travset(M^t)$. Further the bijection is strong in the sense that the traversal structure (node type and pointers, but no necessarily labels) are preserved.
+    \item The restriction of $\eta_t$ to $\travset(M)$ defines a bijection with $\travset(M^t)$. Further the bijection is strong in the sense that the traversal structure (node type and pointers, but no necessarily labels) are preserved.
 \end{enumerate}
 \end{proposition}
 \begin{proof}
@@ -522,7 +484,47 @@ We extend it to ghost nodes by mapping ghost occurrences in $t$ to the correspon
 Continuing with the example above: the following traversal obtained from $t$ is a valid traversal of $M^t$ where the occurrences corresponding to ghosts in $t$ are underlined:
 $$\Pstr[0.7cm]{(n0){\lambda }~(n1){@}\ (n2-n1){\lambda u}~(n3-n2){u}~(n4-n1){\lambda v}~(n5-n4){v}\ (n6-n3){\bf \lambda}\ (n7-n0){y_1}\ (n8-n7){\bf \lambda}~(n9-n2){u}~(n10-n1){\lambda v}~(n11-n10){v}\ (n12-n9){\underline{\lambda\beta}}~(n13-n8){\underline{\alpha}}~(n14-n13){\underline{\lambda}}~(n15-n12){\underline{\beta}}\ (n16-n11){\lambda}~(n17-n0,35){y_2} }.$$
 \end{example}
+    
+\paragraph{Traversal core}
 
+We now generalize the notion of \emph{traversal core} from \cite{BlumPhd} to imaginary traversals.
+In the typed setting, the \emph{core} is defined as the subsequence of a traversal consisting of external nodes only. In the untyped setting, this filtering is followed by a relabelling operation on lambda nodes.
+
+We will consider sequences of variable names in $\mathcal{V}^*$ as stack equipped with stack operations:
+for any sequence of variables $\overline{x} = x_1 \ldots x_n$, the `pop' operation $pop_j$, $n,j\geq0$ removes the first $j$ elements of the sequence: $pop_j (x_1 \ldots x_n) = x_{j+1} \ldots x_n$ if $j<n$, and $pop_j (x_1 \ldots x_n) = \epsilon$ otherwise. And for any sequence $\overline{y} = y_1 \ldots y_m$, $m\geq0$ we write $\overline{x}\overline{y}$ for
+$x_1 \ldots x_n y_1 \ldots y_n$, the stack obtained after pushing the variables $\overline{x}$ (read backwards) onto $\overline{y}$.
+
+\begin{definition}[Core projection]
+  \label{def:coreprojection}
+We first define the partial function $\coresymbol \colon \travulc(M) \longrightarrow \justseqset(M)$ for traversals that do not contain any ghost occurrences then extend the notion to all traversals.
+
+Let $\overline{y} \in \mathcal{V}^*$ denote a stack of variable names.
+\begin{itemize}
+\item  Let $t\in\travulc(M)$ denote a traversal with no ghost occurrences. We define $\coresymbol (t)$ by the following inductive definition, where the equality are implicitely pointer-preserving (so that nodes in $t$ have same justifiers as in $\coresymbol(t)$). 
+\begin{align*}
+\coresymbol_{\overline{y}} \colon \travulc(M) & \longrightarrow \justseqset(M) \\
+ t\cdot x &\longmapsto \coresymbol_{\epsilon}(t) \cdot x & \mbox{if } x\in\NodesVar,  x\in \NodeHjByRoot \\
+ t\cdot x &\longmapsto \coresymbol_{pop_{|x|}(\overline{y})}(t) & \mbox{if } x\in\NodesVar, x\not\in\NodeHjByRoot \\
+ t\cdot @ &\longmapsto \coresymbol_{pop_{|@|}(\overline{y})}(t) \\
+ t\cdot \lambda \overline{x} & \longmapsto \coresymbol_{\epsilon}(t) \cdot \lambda \overline{x}\overline{y} & \mbox{if } \lambda \overline{x}\in \NodeHjByRoot \\
+ t\cdot \lambda \overline{x} & \longmapsto \coresymbol_{\overline{x} \overline{y}}(t) & \mbox{if } \lambda \overline{x}\not\in \NodeHjByRoot \ .
+\end{align*}
+
+\item We extend $\coresymbol$ to traversals containing ghost nodes as follows:
+\begin{align*}
+\coresymbol_{\overline{y}} \colon \travulc(M) & \longrightarrow \justseqset^\eta(M) \\
+ t &\longmapsto \coresymbol_{\overline{y}}(\eta_t(t))
+\end{align*}
+where $\justseqset^\eta(M)$ isz the union of the sets of justified sequences of nodes over eta-expansions of $M$ with respect to all possible traversals:
+$$\justseqset^\eta(M) = \Union_{t\in\travulc(M)} \justseqset(M^t) \ .$$
+\end{itemize}
+
+We call $\coresymbol_\epsilon(t)$ the \defname{core} of $t$ which we abbreviate as $\core{t}$.
+We define the \defname{core P-view} as $\pview{\core{t}}$, the P-view of the traversal core.
+
+\end{definition}
+
+The stack parameter $\overline{y}$ from the above definition holds the variables in the abstractions $\lambda \overline{y}$ that gets prepended to external lambda nodes. We will call this parameter the \defname{stack of pending lambdas}. Hence, the \emph{core projection} can be defined more succinctly, in words, as the sequence obtained from the traversal by removing internal nodes and preprending to each external lambda node's label, the stack of \emph{pending lambdas} from that point to the next external occurrence.
 
 \subsection{Imaginary traversals subsume STLC traversals}
 
@@ -547,7 +549,7 @@ The traversal rules defined in Table \ref{tab:trav_rules} closely match those of
 \end{description}
 
 Let's fix a simply-typed term-in-context $\Gamma \entail M :T$, with typed-context $\Gamma$ (a set of typed variables), and simple type $T$. Its \defname{eta-long form} is defined inductively on the type $T$ and is obtained by recursively eta-expanding every subterm as many times as possible with respect to the type of the subterm \cite{Ong2006,BlumPhd}.
-By abuse of language we will say that an untyped term $M$ is in eta-long form if it inhabits a simple type $T$ such that the eta-long expansion of it with respect to $T$ is $M$ itself.
+By abuse of language we will say that an untyped term $M$ is in eta-long form if it inhabits a simple type $T$ such that it is preceisely its eta-long expansion with respect to $T$.
 
 The rules of the STLC traversals from \cite{BlumPhd} consist of a subset of the imaginary traversal rules of Table \ref{tab:trav_rules}.
 
@@ -558,7 +560,7 @@ Given a simply-typed term in context $\Gamma \vdash M : T$ we write $\travstlc(\
 The above definition is well-defined:
 \begin{proposition}[ULC and STLC traversals coincide]
 \label{prop:ulc_and_stlc_trav_coincide}
-Let $M$ be an untyped term that inhabits the simple type $T$, that is for some context $\Gamma$ we have $\Gamma \vdash M : T$. Let $\etalf{M}$ denote the \emph{eta-long normal form} with respect to $T$:
+Let $M$ be an untyped term which inhabits the simple type $T$, that is for some context $\Gamma$ we have $\Gamma \vdash M : T$. Let $\etalf{M}$ denote the \emph{eta-long normal form} with respect to $T$:
 \begin{itemize}
 \item[(i)] Traversals in $\travulc(\etalf{M})$ do not contain any ghost node.
 \item[(ii)] $\travstlc(\Gamma \vdash M : T) = \travulc(\etalf{M})$.
@@ -618,7 +620,7 @@ In other words, the traversal cores are precisely plays from the game denotation
 Formally:
 \begin{theorem}[Traversal-Play Correspondence for STLC (Theorem 4.96 in \cite{BlumPhd}]
 \label{thm:gamesem_correspondence_stlc}
-The following two bijections hold for every simply-typed term $\Gamma \entail M :T$:
+The following two bijections hold for every simply-typed term $\Gamma \entail M :T$ with eta-long normal form $\etalf{M}$:
 \begin{eqnarray*}
  \travulc(\etalf{M}) & \cong & \revsem{\Gamma \entail M :T} \\
  \travulc^\coresymbol(\etalf{M}) & \cong & \sem{\Gamma \entail M :T} \enspace .
@@ -826,7 +828,7 @@ Let $M$ be an untyped term in eta-long form (\ie, with respect to some simple ty
 Then:
 \begin{enumerate}
 \item[(i)] All traversals in $\travsetbr(M)$ are finite;
-\item[(ii)] $\travsetbr(M)$ is finite.
+\item[(ii)] The set $\travsetbr(M)$ is finite.
 \end{enumerate}
 \end{property}
 \begin{proof}
