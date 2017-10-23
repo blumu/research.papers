@@ -1428,34 +1428,44 @@ Let $M$ be an untyped term.
 where $\coresymbol$ denotes the core projection of Def.~\ref{def:coreprojection}.
 \end{proposition}
 \begin{proof}
-(i) We show the equality using a bisimulation argument where traversals rules define the transitions of a state transition system and traversals themselves represent the states.
+(i) We show the equality using a bisimulation argument on the state transition system whose states are the traversals themselves and transitions are given by traversals rules.
 
 Let $x$ denote the leftmost linear variable occurrence in $M$
 and let $(\lambda x, A)$ be the generalized redex involving it, so that $N$ is the term obtained after firing the generalized redex $(\lambda x, A)$ in $M$.
 Let's look at how leftmost linear substitution affects the computation tree of the term. Three sub-cases shall be considered:
 \begin{description}
-    \item[1 -- $x$ has at least one operand and $A$ is an abstraction]
+    \item[1. $x$ has at least one operand and $A$ is an abstraction]
     This case is represented on Figure~\ref{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument}: the label of node $x$ gets replaced by $@$, its existing children are preserved, and $A$ gets prepended as its $0$th child.
-    \item[2 -- $x$ has at least one operand and $A$ is not an abstraction]
+    \item[2. $x$ has at least one operand and $A$ is not an abstraction]
     $A$ is an application so its parent node is a dummy lambda: $A = \lambda. A'$. The tree of $N$ is obtained by preserving $x$'s parent lambda node, substituting $x$ with the root of $A'$ (either another variable or an $@$-node) and prepending $A'$'s children to existing $x$'s children.
-    \item[3 --- $x$ is unapplied] (and thus has null arity $|x|$)
+    \item[3. $x$ is unapplied] (and thus has null arity $|x|$)
     The subterm $A$ gets plugged in the tree in place of $x$ and its parent lambda node label gets concatenated with the label of $A$'s root node.
 \end{description}
 
-A property of the linear head reduction is that the reduct contains the original term itself, modulo alpha conversion and relabelling of the \emph{lloc} node. This induces an implicit injection $\phi$ from nodes of the reduct $N$ to those of $M$ such that  $\phi$ maps nodes from $N$ that are not already present in $M$ to nodes of the argument $A$ in $M$. We can thus identify nodes from the term tree of $N$ with the corresponding nodes in the term tree of $M$, and treat traversals of both $M$ and $N$ as justified sequences over a common set of nodes.
+A property of the linear head reduction is that the reduct contains the original term itself, modulo alpha conversion and relabelling of the \emph{lloc} node. This induces an implicit map $\phi$ from nodes of the reduct $N$ to those of $M$: it maps nodes in $N$ from unmodified subterms to their corresponding nodes in $M$, and nodes from the substituted term to the corresponding nodes under the argument $A$ of $M$. By abuse of notation we write $\phi$ to denote its element-wise structure-preserving extension over justified sequences of $N$. (We recall that two justified sequences $t_1, t_2$ over two different terms are said to have the same structure just if their constituting nodes are of the same type, have the same link labels, and same pointer lengths.)
 
-We write $\travsetnorm_\dagger(M)$ to denote the subset of traversals of $\travsetnorm(M)$ ending with either a structural node (\ie, not a ghost) or an external ghost (\ie a ghost node hereditarily justified by the root).
-Since the operation $\coresymbol$, by definition, removes all the internal nodes in a traversal, it suffices to prove the equality:
+For any term $M$ we define $\travset^\dagger(M)$ as the subset of traversals of $\travsetnorm(M)$ ending with either a structural node or an external ghost (\ie, either a non-ghost node or a ghost node hereditarily justified by the root). Clearly, any traversal in $\travset$ can be extended into a traversal in $\travset^\dagger$. Indeed, let $t\in\travset$, if $t$ is not in
+$\travset^\dagger$ then $t$ ends with an internal ghost node in which case $t$ can be extended with rule \rulenamet{var} and \rulenamet{Lmd} until reaching an external node, thus producing a traversal $t'$ in $\travset^\dagger$.
+
+Hence, since by definition $\coresymbol$ removes all internal nodes from a traversal, proving the isomorphism (i) amounts to proving the corresponding isomorphism for the restricted subset $\travset^\dagger$:
 \begin{equation}
-    \travsetnorm_{\dagger}(M) = \travsetnorm_{\dagger}(N) \label{eqn:travesetnorm_dagger_eq}
+\coresymbol(\travset^\dagger(M)) \cong \coresymbol(\travset^\dagger(N))
+\ .\label{eqn:travesetnorm_dagger_eq}
 \end{equation}
-Proving the above equality amounts to establishing a bisimilarity relation between the two sets. For any two traversals $t$ and $t'$ in $\travsetnorm_\dagger(M)$ we write $t \rightarrow_M t'$ if $t'$ is a minimal extension of $t$ that remains in $\travsetnorm_\dagger(M)$ (That is $t'$ extends $t$ using rules from Table~\ref
-{tab:normalizing_trav_rules} and all the occurrences following $t$ except the last node in $t'$ are either ghost nodes or internal nodes).
-%We write $\rightarrow_M^*$ to denote the reflexive transitive closure of $\rightarrow_M$.
+We show that function $\phi$ yields such an isomorphism. By definition, $\phi$ is structure-preserving. To show that it defines a bijection from $\coresymbol(\travset^\dagger(N))$ to $\coresymbol(\travset^\dagger(M))$ we use a bisimulation argument. Let $X$ denote the disjoint union $\travset^\dagger(M) + \travset^\dagger(N)$ and consider the following binary relation and transition over it:
 
-We say that two traversals $t$ and $u$ in $\travsetnorm_\dagger$ are \emph{bisimilar}, written $t \sim_p u$, just if they have the same core projection ($\coresymbol_\alpha(t)=\coresymbol_\alpha(u)$ for any sequence of variable names $\alpha$) and their last occurrence are equal modulo $\phi$. That is for all traversals $t, t' \in \travsetnorm_\dagger(N)$ and $u \in \travsetnorm_\dagger(M)$, if $t \sim_p u$ and $t \rightarrow_M t'$ then there is $u' \in \travsetnorm_\dagger(M)$ such that
-$u \rightarrow_M u'$ and $u' \sim_p t'$; and reciprocally the same holds when exchanging $M$ and $N$.
-%%%%%%%%%%%
+\emph{Binary relation} For any traversals $t$ and $u$ in $X$ we write $t~R~u$, just if $t\in\travset^\dagger(M)$, $u\in\travset^\dagger(N)$, and  $\phi(\coresymbol_\alpha(u)) = \coresymbol_\alpha(t)$ for any sequence of variable names $\alpha$.
+
+\emph{Transitions} For any traversals $t, t' \in \travset^\dagger(M)$ (resp.~$\travset^\dagger(N)$) we write $t \rightarrow_M t'$ (resp.~$t \rightarrow_N t'$) just if $t'$ is a minimal extension of $t$: that is $t'$ extends $t$ using rules from Table~\ref{tab:normalizing_trav_rules} and all the occurrences following $t$ but the last node are either ghost nodes or internal nodes. For $t, t' \in X$ we write $t \rightarrow_X t'$ if either $t \rightarrow_M t'$ or $t \rightarrow_N t'$ holds.
+
+We show that $R$ defines a bisimulation over $X$, that is
+\begin{itemize}
+    \item (i) for all $t_1, t_2 \in \travset^\dagger(M), u_1 \in \travset^\dagger(N)$ with $t_1~R~u_1$ and $t_1 \rightarrow_M t_2$ there is $u_2 \in \travset^\dagger(N)$ such that $u_1 \rightarrow_N u_2$ and $t_2~R~u_2$.
+    \item (ii) for all $t_1 \in \travset^\dagger(M), u_1, u_2 \in \travset^\dagger(N)$ with $t_1~R~u_1$ and $u_1 \rightarrow_N t_2$ there is $t_2 \in \travset^\dagger(M)$ such that $t_1 \rightarrow_N t_2$ and $t_2~R~u_2$.
+\end{itemize}
+
+
+%%%%%%%%%
 
 \begin{figure}[htbp]
 \centering
@@ -1520,11 +1530,11 @@ $u \rightarrow_M u'$ and $u' \sim_p t'$; and reciprocally the same holds when ex
     }
 ;
 \end{tikzpicture}
-\caption{Reduction $M\rightarrow_l N$: Linearly firing the generalized redex $(\lambda x, A)$ for occurrence $x$ in $M$ (left) yields $N$ (right) for fresh variables $\overline{y_2}$. Case where node $x$ has operands and $A$ is an abstraction $\lambda\overline{y} . A'$.}
+\caption{Reduction $M\rightarrow_l N$: Linearly firing the generalized redex $(\lambda x, A)$ for occurrence $x$ in $M$ (left) yields $N$ (right) for fresh variables $\overline{y_2}$. Case where node $x$ has operands and $A$ is a non-dummy abstraction $\lambda\overline{y} . A'$.}
 \label{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument}
 \end{figure}
 
-We proceed by induction. The empty and singleton traversals are trivially bisimilar. Inductive case: Let $u, u' \in \travsetnorm_\dagger(N)$, $t\in\travsetnorm_\dagger(M)$ such that $t \sim_p u$ and $u \rightarrow_N u'$. The result is immediate if $t$ does not contain the occurrence $x$; and the opposite direction is immediate for any traversal $u$ that do not contain  $\phi^{-1}(x)$. The interesting case occurs when a traversal reaches the \emph{lloc} variable $x$ in $M$ (resp.~$\phi^{-1}(x)$ in $N$).
+We proceed by induction. The empty and singleton traversals are trivially bisimilar. Inductive case: Let $u, u' \in \travset^\dagger(N)$, $t\in\travset^\dagger(M)$ such that $t \sim_X u$ and $u \rightarrow_N u'$. The result is immediate if $t$ does not contain the occurrence $x$; and the opposite direction is immediate for any traversal $u$ that do not contain  $\phi^{-1}(x)$. The interesting case occurs when a traversal reaches the \emph{lloc} variable $x$ in $M$ (resp.~$\phi^{-1}(x)$ in $N$).
 
 Suppose that $t$ ends with $x$.
 
@@ -1549,7 +1559,7 @@ where $v$ is a \emph{pending argument lookup} consisting of external ghost nodes
 and since $\phi(\lambda\overline{y_2}) = \lambda\overline{y}$ we thus have $t'\sim_p u'$.
 %%
 
-Reciprocally: suppose $u \in \travsetnorm_\dagger(N)$ ends with $@_x$ and $t \sim_p u$. Then $t$ must end with $x$. Suppose $t \rightarrow_M t'$ then $t'$ is necessarily of form $t \cdot v\cdot \lambda\overline{y}$ where $v$ consists solely of internal ghost nodes. We can thus just take $u' = u \cdot \lambda\overline{y_2}$.
+Reciprocally: suppose $u \in \travset^\dagger(N)$ ends with $@_x$ and $t \sim_p u$. Then $t$ must end with $x$. Suppose $t \rightarrow_M t'$ then $t'$ is necessarily of form $t \cdot v\cdot \lambda\overline{y}$ where $v$ consists solely of internal ghost nodes. We can thus just take $u' = u \cdot \lambda\overline{y_2}$.
 %%%%%%%%%
 
 Because the enabling relation $\enables$ in $A'$ is preserved after substitution and alpha-conversion in the subterm $A'[\overline{y}\leftarrow\overline{y_2}]$, the subsequent traversal of the argument $A'$ in $M$ can be bisimulated by traversing $A'[\overline{y}\leftarrow\overline{y_2}]$ in the reduct $N$ using the exact same traversal rules. We omit the detail of this proof which are straightforward.
