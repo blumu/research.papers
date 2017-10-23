@@ -3,13 +3,6 @@
     "editor.wordWrap": "bounded",
     "latex-workshop.latex.toolchain": [
         {
-            "command":
-                "bibtex",
-                "args":[
-                    "TexAux\\%DOCFILE%"
-                ]
-        },
-        {
             "command": "latexdaemon",
             "args": [
                 "-watch=no",
@@ -20,5 +13,32 @@
                 "%DOC%.tex"
             ]
         }
-    ]
+    ],
+    "latex-workshop.latex.additionalBib": [
+        "ulctrav.bib"
+
+    ],
+    "latex-workshop.chktex.enabled": true,
+    "cSpell.words": [
+        "bisimilar",
+        "bisimilarity",
+        "bisimulated",
+        "bisimulation",
+        "blum's",
+        "daniil's",
+        "injective",
+        "ker's",
+        "lloc",
+        "moivre's",
+        "reduct",
+        "regnier",
+        "subcase",
+        "subterms",
+        "surjective",
+        "synctex"
+    ],
+    "cSpell.ignoreRegExpList": [
+        "\\\\\\w*(\\[.*?\\])?(\\{.*?\\})?",
+        "\\$.+?\\$"
+      ]
 }
