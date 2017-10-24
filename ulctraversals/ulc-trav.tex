@@ -43,9 +43,9 @@
 \renewcommand{\algorithmicensure}{\textbf{Output:}}
 
 
-\newcommand\Nodes{N}% set of nodes
-\newcommand\NodesVar{N_{\sf var}}% set of nodes
-\newcommand\NodesLmd{N_\lambda}% set of nodes
+\newcommand\Nodes{\mathcal{N}}% set of nodes
+\newcommand\NodesVar{\Nodes_{\sf var}}% set of nodes
+\newcommand\NodesLmd{\Nodes_\lambda}% set of nodes
 
 \newcommand{\ghostlmd}{{\lambda\!\!\lambda}}
 \newcommand{\ghostvar}{\theta}
@@ -189,7 +189,7 @@ Given an untyped lambda term $M$ we define its \defname{computation tree} as the
 	\end{eqnarray*}
 where the expression `$l\langle t_1, \ldots, t_m \rangle$' for $m \geq 0$ denotes a labelled tree with root labelled $l$ and $m$ ordered children trees $t_1$, \ldots, $t_m$. The underlined label $z$ represents a node label for $m>0$, and a leaf label if $m=0$.
 
-\item We write $\Nodes$ to denote the set of nodes of the computation tree. We write $\NodesVar$ for the set of variable nodes, $\NodesLmd$ for lambda nodes, and $\Nodes_@$ for  application nodes.
+\item We write $\Nodes(M)$ to denote the set of nodes of the computation tree of $M$, or just $\Nodes$ if the term is clear from the context. We write $\NodesVar$ for the set of variable nodes, $\NodesLmd$ for lambda nodes, and $\Nodes_@$ for  application nodes.
 
 \item For any lambda node $\alpha\in\NodesLmd$ we write $\child(\alpha)$ to denote its unique child node (either an $@$ or variable node).
 \end{itemize}
@@ -229,15 +229,15 @@ We define the set of justified sequences of nodes over $M$, written $\justseqset
 
 It is sometimes convenient to represent a justification sequence using the \defname{triplet encoding}: a sequence of triplet in $\tilde{\Nodes}\times\nat\times\nat$ where the first component gives the node with label, the second component encodes the distance between a node and its justifier in the sequence ($0$ for no pointer), and the third is the link label.
 
-The \defname{structure} of a justified sequence is defined as the sequence of triples $\{@, V, \lambda \}\nat\times\nat$ where the first component indicates the type of each occurrence ($@$-node, variable or lambda node) and the last two encodes the justification pointers as in the triplet encoding.
+The \defname{structure} of a justified sequence is defined as the sequence of triples $\{@, V, \lambda \}\times\nat\times\nat$ where the first component indicates the type of each occurrence ($@$-node, variable or lambda node) and the last two encodes the justification pointers as in the triplet encoding.
 
-Two justification sequences $s$ and $u$ over $M$ are equal, written $s=u$, if their triplet encoding are the same: their underlying sequences of nodes are identical (same node) and the associated justification pointers are identical (same justifier and same pointer label). Two sequences $s$ and $u$ over two distinct terms $M$ and $N$ are \defname{equivalent}, written $s \equiv u$ just  if they have the same structure: the types of the underlying nodes in the two sequences match each other and have the same justification pointers.
+Two justification sequences $s$ and $u$ over $M$ are equal, written $s=u$, if their triplet encoding are the same: their underlying sequences of nodes are identical (same node) and the associated justification pointers are identical (same justifier and same pointer label). Two sequences $s$ and $u$ over two distinct terms $M_1$ and $M_2$ are \defname{equivalent}, written $s \equiv u$ just  if they have the same structure: the types of the underlying nodes in the two sequences match each other and have the same justification pointers.
 
 \begin{example}
 We have $\Pstr[10pt]{ (l){\lambda x y} \cdot (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda z y} \cdot (n-l,25){z}}$. But we also have $\Pstr[10pt]{ (l){\lambda x y z w t} \cdot (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda x} \cdot (n-l,25){x}}$ since they have same structure $(\lambda,0)\cdot(V,1)$.
 \end{example}
 
-We write $I \cong J$ to denote two subsets $I \subseteq \justseqset(M)$ and $J \subseteq \justseqset(N)$ such that there exists an isomorphism (\ie a structure-preserving bijection) between $I$ and $J$. That is there exists a bijection $\phi : I\longrightarrow J$ such that for any $j\in J$, $j \equiv \phi(j)$.
+We say that two subsets $J_1\subseteq \justseqset(M_1)$ and $J_2\subseteq\justseqset(M_2)$ are isomorphic, written $J_1\cong J_2$, if  there exists a structure-preserving bijection between $J_1$ and $J_2$. That is there exists a bijection $\phi :J_1\longrightarrow J_2$ such that for any $j\in J$, $j\equiv\phi(j)$.
 
 A justified sequence verifies the \defname{alternation condition} if the first node is a lambda node and subsequent nodes occurrences alternate between (i) a variable or application node (ii) a lambda node.
 
@@ -464,25 +464,29 @@ such that its implicit \emph{element-wise pointer-preserving} extension to justi
 \begin{enumerate}[label=(\roman*)]
     \item For any $u \in \travulc(M)$, $\eta_t(u)$ is a traversal of $M^t$.
 
-    \item If $v$ is a \emph{finite} traversal of $M^t$ that does not contain any ghost node then there exists a traversal $u$ of $M$ (with possibly ghost nodes) such that $v = \eta_t(u)$.
+    \item If $v$ traversses
+    %is a \emph{finite} traversal of
+    $M^t$
+    %that does not contain any ghost node
+    then there exists a traversal $u$ of $M$ (with possibly ghost nodes) such that $v = \eta_t(u)$.
 
     \item The restriction of $\eta_t$ to $\travset(M)$ defines a bijection with $\travset(M^t)$. Further the bijection is strong in the sense that the traversal structure (node type and pointers, but no necessarily labels) are preserved.
 \end{enumerate}
 \end{proposition}
 \begin{proof}
-The tree $\ctree(M)$ being by definition a subtree of $\ctree(M^t)$, it induces a one-to-one mapping from $\Nodes(M)$ to $\Nodes(M^t)$.
-We extend it to ghost nodes by mapping ghost occurrences in $t$ to the corresponding node resulting from the eta-expansions of subterms of $M$ in $M^t$, and all other ghost nodes not occurring in $t$ to the corresponding ghost nodes in $\ctree(M^t)$. The map $\eta_t$ can be formally defined by induction on the traversal $t$, observing that in the variable rules \rulenamet{Var} and \rulenamet{IVar}, the on-the-fly eta-expansion of Definition~\ref{def:onthefly_etaexpansion} increments the arity of the justifier node $m$, therefore the corresponding structural node must exist in $M^t$.
+The tree $\ctree(M)$ being by definition a subtree of $\ctree(M^t)$, induces a one-to-one mapping from $\Nodes(M)$ to $\Nodes(M^t)$.
+We extend it to ghost nodes by mapping ghost occurrences in $t$ to the corresponding node resulting from the eta-expansions of subterms of $M$ in $M^t$, and all other ghost nodes not occurring in $t$ to the corresponding ghost nodes in $\ctree(M^t)$. Formally, we define $\eta_t$ by induction on the traversal $t$, observing that in rules \rulenamet{Var} and \rulenamet{IVar}, the on-the-fly eta-expansion of Definition~\ref{def:onthefly_etaexpansion} increments the arity of the justifier node $m$, which guarantees that the corresponding structural node exists in $\ctree{M^t}$.
 
-(i) By induction on $u$. Reusing the rule used to traverse $u$ in order to traverse $v$. For the case \rulenamet{Var} and \rulenamet{IVar}, the \emph{concrete} sub-case is used instead of the \emph{eta-expanded} subcase when traversing a ghost variable that also appeared in $t$.
+(i) By induction on $u$. Reusing the rule used to traverse $u$ in order to traverse $\eta_t(u)$. For the case \rulenamet{Var} and \rulenamet{IVar}, when the \emph{eta-expanded} subcase of the rule is used to traverse a ghost variable that also appeared in $t$, we use instead the \emph{concrete} sub-case used to traverse $\eta_t(u)$.
 
 (ii) By induction on $v$, applying to $u$ each rule that is applied to $v$. For the case \rulenamet{Var} and \rulenamet{IVar}, if the index $i$ is greater than the arity of the node $m$ in $M$ then the lambda node from $v$ gets replaced by a ghost lambda node in $u$.
 
-(iii) By (i) the function is well defined, it is injective by definition and by (ii) it is surjective.
-
+(iii) By (i) the function is well defined, it is injective by definition, and by (ii) it is surjective.
+\todo{re-check this proof, in particular (iii)}
 \end{proof}
 
 \begin{example}
-Continuing with the example above: the following traversal obtained from $t$ is a valid traversal of $M^t$ where the occurrences corresponding to ghosts in $t$ are underlined:
+Continuing with the previous example: the following traversal obtained from $t$ is a valid traversal of $M^t$ where the occurrences corresponding to ghosts in $t$ are underlined:
 $$\Pstr[0.7cm]{(n0){\lambda }~(n1){@}\ (n2-n1){\lambda u}~(n3-n2){u}~(n4-n1){\lambda v}~(n5-n4){v}\ (n6-n3){\bf \lambda}\ (n7-n0){y_1}\ (n8-n7){\bf \lambda}~(n9-n2){u}~(n10-n1){\lambda v}~(n11-n10){v}\ (n12-n9){\underline{\lambda\beta}}~(n13-n8){\underline{\alpha}}~(n14-n13){\underline{\lambda}}~(n15-n12){\underline{\beta}}\ (n16-n11){\lambda}~(n17-n0,35){y_2} }.$$
 \end{example}
 
@@ -1434,34 +1438,50 @@ Let $x$ denote the leftmost linear variable occurrence in $M$
 and let $(\lambda x, A)$ be the generalized redex involving it, so that $N$ is the term obtained after firing the generalized redex $(\lambda x, A)$ in $M$.
 Let's look at how leftmost linear substitution affects the computation tree of the term. Three sub-cases shall be considered:
 \begin{description}
-    \item[1. $x$ has at least one operand and $A$ is an abstraction]
+    \item[C1. $x$ has at least one operand and $A$ is an abstraction]
     This case is represented on Figure~\ref{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument}: the label of node $x$ gets replaced by $@$, its existing children are preserved, and $A$ gets prepended as its $0$th child.
-    \item[2. $x$ has at least one operand and $A$ is not an abstraction]
+    \item[C2. $x$ has at least one operand and $A$ is not an abstraction]
     $A$ is an application so its parent node is a dummy lambda: $A = \lambda. A'$. The tree of $N$ is obtained by preserving $x$'s parent lambda node, substituting $x$ with the root of $A'$ (either another variable or an $@$-node) and prepending $A'$'s children to existing $x$'s children.
-    \item[3. $x$ is unapplied] (and thus has null arity $|x|$)
+    \item[C3. $x$ is unapplied] (and thus has null arity $|x|$)
     The subterm $A$ gets plugged in the tree in place of $x$ and its parent lambda node label gets concatenated with the label of $A$'s root node.
 \end{description}
 
-A property of the linear head reduction is that the reduct contains the original term itself, modulo alpha conversion and relabelling of the \emph{lloc} node. This induces an implicit map $\phi$ from nodes of the reduct $N$ to those of $M$: it maps nodes in $N$ from unmodified subterms to their corresponding nodes in $M$, and nodes from the substituted term to the corresponding nodes under the argument $A$ of $M$. By abuse of notation we write $\phi$ to denote its element-wise structure-preserving extension over justified sequences of $N$. (We recall that two justified sequences $t_1, t_2$ over two different terms are said to have the same structure just if their constituting nodes are of the same type, have the same link labels, and same pointer lengths.)
+A property of the linear head reduction is that the reduct contains the original term itself, modulo alpha conversion and relabelling of the \emph{lloc} node. This induces an implicit map $\phi$ from nodes of the reduct $N$ to those of $M$:
+$$\phi : \Nodes(N)  \rightarrow \Nodes(M) $$
+which maps nodes from unmodified subterms of $N$ to their corresponding nodes in $M$, and nodes from the substituted subterm to the corresponding nodes under the argument $A$ of $M$. By abuse of notation we write $\phi$ to denote its element-wise structure-preserving extension over justified sequences of $N$:
+$$\phi : \justseqset(N)  \rightarrow \justseqset(M) $$
+(Recall that two justified sequences over two distinct terms share the same structure just if their constituting nodes are of the same type, have the same link labels, and same pointer lengths.)
 
-For any term $M$ we define $\travset^\dagger(M)$ as the subset of traversals of $\travsetnorm(M)$ ending with either a structural node or an external ghost (\ie, either a non-ghost node or a ghost node hereditarily justified by the root). Clearly, any traversal in $\travset$ can be extended into a traversal in $\travset^\dagger$. Indeed, let $t\in\travset$, if $t$ is not in
-$\travset^\dagger$ then $t$ ends with an internal ghost node in which case $t$ can be extended with rule \rulenamet{var} and \rulenamet{Lmd} until reaching an external node, thus producing a traversal $t'$ in $\travset^\dagger$.
+For any term $M$ we define $\travset^\dagger(M)$ as the subset of traversals of $\travsetnorm(M)$ ending with either a structural node or an external ghost (\ie, either a non-ghost node or a ghost node hereditarily justified by the root). Observe that any traversal in $t\in\travsetnorm$ can be extended into a traversal in $\travset^\dagger$. Indeed, if $t$ is not in
+$\travset^\dagger$ then it must end with an internal ghost node in which case we can apply rules \rulenamet{Var} and \rulenamet{Lmd} repeatedly until reaching an external node.
 
-Hence, since by definition $\coresymbol$ removes all internal nodes from a traversal, proving the isomorphism (i) amounts to proving the corresponding isomorphism for the restricted subset $\travset^\dagger$:
+Since by definition the core-projection $\coresymbol$ removes all internal nodes from a traversal, to show the desired isomorphism it suffices to prove that the isomorphism holds for the restricted subset $\travset^\dagger$:
 \begin{equation}
-\coresymbol(\travset^\dagger(M)) \cong \coresymbol(\travset^\dagger(N))
+\coresymbol(\travset^\dagger(N)) \cong \coresymbol(\travset^\dagger(M))
 \ .\label{eqn:travesetnorm_dagger_eq}
 \end{equation}
-We show that function $\phi$ yields such an isomorphism. By definition, $\phi$ is structure-preserving. To show that it defines a bijection from $\coresymbol(\travset^\dagger(N))$ to $\coresymbol(\travset^\dagger(M))$ we use a bisimulation argument. Let $X$ denote the disjoint union $\travset^\dagger(M) + \travset^\dagger(N)$ and consider the following binary relation and transition over it:
+We show that $\phi$ witnesses the above isomorphism: it is structure-preserving by definition; we show by a a bisimulation argument that it defines a bijection.
 
-\emph{Binary relation} For any traversals $t$ and $u$ in $X$ we write $t~R~u$, just if $t\in\travset^\dagger(M)$, $u\in\travset^\dagger(N)$, and  $\phi(\coresymbol_\alpha(u)) = \coresymbol_\alpha(t)$ for any sequence of variable names $\alpha$.
+Consider the state transition system $(X, R, \rightarrow)$ defined by:
+\begin{itemize}
+    \item \emph{States}: $X$ denote the disjoint union $\travset^\dagger(M) + \travset^\dagger(N)$.
 
-\emph{Transitions} For any traversals $t, t' \in \travset^\dagger(M)$ (resp.~$\travset^\dagger(N)$) we write $t \rightarrow_M t'$ (resp.~$t \rightarrow_N t'$) just if $t'$ is a minimal extension of $t$: that is $t'$ extends $t$ using rules from Table~\ref{tab:normalizing_trav_rules} and all the occurrences following $t$ but the last node are either ghost nodes or internal nodes. For $t, t' \in X$ we write $t \rightarrow_X t'$ if either $t \rightarrow_M t'$ or $t \rightarrow_N t'$ holds.
+    \item \emph{Binary relation $R\subseteq X \times X$} defined as follows. For any traversals $t, u \in X$:
+    $$ t~R~u  \ \iff \ \left{\begin{cases}
+        t\in\travset^\dagger(M)\\
+         u\in\travset^\dagger(N) \\
+         \phi(\coresymbol_\alpha(u)) = \coresymbol_\alpha(t) \mbox{ for any  variable name list $\alpha$}.
+    \end{cases}\right.
+    $$
+
+    \item \emph{Transitions} For any traversals $t, t' \in \travset^\dagger(M)$ we write $t \rightarrow_M t'$ just if $t'$ is a minimal extension of $t$ that remains in $\travset^\dagger(M)$: that is $t'$ extends $t$ using rules from Table~\ref{tab:normalizing_trav_rules} and all the occurrences following $t$ but the last node are either ghost nodes or internal nodes. The relation $\rightarrow_N$ is defined identically.
+    We then write $t \rightarrow_X t'$, for $t, t' \in X$, if either $t \rightarrow_M t'$ or $t \rightarrow_N t'$ holds.
+\end{itemize}
 
 We show that $R$ defines a bisimulation over $X$, that is
 \begin{itemize}
-    \item (i) for all $t_1, t_2 \in \travset^\dagger(M), u_1 \in \travset^\dagger(N)$ with $t_1~R~u_1$ and $t_1 \rightarrow_M t_2$ there is $u_2 \in \travset^\dagger(N)$ such that $u_1 \rightarrow_N u_2$ and $t_2~R~u_2$.
-    \item (ii) for all $t_1 \in \travset^\dagger(M), u_1, u_2 \in \travset^\dagger(N)$ with $t_1~R~u_1$ and $u_1 \rightarrow_N t_2$ there is $t_2 \in \travset^\dagger(M)$ such that $t_1 \rightarrow_N t_2$ and $t_2~R~u_2$.
+    \item (B1) for all $t_1, t_2 \in \travset^\dagger(M), u_1 \in \travset^\dagger(N)$ with $t_1~R~u_1$ and $t_1 \rightarrow_M t_2$ there is $u_2 \in \travset^\dagger(N)$ such that $u_1 \rightarrow_N u_2$ and $t_2~R~u_2$.
+    \item (B2) for all $t_1 \in \travset^\dagger(M), u_1, u_2 \in \travset^\dagger(N)$ with $t_1~R~u_1$ and $u_1 \rightarrow_N t_2$ there is $t_2 \in \travset^\dagger(M)$ such that $t_1 \rightarrow_N t_2$ and $t_2~R~u_2$.
 \end{itemize}
 
 
@@ -1530,59 +1550,68 @@ We show that $R$ defines a bisimulation over $X$, that is
     }
 ;
 \end{tikzpicture}
-\caption{Reduction $M\rightarrow_l N$: Linearly firing the generalized redex $(\lambda x, A)$ for occurrence $x$ in $M$ (left) yields $N$ (right) for fresh variables $\overline{y_2}$. Case where node $x$ has operands and $A$ is a non-dummy abstraction $\lambda\overline{y} . A'$.}
+\caption{Reduction $M\rightarrow_l N$: Linearly firing the generalized redex $(\lambda x, A)$ for occurrence $x$ in $M$ (left) yields $N$ (right) for fresh variables $\overline{y_2}$. This depicts the situation where node $x$ has at least one operand, and $A$ is a non-dummy abstraction $\lambda\overline{y} . A'$.}
 \label{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument}
 \end{figure}
 
-We proceed by induction. The empty and singleton traversals are trivially bisimilar. Inductive case: Let $u, u' \in \travset^\dagger(N)$, $t\in\travset^\dagger(M)$ such that $t \sim_X u$ and $u \rightarrow_N u'$. The result is immediate if $t$ does not contain the occurrence $x$; and the opposite direction is immediate for any traversal $u$ that do not contain  $\phi^{-1}(x)$. The interesting case occurs when a traversal reaches the \emph{lloc} variable $x$ in $M$ (resp.~$\phi^{-1}(x)$ in $N$).
+We prove (B1) and (B2) by induction on the traversals rules.
 
+\emph{Base case:} The empty traversal in $M$ is trivially in $R$-relationship with the empty traversal in $N$. Same for the two singleton traversals consisting of the root nodes of $M$ and $N$.
+
+\emph{Inductive case:}
+The result holds trivially up until the traversal in $M$ (resp.~in $N$) reaches  occurrence $x$ (resp.~the node that $\phi$ maps to $x$). For such traversals, the very same rules used to traverse $M$ can be simulated in $N$ using the exact same traversal rules, and reciprocally. The situation changes when reaching the \emph{lloc} variable $x$ in $M$. Let's look at this specific case.
 Suppose that $t$ ends with $x$.
 
-%%%%%%%% CASE 1
-Case 1: This is the situation represented in Figure~\ref{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument} where $x$ has operand, $A$ is an abstraction and $\phi(@_x) = x$. Let $\lambda\overline{x}$ denote $x$'s binding lambda node in $M$, $k$ denote $x$'s binding index, and $@_a$ denote the parent application node of the subterm $A$.
+\begin{description}
+\item[Case 1] This is the situation represented in Figure~\ref{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument} where $x$ has some operand, $A$ is an abstraction, $\phi(@_x) = x$, $\phi(\lambda\overline{yz}) = \lambda\overline{y}$, and nodes under
+$\lambda\overline{y_2}$ in $N$ are mapped by $\phi$ to corresponding nodes under $\lambda\overline{y}$ in $M$. Let $\lambda\overline{x}$ denote $x$'s binding lambda node in $M$, $k$ denote $x$'s binding index, and $@_a$ denote the parent application node of the subterm $A$.
 
-Since $t\sim_p u$ the last node in $u$ is necessarily $@_x$, and by rule \rulenamet{App}, since $u \rightarrow_N u'$ we necessarily have $u' = u \cdot \lambda\overline{y_2}$.
+Let $u\in \travset^\dagger(N)$, $t\in\travset^\dagger(M)$ with $t~R~u$.
+By definition of $t~R~u$, the last node in $u$ is necessarily the reverse image of $x$ by $\phi$ which is $@_x$.
 
 %%%%%%%%%%%%%
+(B2) Suppose that $u \rightarrow_N u'$. Since $u$ terminates with application node $@_x$, by rule \rulenamet{App} we necessarily have $u' = u \cdot \lambda\overline{y_2}$.
+
 Let $@_j$ and $\lambda\overline{\xi_j}$ for $1\leq j\leq a$ denote the application and lambda nodes in the spinal descent from $@_a$ to $x$'s binder so that $\lambda\overline{\xi_1}$ is $x$'s binder and $@_1$ its parent.
-By Lemma~\ref{lemma:genredex_lookup}, $@_a$ is precisely the lowest application node in the spinal descent from $@_a$ to $\lambda\overline{x}$ verifying $|@_a| >  i_a$, where $i_a = k + \sum_{1\leq j< a} (|\lambda\overline{\xi_j}| - |@_j|)$. This definition matches precisely with the `pending argument lookup' algorithm that is implicitly implemented by the rules \rulenamet{Lmd} and \rulenamet{Var}: with exactly $i_a$ instantiations of those two rules, the traversal $t$ gets extended by $2(i_a-1)$ ghost nodes followed by the root node of $A$ in $M$, thus:
-$$ t \rightarrow_M t' = t \cdot v \cdot \lambda\overline{y} $$
-where $v$ is a \emph{pending argument lookup} consisting of external ghost nodes whose justifiers belong to a spinal descent in $M$. The node $\lambda\overline{y}$ is also external since its parent is an $@$-node. Consequently for any sequence of variable names $\alpha$ we have:
+By Lemma~\ref{lemma:genredex_lookup}, $@_a$ is precisely the lowest application node in the spinal descent from $@_a$ to $\lambda\overline{x}$ verifying $|@_a| >  i_a$, where $i_a = k + \sum_{1\leq j< a} (|\lambda\overline{\xi_j}| - |@_j|)$. This definition matches precisely with the `pending argument lookup' algorithm implicitly implemented by the rules \rulenamet{Lmd} and \rulenamet{Var}: with exactly $i_a$ instantiations of those two rules, the traversal $t$ gets extended by $2(i_a-1)$ ghost nodes followed by the root node of $A$ in $M$: $t &\rightarrow_M t'$ where $t' = t \cdot v \cdot \lambda\overline{y}$
+and $v$ is a \emph{pending argument lookup} consisting of internal ghost nodes whose justifiers belong to a spinal descent in $M$. The node $\lambda\overline{y}$ is also internal since its parent is an $@$-node. Consequently for any sequence of variable names $\alpha$ we have:
 \begin{align*}
 \coresymbol_\alpha(t') &= \coresymbol_\alpha(t \cdot v \cdot \lambda\overline{y}) & \mbox{(Def.~of $t'$)} \\
-                &= \coresymbol_{\alpha \cdot \overline{y}}(t) & \mbox{(def of $\coresymbol$)} \\
-                &= \coresymbol_{\alpha \cdot \overline{y}}(u) & \mbox{($t$ and $u$ bisimilar by I.H.)}\\
-                &\cong \coresymbol_{\alpha \cdot \overline{y_2}}(u) & \mbox{(alpha conversion)}\\
+                &= \coresymbol_{\alpha \cdot \overline{y}}(t) & \mbox{(def of $\coresymbol$, $v$ contains internal nodes)} \\
+                &= \phi(\coresymbol_{\alpha \cdot \overline{y}}(u)) & \mbox{($t~R~u$ by I.H.)}\\
+                &\equiv \coresymbol_{\alpha \cdot \overline{y_2}}(u) & \mbox{(alpha conversion)}\\
                 &= \coresymbol_\alpha(u \cdot \lambda\overline{y_2}) & \mbox{(def of $\coresymbol$)}\\
                 &= \coresymbol_\alpha(u') & \mbox{(def of $u'$)}
 \end{align*}
-and since $\phi(\lambda\overline{y_2}) = \lambda\overline{y}$ we thus have $t'\sim_p u'$.
-%%
-
-Reciprocally: suppose $u \in \travset^\dagger(N)$ ends with $@_x$ and $t \sim_p u$. Then $t$ must end with $x$. Suppose $t \rightarrow_M t'$ then $t'$ is necessarily of form $t \cdot v\cdot \lambda\overline{y}$ where $v$ consists solely of internal ghost nodes. We can thus just take $u' = u \cdot \lambda\overline{y_2}$.
+and since $\phi(\lambda\overline{y_2}) = \lambda\overline{y}$ we thus have $t'~R~u'$.
 %%%%%%%%%
 
-Because the enabling relation $\enables$ in $A'$ is preserved after substitution and alpha-conversion in the subterm $A'[\overline{y}\leftarrow\overline{y_2}]$, the subsequent traversal of the argument $A'$ in $M$ can be bisimulated by traversing $A'[\overline{y}\leftarrow\overline{y_2}]$ in the reduct $N$ using the exact same traversal rules. We omit the detail of this proof which are straightforward.
+(B1) Suppose $t \rightarrow_M t'$ then $t'$ is necessarily of form $t \cdot v\cdot \lambda\overline{y}$ where $v$ consists solely of internal ghost nodes. We can thus just take $u' = u \cdot \lambda\overline{y_2}$ and rule \rulenamet{App} gives $u \rightarrow_N u'$.
+%%%%%%%%%
+
+Because the enabling relation $\enables$ in $A'$ is preserved through $\phi$ after substitution and alpha-conversion in the subterm $A'[\overline{y}\leftarrow\overline{y_2}]$, the subsequent traversal of the argument $A'$ in $M$ can be bisimulated by traversing $A'[\overline{y}\leftarrow\overline{y_2}]$ in the reduct $N$ using the exact same traversal rules used to traverse $M$. We omit the tedious proof details here for succinctness.
 
 %%%%%%%% CASE 2
-Case 2: If $x$ has operands and $A$ is an application ($|\overline{y}|=0$) then the proof is similar to the previous case except that the node corresponding to $x$ in the reduct $N$ is either an application node (if $A$ is a redex) or a variable node (if $A$ is in head-normal form).
-
+\item[Case 2] If $x$ has operands and $A$ is an application ($|\overline{y}|=0$) then the proof is similar to the previous case except that the node corresponding to $x$ in the reduct $N$ is either an application node (if $A$ is a redex) or a variable node (if $A$ is in head-normal form).
 
 %%%%%%% CASE 3
-Case 3: $x$ is unapplied ($|x|=0$). This is the situation where the relabelling performed by the operation $\coresymbol$ comes into play: the parent lambda node $\lambda\overline{z}$ of $x$ in $M$ becomes $\lambda\overline{z}\overline{y}$ in $N$.
-Traversals of $M$ the form $t = \ldots \lambda\overline{z}\cdot x \cdot v \cdot \lambda\overline{y} \cdot n \cdot \ldots$ are bisimilar to traversals $u = \ldots \lambda\overline{z}\overline{y}\cdot n \ldots$.
+\item[Case 3] $x$ is unapplied ($|x|=0$). The parent lambda node $\lambda\overline{z}$ of $x$ in $M$ becomes $\lambda\overline{z}\overline{y}$ in $N$.
+Traversals of $M$ of the form $t = \ldots \lambda\overline{z}\cdot x \cdot v \cdot \lambda\overline{y} \cdot n \cdot \ldots$ are in $R$-relation with traversals $u = \ldots \lambda\overline{z}\overline{y}\cdot n \ldots$.
 
 %IDEA: Observe first that the nodes of the subterm $A$$ map 1-1 to the nodes of the subterm $\phi(x)$ in $N$.
 % We can therefore defined $\psi$ such that all the nodes in $t$ hereditarily justified by the root of $A$ are mapped by $\psi$ to the corresponding nodes in $N$. We omit the full details of the induction which is purely mechanical and straightforward. The idea being that $N$ is obtained by transposing the structure of the subterm $A$ in place of $x$ with the additional relabelling of $x$'s parent $\lambda\overline{y}$ as $\lambda\overline{y}\overline{z}$ where $\lambda\overline{a}$ denotes the root of $A$. The key observation is that this relabelling is innocuous in the sense that all rules applied to $t$ in $M$ can also be applied to $\psi(t)$ in $N$.
 
+\todo{explain how bisimulation implies the isomorphism:
+first direction implies that $\phi$ is well defined, second direction that it is surjective. Still need to show that it's injective}
+
 \todo{WIP: explain how any traversal extension of $t_{\leq x}$ is necessarily
 also a traversal of $N$.}
-
+\end{description}
 %%%%%%%%%%%%%%%%%%
 
-(ii) By Theorem~\ref{thm:soundness_leftmostlinearred} a \emph{qnf} trivially reduces to its beta-nf: there is a beta reduction sequence $M = M_1 \rightarrow_\beta M_2 \ldots \rightarrow_\beta M_q= N$, $q\geq1$  where for each reduction step, $M_{q+1}$ is obtained by reducing the leftmost standard redex of $M_q$ of the form $(\lambda x . U) T$ such that $U$ does not contain any redex. By Proposition~\ref{prop:qnf_nf}(ii), each such redex is trivial: $x$ does not occur freely in $U$ and therefore no substitution is performed to reduce the redex.
+(ii) By Theorem~\ref{thm:soundness_leftmostlinearred} a \emph{qnf} trivially reduces to its beta-nf: there is a beta reduction sequence $M = M_1 \rightarrow_\beta M_2 \ldots \rightarrow_\beta M_q= N$, $q\geq1$  where for each reduction step, $M_{i+1}$ is obtained by reducing the leftmost innermost standard redex of $M_i$ (of the form $(\lambda x . U) T$ such that $U$ does not contain any redex). By Proposition~\ref{prop:qnf_nf}(ii), each such redex is trivial: $x$ does not occur freely in $U$ and therefore no substitution is performed to reduce the redex.
 
-We show that $\core{\travsetnorm}$ is an invariant that is preserved by this reduction sequence: we prove by induction on $q$ that $\core{\travsetnorm(M_{q})}=\core{\travsetnorm(M)}$. For $q=1$ we have $M = M_q = N$ so the result holds trivially.
+We show that $\core{\travsetnorm}$ is an invariant that is preserved by this term reduction sequence: we prove by induction on $q$ that $\core{\travsetnorm(M_{q})}\cong\core{\travsetnorm(M)}$. For $q=1$ we have $M = M_q = N$ so the result holds trivially.
 
 Let $q\geq 1$.
 \todo{
