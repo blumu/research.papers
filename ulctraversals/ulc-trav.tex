@@ -2,7 +2,9 @@
 %Daemon> filter=err+warn
 %Daemon> ini=pdflatex
 %Daemon> aux-directory=TexAux
-%Daemon> custom_args="-synctex=1 -enable-installer"
+%Daemon> custom_args="-synctex=1"
+%%Daemon> custom_args="-synctex=1 -enable-installer"
+
 
 \documentclass{article}
 \usepackage{lscape}
@@ -46,11 +48,17 @@
 \newcommand\VarSet{\mathcal{V}}
 
 \newcommand\Nodes{\mathcal{N}}% set of nodes
-\newcommand\NodesVar{\Nodes_{\sf var}}% set of nodes
-\newcommand\NodesLmd{\Nodes_\lambda}% set of nodes
+\newcommand\NodesVar{\Nodes_{\sf var}}% set of variable  nodes
+\newcommand\NodesLmd{\Nodes_\lambda}% set of lambda nodes
+\newcommand\NodesApp{\Nodes_@}% set of application nodes
 
 \newcommand{\ghostlmd}{{\lambda\!\!\lambda}}
 \newcommand{\ghostvar}{\theta}
+
+% set of imaginary variable nodes = structural + ghost variable nodes
+\newcommand\ImNodesVar{\NodesVar^\ghostvar}
+% set of imaginary variable nodes = structural + ghost lambda nodes
+\newcommand\ImNodesLmd{\NodesLmd^\ghostlmd}
 
 \newcommand{\affine}{{\sf aff}}
 \newcommand{\normalizing}{{\sf norm}}
@@ -78,7 +86,11 @@
 \newcommand{\enables}{\vdash} %enabling relation
 \newcommand{\ctree}{CT} %computation tree
 
-\newcommand{\NodeHjByRoot}{\Nodes^{\enables^*}} % set of nodes hereditarily justified by the root
+% Set of external nodes = nodes hereditarily justified by the root
+\newcommand{\ExtNodes}{\Nodes^{\sf ext}}
+
+% Set of internal nodes = nodes hereditarily justified by @-nodes
+\newcommand{\IntNodes}{\Nodes^{\sf int}}
 
 \newcommand\pathset{{\mathcal{P}aths}} % set of paths in the comp tree
 \newcommand\arth{\textsf{arth}} % arity threshold
@@ -194,7 +206,7 @@ Given an untyped lambda term $M$ we define its \defname{computation tree} as the
 	\end{eqnarray*}
 where the expression `$l\langle t_1, \ldots, t_m \rangle$' for $m \geq 0$ denotes a labelled tree with root labelled $l$ and $m$ ordered children trees $t_1$, \ldots, $t_m$. The underlined label $z$ represents a node label for $m>0$, and a leaf label if $m=0$.
 
-\item We write $\Nodes(M)$ to denote the set of nodes of the computation tree of $M$, or just $\Nodes$ if the term is clear from the context. We write $\NodesVar$ for the set of variable nodes, $\NodesLmd$ for lambda nodes, and $\Nodes_@$ for  application nodes.
+\item We write $\Nodes(M)$ to denote the set of nodes of the computation tree of $M$, or just $\Nodes$ if the term is clear from the context. We write $\NodesVar$ for the set of variable nodes, $\NodesLmd$ for lambda nodes, and $\NodesApp$ for  application nodes.
 
 \item For any lambda node $\alpha\in\NodesLmd$ we write $\child(\alpha)$ to denote its unique child node (either an $@$ or variable node).
 \end{itemize}
@@ -206,11 +218,11 @@ Observe that the definition is similar to that of STLC~\cite{Ong2006, BlumPhd} w
 
 We define the \defname{enabling relation} $\enables$ between nodes of the computation tree as the relation associating each lambda node to all the variable nodes that it binds, the root of the tree to all the free variable nodes, and every variable and application node to each of their child node. We write $m \enables_k \alpha$ to indicate that a lambda node $\alpha$ is the $k$th child of a variable or application node $m$ for some $k\geq0$; and $\alpha \enables_k m$ to indicate that the node $m$ is labelled by the $k$th variable bound by $\alpha$ for $k\geq1$.
 
-We define \defname{hereditarily enabling} as the reflexive transitive closure $\enables^*$ of the enabling relation, and we say that node $m$ \defname{hereditarily enables} node $n$ if $m \enables^* n$. We write $\NodeHjByRoot$ to denote the set of nodes hereditarily enabled by the root, that is the image of the tree root by the reflexive transitive closure of the enabling relation.
+We define \defname{hereditarily enabling} as the reflexive transitive closure $\enables^*$ of the enabling relation, and we say that node $m$ \defname{hereditarily enables} node $n$ if $m \enables^* n$.
 
-A consequence of the definition of the enabling relation is that every node of the tree is either hereditarily justified by the root or by some application node $@$.  Variable nodes that are hereditarily enabled by the root are called \defname{external variable nodes}, and variables hereditarily justified by an application node are called \defname{internal variable nodes}.
+A tree node is \defname{external} if it is hereditarily enabled by the root, otherwise it is \defname{internal}. We write $\ExtNodes$ to denote the set of external nodes, that is the image of the tree root by the reflexive transitive closure of the enabling relation. Internal nodes are therefore precisely the nodes hereditarily justified by application nodes $@$. We write $\IntNodes$ to denote the set of internal nodes.
 
-We defined the \defname{arity} of a node as follows: the arity of a lambda node $\lambda x_1 \cdots x_k$ for $k\geq 0$ is denoted by $|\lambda x_1 \cdots x_k|$ and is defined as $k$; the arity of a variable node $x$, denoted $|x|$ is the number of children of $x$ in the computation tree; the arity of a $@$ node is the number of its children nodes minus 1 (\ie, the number of operands in the application).
+We define the \defname{arity} of a node as follows: the arity of a lambda node $\lambda x_1 \cdots x_k$ for $k\geq 0$ is denoted by $|\lambda x_1 \cdots x_k|$ and is defined as $k$; the arity of a variable node $x$, denoted $|x|$ is the number of children of $x$ in the computation tree; the arity of a $@$ node is the number of its children nodes minus 1 (\ie, the number of operands in the application).
 
 \subsection{Ghost nodes}
 We extend the concept of computation tree nodes by introducing two infinite classes of ``imaginary'' nodes called \defname{ghost nodes}:
@@ -219,7 +231,7 @@ one class of ``ghost variable nodes'', denoted $\ghostvar$, and one class of ``g
 We simultaneously define ghost nodes and extend the enabling relation $\enables$ for them by induction: for every (ghost) variable or application node $m$ and for all $k>|m|$ there is a ghost lambda node $\ghostlmd$ such that $m \enables_k \ghostlmd$; for all (ghost) lambda node $\alpha$ and all $k>|\alpha|$ there is a ghost variable node $\ghostvar$ such that $\alpha \enables_k \ghostvar$. Thus, each ghost variable and ghost lambda node is uniquely defined by its enabler node (possibly itself a ghost node) and associated label $k\geq 1$.
 
 We refer to nodes $\Nodes$ of the computation tree as \defname{structural nodes}
-and $\tilde{\Nodes}$ for the extended set $\Nodes + \ghostvar + \ghostlmd$ where $\ghostvar$ and $\ghostlmd$ denote the sets of ghost nodes uniquely determined by $\Nodes$ together with the enabling relation $\enables$. Nodes in $\ghostlmd$ and $\ghostvar$ are called \defname{ghost nodes}. We write $\NodesLmd^\ghostlmd$ as a shorthand for $\NodesLmd + \ghostlmd$ and $\NodesVar^\ghostvar$ as a shorthand for $\NodesVar + \ghostvar$.
+and $\tilde{\Nodes}$ for the extended set $\Nodes + \ghostvar + \ghostlmd$ where $\ghostvar$ and $\ghostlmd$ denote the sets of ghost nodes uniquely determined by $\Nodes$ together with the enabling relation $\enables$. Nodes in $\ghostlmd$ and $\ghostvar$ are called \defname{ghost nodes}. We write $\ImNodesLmd$ as a shorthand for $\NodesLmd + \ghostlmd$ and $\ImNodesVar$ as a shorthand for $\NodesVar + \ghostvar$.
 
 By convention ghost variables and lambda nodes are assigned arity $0$.
 
@@ -268,7 +280,7 @@ Let $s$ be a justified sequence of nodes.
 
  \item Let $A$ be a subset of nodes in $\Nodes$, we write $s \filter A$ to denote the subsequence of $s$ obtained by keeping only nodes that are in $A$;
 
- \item We will consider the subsequence $s\filter\NodeHjByRoot$ of external nodes (\ie, nodes hereditarily enabled by the root). Observe that if $r_1, \ldots r_n$, $n\geq 1$ are the occurrences of the root in $s$ then it is also given by the projection of $s$ with respect to those occurrences: $s\filter\NodeHjByRoot = s\filter r_1 \filter \ldots \filter r_n$.
+ \item We will consider the subsequence $s\filter\ExtNodes$ of external nodes (\ie, nodes hereditarily enabled by the root). Observe that if $r_1, \ldots r_n$, $n\geq 1$ are the occurrences of the root in $s$ then it is also given by the projection of $s$ with respect to those occurrences: $s\filter\ExtNodes = s\filter r_1 \filter \ldots \filter r_n$.
 \end{itemize}
 \end{definition}
 
@@ -345,7 +357,7 @@ A traversal that does not have any extension is a \defname{maximal traversal}.
 
     \item \rulenamet{App} If $t \cdot @$ is a traversal then so is \Pstr[0.4cm]{t \cdot (at) @  \cdot (a-at,40:0) \alpha} where $\alpha\in\NodesLmd$ is $@$'s $0$th child $\lambda$-node.
 
-    \item \rulenamet{Lam} If $t \cdot \alpha$ is a traversal where $\alpha\in\NodesLmd$ then so is$t \cdot \alpha \cdot n$ where $n$ denotes $\alpha$'s unique child. Furthermore:
+    \item \rulenamet{Lam} If $t \cdot \alpha$ is a traversal where $\alpha\in\NodesLmd$ then so is $t \cdot \alpha \cdot n$ where $n$ denotes $\alpha$'s unique child. Furthermore:
         \begin{compactitem}
             \item \rulenamet{Lam^@} If $n$ is an $@$-node then it has no justifier,
             \item \rulenamet{Lam^{\sf var}} If $n$ is a free variable node then it points
@@ -356,7 +368,7 @@ A traversal that does not have any extension is a \defname{maximal traversal}.
     \item \rulenamet{Lam^\ghostlmd} If
   $\Pstr[0.5cm]{ t \cdot(alpha){\alpha} \cdot
 (n){n} \cdot \ldots \cdot
-(gl-n,40:i){\ghostlmd} \in\travulc}$ for some prefix $t$, $\alpha \in \NodesLmd^\ghostlmd$ and $n \in\NodesVar^\ghostvar$ then
+(gl-n,40:i){\ghostlmd} \in\travulc}$ for some prefix $t$, $\alpha \in \ImNodesLmd$ and $n \in\ImNodesVar$ then
 $$\Pstr[0.5cm]{ t \cdot(alpha){\alpha} \cdot
 (n){n}
 \cdot \ldots \cdot
@@ -366,8 +378,8 @@ $$\Pstr[0.5cm]{ t \cdot(alpha){\alpha} \cdot
 \emph{\bf PROGRAM -- Copy-cat rules}
 \begin{itemize}
 \item \rulenamet{Var} If \Pstr[0.5cm]{t \cdot (m){m} \cdot (alpha){\alpha}
-    \ldots (n-alpha,50:i){n} \in \travulc} for $i>0$, $n \in \NodesVar^\ghostvar$ hereditarily justified by an $@$-node;
-     $m \in\NodesVar^\ghostvar \union \Nodes_@$; and $\alpha \in \NodesLmd^\ghostlmd$ then:
+    \ldots (n-alpha,50:i){n} \in \travulc} for $i>0$, $n \in \ImNodesVar$ hereditarily justified by an $@$-node;
+     $m \in\ImNodesVar \union \NodesApp$; and $\alpha \in \ImNodesLmd$ then:
   $$\Pstr[0.5cm]{ t  \cdot
 (m){m} \cdot (lx){\alpha}  \ldots (x-lx,30:i){n}
     \cdot (letai-m,40:i){\beta}
@@ -380,7 +392,7 @@ $$\Pstr[0.5cm]{ t \cdot(alpha){\alpha} \cdot
 
 \emph{\bf DATA -- Input-variable rules}
 \begin{itemize}
-\item \rulenamet{IVar} If $t \cdot n$ is a traversal where $n \in \NodesVar^\ghostvar$ is hereditarily justified by the root. For every node $m \in \NodesVar^\ghostvar$ occurring in $\oview{t\cdot n}$
+\item \rulenamet{IVar} If $t \cdot n$ is a traversal where $n \in \ImNodesVar$ is hereditarily justified by the root. For every node $m \in \ImNodesVar$ occurring in $\oview{t\cdot n}$
 and every $i\geq1$ we have $t \cdot n \cdot\alpha\in\travulc$ with $\alpha$ pointing to $m$ with label $i$, where:
 \begin{description}[align=right,labelwidth=2cm]
 \item[Concrete] $i\leq|m|$: $\alpha\in\Nodes_\lambda$ is the $i$th child of $m$;
@@ -398,7 +410,7 @@ Some immediate property that can be shown by induction on the rules:
    For any traversal $t$
    \begin{enumerate}
    \item $t$ verifies the alternation condition;
-   \item $t\filter\NodeHjByRoot$ is a valid justified sequence (with respect to the enabling relation $\enables$) verifying the alternation condition.
+   \item $t\filter\ExtNodes$ is a valid justified sequence (with respect to the enabling relation $\enables$) verifying the alternation condition.
    \end{enumerate}
 \end{property}
 
@@ -524,36 +536,47 @@ $x_1 \ldots x_n y_1 \ldots y_n$, the stack obtained after pushing the variables 
 
 \begin{definition}[Core projection]
 \label{def:coreprojection}
-We first define the partial function $\coresymbol \colon \relabjustseqset(M) \longrightarrow \relabjustseqset(M)$ for justified sequences that do not contain any ghost occurrences then extend the notion to all justified sequences.
-
 Let $\overline{y} \in \VarSet^*$ denote a stack of variable names.
-\begin{itemize}
-\item  Let $t\in\relabjustseqset(M)$ denote a justified sequences containing no ghost occurrence. We define $\coresymbol (t)$ by the following inductive definition, where the equality are implicitly pointer-preserving (so that nodes in $t$ have same justifiers as in $\coresymbol(t)$).
-\begin{align*}
-\coresymbol_{\overline{y}} \colon \relabjustseqset(M) & \longrightarrow \relabjustseqset(M) \\
- t\cdot x &\longmapsto \coresymbol_{\epsilon}(t) \cdot x & \mbox{if } x\in\NodesVar,  x\in \NodeHjByRoot \\
- t\cdot x &\longmapsto \coresymbol_{pop_{|x|}(\overline{y})}(t) & \mbox{if } x\in\NodesVar, x\not\in\NodeHjByRoot \\
- t\cdot @ &\longmapsto \coresymbol_{pop_{|@|}(\overline{y})}(t) \\
- t\cdot \lambda \overline{x} & \longmapsto \coresymbol_{\epsilon}(t) \cdot \lambda \overline{x}\overline{y} & \mbox{if } \lambda \overline{x}\in \NodeHjByRoot \\
- t\cdot \lambda \overline{x} & \longmapsto \coresymbol_{\overline{x} \overline{y}}(t) & \mbox{if } \lambda \overline{x}\not\in \NodeHjByRoot \ .
-\end{align*}
+We define the partial function $\coresymbol_{\overline{y}}\colon \relabjustseqset(M) \longrightarrow \relabjustseqset(M)$ on the set of (relabelled) justified sequences by induction on the sequence.
+Let $t \cdot n\in\relabjustseqset(M)$ denote a justified sequence where $t$ is the prefix subsequence and $n$ is the last occurrence.
+\begin{equation*}
+\coresymbol_{\overline{y}}(t\cdot n) =
+\begin{cases}
+\coresymbol_{\epsilon}(t) \cdot n
+    & \mbox{if } n\in\ImNodesVar\inter\ExtNodes \\
+\coresymbol_{pop_{|n|}(\overline{y})}(t)
+    & \mbox{if } n\in(\ImNodesVar\inter\IntNodes)\union\NodesApp \\
+\coresymbol_{\epsilon}(t) \cdot \lambda \overline{x}\overline{y}
+    & \mbox{if } n\in\NodesLmd\inter\ExtNodes, n \mbox{ labelled } \lambda\overline{x}\\
+\coresymbol_{\epsilon}(t) \cdot\lambda\overline{y}
+    & \mbox{if } n\in\ghostlmd\inter\ExtNodes \\
+\coresymbol_{\overline{x} \overline{y}}(t)
+    & \mbox{if } n\in\NodesLmd\inter\IntNodes, n \mbox{ labelled } \lambda\overline{x} \\
+\coresymbol_{\overline{y}}(t)
+    & \mbox{if } n\in\ghostlmd\inter\IntNodes \ .
+\end{cases}
+\end{equation*}
+The above definition is pointer-preserving, so that the justifiers in $\coresymbol(t\cdot n)$ are defined to be the corresponding occurrences to the justifiers in $t \cdot n$.
 
-\item We extend $\coresymbol$ to justified sequences containing ghost nodes as follows:
-\todo{This definition does not work anymore since we no longer assume that $t$ is a traversal.}
-\begin{align*}
-\coresymbol_{\overline{y}} \colon \relabjustseqset(M) & \longrightarrow \relabjustseqset^\eta(M) \\
- t &\longmapsto \coresymbol_{\overline{y}}(\eta_t(t))
-\end{align*}
-where $\relabjustseqset^\eta(M)$ is the union of the sets of justified sequences over eta-expansions of $M$ with respect to all its possible traversals:
-$$\relabjustseqset^\eta(M) = \Union_{t\in\travulc(M)} \relabjustseqset(M^t) \ .$$
-\end{itemize}
+%%%% Old definition relaying on the eta-expansion of M
+% \item We extend $\coresymbol$ to justified sequences containing ghost nodes as follows:
+% \begin{align*}
+% \coresymbol_{\overline{y}} \colon \relabjustseqset(M) & \longrightarrow \relabjustseqset^\eta(M) \\
+% t &\longmapsto \coresymbol_{\overline{y}}(\eta_t(t))
+%\end{align*}
+%where $\relabjustseqset^\eta(M)$ is the union of the sets of justified sequences over eta-expansions of $M$ with respect to all its possible traversals:
+%$$\relabjustseqset^\eta(M) = \Union_{t\in\travulc(M)} \relabjustseqset(M^t) \ .$$
 
-Given a traversal $t$, we call $\coresymbol_\epsilon(t)$ the \defname{core} of $t$ which we abbreviate as $\core{t}$.
-We define the \defname{core P-view} as $\pview{\core{t}}$, the P-view of the traversal core.
-
+We call $\coresymbol_\epsilon(t)$ the \defname{core} of $t$ which we abbreviate as $\core{t}$. The P-view of the core $\pview{\core{t}}$ is called the \defname{core P-view} of $t$.
 \end{definition}
 
-The stack parameter $\overline{y}$ from the above definition holds the variables in the abstractions $\lambda \overline{y}$ that gets prepended to external lambda nodes. We will call this parameter the \defname{stack of pending lambdas}. Hence, the \emph{core projection} can be defined more succinctly, in words, as the sequence obtained from the traversal by removing internal nodes and preprending to each external lambda node's label, the stack of \emph{pending lambdas} from that point to the next external occurrence.
+The suffix parameter $\overline{y}$ in the definition of $\coresymbol$, is used as an accumulator for the list of variables forming the abstractions $\lambda \overline{y}$ that eventually gets prepended to the last external lambda nodes. We call it the \defname{stack of pending lambdas}. Hence, \emph{core projection} can be defined more succinctly as the sequence obtained by removing internal nodes and preprending to each external lambda node's label, the stack of \emph{pending lambdas} between that point to the next external node.
+
+Since the core of a justified sequence only contains external nodes it follows that $\coresymbol$ is idempotent.
+
+\begin{example}Take the term $\lambda w . (\lambda x y .x) z$ and consider traversal $t = \lambda w\cdot @ \cdot \lambda x y\cdot x\cdot\lambda \cdot z$.
+    Then $\coresymbol(t) = \lambda wy \cdot z$.
+\end{example}
 
 \subsection{Imaginary traversals subsume STLC traversals}
 
@@ -737,10 +760,10 @@ The Game Semantics correspondence explains why traversals can be infinite: In th
 
 % \begin{definition}[Context-affine traversals]
 % For any traversal $t$ we consider the set of triplets defining all possible lambda nodes enabled by variable nodes in the O-view of $t$:
-% $$ E(t) = \left\{ (m, k, \alpha) \in \NodesVar^\ghostvar\times\nat^1\times \NodesLmd^\ghostlmd |\ \mbox{$m$ occurs in $\oview{t}$ and $m\enables_k\alpha$} \right\}
+% $$ E(t) = \left\{ (m, k, \alpha) \in \ImNodesVar\times\nat^1\times \ImNodesLmd |\ \mbox{$m$ occurs in $\oview{t}$ and $m\enables_k\alpha$} \right\}
 % $$
 % and its subset of node whose justification pointer is already present in the O-view:
-% $$ J(t) = \left\{ (m, k, \alpha) \in \NodesVar^\ghostvar\times\nat^1\times \NodesLmd^\ghostlmd
+% $$ J(t) = \left\{ (m, k, \alpha) \in \ImNodesVar\times\nat^1\times \ImNodesLmd
 % |\ \mbox{$\alpha$ is justified by $m$ in $\oview{t}$ with label $k$} \right\}
 % $$
 
@@ -749,7 +772,7 @@ The Game Semantics correspondence explains why traversals can be infinite: In th
 % \infrule[$\rulefont{IVar}_\affine$]
 %      {
 %             t = t_1 \cdot m \cdot t_2 \in \travsetaffine
-%             \andalso t^\omega \in \NodeHjByRoot \inter \NodesVar
+%             \andalso t^\omega \in \ExtNodes \inter \NodesVar
 %             \andalso (m,k,\alpha) \in E(t) \setminus J(t)
 %             \andalso k \geq 1
 %      }
@@ -774,7 +797,7 @@ input-variable rule \rulenamet{IVar} is restricted to be necessarily the last no
 We will use the subscript `${}_\branching$' to refer to the rule system thus obtained. Using a `derivation rule'-based presentation, the input variable rule can thus be stated follows:
 \infrule[$\rulefont{IVar_\branching}$]
      {t \cdot n \in\travsetbr
-      \andalso n \in\NodeHjByRoot \inter\NodesVar
+      \andalso n \in\ExtNodes \inter\NodesVar
       \andalso n \enables_i \alpha
       \andalso i \geq 1
      }
@@ -789,7 +812,7 @@ The branching restriction prevents the context from calling the same parameter t
 
 \begin{property}
 \label{prop:core_truncation_at_externallambda}
-Let $t\in\travulc$ be a traversal which does not contain any ghost occurrence, and $m$ be an occurrence in $t$ of an external $\lambda$-node (\ie, $m \in \NodesLmd\inter\NodeHjByRoot$). Then $\core{t_{<m}} = \core{t}_{<m}$.
+Let $t\in\travulc$ be a traversal which does not contain any ghost occurrence, and $m$ be an occurrence in $t$ of an external $\lambda$-node (\ie, $m \in \NodesLmd\inter\ExtNodes$). Then $\core{t_{<m}} = \core{t}_{<m}$.
 \end{property}
 \begin{proof}
 By an easy induction on $t$ using the fact that when recursively calculating $\coresymbol(t)$, a lambda node hereditarily enabled by the root resets the stack of pending lambdas.
@@ -804,18 +827,18 @@ Let $t\in\travulc$ and let's first assume that $t$ does not contain any ghost oc
 $\pview{\core{t}} \equiv \pview{\core{u}}$.
 We do a case analysis on the last node $t^\omega$ of $t$.
 \begin{itemize}
-\item $t^\omega\in \NodeHjByRoot$: Suppose $t^\omega$ is a variable or an $@$ node then we can conclude immediately from the induction hypothesis on $t_{<t^\omega}$ and using the rules \rulenamet{Lmd} of $\travsetnorm$.
+\item $t^\omega\in \ExtNodes$: Suppose $t^\omega$ is a variable or an $@$ node then we can conclude immediately from the induction hypothesis on $t_{<t^\omega}$ and using the rules \rulenamet{Lmd} of $\travsetnorm$.
 
 Suppose $t^\omega$ is a lambda node. If it has no justifier then it is the root in which case we conclude by taking  $u=t=t^\omega$. Otherwise let $m$ denote $t^\omega$'s justifier in $t$. By the I.H.~on $t_{\leq m}$ there is $u' \in \travsetnorm$ such that $\core{u'} = \core{t_{\leq m}}$. Take $u = u' \cdot t^\omega$ where $t^\omega$ points to its immediate predecessor $m$. Then $u$ is clearly a $\travsetnorm$-traversal by rule \rulenamet{IVar} and:
 \begin{align*}
 \pview{\core{u}} &= \pview{\core{u'}} \cdot t^\omega & \mbox{Def.~of $\coresymbol$}\\
  &= \pview{\core{t_{\leq m}} \cdot t^\omega} & \mbox{By I.H.~on $t_{\leq m}$}\\
- &= \pview{\core{t}_{\leq m} \cdot t^\omega} & \parbox[t]{8cm}{By Prop.~\ref{prop:core_truncation_at_externallambda} since $m$ is necessarily followed in $t$ by a $\lambda$-node in $\NodeHjByRoot$.}
+ &= \pview{\core{t}_{\leq m} \cdot t^\omega} & \parbox[t]{8cm}{By Prop.~\ref{prop:core_truncation_at_externallambda} since $m$ is necessarily followed in $t$ by a $\lambda$-node in $\ExtNodes$.}
 \end{align*}
 Now because $m$ justifies $t^\omega$, by Def.~of P-view, \emph{up to renaming of lambda variables} the sequences $\pview{\core{t}_{\leq m} \cdot t^\omega}$ and $\pview{\core{t}}$ are equal: $\pview{\core{t}_{\leq m} \cdot t^\omega} \equiv \pview{\core{t}}$.
  But because $m$ is a variable node, its label is kept untouched by the transformation $\coresymbol$ and therefore the equality holds.
 
-\item $t^\omega\not\in \NodeHjByRoot$: Let $n$ be the last occurrence in $t$ that is in $\NodeHjByRoot$, and let $m_1 \ldots m_q$, $q>0$ be the occurrences of internal nodes following $n$ in $t$ (so that $m_q = t^\omega$). By definition of the traversal rules, a variable in $\NodeHjByRoot$ is necessarily followed by a lambda node in $\NodeHjByRoot$, therefore $n$ is necessarily a lambda node. By definition of $\coresymbol$, $n$ is therefore also the last occurrence in $\core{t}$ therefore $\core{t} = \core{t}_{\leq n}$.
+\item $t^\omega\not\in \ExtNodes$: Let $n$ be the last occurrence in $t$ that is in $\ExtNodes$, and let $m_1 \ldots m_q$, $q>0$ be the occurrences of internal nodes following $n$ in $t$ (so that $m_q = t^\omega$). By definition of the traversal rules, a variable in $\ExtNodes$ is necessarily followed by a lambda node in $\ExtNodes$, therefore $n$ is necessarily a lambda node. By definition of $\coresymbol$, $n$ is therefore also the last occurrence in $\core{t}$ therefore $\core{t} = \core{t}_{\leq n}$.
 But \emph{up to relabelling}, $\core{t}_{\leq n} = \core{t_{\leq n}}$; more precisely, $\core{t}_{\leq n}$ is obtained from $\core{t_{\leq n}}$
 by pre-pending to $n$'s label the stack of pending lambdas of $t_{>m}$ (the internal nodes following $n$ in $t$). Applying the induction hypothesis on $t_{\leq n}$ gives $\core{t_{\leq n}} = \core{u'}$ for some $u' \in \travsetnorm$.
 To conclude it therefore suffices that to show that $u = u' \cdot m_1 \ldots m_q$ is also a traversal of $\travsetnorm$.
@@ -945,7 +968,7 @@ Intuitively, after a sufficiently large number of eta-expansions, we are guarant
 We call \defname{strand} of a traversal $t$, any sub-sequence of consecutive nodes from $t$,
 with even length, starting with a lambda nodes and finishing with a variable node both hereditarily justified by the root, and such that all the occurrences in-between are hereditarily justified by an application node (\ie, not by the root).
 
-From the parity property of traversals, a strand consists of alternations of lambda nodes and variable/application nodes. It is convenient to represent a strand as follows for some $k\geq 1$ where for $j$ ranging from $k$ down to $1$, $\alpha_j$ is a lambda node in $\NodesLmd^\ghostlmd$ and $n_j$ is a variable/application node in $\NodesVar^\ghostvar$:
+From the parity property of traversals, a strand consists of alternations of lambda nodes and variable/application nodes. It is convenient to represent a strand as follows for some $k\geq 1$ where for $j$ ranging from $k$ down to $1$, $\alpha_j$ is a lambda node in $\ImNodesLmd$ and $n_j$ is a variable/application node in $\ImNodesVar$:
 
 $$ t = \cdots \underline{\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ \underline{n_1} \cdots $$
 
@@ -957,7 +980,7 @@ For any occurrence $n$ in $t$ that is hereditarily justified by the root, we cal
 \begin{definition}[Traversal arity threshold]
 \label{dfn:arity-threshold}
 Let $t$ be traversal ending with a variable node hereditarily justified by the root.
-Let $\underline{\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ \underline{n_1}$ be the strand of $t$ ending at $t^\omega$, (so that $n_1 = t^\omega$) for some $k>0$  where $\alpha_j \in \NodesLmd^\ghostlmd$, and $n_j \in \NodesVar^\ghostvar$ for all $1\leq j\leq k$.
+Let $\underline{\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ \underline{n_1}$ be the strand of $t$ ending at $t^\omega$, (so that $n_1 = t^\omega$) for some $k>0$  where $\alpha_j \in \ImNodesLmd$, and $n_j \in \ImNodesVar$ for all $1\leq j\leq k$.
 
 We define the \defname{arity threshold} of $t$ as:
 \begin{align*}
@@ -1107,7 +1130,7 @@ This weaving property suggests that traversals in which the variable rule exceed
 We define the set of \defname{normalizing traversals}, noted $\travsetnorm$ as the subset of branching traversals defined by the rules of Def.~\ref{dfn:branching_traversals} where the index $i$ in rule \rulenamet{IVar} is bounded by the arity threshold of the traversal.
 \infrule[$\rulefont{IVar_\normalizing}$]
      { t \cdot n \in\travsetnorm
-     \andalso n \in\NodeHjByRoot\inter\NodesVar^\ghostvar
+     \andalso n \in\ExtNodes\inter\ImNodesVar
      \andalso n \enables_i \alpha
      \andalso 1 \leq i \leq\arth(t)}
      {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:i){\alpha}}\in\travsetnorm}
@@ -1418,7 +1441,7 @@ Suppose $t$ is infinite then from the above strand decomposition we can construc
 
 
 %For any variable occurrence $x$ involved in a generalized redex $(\lambda x, A)$ for some subterm $A$, we will write $arg(x)$ to denote the root node of the $A$ in the term tree.
-%For any node $m\in\Nodes_@$ and index $i\geq0$ we will write $Child(m,i)$ to denote the $i$th child of $m$.
+%For any node $m\in\NodesApp$ and index $i\geq0$ we will write $Child(m,i)$ to denote the $i$th child of $m$.
 \begin{lemma}[Generalized redex argument lookup]
 \label{lemma:genredex_lookup}
 Let $x$ be a variable occurrence involved in a generalized redex in $gr(M)$.
@@ -1496,11 +1519,11 @@ Consider the state transition system $(X, R, \rightarrow)$ defined by:
     \item \emph{States}: $X$ denotes the disjoint union $\travset^\dagger(M) + \travset^\dagger(N)$.
 
     \item \emph{Binary relation $R\subseteq X \times X$} defined as follows. For any traversals $t, u \in X$:
-    $$ t~R~u  \ \iff \ \left{\begin{cases}
+    $$ t~R~u  \ \iff \ \begin{cases}
         t\in\travset^\dagger(M)\\
          u\in\travset^\dagger(N) \\
          \phi(\coresymbol_\alpha(u)) = \coresymbol_\alpha(t) \mbox{ for any  variable name list $\alpha$}.
-    \end{cases}\right.
+    \end{cases}
     $$
 
     \item \emph{Transitions} For any traversals $t, t' \in \travset^\dagger(M)$ we write $t \rightarrow_M t'$ just if $t'$ is a minimal extension of $t$ that remains in $\travset^\dagger(M)$: that is $t'$ extends $t$ using rules from Table~\ref{tab:normalizing_trav_rules} and all the occurrences following $t$ but the last node are either ghost nodes or internal nodes. The relation $\rightarrow_N$ is defined identically.
@@ -1602,7 +1625,7 @@ By definition of $t~R~u$, the last node in $u$ is necessarily the reverse image 
 (B2) Suppose that $u \rightarrow_N u'$. Since $u$ terminates with application node $@_x$, by rule \rulenamet{App} we necessarily have $u' = u \cdot \lambda\overline{y_2}$.
 
 Let $@_j$ and $\lambda\overline{\xi_j}$ for $1\leq j\leq a$ denote the application and lambda nodes in the spinal descent from $@_a$ to $x$'s binder so that $\lambda\overline{\xi_1}$ is $x$'s binder and $@_1$ its parent.
-By Lemma~\ref{lemma:genredex_lookup}, $@_a$ is precisely the lowest application node in the spinal descent from $@_a$ to $\lambda\overline{x}$ verifying $|@_a| >  i_a$, where $i_a = k + \sum_{1\leq j< a} (|\lambda\overline{\xi_j}| - |@_j|)$. This definition matches precisely with the `pending argument lookup' algorithm implicitly implemented by the rules \rulenamet{Lmd} and \rulenamet{Var}: with exactly $i_a$ instantiations of those two rules, the traversal $t$ gets extended by $2(i_a-1)$ ghost nodes followed by the root node of $A$ in $M$: $t &\rightarrow_M t'$ where $t' = t \cdot v \cdot \lambda\overline{y}$
+By Lemma~\ref{lemma:genredex_lookup}, $@_a$ is precisely the lowest application node in the spinal descent from $@_a$ to $\lambda\overline{x}$ verifying $|@_a| >  i_a$, where $i_a = k + \sum_{1\leq j< a} (|\lambda\overline{\xi_j}| - |@_j|)$. This definition matches precisely with the `pending argument lookup' algorithm implicitly implemented by the rules \rulenamet{Lmd} and \rulenamet{Var}: with exactly $i_a$ instantiations of those two rules, the traversal $t$ gets extended by $2(i_a-1)$ ghost nodes followed by the root node of $A$ in $M$: $t \rightarrow_M t'$ where $t' = t \cdot v \cdot \lambda\overline{y}$
 and $v$ is a \emph{pending argument lookup} consisting of internal ghost nodes whose justifiers belong to a spinal descent in $M$. The node $\lambda\overline{y}$ is also internal since its parent is an $@$-node. Consequently for any sequence of variable names $\alpha$ we have:
 \begin{align*}
 \coresymbol_\alpha(t') &= \coresymbol_\alpha(t \cdot v \cdot \lambda\overline{y}) & \mbox{(Def.~of $t'$)} \\
@@ -1713,7 +1736,7 @@ detailed description of the normalization procedure with the steps involved in r
 
 \FORALL{node $n \in P$ (by depth-first enumeration)}
     \STATE Let $(l,b,i) = L(n)$
-    \IF{$o \in \NodesVar \union \NodesLmd \union \Nodes_@$}
+    \IF{$o \in \NodesVar \union \NodesLmd \union \NodesApp$}
         \STATE $L'(n) \leftarrow l$
         \COMMENT{It's either $@$, some variable name $x$, or $\lambda x_1 \ldots x_m$ for $m\geq 0$}
     \ELSIF{$o = \ghostlmd$}
@@ -1748,7 +1771,7 @@ detailed description of the normalization procedure with the steps involved in r
 \infrule[$\rulefont{Lam}^@_\normalizing$]
      {\istraversal t \cdot \alpha
      \andalso \alpha\in\NodesLmd
-     \andalso \child(\alpha) \in \Nodes_@ }
+     \andalso \child(\alpha) \in \NodesApp }
      {\istraversal t \cdot \alpha \cdot \child(\alpha)\andalso \mbox{$\child(\alpha)$ has no pointer}}
 
 \infrule[$\rulefont{Lam}^{\sf var}_\normalizing$]
@@ -1770,7 +1793,7 @@ detailed description of the normalization procedure with the steps involved in r
          \ldots
         (gl-m,40:i){\ghostlmd}\cdot (al-alpha,40:{|\alpha| + i - |m|}){\ghostvar}
            }
-        \andalso (\alpha \in \NodesLmd^\ghostlmd, m \in\NodesVar^\ghostvar)
+        \andalso(\alpha\in\ImNodesLmd, m \in\ImNodesVar)
     }
 
 \emph{\bf PROGRAM - Copy-cat rules}
@@ -1779,7 +1802,7 @@ detailed description of the normalization procedure with the steps involved in r
     {
         \istraversal \Pstr[0.5cm]{t \cdot m \cdot (alpha){\alpha}
         \ldots (n-alpha,50:i){n}}
-        \andalso n \in \NodesVar^\ghostvar \setminus \NodeHjByRoot
+        \andalso n \in \ImNodesVar \setminus \ExtNodes
         \andalso m \enables_i \beta
         \andalso i>0
     }
@@ -1788,18 +1811,18 @@ detailed description of the normalization procedure with the steps involved in r
         (m){m} \cdot (a){\alpha}  \ldots (n-a,30:i){n}
             \cdot (letai-m,35:i){\beta}
             }
-        \andalso (m \in \NodesVar^\ghostvar \union \Nodes_@, \alpha,\beta \in \NodesLmd^\ghostlmd)
+        \andalso (m \in \ImNodesVar\union\NodesApp, \alpha,\beta\in\ImNodesLmd)
     }
 
 \emph{\bf DATA - Input-variable rules}
 \infrule[$\rulefont{IVar_\normalizing}$]
      {\istraversal t \cdot n
-      \andalso n \in \NodesVar^\ghostvar \inter \NodeHjByRoot
+      \andalso n \in \ImNodesVar\inter\ExtNodes
       \andalso n \enables_i \alpha
-      \andalso 1\leq i \leq \arth(t)
+      \andalso 1\leq i \leq\arth(t)
      }
-     {\istraversal \Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,30:i){\alpha}}
-     \andalso (\alpha \in \NodesLmd)
+     {\istraversal\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,30:i){\alpha}}
+     \andalso(\alpha\in\NodesLmd)
      }
 
 where $t, u, v$ range over (sub-sequences of) justified sequences of nodes.
@@ -1894,7 +1917,7 @@ which means that the normal form is of the form $\lambda y s \ldots \cdot s (y R
 
 \item What should be the value of $q$? In other words, how many more $k$ do we need to look at?  The answer: we need to keep iterating on $k$ until the point where applying the traversal rules will only produce ghost variables and ghost lambda-nodes! Because there is a finite number of nodes in the computation tree, the variable node arities are bounded. Therefore for high enough index $k$, the eta-expansion case from rule \rulenamet{Var} will never be met:
         after applying rule \rulenamet{IVar} on $t_\epsilon$, all subsequent extensions of the traversal will be constructed using repeated applications of rule $\rulename{Lam^\ghostvar}$ or the eta-expanded case of rule $\rulename{Var}$.
-     The upper-bound $q$ for $k$ is precisely given by the \emph{arity threshold} of the traversal $t_\epsilon$ as defined in \ref{dfn:arity-threshold}.
+     The upper-bound $q$ for $k$ is precisely given by the \emph{arity threshold} of the traversal $t_\epsilon$ as defined in~\ref{dfn:arity-threshold}.
      Here we have
      \begin{align*}
      \arth(t_\epsilon)
@@ -2038,7 +2061,7 @@ The two core P-views give the two maximal paths in the beta-normal form of $M$:
 \item $\pview{\core{t_1}} = \Pstr[0.7cm]{(n0){\lambda }\ (n1-n0){y_1}\ (n2-n1){\lambda }\ (n3-n2){{\ghostvar^{1}}}\ (n4-n3){{\ghostlmd^{1}}}\ (n5-n0){y2}\ }$
 \item $\pview{\core{t_2}} = \Pstr[0.7cm]{(n0){\lambda }\ (n1-n0){y_1}\ (n2-n1){{\ghostlmd^{2}}}\ (n3-n0){y_2}\ }$
 \end{itemize}
-Thus: $\betanf{M} = \lambda x . y_1 (\lambda  z.z\ y_2) y_2$.
+Thus: $\betanf{M} = y_1 (\lambda  z.z\ y_2) y_2$.
 \end{example}
 
 
