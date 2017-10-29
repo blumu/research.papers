@@ -504,7 +504,7 @@ We extend it to ghost nodes by mapping ghost occurrences in $t$ to the correspon
 (ii) By induction on $v$, applying to $u$ each rule that is applied to $v$. For the case \rulenamet{Var} and \rulenamet{IVar}, if the index $i$ is greater than the arity of the node $m$ in $M$ then the lambda node from $v$ gets replaced by a ghost lambda node in $u$.
 
 (iii) By (i) the function is well defined, it is injective by definition, and by (ii) it is surjective.
-\todo{re-check this proof, in particular (iii)}
+\todo{Minor: re-check this proof, in particular (iii)}
 \end{proof}
 
 \begin{example}
@@ -577,6 +577,8 @@ Since the core of a justified sequence only contains external nodes it follows t
 \begin{example}Take the term $\lambda w . (\lambda x y .x) z$ and consider traversal $t = \lambda w\cdot @ \cdot \lambda x y\cdot x\cdot\lambda \cdot z$.
     Then $\coresymbol(t) = \lambda wy \cdot z$.
 \end{example}
+
+\todo{Minor: Add an example of core projection involving an external ghost lambda nodes.}
 
 \subsection{Imaginary traversals subsume STLC traversals}
 
@@ -1677,8 +1679,7 @@ We can now use Property (B1) and (B2) to conclude that $\phi$ defines a bijectio
 We show that $\core{\travsetnorm}$ is an invariant that is preserved by this term reduction sequence: we prove by induction on $q$ that $\core{\travsetnorm(M_{q})}\cong\core{\travsetnorm(M)}$. For $q=1$ we have $M = M_q = N$ so the result holds trivially.
 
 Let $q\geq 1$.
-\todo{
-explain where the relabelling done in $\coresymbol$ is used during trivial reduction of the qnf.
+\todo{Explain where the relabelling done in $\coresymbol$ is used during trivial reduction of the qnf.
 }
 
 By Proposition~\ref{prop:qnf_nf}, the \emph{qnf} trivially reduces to its beta-nf. It's immediate to show
@@ -2325,10 +2326,11 @@ We have:
 \end{enumerate}
 \end{theorem}
 \begin{proof}
-(i) TODO\todo{Proof of (i) is a variation of Danos-Regnier proof for the same result for head-linear reduction.}
+(i) \todo{Proof of (i) is a variation of Danos-Regnier proof for the same result for head-linear reduction.}
+
 (ii) The idea consists in reducing the redex `inside-out' from left to right. By Proposition \ref{prop:qnf_nf}(ii), each reduction is trivial and it is easy to see that  $lloc$ is preserved by trivial reduction, therefore each term in the reduction sequence is in \emph{qnf}. The last term in the sequence has no redex therefore it's in beta-normal form.
 
-(iii) TODO: Hopefully the proof of (ii) should not involve state machine/stack/environments, ...
+(iii) \todo{Hopefully the proof of (ii) should not involve state machine/stack/environments, ...}
 \end{proof}
 
 \begin{definition}[Leftmost redex sequence]
@@ -2389,121 +2391,8 @@ In 2004, Danos and Regnier~\cite{danos-head} establish the connection between Ga
 
 Head linear reduction is  a non-standard reduction strategy for the lambda calculus and shed some light studies the connection with Game Semantics.
 
-
-
-\appendix
-
-\section{Notes for Neil and Daniil}
-
-Here are some thoughts on comparing the following three approaches
-based on the conversations Neil and I had during his visit to MSR:
-(i) Berezun-Jones (BJ) traversals,
-(ii) Danos-Regnier's Pointer Abstract Machine (PAM) state runs,
-(iii) Blum's game-semantic-inspired imaginary traversals for ULC introduced in this note.
-
-\subsubsection{Normalization}
-
-\begin{itemize}
-  \item Danos-Regnier: PAM implements head-linear reduction. This reduction does not itself normalize the term, it only yields the head-normal form of the term! The paper does not clearly indicate any method to normalize the term based solely on head-linear reduction.
-      In particular in the PAM transition of Section 5.2, step 2, if the hoc variable is free then the machine stops: no transition applies.
-  \item Berezun-Jones: Although not explicitly explained in the paper. Daniil and Neil have a ``read-out procedure'' to reconstruct the term from the traversal. The procedure is based on rewriting rules applied to the traversals.
-  \item Blum: Normalization is performed by exploring all possible paths in the beta-normal form of the term. The algorithm generates one maximal traversal per path in the tree representation of the term. The term can then be uniquely recreated (up to variable naming) from those paths.
-\end{itemize}
-
-\subsubsection{Traversal/Run structure}
-\begin{itemize}
-\item Danos-Regnier: State run. Each state has three components: one pointer, a reference to a variable node, a reference to a subterm.
-\item Berezun-Jones: Traversals of `tokens' with two pointers (control and binding pointers). A tokens is a reference to a node in the AST of the lambda term.
-\item Blum: Traversals are sequences of node with one back pointer. Nodes can either be structural nodes from the `compact' AST of the term (where consecutive lambda nodes and application nodes are bundled together) or imaginary `ghost' nodes. Each node occurrence except the first one has exactly one justification pointer.
-\end{itemize}
-
-\subsubsection{Binding pointers -- PAM pointers -- P-view}
-
-Neil-Daniil's binding pointers represent the ``head $\lambda$-list'' notion in Danos-Regnier paper (page 3): it gives the list of lambda nodes encountered from the variable all the way to the root.
-
-\begin{itemize}
-\item Danos-Regnier: The De Bruijn index of a variable is used to find the binder in the head $\lambda$-list. If index is $k$ (by Lemma 11) the binder can be retrieved by following $k$ pointers in the PAM states. The notion of ``subterm chain'' of a variable correspond to the notion of P-view in Game Semantics.
-
-\item  Berezun-Jones: The De Bruijn index is used to determine how many binding (green) pointers to follow to reach the occurrence of the binder in the traversal.
-
-\item Blum: Traversals are game-semantics inspired (ala Ong) and in particular verify the alternation property. To that end, consecutive binders are bulked together in a single binder node. Given a variable occurrence, its `bulk' binder is located by reading the P-view backward by $k'$ iterations where $k'$ is statically determined as the distance between the variable occurrence and its binder in the computation tree. The label associated with the link determines which exact variable in the `bulk lambda' binds the variable.
-\end{itemize}
-
-\subsubsection{Control pointers -- PAM -- }
-
-\subsubsection{Retrieving application operands: Control pointers -- PAM's redex argument }
-\begin{itemize}
-  \item Danos-Regnier: the operands of a `prime redex' is statically defined from the term's expression (the `argument of a hoc variable', in Section 5.1)
-
-  \item Berezun-Jones: control pointers are used to associate operators to the corresponding operand in an application: for instance if $@_1 (\lambda x .M) N$ is a redex of the tree then any occurrence of $\lambda x$ will point to some previous occurrence of $@_1$ in the traversal. The token representing the operand $N$ can then be statically determined from the AST of the tree.
-      Control pointers always point to $@$ tokens.
-
-  \item Blum: There are two cases:
-     \begin{itemize}
-     \item Structural operands: Same as Ong's traversals: pretty much the same as Berezun-Jones with the only technical difference that consecutive lambda and applications nodes are `bulked' together. In particular, `bulk lambda' nodes point to their parent node (either a variable or an application node $@$). If the variable $x$ of the redex is the $i$th bound variable in the bulk lambda, then the operand is obtained by fetching the $i$th child of the bulk lambda's parent node.
-    \item Eta-expanded operands: When an operand is missing, a ghost lambda node is first introduced with rule \rulenamet{Var} (corresponding to the variable obtained after eta-expanding the operator). Then through repeated application of rule
-        \rulenamet{Lam^\ghostlmd} and \rulenamet{Var}, either a structural node gets eventually materialized, which then represents the operand of the application; or the traversal reaches a ghost variable hereditarily justified by the root. In the latter case, a new variable gets created through eta-expansion to represent the missing operand.
-
-        \emph{Note}: the ghost materialization loop implemented by rule \rulenamet{Lam^\ghostlmd} and \rulenamet{Var} proceeds by calculating the quantity ``$|\alpha|+i-|m|$'' at each iteration which is the exact same quantity ($r-a+l$) used in step 2. (b) of the PAM transition~\cite{danos-head}, the ``price to pay for having no stacks or environments''.
-    \end{itemize}
-
-\end{itemize}
-
-
-\subsubsection{Flag + Control pointers -- PAM's ``price to pay''  -- Ghost nodes}
-\begin{itemize}
-  \item Berezun-Jones: Semantics 2, 3, 4 and 5 from section 3 of~\cite{JonesBerezunLLL} involve a `flag' boolean parameter that indicates the context of the application (either weak or strong evaluation).
-  \item Danos-Regnier: The `flag' must somehow be present in the iterative loop in step 2(b) of the PAM transition--the ``price to pay for having no stacks or environments'' (Danos-Regnier).
-  \item Blum: The `flag' must be somehow be hidden in the iterative ghost materialization algorithm implemented by the \rulenamet{Var} and \rulenamet{Lam^\ghostlmd} rules. (The ghost nodes being the equivalent of the ``price to pay'' from Danos-Regnier's paper.)
-\end{itemize}
-
-
-\subsubsection{Converting other traversals to the imaginary ULC traversals}
-
-\paragraph{From Berezun-Jones}
-
-\begin{enumerate}
-\item Remove single application token $@$ that are immediately followed by a variable.
-\item Merge consecutive application nodes in the traversal, preserve all control pointers pointing to them. Assign link label $0$ if the source of the pointer is in operator position of the $@$, and $i >0$ if is in operand position of the $i$th merged $@$.
-
-Remove all binding and control pointers starting from the $@$ tokens themselves.
-
-\item Merge consecutive lambda tokens $\lambda x_1$, \ldots, $\lambda x_n$, $n>1$ in the traversals into single lambda nodes $\lambda x_1 \ldots x_n$.
- Binding pointers:
- \begin{itemize}
- \item For any binding pointer from some variable token $x$ in the traversal, pointing to one of the merged lambda nodes, replace the link as follows: if $x$ has deBrujin index $i$ then follow $i$ binding pointer in the original sequence. This will lead to some lambda token $\lambda x$. Make the link points instead to the merged lambda node containing that $\lambda x$. Assigned link label $i$ where $i$ is the index of the bound variable in the merged list of $x_1 \ldots x_n$.
- \item Remove all the binding pointers from either lambda or $@$ tokens that are pointing to any of the merged lambda nodes.
- \item Remove all binding pointers from the merged lambda nodes to other nodes.
- \end{itemize}
- Control pointers: preserve only the control pointer associated with the first lambda in the sequence of lambda tokens.
-
-\item Add dummy lambdas $\lambda$ and ghost nodes: for each pair $(x,y)$ of consecutive variable tokens $x$ and $y$, processing the traversal from left to right, reconstruct the ``missing'' dummy and ghost nodes between $x$ and $y$ by applying rules \rulenamet{Lam^\normalizing} and \rulenamet{Var^\normalizing}.
-\\
-
-{\bf IT REMAINS TO PROVE THAT}: by applying those rules repeatedly starting from $x$, we necessarily get back to variable nodes $y$ with the expected justification pointer. The proof will involve formalizing the relationship between (i) flag  and control pointers (ii) ghost nodes.
-\end{enumerate}
-
-\paragraph{From Danos-Regnier}
-
-Take a substitution sequence of a PAM: $((z_0,A_1), (z_1,A_2) \ldots )$.
-(See my handwritten notes.)
-
-\subsubsection{Correctness}
-\paragraph{Blum}
-The soundness and termination proof is mainly based on first principles. Not a game semantic argument.
-
-Proof idea: ``traversals implement left-most linear reduction''.
-The proof sketch:
-\begin{itemize}
-\item Show that `leftmost linear reduction' yields the `quasi normal form'.  (Theorem~\ref{thm:soundness_leftmostlinearred})
-\item Observe that if $M$ is beta-normal then (trivially) its set of traversal cores P-views is precisely the set of paths in the tree representation of M
-\item If $M$ reduces to $N$ using the leftmost linear reduction then the traversal cores P-views of $N$ are isomorphic to the traversals core P-views of $M$.
-\item Reducing a trivial redex preserves (modulo some traversal prefix) the set of traversals.
-The interesting part of the proof will be to show how the ghost nodes gradually ``materialize'' after each step of the linear reduction, and how the arity threshold gives the right bound for limiting eta-expansion.
-\end{itemize}
-
-\paragraph{From Danos-Regnier}
-Proof based on environments.
+%\appendix
+%\input{notes_neildaniil.tex}
 
 \bibliographystyle{abbrv}
 \bibliography{ulctrav}
