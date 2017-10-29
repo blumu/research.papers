@@ -1533,7 +1533,7 @@ Consider the state transition system $(X, R, \rightarrow)$ defined by:
 We show that $R$ defines a bisimulation over $X$, that is
 \begin{itemize}
     \item (B1) for all $t_1, t_2 \in \travset^\dagger(M), u_1 \in \travset^\dagger(N)$ with $t_1~R~u_1$ and $t_1 \rightarrow_M t_2$ there is $u_2 \in \travset^\dagger(N)$ such that $u_1 \rightarrow_N u_2$ and $t_2~R~u_2$.
-    \item (B2) for all $t_1 \in \travset^\dagger(M), u_1, u_2 \in \travset^\dagger(N)$ with $t_1~R~u_1$ and $u_1 \rightarrow_N t_2$ there is $t_2 \in \travset^\dagger(M)$ such that $t_1 \rightarrow_N t_2$ and $t_2~R~u_2$.
+    \item (B2) for all $t_1 \in \travset^\dagger(M), u_1, u_2 \in \travset^\dagger(N)$ with $t_1~R~u_1$ and $u_1 \rightarrow_N u_2$ there is $t_2 \in \travset^\dagger(M)$ such that $t_1 \rightarrow_M t_2$ and $t_2~R~u_2$.
 \end{itemize}
 
 
@@ -1612,8 +1612,8 @@ We prove (B1) and (B2) by induction on the traversals rules.
 
 \emph{Inductive case:}
 The result holds trivially up until the traversal in $M$ (resp.~in $N$) reaches  occurrence $x$ (resp.~the node that $\phi$ maps to $x$). For such traversals, the very same rules used to traverse $M$ can be simulated in $N$ using the exact same traversal rules, and reciprocally. The situation changes when reaching the \emph{lloc} variable $x$ in $M$. Let's look at this specific case.
+%%%%%%%%%%%%%%%%% Case t ends with lloc variable occurrence x
 Suppose that $t$ ends with $x$.
-
 \begin{description}
 \item[Case 1] This is the situation represented in Figure~\ref{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument} where $x$ has some operand, $A$ is an abstraction, $\phi(@_x) = x$, $\phi(\lambda\overline{yz}) = \lambda\overline{y}$, and nodes under
 $\lambda\overline{y_2}$ in $N$ are mapped by $\phi$ to corresponding nodes under $\lambda\overline{y}$ in $M$. Let $\lambda\overline{x}$ denote $x$'s binding lambda node in $M$, $k$ denote $x$'s binding index, and $@_a$ denote the parent application node of the subterm $A$.
@@ -1643,22 +1643,34 @@ which shows that $t'~R~u'$.
 (B1) Suppose $t \rightarrow_M t'$ then $t'$ is necessarily of form $t \cdot v\cdot \lambda\overline{y}$ where $v$ consists solely of internal ghost nodes. We can thus just take $u' = u \cdot \lambda\overline{y_2}$ and rule \rulenamet{App} gives $u \rightarrow_N u'$.
 %%%%%%%%%
 
-Because the enabling relation $\enables$ in $A'$ is preserved through $\phi$ after substitution and alpha-conversion in the subterm $A'[\overline{y}\leftarrow\overline{y_2}]$, the subsequent traversal of the argument $A'$ in $M$ can be bisimulated by traversing $A'[\overline{y}\leftarrow\overline{y_2}]$ in the reduct $N$ using the exact same traversal rules used to traverse $M$. We omit the tedious proof details here for succinctness.
-
 %%%%%%%% CASE 2
 \item[Case 2] If $x$ has operands and $A$ is an application ($|\overline{y}|=0$) then the proof is similar to the previous case except that the node corresponding to $x$ in the reduct $N$ is either an application node (if $A$ is a redex) or a variable node (if $A$ is in head-normal form).
 
 %%%%%%% CASE 3
-\item[Case 3] $x$ is unapplied: $|x|=0$. The parent lambda node $\lambda\overline{z}$ of $x$ in $M$ becomes $\lambda\overline{z}\overline{y}$ in $N$.
-Traversals of $M$ of the form $t = \ldots \lambda\overline{z}\cdot x \cdot v \cdot \lambda\overline{y} \cdot n \cdot \ldots$ are in $R$-relation with traversals $u = \ldots \lambda\overline{z}\overline{y}\cdot n \ldots$.
-
-\todo{WIP: explain how any traversal extension of $t_{\leq x}$ is necessarily
-also a traversal of $N$.}
+\item[Case 3] $x$ is unapplied: $|x|=0$. The parent lambda node $\lambda\overline{z}$ of $x$ in $M$ becomes $\lambda\overline{z}\overline{y}$ in $N$. Similarly to Case 1 we can show that traversals of $M$ of the form $t = \ldots \lambda\overline{z}\cdot x \cdot v \cdot \lambda\overline{y} \cdot n \cdot \ldots$ are in $R$-relation with traversals $u = \ldots \lambda\overline{z}\overline{y}\cdot n \ldots$.
 \end{description}
+%%%%%%%%%%%%%%%%% End of case where t ends with lloc variable occurrence x
+
+
+%%%%%%%%%%%%%%%%% Case where t ends with a variable in the argument A'
+We've just shown how immediate traversal of $t_{\leq x}$ can be bisimulated in $N$. It remains to show that further extensions can also be bisumulated, in particular traversals of the subterm $A'$ in $M$ can be bisumulated by traversals of $A'[\overline{y}\leftarrow\overline{y_2}]$ in the reduct $N$.
+We omit the tedious details here for succinctness.  The key observation is that
+because the enabling relation $\enables$ in $A'$ is preserved through $\phi$ after substitution and alpha-conversion in the subterm $A'[\overline{y}\leftarrow\overline{y_2}]$, subsequent traversal of argument $A'$ in $M$ can be bisimulated by traversing $A'[\overline{y}\leftarrow\overline{y_2}]$ in the reduct $N$ using the exact same traversal rules used to traverse $M$.
 %%%%%%%%%%%%%%%%%%
 
-\todo{explain how bisimulation implies the isomorphism:
-first direction implies that $\phi$ is well defined, second direction that it is surjective. Still need to show that it's injective}
+We can now use Property (B1) and (B2) to conclude that $\phi$ defines a bijection from $\coresymbol(\travset^\dagger(N))$ to $\coresymbol(\travset^\dagger(M))$:
+\begin{itemize}
+    \item $\phi$ is well-defined: By definition, $\travset^\dagger(N)$ is precisely the transitive closure of the empty traversal by $\rightarrow_N$. Therefore for any traversal $u$ of $\travset^\dagger(N)$, repeatedly applying (B2) on its $\rightarrow_N$ derivation shows that $t=\phi(u)$ is in $\travset^\dagger(M)$ and $\coresymbol(t)=\coresymbol(\phi(u))$.
+
+    \item $\phi$ is surjective. This follows, similarly, from the fact that $\travset^\dagger(M)$ is the transitive closure of the empty traversal by $\rightarrow_M$, and by repeatedly applying (B1).
+
+    \item $\phi$ is injective.
+
+    Observe $\phi\colon\Nodes(N)\rightarrow\Nodes(M)$ is not injective because nodes under both $A'[\overline{y}\leftarrow\overline{y_2}]$ and $A'$ are mapped to identical nodes in $M$. Nonetheless, its element-wise extension to justified sequences $\phi\colon\travset^\dagger(N)\rightarrow\travset^\dagger(M)$ is injective. This is shown by a trivial induction and by observing that at any given point where a traversal of $N$ reaches a non-deterministic choice (rule \rulenamet{IVar}), each possible node to visit is mapped by $\phi$ to a distinct node in $M$.
+
+    Now suppose that $\coresymbol(u)\neq\coresymbol(v)$ for $u,v\in\travset^\dagger(N)$ then we must have $u\neq v$.
+    Let $s$ denote the longest common prefix of $u$ and $v$; and $n_1, n_2$ the nodes immediately following $s$ in $u$ and $v$ respectively. We have $s \rightarrow_N s \cdot n_1$ and $s \rightarrow_N s\cdot n_2$ where $n_1, n_2$ are necessarily traversed by the non-deterministic rule \rulenamet{IVar}, and thus must both be external nodes, thus $\coresymbol(s\cdot n_1)\neq \coresymbol(s\cdot n_2)$. But since $\phi$ is injective we have $\phi(\coresymbol(u))\ne \phi(\coresymbol(v))$.
+\end{itemize}
 
 (ii) By Theorem~\ref{thm:soundness_leftmostlinearred} a \emph{qnf} trivially reduces to its beta-nf: there is a beta reduction sequence $M = M_1 \rightarrow_\beta M_2 \ldots \rightarrow_\beta M_q= N$, $q\geq1$  where for each reduction step, $M_{i+1}$ is obtained by reducing the leftmost innermost standard redex of $M_i$ (of the form $(\lambda x . U) T$ such that $U$ does not contain any redex). By Proposition~\ref{prop:qnf_nf}(ii), each such redex is trivial: $x$ does not occur freely in $U$ and therefore no substitution is performed to reduce the redex.
 
