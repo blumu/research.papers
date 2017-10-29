@@ -47,10 +47,14 @@
 
 \newcommand\VarSet{\mathcal{V}}
 
-\newcommand\Nodes{\mathcal{N}}% set of nodes
+\newcommand\Nodes{\mathcal{N}}% set of structural nodes of the tree
 \newcommand\NodesVar{\Nodes_{\sf var}}% set of variable  nodes
 \newcommand\NodesLmd{\Nodes_\lambda}% set of lambda nodes
 \newcommand\NodesApp{\Nodes_@}% set of application nodes
+
+% set of extended nodes of the tree (both strucutural and ghost)
+\newcommand\ExtendedNodes{\tilde{\Nodes}}
+
 
 \newcommand{\ghostlmd}{{\lambda\!\!\lambda}}
 \newcommand{\ghostvar}{\theta}
@@ -98,8 +102,8 @@
 \renewcommand\ie{{\it i.e.\@\xspace}}
 \renewcommand\eg{{\it e.g.\@\xspace}}
 
+% set of justified sequences of M using quadruplet encoding
 \def\justseqset{\mathcal{J}}
-\def\relabjustseqset{\mathcal{R}}
 \def\istraversal{\models}
 
 \author{William Blum}
@@ -196,14 +200,14 @@ Given an untyped lambda term $M$ we define its \defname{computation tree} as the
     \VarSet, n\in\nat \} \label{eqn:node_label_set}
 \end{equation}
 \item
-	The \defname{computation tree} $\ctree(M)$ is a labelled tree with labels in $\mathcal{L}$
+    The \defname{computation tree} $\ctree(M)$ is a labelled tree with labels in $\mathcal{L}$
     defined inductively on the syntax of $M$:
-	\begin{eqnarray*}
-		\ctree(\lambda \overline{x} . z s_1 \ldots s_m) &=& \lambda \overline{x}\; \langle\; \underline z\; \langle \ctree(s_1),\ldots,\ctree(s_m)\rangle\rangle\\
-		&& \hbox {where $m\geq 0$, $z \in \VarSet$}, \\
+    \begin{eqnarray*}
+        \ctree(\lambda \overline{x} . z s_1 \ldots s_m) &=& \lambda \overline{x}\; \langle\; \underline z\; \langle \ctree(s_1),\ldots,\ctree(s_m)\rangle\rangle\\
+        && \hbox {where $m\geq 0$, $z \in \VarSet$}, \\
  \ctree(\lambda \overline{x} . (\lambda y.t) s_1 \ldots s_m) &=& \lambda \overline{x}\; \langle\; @ \; \langle \ctree(\lambda y.t),\ctree(s_1),\ldots,\ctree(s_m) \rangle \rangle \enspace\\
 &&  \hbox{where $m\geq 1$, $y\in \VarSet$}.
-	\end{eqnarray*}
+    \end{eqnarray*}
 where the expression `$l\langle t_1, \ldots, t_m \rangle$' for $m \geq 0$ denotes a labelled tree with root labelled $l$ and $m$ ordered children trees $t_1$, \ldots, $t_m$. The underlined label $z$ represents a node label for $m>0$, and a leaf label if $m=0$.
 
 \item We write $\Nodes(M)$ to denote the set of nodes of the computation tree of $M$, or just $\Nodes$ if the term is clear from the context. We write $\NodesVar$ for the set of variable nodes, $\NodesLmd$ for lambda nodes, and $\NodesApp$ for  application nodes.
@@ -231,35 +235,96 @@ one class of ``ghost variable nodes'', denoted $\ghostvar$, and one class of ``g
 We simultaneously define ghost nodes and extend the enabling relation $\enables$ for them by induction: for every (ghost) variable or application node $m$ and for all $k>|m|$ there is a ghost lambda node $\ghostlmd$ such that $m \enables_k \ghostlmd$; for all (ghost) lambda node $\alpha$ and all $k>|\alpha|$ there is a ghost variable node $\ghostvar$ such that $\alpha \enables_k \ghostvar$. Thus, each ghost variable and ghost lambda node is uniquely defined by its enabler node (possibly itself a ghost node) and associated label $k\geq 1$.
 
 We refer to nodes $\Nodes$ of the computation tree as \defname{structural nodes}
-and $\tilde{\Nodes}$ for the extended set $\Nodes + \ghostvar + \ghostlmd$ where $\ghostvar$ and $\ghostlmd$ denote the sets of ghost nodes uniquely determined by $\Nodes$ together with the enabling relation $\enables$. Nodes in $\ghostlmd$ and $\ghostvar$ are called \defname{ghost nodes}. We write $\ImNodesLmd$ as a shorthand for $\NodesLmd + \ghostlmd$ and $\ImNodesVar$ as a shorthand for $\NodesVar + \ghostvar$.
+and $\ExtendedNodes$ for the extended set $\Nodes + \ghostvar + \ghostlmd$ where $\ghostvar$ and $\ghostlmd$ denote the sets of ghost nodes uniquely determined by $\Nodes$ together with the enabling relation $\enables$. Nodes in $\ghostlmd$ and $\ghostvar$ are called \defname{ghost nodes}. We write $\ImNodesLmd$ as a shorthand for $\NodesLmd + \ghostlmd$ and $\ImNodesVar$ as a shorthand for $\NodesVar + \ghostvar$.
 
 By convention ghost variables and lambda nodes are assigned arity $0$.
 
 \subsection{Justified sequence of nodes}
 \label{sec:justseq}
 
-A \defname{justified sequence} is a sequence of nodes from the computation tree where every node occurrence $n$ in the sequence, except the first one, has an associated link (the ``justification pointer'') pointing to some previous node occurrence $j$ in the sequence (called its ``justifier'') with an associated ``link label'' $l\geq0$, such as the justifier node enables the node pointing to it by the enabling relation $\enables$ with the corresponding label (\ie, $j \enables_l n$). Such link is represented as follows:
+A \defname{justified sequence} is a sequence of nodes from the computation tree where every node occurrence $n$ in the sequence, except the first one, has an associated link (the ``justification pointer'') pointing to some previous node occurrence $j$ in the sequence (called its ``justifier'') with an associated ``link label'' $l\geq0$, such as the justifier node enables the node pointing to it by the enabling relation $\enables$ with the corresponding label (\ie, $j \enables_l n$). We represent justified sequences as a sequence of labelled occurrences of nodes with back-pointing arrows representing justification pointers:
 $$\Pstr[10pt]{ s = \cdots (j){j} \ldots (n-j,25){n} }$$
 
-Whereas the enabling relation is \emph{statically} induced by the structure of the tree, the justification relation is defined on \emph{occurrences} of nodes for a specific justified sequence.
+Whereas the enabling relation is \emph{statically} induced by the structure of the tree, justification is a relation defined on \emph{occurrences} of nodes for one specific justified sequence.
 
-We define the set of justified sequences of nodes over $M$, written $\justseqset(M)$, as the justified sequences over $\tilde{\Nodes}$ (the nodes from the computation tree augmented with ghost nodes).
+We call \defname{set of justified sequences over $M$}  the set of all possible
+ justified sequences over $\ExtendedNodes$ (\ie, nodes of the computation tree augmented with ghost nodes).
 
-We will adopt the following \defname{triplet encoding} where a justified sequence in $\justseqset$ is encoded as a sequence of triplet in $\tilde{\Nodes}\times\nat\times\nat$. The first component determine the tree node together with its label; the second component encodes the distance between a node and its justifier in the sequence ($0$ in the absence of pointer); and the third is the link label.
+\begin{definition}[Justified sequence encoding]
+    Let $\mathcal{V}$ denote sequences of variable names taken from $\mathcal{V}$ (as defined in Equation~\ref{eqn:node_label_set}).
+    We encode a \emph{justified sequence} as a sequence of occurrences where each occurrence is itself an element of some encoding set $O$.
+    The \defname{quadruplet encoding} encodes each occurrence as an element of
+$$O_4 =  \ExtendedNodes\times \mathcal{V}^* \times\nat\times\nat$$
+where
+\begin{description}
+    \item [- Node] the first component encodes a path to a node of $\ctree(M)$, which uniquely determine an associated node type and node label;
+    \item[- Pending lambdas] the second component provides a tagging mechanism used to alter binding variables in occurrences of lambda nodes. It defines a list of variable names to be appended to the  variables bound by the lambda node. It is only specified if the node from the first component is of lambda type; for other nodes it is set to the empty list $\epsilon$;
+    \item[- Link distance] the third component gives the distance between the occurence and its justifier;
+    \item[- Link label] the fourth component gives the justification link label.
+\end{description}
+\end{definition}
 
-We define the \defname{structure} of a justified sequence as the sequence obtained by discarding node labels while preserving node types. It is encoded as a sequence of triples $\{@, V, \lambda \}\times\nat\times\nat$ where the first component indicates the type of each occurrence ($@$-node, variable or lambda node); the second component indicates the link distance, and the last component gives the link label ($0$ for no pointer).
+We write $\justseqset(M)$ to denote the set of justified sequences over $M$ based on the quadruplet encoding $O_4$.
 
-Observe that given a fixed term $M$, the above two encodings are equivalent: discarding the label information yields the structure; while the labels can be uniquely reconstructed from the structure of the sequence and the enabling relation associated with the tree (a chain of justification pointers in the sequence correspond to a path in the tree).
-
-Two justification sequences $s$ and $u$ over $M$ are equal, written $s=u$, if their triplet encoding are the same: their underlying sequences of nodes are identical (same node) and the associated justification pointers are identical (same justifier and same pointer label).
-
-Two sequences $s$ and $u$ over possibly two distinct terms are \defname{equivalent}, written $s \equiv u$ just if they have the same structure: the types of the underlying nodes in the two sequences match each other and have the same justification pointers.
+When typesetting a justified sequence, we represent its occurrences by their associated node labels. Further, for lambda nodes, the `pending lambdas' are represented in exponent:
+$$t = \cdots @ \cdot x \cdot \lambda\overline{x}^{[y_1 \ldots y_n]}$$
+where $\lambda\overline{x}$ is the label of the tree node associated with that occurrence, and $y_1 \ldots y_n$ is the `pending lambda' associated with the occurrence. We omit the exponent if the list of pending lambdas is empty.
 
 \begin{example}
-We have $\Pstr[10pt]{ (l){\lambda x y} \cdot (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda z y} \cdot (n-l,25){z}}$. But we also have $\Pstr[10pt]{ (l){\lambda x y z w t} \cdot (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda x} \cdot (n-l,25){x}}$ since they have same structure $(\lambda,0)\cdot(V,1)$.
+\label{examp:ghost_materialization}
+    Let $M = \lambda x. (\lambda y z.z) u$. The set of structural paths of the computation tree of $M$ is given by $\Sigma = \{\epsilon, 0, 00,000, 01,010\}$ (path to ghost nodes are ommitted, they are infinitely many of them).
+    Consider the justified sequence
+    $$t = \Pstr[10pt]{
+        (l){\lambda x} \cdot (a)@ \cdot (lyz-a,25:0){\lambda y z} \cdot (z-lyz,25:2)z \cdot (gl-a,30:2)\ghostlmd \cdot (gv-l,32:2)\ghostvar }
+    $$
+    Its quadruplet encoding is:
+    $$ t^4= (\epsilon, \epsilon ,0,0), (0,@,0,0), (00, \epsilon, 1,0), (000,\epsilon, 1,2), (02,\epsilon,3,2), (02,\epsilon,5,2) $$
+
+    Whereas the occurrences $ (\epsilon, g ,0,0), (0,@,0,0), (00, h~k, 1,0), (000,\epsilon, 1,2), (02,\epsilon,3,2), (02,\epsilon,5,2) $ encode the justified sequence:
+    $$t = \Pstr[10pt]{
+        (l){\lambda x^{[g]}} \cdot (a)@ \cdot (lyz-a,25:0){\lambda y z^{[h~k]}} \cdot (z-lyz,25:2)z \cdot (gl-a,30:2)\ghostlmd \cdot (gv-l,32:2)\ghostvar }
+    $$
 \end{example}
 
+{\bf Name-free representation}: We define the \defname{structure} of a justified sequence as the sequence obtained by discarding node labels while preserving node types. It is encoded as a sequence of triples $\{\lambda, {\sf Var}, @ \}\times\nat\times\nat$ where the first component indicates the type of each occurrence (lambda bunch, variable, application); the second component indicates the link distance, and the last component gives the link label ($0$ for no pointer).
+Two sequences $s$ and $u$ over possibly two distinct terms are \defname{equivalent}, written $s \equiv u$ just if they have the same structure: the types of the underlying nodes in the two sequences match each other and have the same justification pointers. Two equivalent sequences are not necessarily equal, in particular they may have different variable names.
+
 We say that two subsets $J_1\subseteq \justseqset(M_1)$ and $J_2\subseteq\justseqset(M_2)$ are isomorphic, written $J_1\cong J_2$, if  there exists a structure-preserving bijection between $J_1$ and $J_2$. That is there exists a bijection $\phi :J_1\longrightarrow J_2$ such that for any $j\in J$, $j\equiv\phi(j)$.
+
+Two justified sequences are considered \defname{equal} if they have the same structure and same variable names after appending each pending lambda list to the list of bound variables in the corresponding lambda. Formally, given two distinct terms $M$ and $N$ we define the following relation
+$Eq_{M,N} \subseteq O_4(N) \times O_4(M)$ as:
+\begin{align*}
+(n,\overline{p},d,k)~Eq_{M,N}~(n',\overline{p'},d',k') &\iff
+\begin{cases}
+    n \mbox{ and $n'$ have the same type} \\
+    d = d' \\
+    k = k' \\
+    \mbox{If $n=\lambda\overline{x}$ and $n'=\lambda\overline{y}$ then
+        $\overline{x} \cdot \overline{p} = \overline{y} \cdot \overline{p'}$.
+    }
+\end{cases}
+\end{align*}
+The reflexive closure of $Eq_{M,N}^*$ defines an equivalence relation on
+ the disjoint union $O_4(M) + O_4(N)$. By extension the relation $Eq_{M,N}^*$ defines an equivalence relation on the disjoint union $\justseqset(M) + \justseqset(N)$ where two sequences are in relation if their element-wise occurrences are.
+
+In the remaining of the article we will consider occurrences and justified sequences equal up to this equivalence relation. In particular for all variable names $\overline{x}$ and $\overline{y}$ the two notations $\lambda\overline{x}^{[\overline{y}]}$ and $\lambda\overline{x}\overline{y}$ will denote the same occurrence and will be used interchangeably.
+
+We call a justified sequence \defname{canonical} just if all the \emph{pending lanmbda} components are empty. Observe that given a fixed term $M$, the encoding of a canonical justified sequence is uniquely determined by its structure and reciprocally: discarding the label information yields the structure; reciprocally the labels can be uniquely reconstructed from the structure of the sequence and the tree enabling relation (a chain of justification pointers in the sequence corresponds to a path in the tree).
+
+\begin{example}
+We have $\Pstr[10pt]{ (l){\lambda x y} \cdot (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda z y} \cdot (n-l,25){z}}$. But we also have $\Pstr[10pt]{ (l){\lambda x y z w t} \cdot (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda x} \cdot (n-l,25){x}}$ since they have same structure $(\lambda,0)\cdot({\sf Var},1)$.
+\end{example}
+
+Non-canonical justified sequences will become handy when analyzing the effect of $\beta$-reduction on justified sequences. In particular the \emph{pending lambda} component lets us define two useful operations:
+\begin{itemize}
+    \item Lambda merging: where abstractions are merged in a combined bunch lambda node;
+    \item Node materialization: where a ghost node materializes as an occurrence of a bound or free variable. This occurs when a ghost variable points to a lambda node $\lambda\overline{x}^{[\overline{y}]}$ with label $i$ verifying $|x|<i<|x|+|y|$.
+\end{itemize}
+
+%%%% TODO --- Define `pretty printing' with node materialization:
+% The variable name of an occurrence of variable type is induced by the justification label together with its lambda node justifier: if a variable occurrence points to lambda node $\lambda\overline{x}$ with link label $i\leq|x|$ then the variable name is $x_i$.
+%If $i>|x|$ then the variable is a ghost variable and its label is $\ghostvar$.
+%%%
 
 A justified sequence verifies the \defname{alternation condition} if the first node is a lambda node and subsequent nodes occurrences alternate between (i) a variable or application node (ii) a lambda node.
 
@@ -478,33 +543,29 @@ The traversal rules are well-defined.
 \begin{proposition}
 \label{prop:eta_expanded_trav}
 Let $M$ be an untyped term and $t$ be a \emph{finite} traversal of $M$.
-Let $\Nodes$ and $\Nodes_t$ denote the nodes of tree $\ctree(M)$ and $\ctree(M^t)$ respectively. There exists a one-to-one mapping
+There exists a one-to-one function
 $$
-\eta_t : \tilde{\Nodes} \longrightarrow \tilde{\Nodes_t}
+\eta_t : \ExtendedNodes(M) \longrightarrow \ExtendedNodes(M^t)
 $$
-such that its implicit \emph{element-wise pointer-preserving} extension to justified sequences $\eta_t : \mathcal{J}(M) \longrightarrow \mathcal{J}(M^t)$ verifies the following properties:
+such that its implicit \emph{element-wise pointer-preserving} extension $\eta_t : \mathcal{J}(M) \longrightarrow \mathcal{J}(M^t)$ verifies the following properties:
 \begin{enumerate}[label=(\roman*)]
     \item For any $u \in \travulc(M)$, $\eta_t(u)$ is a traversal of $M^t$.
 
-    \item If $v$ traversses
-    %is a \emph{finite} traversal of
-    $M^t$
-    %that does not contain any ghost node
-    then there exists a traversal $u$ of $M$ (with possibly ghost nodes) such that $v = \eta_t(u)$.
+    \item If $v$ traverses
+    $M^t$ then there exists a traversal $u$ of $M$ (with possibly ghost nodes) such that $v = \eta_t(u)$.
 
     \item The restriction of $\eta_t$ to $\travset(M)$ defines a bijection with $\travset(M^t)$. Further the bijection is strong in the sense that the traversal structure (node type and pointers, but no necessarily labels) are preserved.
 \end{enumerate}
 \end{proposition}
 \begin{proof}
 The tree $\ctree(M)$ being by definition a subtree of $\ctree(M^t)$, induces a one-to-one mapping from $\Nodes(M)$ to $\Nodes(M^t)$.
-We extend it to ghost nodes by mapping ghost occurrences in $t$ to the corresponding node resulting from the eta-expansions of subterms of $M$ in $M^t$, and all other ghost nodes not occurring in $t$ to the corresponding ghost nodes in $\ctree(M^t)$. Formally, we define $\eta_t$ by induction on the traversal $t$, observing that in rules \rulenamet{Var} and \rulenamet{IVar}, the on-the-fly eta-expansion of Definition~\ref{def:onthefly_etaexpansion} increments the arity of the justifier node $m$, which guarantees that the corresponding structural node exists in $\ctree{M^t}$.
+We extend it to ghost nodes by mapping ghost occurrences in $t$ to the corresponding node resulting from the eta-expansions of subterms of $M$ in $M^t$, and all other ghost nodes not occurring in $t$ to the corresponding ghost nodes in $\ctree(M^t)$. Formally, we define $\eta_t$ by induction on the traversal $t$, observing that in rules \rulenamet{Var} and \rulenamet{IVar}, the on-the-fly eta-expansion of Definition~\ref{def:onthefly_etaexpansion} increments the arity of the justifier node $m$, which guarantees that the corresponding structural node exists in $\ctree(M^t)$.
 
 (i) By induction on $u$. Reusing the rule used to traverse $u$ in order to traverse $\eta_t(u)$. For the case \rulenamet{Var} and \rulenamet{IVar}, when the \emph{eta-expanded} subcase of the rule is used to traverse a ghost variable that also appeared in $t$, we use instead the \emph{concrete} sub-case used to traverse $\eta_t(u)$.
 
 (ii) By induction on $v$, applying to $u$ each rule that is applied to $v$. For the case \rulenamet{Var} and \rulenamet{IVar}, if the index $i$ is greater than the arity of the node $m$ in $M$ then the lambda node from $v$ gets replaced by a ghost lambda node in $u$.
 
 (iii) By (i) the function is well defined, it is injective by definition, and by (ii) it is surjective.
-\todo{Minor: re-check this proof, in particular (iii)}
 \end{proof}
 
 \begin{example}
@@ -516,19 +577,6 @@ $$\Pstr[0.7cm]{(n0){\lambda }~(n1){@}\ (n2-n1){\lambda u}~(n3-n2){u}~(n4-n1){\la
 
 We now generalize the notion of \emph{traversal core} from~\cite{BlumPhd} to imaginary traversals. In the typed setting, the \emph{core} is defined as the subsequence of a traversal consisting of external nodes only. In the untyped setting, this filtering is followed by a relabelling operation on lambda nodes.
 
-To help with the definition of core projection, we generalize the notion of justified sequences to allow relabelling of the node occurrences:
-\begin{definition}[Relabelled justified sequence]
-A \defname{relabelled justified sequences} is formally defined as a sequence of quadruplets in $\tilde{\Nodes}\times \mathcal{L} \times\nat\times\nat$
-where $\mathcal{L}$ denotes the set of all possible node labels built up from the set of variable names $\mathcal{V}$ (as defined in Equation~\ref{eqn:node_label_set}).
-We denote $\relabjustseqset$ for the set of all relabelled justified sequences.
-\end{definition}
-In words, a relabelled justified sequence is a justified sequence of nodes where each occurrence is augmented with an auxiliary label acting as a substitute for the one already assigned to the tree node. Clearly, any justified sequence can be viewed as a relabelled justified sequence where the auxiliary label is taken as the node label itself.
-By abuse of language we therefore consider $\justseqset$ a subset of $\relabjustseqset$. Operations on $\justseqset$ as defined in Section~\ref{sec:justseq}, such as projections and views, do not affect the occurrence labels and thus naturally extend to $\relabjustseqset$.
-
-We typeset \emph{relabelled justified sequences} just like regular justified sequences (as sequences of nodes with arrows above them to represent the justification pointers) except that the original node label for each occurrence gets replaced by the auxiliary label.
-
-In practice in what follows, we will just consider justified sequences where only lambda nodes get relabelled.
-
 We consider sequences of variable names in $\VarSet^*$ as stacks equipped with stack operations:
 for any sequence of variables $\overline{x} = x_1 \ldots x_n$, the `pop' operation $pop_j$, $n,j\geq0$ removes the first $j$ elements of the sequence: $pop_j (x_1 \ldots x_n) = x_{j+1} \ldots x_n$ if $j<n$, and $pop_j (x_1 \ldots x_n) = \epsilon$ otherwise. And for any sequence $\overline{y} = y_1 \ldots y_m$, $m\geq0$ we write $\overline{x}\overline{y}$ for
 $x_1 \ldots x_n y_1 \ldots y_n$, the stack obtained after pushing the variables $\overline{x}$ (read backwards) onto $\overline{y}$.
@@ -537,8 +585,8 @@ $x_1 \ldots x_n y_1 \ldots y_n$, the stack obtained after pushing the variables 
 \begin{definition}[Core projection]
 \label{def:coreprojection}
 Let $\overline{y} \in \VarSet^*$ denote a stack of variable names.
-We define the partial function $\coresymbol_{\overline{y}}\colon \relabjustseqset(M) \longrightarrow \relabjustseqset(M)$ on the set of (relabelled) justified sequences by induction on the sequence.
-Let $t \cdot n\in\relabjustseqset(M)$ denote a justified sequence where $t$ is the prefix subsequence and $n$ is the last occurrence.
+We define the partial function $\coresymbol_{\overline{y}}\colon \justseqset(M) \longrightarrow \justseqset(M)$ on the set of justified sequences by induction on the sequence.
+Let $t \cdot n\in\justseqset(M)$ denote a justified sequence where $t$ is the prefix subsequence and $n$ is the last occurrence.
 \begin{equation*}
 \coresymbol_{\overline{y}}(t\cdot n) =
 \begin{cases}
@@ -557,15 +605,6 @@ Let $t \cdot n\in\relabjustseqset(M)$ denote a justified sequence where $t$ is t
 \end{cases}
 \end{equation*}
 The above definition is pointer-preserving, so that the justifiers in $\coresymbol(t\cdot n)$ are defined to be the corresponding occurrences to the justifiers in $t \cdot n$.
-
-%%%% Old definition relaying on the eta-expansion of M
-% \item We extend $\coresymbol$ to justified sequences containing ghost nodes as follows:
-% \begin{align*}
-% \coresymbol_{\overline{y}} \colon \relabjustseqset(M) & \longrightarrow \relabjustseqset^\eta(M) \\
-% t &\longmapsto \coresymbol_{\overline{y}}(\eta_t(t))
-%\end{align*}
-%where $\relabjustseqset^\eta(M)$ is the union of the sets of justified sequences over eta-expansions of $M$ with respect to all its possible traversals:
-%$$\relabjustseqset^\eta(M) = \Union_{t\in\travulc(M)} \relabjustseqset(M^t) \ .$$
 
 We call $\coresymbol_\epsilon(t)$ the \defname{core} of $t$ which we abbreviate as $\core{t}$. The P-view of the core $\pview{\core{t}}$ is called the \defname{core P-view} of $t$.
 \end{definition}
@@ -594,7 +633,7 @@ The traversal rules defined in Table~\ref{tab:trav_rules} closely match those of
 
   \item[Free variables] Eta-expansion can also occur on free variables, so like for  rule \rulenamet{Var}, the input-variable rule allows for infinitely many eta-expansions ($k>0$).
 
-  \item[Traversl core] In the typed setting, the core is  obtained by just filtering nodes with respect to the tree root. In the untyped settings, additionally, lambda nodes are relabelled.
+  \item[Traversal core] In the typed setting, the core is  obtained by just filtering nodes with respect to the tree root. In the untyped settings, additionally, lambda nodes are relabelled.
 
   \item[Traversing ghost nodes] There is an additional rule \rulenamet{Lam^\ghostlmd} for the case where a traversal ends with a ghost lambda node. In the concrete sub-case, rule \rulenamet{Lam} visits the unique child node of the last lambda node in the traversal. In the eta-expanded sub-case where the last node is a ghost lambda node, there is no such child node, so we visit an imaginary one: the variable node that would be created if we were to eta-expand the sub-term under the lambda.
 
@@ -724,9 +763,9 @@ We then introduce the subset of \emph{normalizing traversals} which yields a sim
 
 We introduce a quotient relation that eliminates `redundant' traversals that have identical core P-views:
 \begin{definition}[Quotienting]
-We define the core P-view function as the composition of $\pview{\_}\colon \relabjustseqset \longrightarrow \relabjustseqset$ with the core projection $\coresymbol\colon\travulc  \longrightarrow \relabjustseqset$:
+We define the core P-view function as the composition of $\pview{\_}\colon \justseqset \longrightarrow \justseqset$ with the core projection $\coresymbol\colon\travulc  \longrightarrow \justseqset$:
 \begin{align*}
-\pview{\core{\_}} \colon \travulc & \longrightarrow \relabjustseqset \\
+\pview{\core{\_}} \colon \travulc & \longrightarrow \justseqset \\
 t & \longmapsto \pview{\core{t}}
 \end{align*}
 
@@ -1471,17 +1510,15 @@ By definition of $k$ we have $i_{k-1}\geq|@_{k-1}|$, therefore by definition of 
 
 We now show that normalizing traversals implement substitution in the sense that
 the sets of traversals $\travsetnorm$ before and after reduction are identical up to some mapping between nodes of the term and its reduct.
-\begin{proposition}[Traversals implement linear reduction]
+\begin{proposition}[Traversals are sound for linear reduction]
 \label{prop:ulctrav_impl_linear_reduction}
 Let $M$ be an untyped term.
-\begin{enumerate}[label=(\roman*)]
-\item If $M \rightarrow_l N$ then $\pi(\travsetnorm(M)) \cong \pi(\travsetnorm(N))$;
-\item If $M$ is in \emph{qnf} and has beta-normal form $N$ then $\coresymbol(\travsetnorm(M)) \cong \coresymbol(\travsetnorm(N))$.
-\end{enumerate}
+$$M \rightarrow_l N \implies \coresymbol(\travsetnorm(M)) \cong \coresymbol(\travsetnorm(N)) \ .
+$$
 where $\coresymbol$ denotes the core projection of Def.~\ref{def:coreprojection}.
 \end{proposition}
 \begin{proof}
-(i) We show the equality using a bisimulation argument on the state transition system whose states are the traversals themselves and transitions are given by traversals rules.
+We show the equality using a bisimulation argument on the state transition system whose states are the traversals themselves and transitions are given by traversals rules.
 
 Let $x$ denote the leftmost linear variable occurrence in $M$
 and let $(\lambda x, A)$ be the generalized redex involving it, so that $N$ is the term obtained after firing the generalized redex $(\lambda x, A)$ in $M$.
@@ -1496,9 +1533,9 @@ Let's look at how leftmost linear substitution affects the computation tree of t
 \end{description}
 
 A property of the linear head reduction is that the reduct contains the original term itself, modulo alpha conversion and relabelling of the \emph{lloc} node. This induces an implicit map $\phi$ from nodes of the reduct $N$ to those of $M$:
-$$\phi : \Nodes(N)  \rightarrow \Nodes(M) $$
+$$\phi : \ExtendedNodes(N)  \rightarrow \ExtendedNodes(M) $$
 which maps nodes from unmodified subterms of $N$ to their corresponding nodes in $M$, and nodes from the substituted subterm to the corresponding nodes under the argument $A$ of $M$. By abuse of notation we write $\phi$ to denote its element-wise structure-preserving extension over justified sequences of $N$:
-$$\phi : \relabjustseqset(N)  \rightarrow \relabjustseqset(M) $$
+$$\phi : \justseqset(N)  \rightarrow \justseqset(M) $$
 (Recall that two justified sequences over two distinct terms share the same structure just if their constituting nodes are of the same type, have the same link labels, and same pointer lengths.)
 
 We observe the immediate property that $\phi$ and $\coresymbol$ commute, shown trivially by induction on the justified sequence.
@@ -1532,7 +1569,7 @@ Consider the state transition system $(X, R, \rightarrow)$ defined by:
     We then write $t \rightarrow_X t'$, for $t, t' \in X$, if either $t \rightarrow_M t'$ or $t \rightarrow_N t'$ holds.
 \end{itemize}
 
-We show that $R$ defines a bisimulation over $X$, that is
+We show that $R$ defines a bisimulation over $X$, that is:
 \begin{itemize}
     \item (B1) for all $t_1, t_2 \in \travset^\dagger(M), u_1 \in \travset^\dagger(N)$ with $t_1~R~u_1$ and $t_1 \rightarrow_M t_2$ there is $u_2 \in \travset^\dagger(N)$ such that $u_1 \rightarrow_N u_2$ and $t_2~R~u_2$.
     \item (B2) for all $t_1 \in \travset^\dagger(M), u_1, u_2 \in \travset^\dagger(N)$ with $t_1~R~u_1$ and $u_1 \rightarrow_N u_2$ there is $t_2 \in \travset^\dagger(M)$ such that $t_1 \rightarrow_M t_2$ and $t_2~R~u_2$.
@@ -1636,7 +1673,7 @@ and $v$ is a \emph{pending argument lookup} consisting of internal ghost nodes w
                 &= \coresymbol_{\alpha \cdot \overline{y_2}}(\phi(u)) & \mbox{(commutativity of $\phi$ and $\coresymbol$)}\\
                 &= \coresymbol_\alpha(\phi(u) \cdot \lambda\overline{y_2}) & \mbox{(def of $\coresymbol$ since $\phi(\lambda\overline{y_2}) = \lambda\overline{y}$)}\\
                 &\equiv \coresymbol_\alpha(\phi(u) \cdot \lambda\overline{y}) & \mbox{($\alpha$ conversion)}\\
-                &\equiv \coresymbol_\alpha(\phi(u \cdot \lambda\overline{y_2})) & \mbox{(def.~of$\phi$)}\\
+                &\equiv \coresymbol_\alpha(\phi(u \cdot \lambda\overline{y_2})) & \mbox{(def.~of $\phi$)}\\
                 &= \coresymbol_\alpha(\phi(u')) & \mbox{(def of $u'$)}
 \end{align*}
 which shows that $t'~R~u'$.
@@ -1657,7 +1694,7 @@ which shows that $t'~R~u'$.
 %%%%%%%%%%%%%%%%% Case where t ends with a variable in the argument A'
 We've just shown how immediate traversal of $t_{\leq x}$ can be bisimulated in $N$. It remains to show that further extensions can also be bisumulated, in particular traversals of the subterm $A'$ in $M$ can be bisumulated by traversals of $A'[\overline{y}\leftarrow\overline{y_2}]$ in the reduct $N$.
 We omit the tedious details here for succinctness.  The key observation is that
-because the enabling relation $\enables$ in $A'$ is preserved through $\phi$ after substitution and alpha-conversion in the subterm $A'[\overline{y}\leftarrow\overline{y_2}]$, subsequent traversal of argument $A'$ in $M$ can be bisimulated by traversing $A'[\overline{y}\leftarrow\overline{y_2}]$ in the reduct $N$ using the exact same traversal rules used to traverse $M$.
+because the enabling relation $\enables$ in $A'$ is preserved through $\phi$ after substitution and alpha-conversion in the subterm $A'[\overline{y}\leftarrow\overline{y_2}]$, the subsequent traversal of argument $A'$ in $M$ can be bisimulated by traversing $A'[\overline{y}\leftarrow\overline{y_2}]$ in the reduct $N$ using the exact same traversal rules used to traverse $M$.
 %%%%%%%%%%%%%%%%%%
 
 We can now use Property (B1) and (B2) to conclude that $\phi$ defines a bijection from $\coresymbol(\travset^\dagger(N))$ to $\coresymbol(\travset^\dagger(M))$:
@@ -1668,21 +1705,231 @@ We can now use Property (B1) and (B2) to conclude that $\phi$ defines a bijectio
 
     \item $\phi$ is injective.
 
-    Observe $\phi\colon\Nodes(N)\rightarrow\Nodes(M)$ is not injective because nodes under both $A'[\overline{y}\leftarrow\overline{y_2}]$ and $A'$ are mapped to identical nodes in $M$. Nonetheless, its element-wise extension to justified sequences $\phi\colon\travset^\dagger(N)\rightarrow\travset^\dagger(M)$ is injective. This is shown by a trivial induction and by observing that at any given point where a traversal of $N$ reaches a non-deterministic choice (rule \rulenamet{IVar}), each possible node to visit is mapped by $\phi$ to a distinct node in $M$.
+    Observe $\phi\colon\ExtendedNodes(N)\rightarrow\ExtendedNodes(M)$ is not injective because nodes under both $A'[\overline{y}\leftarrow\overline{y_2}]$ and $A'$ are mapped to identical nodes in $M$. Nonetheless, its element-wise extension to justified sequences $\phi\colon\travset^\dagger(N)\rightarrow\travset^\dagger(M)$ is injective. This is shown by a trivial induction and by observing that at any given point where a traversal of $N$ reaches a non-deterministic choice (rule \rulenamet{IVar}), each possible node to visit is mapped by $\phi$ to a distinct node in $M$.
 
     Now suppose that $\coresymbol(u)\neq\coresymbol(v)$ for $u,v\in\travset^\dagger(N)$ then we must have $u\neq v$.
     Let $s$ denote the longest common prefix of $u$ and $v$; and $n_1, n_2$ the nodes immediately following $s$ in $u$ and $v$ respectively. We have $s \rightarrow_N s \cdot n_1$ and $s \rightarrow_N s\cdot n_2$ where $n_1, n_2$ are necessarily traversed by the non-deterministic rule \rulenamet{IVar}, and thus must both be external nodes, thus $\coresymbol(s\cdot n_1)\neq \coresymbol(s\cdot n_2)$. But since $\phi$ is injective we have $\phi(\coresymbol(u))\ne \phi(\coresymbol(v))$.
 \end{itemize}
+\end{proof}
 
-(ii) By Theorem~\ref{thm:soundness_leftmostlinearred} a \emph{qnf} trivially reduces to its beta-nf: there is a beta reduction sequence $M = M_1 \rightarrow_\beta M_2 \ldots \rightarrow_\beta M_q= N$, $q\geq1$  where for each reduction step, $M_{i+1}$ is obtained by reducing the leftmost innermost standard redex of $M_i$ (of the form $(\lambda x . U) T$ such that $U$ does not contain any redex). By Proposition~\ref{prop:qnf_nf}(ii), each such redex is trivial: $x$ does not occur freely in $U$ and therefore no substitution is performed to reduce the redex.
+\begin{proposition}[Traversals are sound for trivial reduction]
+\label{prop:ulctrav_sound_for_trivialreduction}
+    Let $M$ be an untyped term containing only trivial redexes.
+    Let $N$ be the term obtained by firing the leftmost innermost trivial redex, then $\coresymbol(\travsetnorm(M)) \cong \coresymbol(\travsetnorm(N))$.
+\end{proposition}
+\begin{proof}
+Let's consider the tree structure at the trivial redex on Figure~\ref{fig:reducing_trivialredex}. It is of the form $(\lambda \overline{x} . T) A_1 \ldots A_r$ for $r\geq1$ where $(x_1, A_1)$ forms the leftmost trivial redex.
+    Two cases must be considered:
 
-We show that $\core{\travsetnorm}$ is an invariant that is preserved by this term reduction sequence: we prove by induction on $q$ that $\core{\travsetnorm(M_{q})}\cong\core{\travsetnorm(M)}$. For $q=1$ we have $M = M_q = N$ so the result holds trivially.
+    \begin{figure}[htbp]
+        \centering
+        \begin{tikzpicture}[baseline=(root.base),level distance=5ex,inner ysep=0.5mm,sibling distance=13mm]
+        \node (root_rGt1_M){}
+                child[dashed]{node{$\lambda\overline\eta$}
+                    child[solid]{node{$@$}
+                        child[solid]{
+                            node{$\lambda x_1 x_2 \ldots x_n$}
+                            child[solid,level distance=5ex]
+                                {node {$T$}}
+                            edge from parent node[above left]{$0$}
+                        }
+                        child{node{$A_1$}}
+                        child[dashed]{node{$\ldots$}}
+                        child{node{$A_r$}}
+                    }
+                };
+        \node (root_rGt1_N) at (7,0) {}
+                child[dashed]{node{$\lambda\overline\eta$}
+                    child[solid]{node{$@$}
+                        child[solid]{
+                            node{$\lambda x_2 \ldots x_n$}
+                            child[solid,level distance=5ex]
+                                {node {$N$}}
+                            edge from parent node[above left]{$0$}
+                        }
+                        child{node{$A_2$}}
+                        child[dashed]{node{$\ldots$}}
+                        child{node{$A_r$}}
+                    }
+                };
+        \node (root_rEq1_M) at (0,-3) {}
+                child[dashed]{node{$\lambda\overline\eta$}
+                    child[solid]{node{$@$}
+                        child[solid]{
+                            node{$\lambda x_1 x_2 \ldots x_n$}
+                            child[solid,level distance=5ex]
+                                {node {$T$}}
+                            edge from parent node[above left]{$0$}
+                        }
+                        child{node{$A_1$}}
+                    }
+                };
+        \node (root_rEq1_N) at (7,-4) {}
+                child[dashed]{node{$\lambda\overline\eta~x_2 \ldots x_n$}
+                    child[solid]{node{$N$}
+                    }
+                }
+        ;
+        \draw[->] ([xshift=1.5cm,yshift=-1cm]root_rGt1_M.east) -- +(3.5cm,0)
+        node[midway, above] {trivial reduction};
+        \draw[->] ([xshift=1.5cm,yshift=-1.5cm]root_rEq1_M.east) -- +(3.5cm,0)
+            node[midway, above] {trivial reduction} ;
+        \end{tikzpicture}
 
-Let $q\geq 1$.
-\todo{Explain where the relabelling done in $\coresymbol$ is used during trivial reduction of the qnf.
-}
+        \label{fig:reducing_trivialredex}
+        \title{Reducing a (leftmost innermost) trivial redex. Case $r>1$ (top) and $r=1$ (bottom).}
+    \end{figure}
 
-By Proposition~\ref{prop:qnf_nf}, the \emph{qnf} trivially reduces to its beta-nf. It's immediate to show
+    \begin{description}
+    \item[Case $r>1$] Because the structure of the tree is preserved after reduction, there is an implicit injection $\phi$ from nodes of the reduct $N$ to nodes of $M$. We show that its element-wise extension to justified sequences yields the desired isomorphism.
+
+    We use a similar argument to the one used to prove Prop.~\ref{prop:ulctrav_impl_linear_reduction}. Firstly, we show that the traversing relation of $M$ and $N$ form a bisimulation for the relation $R$ induced by $\phi$. We omit the details, the key observations are:
+    (i) Since $x_1$ does not occur in $T$, the term $A_1$ will never be traversed in $N$.
+    (ii) Only nodes hereditarily justified by $\lambda x_1 \ldots x_n$ see their label (or link label) changed after applying $\phi$. But since those are external nodes, they get filtered out by the core projection $\coresymbol$.
+    (iii) The arity of node $\lambda x_2 \ldots x_n$ increases by $1$ after applying $\phi$, but it does not impact the arity threshold of traversals because the arity of the application node also increases by $1$.
+    %%%%%%%%%
+    Secondly, since $\phi$ is injective, so is its element-wise extension to justified sequences. Hence the two sets of traversals cores are isomorphic.
+
+    \item[Case $r=1$] Depicted on Figure~\ref{fig:reducing_trivialredex} (bottom). The tree structure is altered: the application node and the argument $A_1$ are eliminated in the reduct. There is an implicit injection $\phi$ from nodes of $N$ to nodes of $M$. We extent this function $\phi$ to occurrences of nodes as follows. Let's introduce the abbreviation $\overline{y} = \overline\eta x_2 \ldots x_n$.
+    \begin{align*}
+        \phi\colon O_4(N) &\rightarrow O_4(M) \\
+        (n,p,d,k) &\longmapsto (\varphi(n),p,d,k) & \mbox{if $n\neq\lambda\overline{y}$} \\
+        (\lambda\overline{y},p,d,k) &\longmapsto (\lambda\overline\eta,(x_2 \ldots x_n \cdot p),d,k)
+    \end{align*}
+    So in particular, $\phi$ maps occurrences of $\lambda\overline{y}$ to occurrences of $\lambda\overline\eta$ with binding variables $x_2 \ldots x_n$ appended to $\overline\eta$.
+    \begin{equation}
+        \phi(\lambda\overline{y})
+        =
+        \lambda\overline\eta^{[x_2\ldots x_n]}
+        \label{eqn:phi_maps_lambday_to_lambdaeta}
+    \end{equation}
+    Observe also that $\phi$ commutes with the rebinding operation: because in the case of $\lambda\overeline{y}$, $\phi$ appends variable names to the left whereas the rebinding operation appends variables names to the right.
+
+    We extend $\phi$ to justified sequences by taking the element-wise extension with the following additional modification: any occurrence of node $\lambda\overline{y}$ in a traversal of $N$ gets expanded by $\phi$ into the three occurrences $\lambda\overline\eta \cdot @ \cdot \lambda\overline{x}$ in $M$.
+
+    Such function $\phi$ defines a bijection from $\justseqset(N)$ to
+    $\justseqset(M)$. The proof is once again a bisimulation argument where we show by induction on the traversal rules that
+    (i)  $\phi$ is injective;
+    (ii) $\phi$ and $\coresymbol$ commute;
+    (iii) $\rightarrow_M$ can simulate $\rightarrow_N$ and reciprocally;
+
+    (i) Injectivity follows from the fact that the function $\phi$ on node occurrences defined above is itself injective.
+
+    (ii) Commutativity holds because $\phi$ carries over the list of pending lambdas and the core symbol operation adequately implements merging of nodes $\lambda\overline\eta$ and
+    $\lambda\overline x_1 \ldots x_n$ into
+    $\lambda\overline\eta x_2 \ldots x_n$. Formally:
+
+    Let $u$ be a traversal of $\travset^\dagger(N)$
+    ending with $\lambda\overline{y}$ that is
+    $u = u_1 \cdot \lambda\overline{y} $ for some traversal $u_1$.
+    The sequence $\phi(u)$ is of the form
+    $\phi(u) = \phi(u_1) \cdot \lambda\overline{\eta} \cdot @ \cdot \lambda\overline{x}$. Let $\overline\alpha$ be the list of pending lambdas at $u_{\leq \lambda\overline{y}}$. There are two cases:
+
+    Suppose $\lambda\overline\eta$ is internal. We have:
+    \begin{align*}
+        \coresymbol_{\overline\alpha}(\phi(u))
+        &=  \coresymbol_{\overline\alpha}(\phi(u_1) \cdot \lambda\overline{\eta} \cdot @ \cdot \lambda\overline{x})
+            & \mbox{(def.~of $\phi(u)$)}
+        \\
+        &=  \coresymbol_{\overline{x}\overline\alpha}(\phi(u_1) \cdot
+        \lambda\overline\eta \cdot @)
+            & \mbox{(def.~of $\coresymbol$)}
+        \\
+        &=  \coresymbol_{pop_1(\overline{x}\overline\alpha)}(\phi(u_1) \cdot
+        \lambda\overline{\eta})
+            & \mbox{(def.~of $\coresymbol$ and $|@|=1$)}
+        \\
+        &=  \coresymbol_{\overline\eta \cdot pop_1(\overline{x}\overline\alpha)}(\phi(u_1))
+            & \mbox{(def.~of $\coresymbol$)}
+        \\
+        &=  \coresymbol_{\overline{y}\overline\alpha}(\phi(u_1))
+            & \mbox{(def.~of $\overline{y}$)}
+        \\
+        &=  \phi(\coresymbol_{\overline{y}\overline\alpha}(u_1))
+            & \mbox{(by induction hypothesis)}
+        \\
+        &= \phi(\coresymbol_{\overline\alpha}(u_1 \cdot \lambda\overline{y})) & \mbox{(def of $\coresymbol$)} \\
+        &=  \phi(\coresymbol_{\overline\alpha}(u))
+            & \mbox{(def.~of $u$)}
+    \end{align*}
+
+    Suppose $\lambda\overline\eta$ is external. We have:
+    \begin{align*}
+        \coresymbol_{\overline\alpha}(\phi(u))
+        &=  \coresymbol_{\overline\alpha}(\phi(u_1) \cdot \lambda\overline{\eta} \cdot @ \cdot \lambda\overline{x})
+            & \mbox{(def.~of $\phi(u)$)}
+        \\
+        &=  \coresymbol_{\overline{x}\overline\alpha}(\phi(u_1) \cdot
+        \lambda\overline\eta \cdot @)
+            & \mbox{(def.~of $\coresymbol$)}
+        \\
+        &=  \coresymbol_{pop_1(\overline{x}\overline\alpha)}(\phi(u_1) \cdot \lambda\overline\eta)
+            & \mbox{(def.~of $\coresymbol$ and $|@|=1$)}
+        \\
+        &=  \coresymbol_{x_2\ldots x_n \overline\alpha}(\phi(u_1) \cdot \lambda\overline\eta)
+        & \mbox{(def.~of $pop$)}
+        \\
+        &=  \coresymbol_{\epsilon}(\phi(u_1)) \cdot \lambda\overline\eta^{[x_2\ldots x_n \overline\alpha]}
+            & \mbox{(def.~of $\coresymbol$)}
+    \end{align*}
+    And:
+    \begin{align*}
+        \phi(\coresymbol_{\overline\alpha}(u))
+        &= \phi(\coresymbol_{\overline\alpha}(u_1 \cdot \lambda\overline{y}))
+        & \mbox{(def.~of $u$)}
+    \\
+        &= \phi(\coresymbol_{\epsilon}(u_1) \cdot \lambda\overline{y}^{[\overline\alpha]})
+        & \mbox{(def.~of $\coresymbol$)}
+    \\
+        &= \phi(\coresymbol_{\epsilon}(u_1)) \cdot \phi(\lambda\overline{y}^{[\overline\alpha]})
+        & \mbox{(def.~of $\phi$)}
+    \\
+        &=  \coresymbol_{\epsilon}(\phi(u_1)) \cdot \phi(\lambda\overline{y}^{[\overline\alpha]})
+        & \mbox{(commutativity, by I.H.)}
+    \\
+        &=  \coresymbol_{\epsilon}(\phi(u_1)) \cdot \phi(\lambda\overline{y})^{[\overline\alpha]}
+        & \mbox{($\phi$ commutes with rebinding)}
+    \\
+    &=  \coresymbol_{\epsilon}(\phi(u_1)) \cdot (\lambda\overline\eta^{[x_2\ldots x_n]})^{[\overline\alpha]}
+        & \mbox{(by Eqn.~\ref{eqn:phi_maps_lambday_to_lambdaeta})}
+    \\
+        &=  \coresymbol_{\epsilon}(\phi(u_1)) \cdot\lambda\overline\eta^{[x_2\ldots x_n \overline\alpha]}
+        & \mbox{(rebinding composition)}
+    \end{align*}
+    Hence $\phi(\coresymbol_{\overline\alpha}(u)) = \coresymbol_{\overline\alpha}(\phi(u))$.
+
+    (iii) Bisimulation is easily shown by induction on the traversal rules. One interesting case is when ghost nodes in $M$ get materialized into structural nodes in $N$:
+
+    Consider the following traversal of $M$ for some $i\geq1$
+    $$t = \Pstr[10pt]{
+        (l){\lambda\overline\eta} \cdot (a)@ \cdot (lx-a,25:0){\lambda\overline{x}} \cdot \ldots \cdot (gl-a,30:i)\ghostlmd \cdot (gv-l,32:{|\eta|-1+i})\ghostvar }
+    $$
+    If $i>n$ then corresponding traversal in $N$
+    also ends with a ghost variable:
+    $$u = \Pstr[10pt]{
+        (l){\lambda\overline\eta x_2 \ldots x_n} \cdot \ldots \cdot  (gv-l,32:{|\eta|-1+i})\ghostvar }
+    $$
+    If $i\leq n$ then the ghost nodes $\ghostvar$ gets materialized into variable occurrence $x_i$ in $N$:
+    $$u = \Pstr[10pt]{
+        (l){\lambda\overline\eta x_2\cdots x_n} \cdot \ldots \cdot  (gv-l,32:{|\eta|+i-1}){x_i} }
+    $$
+    \end{description}
+\end{proof}
+
+\begin{example}
+    Continuing Example~\ref{examp:ghost_materialization} with $M = \lambda x. (\lambda y z.z) u$ which trivially reduces to $N = \lambda x z . z$. Consider the traversal $t$ defined in Example~\ref{examp:ghost_materialization}. We have $\coresymbol(t) = \Pstr[10pt]{ (l){\lambda x z} \cdot (gv-l,32:2)\ghostvar }$ which is equivalent to traversal
+$\Pstr[10pt]{(l){\lambda x^{[z]}} \cdot (gv-l,32:2)\ghostvar }$, itself equivalent to traversal $\Pstr[10pt]{ (l){\lambda x^{[z]}} \cdot (gv-l,32:2)\z }$ of $N$.
+\end{example}
+
+
+\begin{proposition}
+\label{prop:qnf_and_nf_traveset_invariant}
+If $M$ is in \emph{qnf} and has beta-normal form $N$ then $\coresymbol(\travsetnorm(M)) \cong \coresymbol(\travsetnorm(N))$.
+\end{proposition}
+\begin{proof}
+By Theorem~\ref{thm:soundness_leftmostlinearred}(ii) a \emph{qnf} trivially reduces to its beta-nf: there is a beta reduction sequence $M = M_1 \rightarrow_\beta M_2 \ldots \rightarrow_\beta M_q= N$, $q\geq1$  where for each reduction step, $M_{i+1}$ is obtained by reducing the leftmost innermost standard redex of $M_i$ (of the form $(\lambda x . U) T$ such that $U$ does not contain any redex). By Proposition~\ref{prop:qnf_nf}(ii), each such redex is trivial: $x$ does not occur freely in $U$ and therefore no substitution is performed to reduce the redex.
+
+By Proposition~\ref{prop:ulctrav_sound_for_trivialreduction} the set $\core{\travsetnorm}$ is an invariant (up to isomorphism) through this trivial reduction sequence, which yields the desired result.
 \end{proof}
 
 \begin{property}
@@ -1690,11 +1937,11 @@ By Proposition~\ref{prop:qnf_nf}, the \emph{qnf} trivially reduces to its beta-n
 Let $M$ be an untyped term.
 \begin{enumerate}[label=(\roman*)]
 \item All traversals in $\travsetnorm(M)$ are finite;
-\item $\travsetnorm(M)$ is finite.
+\item The set $\travsetnorm(M)$ is finite.
 \end{enumerate}
 \end{property}
 \begin{proof}
-(i) If $M$ has a normal form then by Theorem~\ref{thm:soundness_leftmostlinearred} its linear reduction sequence terminates, and by Prop.~\ref{prop:ulctrav_impl_linear_reduction}(i) the set of traversals of $M$ is isomorphic to the traversals of its quasi normal form. Hence if $M$ has an infinite traversal then so does its \emph{qnf}, which contradicts Proposition~\ref{prop:qnf_traversals_are_finite}.
+(i) If $M$ has a normal form then by Theorem~\ref{thm:soundness_leftmostlinearred}(iii) its linear reduction sequence terminates, and by Prop.~\ref{prop:ulctrav_impl_linear_reduction} the set of traversals of $M$ is isomorphic to the traversals of its quasi normal form. Hence if $M$ has an infinite traversal then so does its \emph{qnf}, which contradicts Proposition~\ref{prop:qnf_traversals_are_finite}.
 (ii) Traversals rules defining $\travsetnorm$ all have bounded non-determinism therefore by (i) $\travsetnorm$ is finite.
 \end{proof}
 
@@ -1711,11 +1958,11 @@ By Prop.~\ref{prop:ulc_travnorm_finite} there is a finite number of traversals i
 For any untyped term $M$ with a normal form $T$ we have the following isomorphism
 $$\travsetnorm(M)/{\sim} \ \cong\ \pathset(T)$$
 \end{theorem}
-\begin{proof}[Proof of Theorem~\ref{thm:path_charact_ulc}]
-Let's first assume that $M$ is in beta-normal form. Then its computation tree does not contain any $@$-node, therefore every node is external (\ie, hereditarily enabled by the root).
+\begin{proof}%[Proof of Theorem~\ref{thm:path_charact_ulc}]
+Let's first assume that $M$ is in beta-normal form. Then its computation tree does not contain any $@$-node, therefore every node is external.
 Hence the arity threshold of any justified sequences $t$ ending with external variable $x$ is precisely $|x|$, the arity of $x$. A trivial induction on the traversal rules thus show that $\travsetnorm(M) = \pathset(M)$. Since all nodes are externals, the projection $\coresymbol$ and $\pview{\_}$ functions both coincides with the identity function thus $\pview{\core{\travsetnorm(M)}} = \travsetnorm(M) = \pathset(M)$.
 
-Otherwise, since $M$ has a beta-nf, by Theorem~\ref{thm:soundness_leftmostlinearred} its \emph{leftmost linear reduction sequence} terminates and yields the \emph{quasi normal form} (qnf). By Prop.~\ref{prop:ulctrav_impl_linear_reduction}(i) the set of traversals is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of traversals of the \emph{qnf} is isomorphic to the set of traversals of $M$. By Prop.~\ref{prop:ulctrav_impl_linear_reduction}(ii), taking the projection $\coresymbol$ yields $\travsetnorm(T)$.
+Otherwise, since $M$ has a beta-nf, by Theorem~\ref{thm:soundness_leftmostlinearred}(iii) its \emph{leftmost linear reduction sequence} terminates and yields the \emph{quasi normal form} (qnf). By Prop.~\ref{prop:ulctrav_impl_linear_reduction} the set of traversals is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of traversals of the \emph{qnf} is isomorphic to the set of traversals of $M$. Proposition~\ref{prop:qnf_and_nf_traveset_invariant} permits us to conclude.
 \end{proof}
 
 \paragraph{Soundness} of the normalization procedure then follows from Theorem~\ref{thm:path_charact_ulc} and the fact that a term is uniquely characterized by its set of paths $\pathset$ (Property~\ref{prop:tree_path_charact}). The last step of the algorithm (assignment of labels to the tree nodes) is sound because by Property~\ref{prop:tree_path_charact} justification pointers uniquely determine variables names.
@@ -1744,7 +1991,7 @@ detailed description of the normalization procedure with the steps involved in r
 \STATE Let \parbox[t]{12cm}{$(P, L)$ be the labelled-tree induced by $C$:
 \begin{compactitem}
 \item Paths $P \subseteq \nat^*$ are given by the justified sequences in $C$: child index is $1$ for variable occurrences, and is given by the justification label for lambda nodes;
-\item Label function $L : \nat^* \rightarrow\tilde{\Nodes} \times P \times \nat$ defined by $L(n) = (l, b, i)$ where $l$ is the label of the corresponding occurrence in $C$, $b$ is the path to the binder node (given by the justification pointer in $C$), and $i$ is the label of the justification pointer in $C$.
+\item Label function $L : \nat^* \rightarrow\ExtendedNodes \times P \times \nat$ defined by $L(n) = (l, b, i)$ where $l$ is the label of the corresponding occurrence in $C$, $b$ is the path to the binder node (given by the justification pointer in $C$), and $i$ is the label of the justification pointer in $C$.
 \end{compactitem}}
 
 \FORALL{node $n \in P$ (by depth-first enumeration)}
@@ -2326,11 +2573,15 @@ We have:
 \end{enumerate}
 \end{theorem}
 \begin{proof}
-(i) \todo{Proof of (i) is a variation of Danos-Regnier proof for the same result for head-linear reduction.}
+(i) The proof can be adpated from Danos-Regnier's proof of the same result for head-linear reduction~\cite{danos-head}.
 
-(ii) The idea consists in reducing the redex `inside-out' from left to right. By Proposition \ref{prop:qnf_nf}(ii), each reduction is trivial and it is easy to see that  $lloc$ is preserved by trivial reduction, therefore each term in the reduction sequence is in \emph{qnf}. The last term in the sequence has no redex therefore it's in beta-normal form.
+%\todo{Include proof details by adapting Danos-Regnier proof to the definition of \emph{leftmost} linear reduction.}
 
-(iii) \todo{Hopefully the proof of (ii) should not involve state machine/stack/environments, ...}
+(ii) The idea consists in reducing the redex `inside-out' from left to right. By Proposition~\ref{prop:qnf_nf}(ii), each reduction is trivial and it is easy to see that  $lloc$ is preserved by trivial reduction, therefore each term in the reduction sequence is in \emph{qnf}. The last term in the sequence has no redex therefore it's in beta-normal form.
+
+(iii) We can either appeal to the proof argument of Danos-Regnier in~\cite{danos-head}, or the forthcoming paper by Berezun\cite{DaniilBerezun_Soundness}
+
+\todo{Hopefully the proof of (ii) should not involve state machine/stack/environments, ...}
 \end{proof}
 
 \begin{definition}[Leftmost redex sequence]
