@@ -1256,13 +1256,10 @@ We say that a traversal $t$ is \defname{head-normal} if it ends with a structura
 
 \begin{property}
 \label{prop:strand_spinaldescent}
-Let $t$ be a non-empty traversal of $M$.
-Consider any subsequence $u$ of $t$ of the form
+Let $t$ be a traversal of $M$ and $u$ be a subsequence of $t$ of the form
 $u = \underline{\lambda \overline{x}} \cdot v \cdot \underline{x}$
 for some subsequence $v$ of $t$, external structural variable node $x$ and external structural lambda node $\lambda \overline{x}$.
-\begin{enumerate}[label=(\roman*)]
-  \item If $v$ is empty then the node following $u$ in $t$, if it exists, is necessarily a structural child lambda node of $x$ (not a ghost node).
-\end{enumerate}
+If $v$ is empty then the node following $u$ in $t$, if it exists, is necessarily a structural child lambda node of $x$ (\ie, it cannot be a ghost node).
 \end{property}
 \begin{proof}
  If $v$ is empty then the strand ending at $x$
@@ -1270,43 +1267,60 @@ for some subsequence $v$ of $t$, external structural variable node $x$ and exter
  the arity threshold of $t$ is precisely $|x|$ and so rule \rulenamet{IVar} can only be used to visit a structural child of $x$, and not ghost nodes.
 \end{proof}
 
-\begin{proposition}[Strand decomposition of traversals for Quasi-normal forms]
+\begin{definition}[Strand types]
+    \label{def:strandtypes} We distinguish two types of strands based on their shape. A strand is of type:
+    \begin{itemize}
+        \item $S$ (structural) if it is the form $\underline{\lambda\overline{\eta}} \cdot u \cdot \underline{x}$
+            where
+            \begin{itemize}
+            \item $\lambda\overline{\eta}$ is an external structural lambda node verifying $lloc_M(\lambda\overline\eta) = \bot$,
+            \item $u$ is a (possibly empty) \emph{spinal descents} of internal nodes,
+            \item $x$ is an external structural variable node;
+            \end{itemize}
+
+        \item $G$ (ghost) if it is of the form $\underline{\ghostlmd} \cdot  v \cdot \lambda\overline{y} \cdot u \cdot \underline{x}$
+        where
+        \begin{itemize}
+            \item $\ghostlmd$ is an external ghost lambda node,
+            \item $v$ is a \emph{pending parameter lookup} (ghost nodes) of length shorter than $u$,
+            \item $\lambda\overline{y}$ is an internal lambda node verifying $lloc_M(\lambda\overline{y}) = \bot$,
+            \item x is an external structural variable node.
+            \end{itemize}
+        \end{itemize}
+    \end{itemize}
+\end{definition}
+
+\begin{proposition}[Strand decomposition for quasi-normal forms]
 \label{prop:qnf_strand_decomposition}
-Let $M$ be a term in quasi-normal form. Let $t_{\max}$ be a maximal traversal of $M$. Then $t_{\max}$ consists of a succession of strands defined by the following rules:
+If $M$ is a term in quasi-normal form then any maximal traversal $t_{\max}$ of $M$ consists of a succession of strands of type $S$ and $G$. Further, the type of the successive strands is given by the following transition system with two states $S$ and $G$ indicating the type of the current strand:
 \begin{center}
 \begin{tabular}{rlll}
-Case & If the previous strand is & Then next strand is either & Transition \\
+State & Current strand & Next strand & Transition \\
 \hline \hline \\
 Initialization & $\epsilon$ & $\underline{\lambda\overline{\eta_1}} \cdot u_1 \cdot \underline{x_1}$ & $\rightarrow S$\\ \\
 \hline \\
-\multirow{3}{*}{Structural argument} & \multirow{3}{*}{$\underline{\lambda\overline{\eta_1}} \cdot u_1 \cdot \underline{x_1} $}
+\multirow{3}{*}{Structural argument (S)} & \multirow{3}{*}{$\underline{\lambda\overline{\eta_1}} \cdot u_1 \cdot \underline{x_1} $}
  & $\underline{\lambda\overline{\eta_2}} \cdot u_2 \cdot \underline{x_2}$ & $S \rightarrow S$ \\ \\
  & & $\underline{\ghostlmd} \cdot  v \cdot \lambda\overline{y_2} \cdot u_2 \cdot \underline{x_2}$ & $S \rightarrow G$ \\ \\
 \hline \\
-\multirow{3}{*}{Ghost argument} & \multirow{3}{*}{$\underline{\ghostlmd} \cdot  v \cdot \lambda\overline{y_1} \cdot u_1 \cdot \underline{x_1}$}
+\multirow{3}{*}{Ghost argument (G)} & \multirow{3}{*}{$\underline{\ghostlmd} \cdot  v \cdot \lambda\overline{y_1} \cdot u_1 \cdot \underline{x_1}$}
 & $\underline{\lambda\overline{\eta_2}} \cdot u_2 \cdot \underline{x_2}$ & $G \rightarrow S$
 \\ \\
   & & $\underline{\ghostlmd} \cdot v \cdot \lambda\overline{y_2} \cdot u_2 \cdot \underline{x_2}$ & $G \rightarrow G$
 \end{tabular}
 \end{center}
-where
-    \begin{itemize}
-    \item $\lambda\overline{\eta_1}, \lambda\overline{\eta_2}$ are structural external lambda nodes verifying $lloc_M(\lambda\overline\eta_1) = lloc_M(\lambda\overline\eta_2) = \bot$,
-    \item $u_1$ and $u_2$ are possibly empty \emph{spinal descents} (internal nodes),
-    \item $x_1,x_2$ are structural external variable nodes,
-    \item $v$ is a \emph{pending parameter lookup} (ghost nodes) of length shorter than $u_1$,
-    \item $\lambda\overline{y_1}$ and $\lambda\overline{y_2}$ are internal lambda nodes verifying $lloc_M(\lambda\overline{y_1}) = lloc_M(\lambda\overline{y_2}) = \bot$,
-    \item $\lambda\overline{y_2}$ is justified by some $@$-node occurring in $u_1$.
-    \end{itemize}
-Note: we write $S$ to denote a strand of the form $\underline{\lambda\overline{\eta_1}} \cdot u_1 \cdot \underline{x_1}$
-and $G$ to denote a strand of the form $\underline{\ghostlmd} \cdot  v \cdot \lambda\overline{y_2} \cdot u_2 \cdot \underline{x_2}$.
+where $\lambda\overline{y_2}$ is justified by a $@$-node in $u_1$.
 \end{proposition}
 %\begin{proof}
 \proofatend
+By case analysis on the current state:
 \begin{enumerate}
-\item[(Init)] The first strand is obtained by applying the rule \rulenamet{Root} followed by repeated applications of \rulenamet{App} and \rulenamet{Lam}, which yields $u_1$, a path to $\lambda\overline{\eta_1}$ in the tree of $M$. To show that $u_1$ is a spinal descent we need to prove that it does not contain any internal node (only @-node). This must be the case otherwise, since internal variables are by definition involved in some generalized redex, we would have $lloc_M(\underline{\lambda\eta_1}) = z$ where $z$ is the first internal variable occurring in $u_1$, which contradicts $lloc_M(\lambda \overline{\eta}) = lloc_M(M) = \bot$ since $M$ is in \emph{qnf}. Finally, the spinal descent $u_1$ is necessarily terminated by an external variable node $x_1$.
+\item[(Init)] The first strand is obtained by applying the rule \rulenamet{Root} followed by repeated applications of \rulenamet{App} and \rulenamet{Lam}, which yields $u$, a path from the root $\lambda\overline{\eta}$ to some variable node $x$ in the tree of $M$, so that $u$ is a spinal descent consisting only of lambda nodes and application nodes.
+Suppose that $x$ is an internal variable then by definition it is
+involved in some generalized redex and therefore we have $lloc_M(\underline{\lambda\eta}) = x$, but since $M$ is in \emph{qnf} we have $lloc_M(\lambda \overline{\eta}) = lloc_M(M) = \bot$ which gives a contradiction.
+Hence $x$ is an external variable which ends the first strand of type $S$.
 
-\item[(Structural)] Let the previous strand be of form $\underline{\lambda\overline{\eta_1}} \cdot u_1 \cdot \underline{x_1} $.
+\item[(Structural)] The previous strand is of form $\underline{\lambda\overline{\eta_1}} \cdot u_1 \cdot \underline{x_1} $.
 
 If the node following $x_1$ is a structural node $\lambda\overline{\eta_2}$ then by rule \rulenamet{IVar}, it's a child lambda node of $x_1$.
 Because $u_1$ is a spinal descent, the subterm rooted at $\lambda \overline\eta_1$ is of the form $\lambda \overline\eta_1 . x_1 A_1 \ldots A_q$ for some $q\geq1$, therefore we have $lloc_M(\lambda \overline\eta_1 . x_1 A_1 \ldots A_q) = \bot$. Since $x_1$ is external, by Property~\ref{prop:qnf_longapply} we have $lloc_M(A_j)=\bot$ for all $1\leq j\leq q$, so in particular $lloc_M(\lambda\overline{\eta_2}) = \bot$. The same logic used in the \emph{Initialization} case lets us conclude that $u_2$ is a spinal descent to external node $x_2$. We have shown that the next strand is of type $S$.
@@ -1460,8 +1474,7 @@ $G$.
 \endproofatend
 %\end{proof}
 
-Figure~\ref{fig:qnf_strand_decomposition_statemachine} represents the state machine underpinning the above stand decomposition result. The states represents external nodes of the tree: a lambda, ghost lambda or input variable; the bottom two states represent beginning of a new strand in the traversal.
-The solid-arrows represent consecutive applications of deterministic traversal rules while the dashed-arrows represent the two kinds of non-deterministic choices of the \rulenamet{IVar} rule: one for structural child lambda nodes and one for ghost children.
+Figure~\ref{fig:qnf_strand_decomposition_statemachine} represents a more fine-grained state machine that is underpinning the stand decomposition result. There are three states representing each possible type of external node: lambda, ghost lambda or input variable. The bottom two states correspond to the start of a new strand in the traversal. The solid-arrows represent consecutive applications of deterministic traversal rules while dashed-arrows represent the two possible non-deterministic choices in rule \rulenamet{IVar}: one for structural child lambda nodes (left) and one for ghost children (right).
 
 \begin{figure}[htbp]
 \centering
@@ -1975,7 +1988,7 @@ Let $M$ be an untyped term with a beta-normal form.
 (i) If $M$ has a normal form then by Theorem~\ref{thm:soundness_leftmostlinearred}(iii) its linear reduction sequence terminates, and by Prop.~\ref{prop:ulctrav_impl_linear_reduction} the set of traversals of $M$ is isomorphic to the traversals of its quasi normal form. Hence if $M$ has an infinite traversal then so does its \emph{qnf}, which contradicts Proposition~\ref{prop:qnf_traversals_are_finite}.
 (ii) Traversals rules defining $\travsetnorm$ all have bounded non-determinism therefore by (i) $\travsetnorm$ is finite.
 \end{proof}
-\todo{TODO: Find alternative proof based on a traversal argument without appealing to strong normalization of leftmost linear reduction.}
+\todo{TODO: Find alternative proof based on a traversal argument without appealing to termination of leftmost linear reduction for normal forms.}
 
 \begin{proposition}
 Algorithm~\ref{algo:ulc_normalization_by_traversals} terminates.
@@ -1993,9 +2006,9 @@ $$\travsetnorm(M)/{\sim} \ \cong\ \pathset(T)$$
 Let's first assume that $M$ is in beta-normal form. Then its computation tree does not contain any $@$-node, therefore every node is external.
 Hence the arity threshold of any justified sequences $t$ ending with external variable $x$ is precisely $|x|$, the arity of $x$. A trivial induction on the traversal rules thus show that $\travsetnorm(M) = \pathset(M)$. Since all nodes are externals, the projection $\coresymbol$ and $\pview{\_}$ functions both coincides with the identity function thus $\pview{\core{\travsetnorm(M)}} = \travsetnorm(M) = \pathset(M)$.
 
-Otherwise, since $M$ has a beta-nf, by Theorem~\ref{thm:soundness_leftmostlinearred}(iii) its \emph{leftmost linear reduction sequence} terminates and yields the \emph{quasi normal form} (qnf). By Prop.~\ref{prop:ulctrav_impl_linear_reduction} the set of traversals is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of traversals of the \emph{qnf} is isomorphic to the set of traversals of $M$. Proposition~\ref{prop:qnf_and_nf_traveset_invariant} permits us to conclude.
+Otherwise, since $M$ has a beta-nf, by Theorem~\ref{thm:soundness_leftmostlinearred}(iii) its \emph{leftmost linear reduction sequence} terminates and yields the \emph{quasi normal form} (qnf). By Prop.~\ref{prop:ulctrav_impl_linear_reduction} the set of traversals is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of traversals of the \emph{qnf} is isomorphic to the set of traversals of $M$.  Proposition~\ref{prop:qnf_and_nf_traveset_invariant} permits us to conclude.
 \end{proof}
-\todo{TODO: Find alternative proof based on a traversal argument without appealing to strong normalization of leftmost linear readuction.}
+\todo{TODO: Find alternative proof based on a traversal argument without appealing to termination of leftmost linear reduction for normal forms.}
 
 
 \paragraph{Soundness} of the normalization procedure then follows from Theorem~\ref{thm:path_charact_ulc} and the fact that a term is uniquely characterized by its set of paths $\pathset$ (Property~\ref{prop:tree_path_charact}). The last step of the algorithm (assignment of labels to the tree nodes) is sound because by Property~\ref{prop:tree_path_charact} justification pointers uniquely determine variables names.
@@ -2034,13 +2047,13 @@ detailed description of the normalization procedure with the steps involved in r
         %\COMMENT{It's either $@$, some variable name $x$, or $\lambda x_1 \ldots x_m$ for $m\geq 0$}
     \ELSIF{$n \in\ghostlmd$}
         \STATE Let $\alpha$ be a fresh name
-        \COMMENT{Will be used as prefix to name variables bound by this node }
+        \COMMENT{that will be a prefix for names of variable bound by $n$}
         \STATE $id(n) \leftarrow \alpha$
         \STATE $arity \leftarrow \max \{ i \ | \ L(v) = (\ghostvar, n, i) \mbox{ for some } v \in P \}$
         \STATE $L'(n) \leftarrow \lambda \alpha_1 \ldots \alpha_{arity} $
     \ELSIF{$n \in\ghostvar$}
             \STATE $\alpha \leftarrow id(b)$
-            \COMMENT{Get the name prefix previously assigned to the binder}
+            \COMMENT{Get naming prefix associated with this binder}
             \STATE $L'(n) \leftarrow \alpha_i $
             \COMMENT{Two variable occurrences sharing same binder and justification label must have the same name.}
     \ENDIF
@@ -2537,10 +2550,12 @@ But since the left-most occurrence $x$ is involved in the redex $(\lambda x, z)$
          \bot &\mbox{ if } lloc_M(A_i) = \bot \mbox{ for all } 1\leq i\leq n.
         \end{cases}
     \end{align*}
-    \end{property}
-    \begin{proof}
+\end{property}
+\begin{proof}
     Immediate from the definition of $lloc$ since $\lambda_l(y) = \epsilon$.
-    \end{proof}
+\end{proof}
+
+We say that a standard redex $(\lambda x. N) A$ is \defname{trivial} if $x$ does not occur freely in $N$ in which case the redex can be \emph{trivially reduced} to just $N$.
 
 \begin{property}
 \label{prop:lloc_properties}
@@ -2565,8 +2580,6 @@ Some immediate properties:
 (iv) We have $\bot = lloc_{\lambda x . U}(\lambda x . U) = lloc_{\lambda x . U}(U) \sqsupseteq lloc_{U}(U)$.
 (v) and (vi) are immediate from the definition of \emph{lloc} redex.
 \end{proof}
-
-We say that a standard redex $(\lambda x. N) A$ is \emph{trivial} if $x$ does not occur freely in $N$ in which case the redex can be \emph{trivially reduced} to just $N$.
 
 \begin{proposition}[Trivial redexes in quasi normal forms]
 \label{prop:qnf_nf}

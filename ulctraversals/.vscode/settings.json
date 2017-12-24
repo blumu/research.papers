@@ -16,9 +16,8 @@
     ],
     "latex-workshop.latex.additionalBib": [
         "ulctrav.bib"
-
     ],
-    "latex-workshop.chktex.enabled": true,
+    "latex-workshop.chktex.enabled": false,
     "cSpell.words": [
         "bisimilar",
         "bisimilarity",
