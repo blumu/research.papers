@@ -78,16 +78,20 @@
 %%%%%
 
 
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}[section]
-\newtheorem{property}{Property}[section]
-\newtheorem{proposition}{Proposition}[section]
-\newtheorem{remark}{Remark}[section]
-\newtheorem{theorem}{Theorem}[section]
 \newtheorem{conjecture}{Conjecture}[section]
-\newtheorem{lemma}{Lemma}[section]
+\newtheorem{property}{Property}[section]
 \newtheorem{example}{Example}[section]
 \newtheorem{observation}{Observation}[section]
+
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}[section]
 
 \fixstatement{theorem}
 \fixstatement{proposition}
@@ -637,10 +641,10 @@ $$\Pstr[0.7cm]{(n0){\lambda }~(n1){@}\ (n2-n1){\lambda u}~(n3-n2){u}~(n4-n1){\la
 
 \paragraph{Traversal core}
 
-We now generalize the notion of \emph{traversal core} from~\cite{BlumPhd} to imaginary traversals. In the typed setting, the \emph{core} is defined as the subsequence of a traversal consisting of external nodes only. In the untyped setting, this filtering is followed by a relabelling operation on lambda nodes.
+We now generalize the notion of \emph{traversal core} from~\cite{BlumPhd} to imaginary traversals. In the typed setting, the \emph{core} is defined as the subsequence of a traversal consisting of external nodes only. In the untyped setting, this filtering is complemented by a relabelling operation on lambda nodes.
 
 We consider sequences of variable names in $\VarSet^*$ as stacks equipped with stack operations:
-for any sequence of variables $\overline{x} = x_1 \ldots x_n$, the `pop' operation $pop_j$, $n,j\geq0$ removes the first $j$ elements of the sequence: $pop_j (x_1 \ldots x_n) = x_{j+1} \ldots x_n$ if $j<n$, and $pop_j (x_1 \ldots x_n) = \epsilon$ otherwise. And for any sequence $\overline{y} = y_1 \ldots y_m$, $m\geq0$ we write $\overline{x}\overline{y}$ for
+for any sequence of variables $\overline{x} = x_1 \ldots x_n$, $n,j\geq0$, the `pop' operation $pop_j$ removes the first $j$ elements of the sequence: $pop_j (x_1 \ldots x_n) = x_{j+1} \ldots x_n$ if $j<n$, and $pop_j (x_1 \ldots x_n) = \epsilon$ otherwise. And for any sequence $\overline{y} = y_1 \ldots y_m$, $m\geq0$ we write $\overline{x}\overline{y}$ for
 $x_1 \ldots x_n y_1 \ldots y_n$, the stack obtained after pushing the variables $\overline{x}$ (read backwards) onto $\overline{y}$.
 
 
@@ -1544,7 +1548,7 @@ for $r\geq0$, where $@_r$ denotes the parent node of the redex argument, and $\l
 
 (ii) We show by induction on $k$ that $x$ is the variable abstracted by the $i_k$th lambda in $\lambda_l(\lambda\overline{x_k})$, which implies the result since by definition $\lambda x$ forms a generalized redex with the $i_k$th argument of $@_k$.
 Base case $k=1$. By assumption, $\lambda x$ is the $i$th lambda in the bulk lambda $\lambda\overline{x}$. Let $k\geq 1$. By the induction hypothesis $\lambda x$ is the $i_{k-1}$ lambda in $\lambda_l(\lambda\overline{x_{k-1}})$.
-By definition of $k$ we have $i_{k-1}\geq|@_{k-1}|$, therefore by definition of $\lambda_l$, the long-application $@_{k-1}$ has the effect of popping exactly $|@_{k-1}|$ arguments from the lambda-list, and the following abstraction $\lambda\overline{x_k}$ then adds $|\lambda\overline{x_k}|$ more lambdas in front of the lambda list. Hence $\lambda x$ gets moved to position $i_{k-1} - |@_{k-1}| + |\lambda\overline{x_k}| = i_k$ in the lambda list at $\lambda\overline{x_k}$.
+substitution involved iBy definition of $k$ we have $i_{k-1}\geq|@_{k-1}|$, therefore by definition of $\lambda_l$, the long-application $@_{k-1}$ has the effect of popping exactly $|@_{k-1}|$ arguments from the lambda-list, and the following abstraction $\lambda\overline{x_k}$ then adds $|\lambda\overline{x_k}|$ more lambdas in front of the lambda list. Hence $\lambda x$ gets moved to position $i_{k-1} - |@_{k-1}| + |\lambda\overline{x_k}| = i_k$ in the lambda list at $\lambda\overline{x_k}$.
 \end{proof}
 
 
@@ -1559,35 +1563,34 @@ where $\coresymbol$ denotes the core projection of Def.~\ref{def:coreprojection}
 \end{proposition}
 \proofatend
 %\begin{proof}
-We show the equality using a bisimulation argument on the state transition system whose states are the traversals themselves and transitions are given by traversals rules.
+We prove the result using a bisimulation argument on the state transition system whose states are the traversals and transitions are given by traversal rules.
 
-Let $x$ denote the leftmost linear variable occurrence in $M$
-and let $(\lambda x, A)$ be the generalized redex involving it, so that $N$ is the term obtained after firing the generalized redex $(\lambda x, A)$ in $M$.
-Let's look at how leftmost linear substitution affects the computation tree of the term. Three sub-cases shall be considered:
+Suppose that $M \rightarrow_l N$. Let $x$ denote the leftmost linear variable occurrence in $M$ and let $(\lambda x, A)$ be the generalized redex involving it, so that $N$ is the term obtained after firing the generalized redex $(\lambda x, A)$.
+
+The substitution involved in the leftmost linear reduction affects the computation tree in three possible ways depending on $x$'s operands:
 \begin{description}
-    \item[C1. $x$ has at least one operand and $A$ is an abstraction]
-    This case is represented on Figure~\ref{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument}: the label of node $x$ gets replaced by $@$, its existing children are preserved, and $A$ gets prepended as its $0$th child.
-    \item[C2. $x$ has at least one operand and $A$ is not an abstraction]
+    \item[1. $x$ has at least one operand and $A$ is an abstraction]
+    This case is represented on Figure~\ref{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument}: after reduction the label of node $x$ gets replaced by $@$, its existing children are preserved, and $A$ gets prepended as its $0$th child.
+    \item[2. $x$ has at least one operand and $A$ is not an abstraction]
     $A$ is an application so its parent node is a dummy lambda: $A = \lambda. A'$. The tree of $N$ is obtained by preserving $x$'s parent lambda node, substituting $x$ with the root of $A'$ (either another variable or an $@$-node) and prepending $A'$'s children to existing $x$'s children.
-    \item[C3. $x$ is unapplied] (and thus has null arity $|x|$)
-    The subterm $A$ gets plugged in the tree in place of $x$ and its parent lambda node label gets concatenated with the label of $A$'s root node.
+    \item[3. $x$ is unapplied]
+    After reduction, node $x$ gets replaced by subterm $A$ and the label of $x$'s parent lambda node gets concatenated with the label of $A$'s root node.
 \end{description}
 
 A property of the linear head reduction is that the reduct contains the original term itself, modulo alpha conversion and relabelling of the \emph{lloc} node. This induces an implicit map $\phi$ from nodes of the reduct $N$ to those of $M$:
 $$\phi : \ExtendedNodes(N)  \rightarrow \ExtendedNodes(M) $$
-which maps nodes from unmodified subterms of $N$ to their corresponding nodes in $M$, and nodes from the substituted subterm to the corresponding nodes under the argument $A$ of $M$. By abuse of notation we write $\phi$ to denote its element-wise structure-preserving extension over justified sequences of $N$:
+which maps nodes in $N$ resulting from the substitution, to their corresponding nodes in $M$, and nodes from the substituted subterm to the corresponding nodes of argument $A$ in $M$. By abuse of notation we write $\phi$ to denote its element-wise structure-preserving extension\footnote{Recall that two justified sequences over two distinct terms share the same structure just if their constituting nodes are of the same type, have the same link labels, and same pointer lengths.} over justified sequences of $N$:
 $$\phi : \justseqset(N)  \rightarrow \justseqset(M) $$
-(Recall that two justified sequences over two distinct terms share the same structure just if their constituting nodes are of the same type, have the same link labels, and same pointer lengths.)
 
-We observe the immediate property that $\phi$ and $\coresymbol$ commute, shown trivially by induction on the justified sequence.
+An easy induction on justified sequences shows that $\phi$ and $\coresymbol$ commute.
 
 %Summary of the rest of the proof: Observe first that the nodes of the subterm $A$$ map 1-1 to the nodes of the subterm $\phi(x)$ in $N$.
 % We can therefore defined $\psi$ such that all the nodes in $t$ hereditarily justified by the root of $A$ are mapped by $\psi$ to the corresponding nodes in $N$. We omit the full details of the induction which is purely mechanical and straightforward. The idea being that $N$ is obtained by transposing the structure of the subterm $A$ in place of $x$ with the additional relabelling of $x$'s parent $\lambda\overline{y}$ as $\lambda\overline{y}\overline{z}$ where $\lambda\overline{a}$ denotes the root of $A$. The key observation is that this relabelling is innocuous in the sense that all rules applied to $t$ in $M$ can also be applied to $\psi(t)$ in $N$.
 
-For any term $M$ we define $\travset^\dagger(M)$ as the subset of traversals of $\travsetnorm(M)$ ending with either a structural node or an external ghost (\ie, either a non-ghost node or a ghost node hereditarily justified by the root). Observe that any traversal in $t\in\travsetnorm$ can be extended into a traversal in $\travset^\dagger$. Indeed, if $t$ is not in
-$\travset^\dagger$ then it must end with an internal ghost node in which case we can apply rules \rulenamet{Var} and \rulenamet{Lmd} repeatedly until reaching an external node.
+For any term $M$ we define $\travset^\dagger(M)$ as the subset of traversals of $\travsetnorm(M)$ ending with either a structural node or an external ghost (\ie, either a non-ghost node or a ghost node hereditarily justified by the root). Observe that every traversal in $\travsetnorm$ has a traversal extension in $\travset^\dagger$. Indeed, if $t \in \travsetnorm$ is not in
+$\travset^\dagger$ then it must end with an internal ghost node so repeatedly applying rules \rulenamet{Var} and \rulenamet{Lmd} yields a traversal ending with an external node.
 
-Since by definition the core-projection $\coresymbol$ removes all internal nodes from a traversal, to show the desired isomorphism it suffices to prove that the isomorphism holds for the restricted subset $\travset^\dagger$:
+Because the core-projection $\coresymbol$ removes internal nodes from a traversal, to prove the result it suffices to show that the desired isomorphism holds for the restricted subset $\travset^\dagger$:
 \begin{equation}
 \coresymbol(\travset^\dagger(N)) \cong \coresymbol(\travset^\dagger(M))
 \ .\label{eqn:travesetnorm_dagger_eq}
@@ -1682,7 +1685,7 @@ We show that $R$ defines a bisimulation over $X$, that is:
     }
 ;
 \end{tikzpicture}
-\caption{Reduction $M\rightarrow_l N$: Linearly firing the generalized redex $(\lambda x, A)$ for occurrence $x$ in $M$ (left) yields $N$ (right) for fresh variables $\overline{y_2}$. This depicts the situation where node $x$ has at least one operand, and $A$ is a non-dummy abstraction $\lambda\overline{y} . A'$.}
+\caption{Reduction $M\rightarrow_l N$ where node $x$ has at least one operand, and $A$ is a non-dummy abstraction $\lambda\overline{y} . A'$. Linearly firing  generalized redex $(\lambda x, A)$ for $x$ in $M$ (left) yields $N$ (right) with fresh variables $\overline{y_2}$.}
 \label{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument}
 \end{figure}
 
@@ -2570,8 +2573,8 @@ Some immediate properties:
 \item
  If $\lambda x . U$ is in quasi normal form then so is $U$;
  \item If $M$ has a \emph{lloc} redex then $M$ has a redex;
- \item Suppose $M$ has at least one redex.
- If all the redexes are trivial then $M$ is in \emph{qnf}, otherwise M has a \emph{lloc} redex.
+ \item If all the redexes in $M$ are trivial then $M$ is in \emph{qnf}.
+ If $M$ has at least one non-trivial redex then $M$ has a \emph{lloc} redex.
 \end{enumerate}
 \end{property}
 \begin{proof}
