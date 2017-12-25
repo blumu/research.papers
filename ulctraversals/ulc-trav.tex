@@ -2435,7 +2435,71 @@ Therefore the beta-normal from of $varity\ 2$ is:
 \end{align*}
 \end{example}
 
-\todo{Add $\Omega$ traversal example.}
+\begin{example}
+Take the fixed-point combinator $\Omega = (\lambda x. x x) (\lambda y. y y)$ with computation tree:
+\begin{tikzpicture}[baseline=(root.base),level distance=5ex,inner ysep=0.5mm,sibling distance=10mm]
+    \node (root)
+    {$\lambda$}
+    child {node{$@$}
+            child{node{$\lambda x $}
+               child {node {$x_1$}
+                  child {node {$\lambda$}
+                      child {node {$x_2$}
+                      }
+                  }
+               }
+            }
+            child{node{$\lambda y$}
+                child{node{$y_1$}
+                    child{node{$\lambda$}
+                        child{ node {$y_2$}}
+                    }
+                }
+            }
+        }
+    ;
+\end{tikzpicture}
+It's a well known fact that $\Omega$ does not have a normal form.
+The term has a unique (infinite) traversal starting with
+$\Pstr[0.7cm]{{\lambda}\ (n1){@}\ (n2-n1){\lambda x}\ (n3-n2){x_1}\ (n4-n1){\lambda y}\ (n5-n4){y_1}\ (n6-n3){\lambda }\ (n7-n2){x_2}\ (n8-n1){\lambda y}\ (n9-n8){y_1}\ldots }$ and then following a repeated pattern with an increasing number of ghost nodes between occurrences of $y_1$ and $y_2$:
+\resizebox{1\hsize}{!}{
+$$
+\Pstr[0.7cm]{{\lambda }\ (n1){@}\ (n2-n1){\lambda x}\ (n3-n2){x}\ (n4-n1){\lambda y}\ (n5-n4){y}\ (n6-n3){\lambda }\ (n7-n2){x}\ (n8-n1){\lambda y}\ (n9-n8){y}\ (n10-n7){{\ghostlmd^{1}}}\ (n11-n6){{\ghostvar^{1}}}\ (n12-n5){\lambda }\ (n13-n4){y}\ (n14-n3){\lambda }\ (n15-n2){x}\ (n16-n1){\lambda y}\ (n17-n16){y}\ (n18-n15){{\ghostlmd^{1}}}\ (n19-n14){{\ghostvar^{1}}}\ (n20-n13){{\ghostlmd^{1}}}\ (n21-n12){{\ghostvar^{1}}}\ (n22-n11){{\ghostlmd^{1}}}\ (n23-n10){{\ghostvar^{1}}}\ (n24-n9){\lambda }\ (n25-n8){y}\ (n26-n7){{\ghostlmd^{1}}}\ (n27-n6){{\ghostvar^{1}}}\ (n28-n5){\lambda }\ (n29-n4){y}\ (n30-n3){\lambda }\ (n31-n2){x}\ (n32-n1){\lambda y}\ (n33-n32){y}\ (n34-n31){{\ghostlmd^{1}}}\ (n35-n30){{\ghostvar^{1}}}\ (n36-n29){{\ghostlmd^{1}}}\ (n37-n28){{\ghostvar^{1}}}\ (n38-n27){{\ghostlmd^{1}}}\ (n39-n26){{\ghostvar^{1}}}\ (n40-n25){{\ghostlmd^{1}}}\ (n41-n24){{\ghostvar^{1}}}\ (n42-n23){{\ghostlmd^{1}}}\ (n43-n22){{\ghostvar^{1}}}\ (n44-n21){{\ghostlmd^{1}}}\ (n45-n20){{\ghostvar^{1}}}\ (n46-n19){{\ghostlmd^{1}}}\ (n47-n18){{\ghostvar^{1}}}\ (n48-n17){\lambda }\ (n49-n16){y}\ (n50-n15){{\ghostlmd^{1}}}\ (n51-n14){{\ghostvar^{1}}}\ (n52-n13){{\ghostlmd^{1}}}\ (n53-n12){{\ghostvar^{1}}}\ (n54-n11){{\ghostlmd^{1}}}\ (n55-n10){{\ghostvar^{1}}}\ (n56-n9){\lambda }\ (n57-n8){y}\ldots }
+$$
+}
+
+Consider each section of the traversal starting with $y_1$ and ending with $y_2$ with no other variable occurrence in-between, and define its length as the number of ghost nodes in-between. Then the lengths of successive such traversal sections have the following pattern: $2,6,14,30,62\ldots$
+One can show that the length of the $i$th section is precisely given by $2\times(2^i-1)$, for $i\geq1$.
+In other words, as the term is being evaluated, it takes exponentially longer to determine that $y_2$ is the argument of $y_1$.
+
+The infinite traversal $t$ can be expressed as follows (omitting justification pointers):
+
+\begin{equation*}
+t_\Omega = \lambda \cdot @ \cdot \lambda x \cdot  x_1 \cdot \lambda y \cdot y_1
+\cdot  \sum_{i\geq 1}
+    \left[
+        \lambda \cdot x_2 \cdot \lambda y \cdot y_1 \cdot
+         {(\ghostlmd\ \ghostvar)}^{2^i -1}\cdot \lambda \cdot y_2
+             \sum_{i\leq j<i}
+                \left(
+                    {(\ghostlmd\ \ghostvar)}^{2^j -1}
+                    \cdot
+                    \lambda \cdot y_2
+                \right)
+    \right]
+\end{equation*}
+where $\sum$ represents sequence concatenation and $u^i$ represents the concatenation of $i$ copies of $u$ for $i\geq 0$.
+The traversal can be represented more succinctly by keeping only the variable nodes and omitting the redundant lambda and @ nodes:
+\begin{equation*}
+    t_\Omega \filter \NodesVar =  x_1 \cdot y_1
+    \cdot  \sum_{i\geq 1}
+        \left[
+            x_2 \cdot y_1 \cdot
+             \ghostvar^{2^i -1}\cdot y_2
+                 \sum_{i\leq j<i} (\ghostvar^{2^j -1} \cdot y_2)
+        \right] \ .
+\end{equation*}
+\end{example}
 
 \section{Leftmost linear reduction}
 \label{sec:leftmostlinearred}
