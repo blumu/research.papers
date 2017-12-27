@@ -11,7 +11,6 @@
 \usepackage{etex,etoolbox}
 \usepackage{lscape}
 \usepackage{amsmath, amsthm, amssymb}
-%\usepackage{a4wide}
 \usepackage{gamesem}
 \usepackage{pst-tree}
 \usepackage{enumitem}
@@ -26,11 +25,24 @@
 \usepackage{pdflscape}
 \usepackage{multirow}
 \usepackage{subcaption}
+\usepackage{tcolorbox}
 \usetikzlibrary{arrows,automata}
 
+\newtcolorbox{remarkbox}{
+    %colback=red!5!white,
+    colframe=blue!75!black
+}
 
-%%%%%%%%
+\newtcolorbox{todobox}{
+    colback=orange!5!white,
+    colframe=orange!75!black,
+    title=Todo
+}
 
+%%%%%%%% Inline/deferred proof macros
+% Define this macro to defer complex proofs to the end of the document?
+% or comment out to keep default behaviour (inline proof)
+%\def\placeproofsatend{}
 
 \makeatletter
 \providecommand{\@fourthoffour}[4]{#4}
@@ -51,6 +63,8 @@
 \globtoksblk\prooftoks{1000}
 \newcounter{proofcount}
 
+\ifdefined\placeproofsatend
+% Proof marked as '\proofatend' will be placed at the end of the document.
 % We gather the contents of the proof as argument to \proofatend
 % and then we store
 % "\begin{proof}[Proof of <theoremname> <theoremnumber>]#1\end{proof}"
@@ -59,6 +73,12 @@
     \edef\next{\noexpand\begin{proof}[Proof of \pat@label]}%
     \toks\numexpr\prooftoks+\value{proofcount}\relax=\expandafter{\next#1\end{proof}}
     \stepcounter{proofcount}}
+\else
+% Proof marked as '\proofatend' will instead be expanded inline
+\long\def\proofatend#1\endproofatend{%
+    \begin{proof}#1\end{proof}
+}
+\fi
 
 % \printproofs simply loops over the used token registers of the
 % block, freeing their contents
@@ -70,18 +90,14 @@
     \advance\count@\@ne
     \repeat}
 \makeatother
-
-% Here starts the example, with two theorem declarations
-%\newtheorem{thm}{Theorem}
-%\newtheorem{lem}[thm]{Lemma}
-
-%%%%%
+%%%%% END OF Inline/deferred proof macros
 
 
 \theoremstyle{plain}
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
 
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}[section]
@@ -683,7 +699,9 @@ Since the core of a justified sequence only contains external nodes it follows t
     Then $\coresymbol(t) = \lambda wy \cdot z$.
 \end{example}
 
-\todo{Minor: Add an example of core projection involving an external ghost lambda nodes.}
+\begin{todobox}
+Add an example of core projection involving an external ghost lambda nodes.
+\end{todobox}
 
 \subsection{Imaginary traversals subsume STLC traversals}
 
@@ -1478,7 +1496,7 @@ $G$.
 \endproofatend
 %\end{proof}
 
-Figure~\ref{fig:qnf_strand_decomposition_statemachine} represents a more fine-grained state machine that is underpinning the stand decomposition result. There are three states representing each possible type of external node: lambda, ghost lambda or input variable. The bottom two states correspond to the start of a new strand in the traversal. The solid-arrows represent consecutive applications of deterministic traversal rules while dashed-arrows represent the two possible non-deterministic choices in rule \rulenamet{IVar}: one for structural child lambda nodes (left) and one for ghost children (right).
+Figure~\ref{fig:qnf_strand_decomposition_statemachine} represents the more fine-grained state machine underpinning the stand decomposition result. It has three states representing each possible type of external node: lambda, ghost lambda or input variable. The bottom two states correspond to the start of a new strand in the traversal. The solid-arrows represent consecutive applications of deterministic traversal rules while dashed-arrows represent the two possible non-deterministic choices in rule \rulenamet{IVar}: one for structural child lambda nodes (left) and one for ghost children (right).
 
 \begin{figure}[htbp]
 \centering
@@ -1507,7 +1525,7 @@ Figure~\ref{fig:qnf_strand_decomposition_statemachine} represents a more fine-gr
 
 \begin{proposition}
 \label{prop:qnf_traversals_are_finite}
-If $M$ is in \emph{quasi normal form} and $t$ is a traversal in $\travsetnorm(N)$ Then.
+Let $t \in \travsetnorm(M)$ for some \emph{quasi normal} term $M$. We have:
 \begin{enumerate}[label=(\alph*)]
 \item $lloc_M(\alpha) = \bot$ for all external lambda node $\alpha \in \NodesLmd$ occurring in $t$.
 \item $t$ does not contain any internal variable node (\ie, all the internal nodes are $@$ nodes);
@@ -1559,7 +1577,6 @@ the sets of traversals $\travsetnorm$ before and after reduction are identical u
 Let $M$ be an untyped term.
 $$M \rightarrow_l N \implies \coresymbol(\travsetnorm(M)) \cong \coresymbol(\travsetnorm(N)) \ .
 $$
-where $\coresymbol$ denotes the core projection of Def.~\ref{def:coreprojection}.
 \end{proposition}
 \proofatend
 %\begin{proof}
@@ -1759,8 +1776,7 @@ We can now use Property (B1) and (B2) to conclude that $\phi$ defines a bijectio
 
 \begin{proposition}[Traversals are sound for trivial reduction]
 \label{prop:ulctrav_sound_for_trivialreduction}
-    Let $M$ be an untyped term containing only trivial redexes.
-    Let $N$ be the term obtained by firing the leftmost innermost trivial redex, then $\coresymbol(\travsetnorm(M)) \cong \coresymbol(\travsetnorm(N))$.
+    Let $M$ be an untyped term containing only trivial redexes, and $N$ the reduct obtained by firing the leftmost innermost trivial redex, then $\coresymbol(\travsetnorm(M)) \cong \coresymbol(\travsetnorm(N))$.
 \end{proposition}
 \proofatend
 %\begin{proof}
@@ -1969,50 +1985,53 @@ $\Pstr[10pt]{(l){\lambda x^{[z]}} \cdot (gv-l,32:2)\ghostvar }$, itself equivale
 \end{example}
 
 
-\begin{proposition}
-\label{prop:qnf_and_nf_traveset_invariant}
+\begin{corollary}
+\label{cor:qnf_and_nf_traveset_invariant}
 If $M$ is in \emph{qnf} and has beta-normal form $N$ then $\coresymbol(\travsetnorm(M)) \cong \coresymbol(\travsetnorm(N))$.
-\end{proposition}
+\end{corollary}
 \begin{proof}
 By Theorem~\ref{thm:soundness_leftmostlinearred}(ii) a \emph{qnf} trivially reduces to its beta-nf: there is a beta reduction sequence $M = M_1 \rightarrow_\beta M_2 \ldots \rightarrow_\beta M_q= N$, $q\geq1$  where for each reduction step, $M_{i+1}$ is obtained by reducing the leftmost innermost standard redex of $M_i$ (of the form $(\lambda x . U) T$ such that $U$ does not contain any redex). By Proposition~\ref{prop:qnf_nf}(ii), each such redex is trivial: $x$ does not occur freely in $U$ and therefore no substitution is performed to reduce the redex.
 
-By Proposition~\ref{prop:ulctrav_sound_for_trivialreduction} the set $\core{\travsetnorm}$ is an invariant (up to isomorphism) through this trivial reduction sequence, which yields the desired result.
+By Proposition~\ref{prop:ulctrav_sound_for_trivialreduction} the set $\core{\travsetnorm}$ is an invariant (up to isomorphism) throughout this trivial reduction sequence, which yields the desired result.
 \end{proof}
 
-\begin{property}
+\begin{proposition}
 \label{prop:ulc_travnorm_finite}
 Let $M$ be an untyped term with a beta-normal form.
 \begin{enumerate}[label=(\roman*)]
 \item All traversals in $\travsetnorm(M)$ are finite;
 \item The set $\travsetnorm(M)$ is finite.
 \end{enumerate}
-\end{property}
+\end{proposition}
 \begin{proof}
 (i) If $M$ has a normal form then by Theorem~\ref{thm:soundness_leftmostlinearred}(iii) its linear reduction sequence terminates, and by Prop.~\ref{prop:ulctrav_impl_linear_reduction} the set of traversals of $M$ is isomorphic to the traversals of its quasi normal form. Hence if $M$ has an infinite traversal then so does its \emph{qnf}, which contradicts Proposition~\ref{prop:qnf_traversals_are_finite}.
 (ii) Traversals rules defining $\travsetnorm$ all have bounded non-determinism therefore by (i) $\travsetnorm$ is finite.
 \end{proof}
-\todo{TODO: Find alternative proof based on a traversal argument without appealing to termination of leftmost linear reduction for normal forms.}
+\begin{remarkbox}
+Observe that the above proof crucially relies on termination of leftmost linear reduction.
+\end{remarkbox}
 
 \begin{proposition}
 Algorithm~\ref{algo:ulc_normalization_by_traversals} terminates.
 \end{proposition}
 \begin{proof}
-By Prop.~\ref{prop:ulc_travnorm_finite} there is a finite number of traversals in $\travsetnorm$ and each of them can be obtained with finitely many applications of traversal rules.
+By Proposition~\ref{prop:ulc_travnorm_finite} there is a finite number of traversals in $\travsetnorm$ and each of them can be obtained with finitely many applications of traversal rules.
 \end{proof}
 
 \begin{theorem}[Normalized Paths Characterization for ULC]
 \label{thm:path_charact_ulc}
-For any untyped term $M$ with a normal form $T$ we have the following isomorphism
-$$\travsetnorm(M)/{\sim} \ \cong\ \pathset(T)$$
+For any untyped term $M$ with a normal form $T$ we have:
+$$\travsetnorm(M)/{\sim} \ \cong\ \pathset(T) \ .$$
 \end{theorem}
-\begin{proof}%[Proof of Theorem~\ref{thm:path_charact_ulc}]
+\begin{proof}
 Let's first assume that $M$ is in beta-normal form. Then its computation tree does not contain any $@$-node, therefore every node is external.
 Hence the arity threshold of any justified sequences $t$ ending with external variable $x$ is precisely $|x|$, the arity of $x$. A trivial induction on the traversal rules thus show that $\travsetnorm(M) = \pathset(M)$. Since all nodes are externals, the projection $\coresymbol$ and $\pview{\_}$ functions both coincides with the identity function thus $\pview{\core{\travsetnorm(M)}} = \travsetnorm(M) = \pathset(M)$.
 
-Otherwise, since $M$ has a beta-nf, by Theorem~\ref{thm:soundness_leftmostlinearred}(iii) its \emph{leftmost linear reduction sequence} terminates and yields the \emph{quasi normal form} (qnf). By Prop.~\ref{prop:ulctrav_impl_linear_reduction} the set of traversals is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of traversals of the \emph{qnf} is isomorphic to the set of traversals of $M$.  Proposition~\ref{prop:qnf_and_nf_traveset_invariant} permits us to conclude.
+Otherwise, since $M$ has a beta-nf, by Theorem~\ref{thm:soundness_leftmostlinearred}(iii) its \emph{leftmost linear reduction sequence} terminates and yields the \emph{quasi normal form} (qnf). By Prop.~\ref{prop:ulctrav_impl_linear_reduction} the set of traversals is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of traversals of the \emph{qnf} is isomorphic to the set of traversals of $M$.  Corollary~\ref{prop:qnf_and_nf_traveset_invariant} permits us to conclude.
 \end{proof}
-\todo{TODO: Find alternative proof based on a traversal argument without appealing to termination of leftmost linear reduction for normal forms.}
 
+\begin{remarkbox}Observe that the above proof crucially relies on soundness and completeness of leftmost linear reduction (\ie, that the leftmost linear reduction sequence terminates if it has a normal form, and yields the quasi-normal form).
+\end{remarkbox}
 
 \paragraph{Soundness} of the normalization procedure then follows from Theorem~\ref{thm:path_charact_ulc} and the fact that a term is uniquely characterized by its set of paths $\pathset$ (Property~\ref{prop:tree_path_charact}). The last step of the algorithm (assignment of labels to the tree nodes) is sound because by Property~\ref{prop:tree_path_charact} justification pointers uniquely determine variables names.
 
@@ -2695,7 +2714,7 @@ We have:
 (ii) The idea consists in reducing the redex `inside-out' from left to right. By Proposition~\ref{prop:qnf_nf}(ii), each reduction is trivial and it is easy to see that  $lloc$ is preserved by trivial reduction, therefore each term in the reduction sequence is in \emph{qnf}. The last term in the sequence has no redex therefore it's in beta-normal form.
 
 (iii) We can either appeal to the proof argument of Danos-Regnier in~\cite{danos-head}, or the forthcoming paper by Berezun\cite{DaniilBerezun_Soundness}.
-%\todo{Hopefully the proof of (ii) should not involve state machine/stack/environments, ...}
+%\todo{Hopefully the proof should not involve state machine/stack/environments, ...}
 \end{proof}
 
 \begin{definition}[Leftmost redex sequence]
