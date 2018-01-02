@@ -28,6 +28,12 @@
 \usepackage{tcolorbox}
 \usetikzlibrary{arrows,automata}
 
+\newtcolorbox{ruletablebox}[1]{
+    %colback=red!5!white,
+    colframe=blue!75!black,
+    title=#1
+}
+
 \newtcolorbox{remarkbox}{
     %colback=red!5!white,
     colframe=blue!75!black
@@ -36,7 +42,7 @@
 \newtcolorbox{todobox}{
     colback=orange!5!white,
     colframe=orange!75!black,
-    title=Todo
+    title=TODO
 }
 
 %%%%%%%% Inline/deferred proof macros
@@ -504,22 +510,22 @@ The set of \defname{traversals} of an untyped lambda term $M$, denoted $\travulc
 A traversal that does not have any extension is a \defname{maximal traversal}.
 \end{definition}
 
-\begin{FramedTable}
+\begin{table}
+\begin{ruletablebox}{Imaginary traversals of $\lambda$-calculus}
 \noindent {\bf PROGRAM -- Structural rules}
-\begin{itemize}[]
-    \item\rulenamet{Root} The singleton sequence $r$ is in $\travulc$ where $r$ is the root of the tree.
+\begin{itemize}[leftmargin=3em]
+    \item[\rulenamet{Root}] The singleton sequence $r$ is in $\travulc$ where $r$ is the root of the tree.
 
-    \item \rulenamet{App} If $t \cdot @$ is a traversal then so is \Pstr[0.4cm]{t \cdot (at) @  \cdot (a-at,40:0) \alpha} where $\alpha\in\NodesLmd$ is $@$'s $0$th child $\lambda$-node.
+    \item[\rulenamet{App}] If $t \cdot @$ is a traversal then so is \Pstr[0.4cm]{t \cdot (at) @  \cdot (a-at,40:0) \alpha} where $\alpha\in\NodesLmd$ is $@$'s $0$th child $\lambda$-node.
 
-    \item \rulenamet{Lam} If $t \cdot \alpha$ is a traversal where $\alpha\in\NodesLmd$ then so is $t \cdot \alpha \cdot n$ where $n$ denotes $\alpha$'s unique child. Furthermore:
+    \item[\rulenamet{Lam}] If $t \cdot \alpha$ is a traversal where $\alpha\in\NodesLmd$ then so is $t \cdot \alpha \cdot n$ where $n$ denotes $\alpha$'s unique child. Furthermore:
         \begin{compactitem}
-            \item \rulenamet{Lam^@} If $n$ is an $@$-node then it has no justifier,
-            \item \rulenamet{Lam^{\sf var}} If $n$ is a free variable node then it points
-            to the only occurrence of the root in
-            $\pview{t \cdot \alpha}$. If $n$ is a bound variable then it points to the only occurrence of its binder in $\pview{t\cdot \alpha}$.
+            \item[\rulenamet{Lam^@}] If $n$ is an $@$-node then it has no justifier,
+            \item[\rulenamet{Lam^{\sf var}}] If $n$ is a free variable node then it points to the only occurrence of the root in
+            $\pview{t \cdot \alpha}$. Otherwise it points to the only occurrence of its binder in $\pview{t\cdot \alpha}$.
         \end{compactitem}
 
-    \item \rulenamet{Lam^\ghostlmd} If
+    \item[\rulenamet{Lam^\ghostlmd}] If
   $\Pstr[0.5cm]{ t \cdot(alpha){\alpha} \cdot
 (n){n} \cdot \ldots \cdot
 (gl-n,40:i){\ghostlmd} \in\travulc}$ for some prefix $t$, $\alpha \in \ImNodesLmd$ and $n \in\ImNodesVar$ then
@@ -530,34 +536,35 @@ $$\Pstr[0.5cm]{ t \cdot(alpha){\alpha} \cdot
       \in\travulc}$$
 \end{itemize}
 \emph{\bf PROGRAM -- Copy-cat rules}
-\begin{itemize}
-\item \rulenamet{Var} If \Pstr[0.5cm]{t \cdot (m){m} \cdot (alpha){\alpha}
+\begin{itemize}[leftmargin=3em]
+\item[\rulenamet{Var}] If \Pstr[0.5cm]{t \cdot (m){m} \cdot (alpha){\alpha}
     \ldots (n-alpha,50:i){n} \in \travulc} for $i>0$, $n \in \ImNodesVar$ hereditarily justified by an $@$-node;
      $m \in\ImNodesVar \union \NodesApp$; and $\alpha \in \ImNodesLmd$ then:
   $$\Pstr[0.5cm]{ t  \cdot
 (m){m} \cdot (lx){\alpha}  \ldots (x-lx,30:i){n}
     \cdot (letai-m,40:i){\beta}
      \in\travulc}$$
-\begin{description}[align=right,labelwidth=2cm]
+\begin{description}[align=right,leftmargin=10em]
 \item[Concrete] $i \leq |m|$: $\beta\in\NodesLmd$ is the $i$th child of $m$;
 \item[Eta-expanded] $i > |m|$: $\beta$ is a ghost lambda node $\ghostlmd$.
 \end{description}
 \end{itemize}
 
 \emph{\bf DATA -- Input-variable rules}
-\begin{itemize}
-\item \rulenamet{IVar} If $t \cdot n$ is a traversal where $n \in \ImNodesVar$ is hereditarily justified by the root. For every node $m \in \ImNodesVar$ occurring in $\oview{t\cdot n}$
+\begin{itemize}[leftmargin=3em]
+\item[\rulenamet{IVar}] If $t \cdot n$ is a traversal where $n \in \ImNodesVar$ is hereditarily justified by the root. For every node $m \in \ImNodesVar$ occurring in $\oview{t\cdot n}$
 and every $i\geq1$ we have $t \cdot n \cdot\alpha\in\travulc$ with $\alpha$ pointing to $m$ with label $i$, where:
-\begin{description}[align=right,labelwidth=2cm]
+\begin{description}[align=right,leftmargin=10em]
 \item[Concrete] $i\leq|m|$: $\alpha\in\Nodes_\lambda$ is the $i$th child of $m$;
 \item[Eta-expanded] $i>|m|$: $\alpha$ is a ghost lambda node $\ghostlmd$.
 \end{description}
 \end{itemize}
 
 
-\caption{Imaginary traversals $\travulc$ of the untyped lambda calculus}
+\caption{Imaginary traversals $\travulc$ of the untyped lambda calculus.}
  \label{tab:trav_rules}
-\end{FramedTable}
+\end{ruletablebox}
+\end{table}
 
 Some immediate property that can be shown by induction on the rules:
 \begin{property}
@@ -2236,7 +2243,8 @@ detailed description of the normalization procedure with the steps involved in r
 \end{algorithm}
 
 
-\begin{FramedTable}
+\begin{table}
+\begin{ruletablebox}{Normalizing imaginary traversals of $\lambda$-calculus}
 \noindent {\bf PROGRAM - Structural rules}
 
 \infrule[$\rulefont{Root}_\normalizing$]
@@ -2306,9 +2314,11 @@ detailed description of the normalization procedure with the steps involved in r
 
 where $t, u, v$ range over (sub-sequences of) justified sequences of nodes.
 
-\caption{Normalizing traversals $\travsetnorm$ of the untyped lambda calculus (ULC).}
+\caption{Normalizing traversals $\travsetnorm$ of the untyped lambda calculus.
+Those judgement rules define $\travsetnorm$ as a strict subset of imaginary traversals $\travulc$ from Table \ref{tab:trav_rules}. Only rule $\rulefont{IVar_\normalizing}$ and $\rulefont{IVar}$ differ.}
 \label{tab:normalizing_trav_rules}
-\end{FramedTable}
+\end{ruletablebox}
+\end{table}
 
 
 \subsection{ULC Normalization Examples}
