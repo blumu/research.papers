@@ -2521,12 +2521,9 @@ Let $M$ be an untyped term with a beta-normal form.
 \end{enumerate}
 \end{proposition}
 \begin{proof}
-(i) If $M$ has a normal form then by Theorem~\ref{thm:soundness_leftmostlinearred}(iii) its linear reduction sequence terminates, and by Prop.~\ref{prop:ulctrav_impl_linear_reduction} the set of traversals of $M$ is isomorphic to the traversals of its quasi normal form. Hence if $M$ has an infinite traversal then so does its \emph{qnf}, which contradicts Proposition~\ref{prop:qnf_traversals_are_finite}.
+(i) If $M$ has a normal form then by Theorem~\ref{thm:soundness_leftmostlinearred}(iii) its linear reduction sequence yields a quasi-normal form $Q$ and by Theorem~\ref{thm:soundness_leftmostlinearred}(i) $Q$ and $M$ are beta-equivalent. Thus by Prop.~\ref{prop:ulctrav_impl_linear_reduction} the sets of traversals of $M$ and $Q$ are isomorphic. So if $M$ has an infinite traversal then so does $Q$, which contradicts Proposition~\ref{prop:qnf_traversals_are_finite}.
 (ii) Traversals rules defining $\travsetnorm$ all have bounded non-determinism therefore by (i) $\travsetnorm$ is finite.
 \end{proof}
-\begin{remarkbox}
-Observe that the above proof crucially relies on termination of leftmost linear reduction for terms with a normal form.
-\end{remarkbox}
 
 \begin{proposition}
 Algorithm~\ref{algo:ulc_normalization_by_traversals} terminates.
@@ -2541,14 +2538,11 @@ For any untyped term $M$ with a normal form $T$ we have:
 $$\travsetnorm(M)/{\sim} \ \cong\ \pathset(T) \ .$$
 \end{theorem}
 \begin{proof}
-Let's first assume that $M$ is in beta-normal form. Then its computation tree does not contain any $@$-node, therefore every node is external.
-Hence the arity threshold of any justified sequences $t$ ending with external variable $x$ is precisely $|x|$, the arity of $x$. A trivial induction on the traversal rules thus show that $\travsetnorm(M) = \pathset(M)$. Since all nodes are externals, the projection $\coresymbol$ and $\pview{\_}$ functions both coincides with the identity function thus $\pview{\core{\travsetnorm(M)}} = \travsetnorm(M) = \pathset(M)$.
+Let's first assume that $M$ is in beta-normal form. Then its computation tree does not contain any $@$-node, therefore all nodes are external.
+Hence the arity threshold of a traversal ending with external variable $x$ is precisely $|x|$, the arity of $x$. A trivial induction on the traversal rules shows, that since the \rulename{Var} is never used, we necessarily have  $\travsetnorm(M) = \pathset(M)$. Further, since all nodes are externals, the projection $\coresymbol$ and $\pview{\_}$ functions both coincides with the identity function thus $\pview{\core{\travsetnorm(M)}} = \travsetnorm(M) = \pathset(M)$.
 
-Otherwise, since $M$ has a beta-nf, by Theorem~\ref{thm:soundness_leftmostlinearred}(iii) its \emph{leftmost linear reduction sequence} terminates and yields the \emph{quasi normal form} (qnf). By Prop.~\ref{prop:ulctrav_impl_linear_reduction} the set of traversals is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of traversals of the \emph{qnf} is isomorphic to the set of traversals of $M$.  Corollary~\ref{cor:qnf_and_nf_traveset_invariant} permits us to conclude.
+Otherwise, since $M$ has a beta-nf, by Theorem~\ref{thm:soundness_leftmostlinearred}(iii) its \emph{leftmost linear reduction sequence} terminates and yields a \emph{quasi normal form} (qnf). By Prop.~\ref{prop:ulctrav_impl_linear_reduction} the set of traversals is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of traversals of the \emph{qnf} is isomorphic to the set of traversals of $M$.  Corollary~\ref{cor:qnf_and_nf_traveset_invariant} permits us to conclude.
 \end{proof}
-
-\begin{remarkbox}Observe that the above proof crucially relies on soundness and completeness of leftmost linear reduction (\ie, that the leftmost linear reduction sequence terminates if it has a normal form, and yields the quasi-normal form).
-\end{remarkbox}
 
 \paragraph{Soundness} of the normalization procedure then follows from Theorem~\ref{thm:path_charact_ulc} and the fact that a term is uniquely characterized by its set of paths $\pathset$ (Property~\ref{prop:tree_path_charact}). The last step of the algorithm (assignment of labels to the tree nodes) is sound because by Property~\ref{prop:tree_path_charact} justification pointers uniquely determine variables names.
 
