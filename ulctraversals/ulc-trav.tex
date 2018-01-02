@@ -28,6 +28,15 @@
 \usepackage{tcolorbox}
 \usetikzlibrary{arrows,automata}
 
+
+%%%%%%%% Inline/deferred proof macros
+% Define this macro to defer complex proofs to the end of the document?
+% or comment out to keep default behaviour (inline proof)
+%\def\placeproofsatend{}
+
+%%%%%%%% Uncomment to include TODO boxes
+\def\includetodos{}
+
 \newtcolorbox{ruletablebox}[1]{
     %colback=red!5!white,
     colframe=blue!75!black,
@@ -35,20 +44,18 @@
 }
 
 \newtcolorbox{remarkbox}{
-    %colback=red!5!white,
     colframe=blue!75!black
 }
 
+\ifdefined\includetodos
 \newtcolorbox{todobox}{
     colback=orange!5!white,
     colframe=orange!75!black,
     title=TODO
 }
-
-%%%%%%%% Inline/deferred proof macros
-% Define this macro to defer complex proofs to the end of the document?
-% or comment out to keep default behaviour (inline proof)
-%\def\placeproofsatend{}
+\else
+\newcommand\todobox[1]{}
+\fi
 
 \makeatletter
 \providecommand{\@fourthoffour}[4]{#4}
@@ -196,25 +203,26 @@
 \def\istraversal{\models}
 
 \author{William Blum}
-\title{Normalizing Lambda Terms with Imaginary Traversals [Draft]}
-%\title{Normalizing Untyped Lambda Terms via Imaginary Traversals [Draft]}
+\title{Reducing Lambda Terms with Imaginary Traversals}
+% Normalizing Untyped Lambda Terms via Imaginary Traversals
 % Imaginary Normalizing Traversals
 % Imaginary Traversals and Leftmost Linear Reduction
-% Normalizing Lambda Terms via Imaginary Traversals  and Leftmost Linear Reduction
+% Normalizing Lambda Terms via Imaginary Traversals and Leftmost Linear Reduction
 % Normalizing Lambda Terms via Traversals and on-the-fly eta-expansion
-% Normalizing Lambda Terms with Imaginary Traversals [Draft]
+% Normalizing Lambda Terms with Imaginary Traversals
 
 \begin{document}
 \maketitle
 \begin{abstract}
-We introduce a method to normalize untyped lambda terms, when the normal-form exists, by combining the theory of traversals, a term-tree traversing techniques inspired from Game Semantics~\cite{Ong2006,BlumPhd}, and judicious use of the eta-conversion rule of the lambda calculus.
+We introduce a method to reduce untyped lambda terms that yields the normal-form if it exists. The method combines the theory of traversals, a term-tree traversing techniques inspired from Game Semantics~\cite{Ong2006,BlumPhd}, with judicious use of the eta-conversion rule of the lambda calculus.
 
-Little modifications to the traversal theory of the simply-typed lambda calculus~\cite{BlumPhd} is needed. A notable improvement is that eta-long transformation is unnecessary: we traverse the original unmodified term tree. Blindly applying the original traversal rules on untyped terms, which do not have a (finite) eta-long form, causes traversals to get `stuck' when an application operand is lacking; whereas in a typed setting, eta-long transform ensures that application operands necessarily exist. Relaxing this structural requirement altogether induces the notion of ``imaginary'' nodes: those are nodes that would exist
- if the subterm with the missing operand were to be eta-expanded. This allows the traversal to proceed.
+This technique requires little modifications to the traversal theory of the simply-typed lambda calculus~\cite{BlumPhd}. A notable improvement is that eta-long transformation is unnecessary: we traverse some syntax tree of the original unmodified lambda term.
 
-We show that by bounding the non-determinism of the free variable rule, it is possible to effectively compute a subset of traversals characterizing the set of paths in the beta-normal form of the term. This yields a normalization algorithm for untyped terms with a normal form.
+In the typed setting, when traversing a redex the eta-long transform ensures that the argument can be determined from the operands of the application node involved in the redex.
+Traversing untyped terms by blindly applying the same rules fails when the application node lacks the required operand. To work around this limitation we relax the structural restriction altogether and just pretend that the missing operand exists. This induces the notion of ``imaginary'' nodes: those are tree nodes that would exist if the subterm with the missing operand were to be eta-expanded. This trick allows the traversal to proceed.
 
-We prove correctness of the normalization procedure by showing that the traversals theory implements \emph{leftmost linear reduction}, a generalization of the head linear reduction of Danos-Regnier~\cite{danos-head}.
+We further show that by bounding the non-determinism of the free variable rule, one can effectively compute a subset of traversals characterizing the set of paths in the beta-normal form of the term. This yields a normalization algorithm for untyped terms admitting a normal form.
+Finally we prove correctness of the reduction procedure by showing that traversals implements \emph{leftmost linear reduction}, a generalization of the head linear reduction of Danos-Regnier~\cite{danos-head}.
 \end{abstract}
 
 \section{Background}
@@ -256,8 +264,8 @@ In~\cite{BlumPhd} we extended the theory of traversals to the simply-typed lambd
 
  This correspondence with Game Semantics yields a method to reduce beta-redexes in simply-typed lambda-terms. This normalization procedure was studied in~\cite{BlumPhd,BlumGalop2008,Blum-HogTool,Ong-NormByTrav2015} and implemented in the HOG tool\cite{BlumGalop2008, BlumPhd}. We recall these results in Section~\ref{sec:traversal_correspondence_stlc}.
 
-The work presented in the present paper can be viewed as a generalization of this work to the untyped case. Proposition~\ref{prop:ulc_and_stlc_trav_coincide} shows that the two definition coincide for simply-typed terms.
-A notable difference, however, is that the normalization procedure introduced here produces the beta-normal form of the term rather than its beta-eta-long normal form. Furthermore, we proof soundness without appealing to Game Semantics.
+The work presented in the present paper can be viewed as a generalization of this work to the untyped case. Proposition~\ref{prop:ulc_and_stlc_trav_coincide} shows that the two definitions coincide for simply-typed terms.
+A notable difference, however, is that the normalization procedure introduced in this paper produces the beta-normal form of the term rather than its beta-\emph{eta-long} normal form. Furthermore, we proof soundness without appealing to Game Semantics.
 
 \subsubsection{Berezun-Jones traversals}
 Berezun and Jones were first to introduce a notion of traversals for the \emph{untyped} lambda calculus (ULC)~\cite{JonesBerezunLLL}. Although they took inspiration from the Game Semantic traversals of~\cite{Ong2006,BlumGalop2008}, their definition is more operational in nature and does not directly relate to the game denotation of a term. Starting from an operational semantics of the untyped lambda calculus they derive a normalization method that, very much like the traversal of~\cite{Ong2006, BlumPhd}, proceeds by traversing some tree representation of the term.
@@ -1578,13 +1586,19 @@ We have:
 \end{enumerate}
 \end{theorem}
 \begin{proof}
-(i) The proof can be adapted from Danos-Regnier's proof of the same result for head-linear reduction~\cite{danos-head}.
-%\todo{Include proof details by adapting Danos-Regnier proof to the definition of \emph{leftmost} linear reduction.}
+(i) This is the counterpart of Theorem 2 from \cite{danos-head} for the head linear reduction.
+
+The proof can be adapted from Danos-Regnier's proof of the same result for head-linear reduction~\cite{danos-head}.
+\begin{todobox}
+Include proof details by adapting Danos-Regnier proof to the definition of \emph{leftmost} linear reduction.
+\end{todobox}
 
 (ii) The idea consists in reducing the redex `inside-out' from left to right. By Proposition~\ref{prop:qnf_nf}(ii), each reduction is trivial and it is easy to see that  $lloc$ is preserved by trivial reduction, therefore each term in the reduction sequence is in \emph{qnf}. The last term in the sequence has no redex therefore it's in beta-normal form.
 
 (iii) We can either appeal to the proof argument of Danos-Regnier in~\cite{danos-head}, or the forthcoming paper by Berezun\cite{DaniilBerezun_Soundness}.
-%\todo{Hopefully the proof should not involve state machine/stack/environments, ...}
+\begin{todobox}
+Hopefully the proof should not involve state machine/stack/environments, ...
+\end{todobox}
 \end{proof}
 
 \begin{definition}[Leftmost redex sequence]
@@ -2229,8 +2243,8 @@ Observe that the result holds trivially up until the traversal in $M$ reaches oc
     But by the P-view path characterization of traversals $\pview{\phi_1(u)}$ is precisely the path in $M$ from $\Phi(n)$ to the root of $M$,
     and $\pview{u}$ is the path in $N$ from $n$ to the root of $N$.
 
-    If $n$ is not under $\lamda\overline{y}'.R'$ then the path to the root is not impacted by the reduction and therefore the path in $M$ and $N$ are identical modulo $\phi$: we thus have $\pview{\phi_1(u)} = \phi_1(\pview{u})$.
-    Otherwise if $n$ is under $\lamda\overline{y}'.R'$ then the path from $m$ to the root in $M$ is precisely the element-wise image by $\Phi$ of the path from $n$ to the root in $N$ with the exclusion of the spinal descent from $@_a$ to $@_x$. But by construction of $N$, none of the variable in $R'$ are bound by the lambda nodes in the spinal descent.
+    If $n$ is not under $\lambda\overline{y}'.R'$ then the path to the root is not impacted by the reduction and therefore the path in $M$ and $N$ are identical modulo $\phi$: we thus have $\pview{\phi_1(u)} = \phi_1(\pview{u})$.
+    Otherwise if $n$ is under $\lambda\overline{y}'.R'$ then the path from $m$ to the root in $M$ is precisely the element-wise image by $\Phi$ of the path from $n$ to the root in $N$ with the exclusion of the spinal descent from $@_a$ to $@_x$. But by construction of $N$, none of the variable in $R'$ are bound by the lambda nodes in the spinal descent.
 
     Hence we the rule $\rulename{Lam}^{\sf var}_\normalizing$ used to extend  $u$ can also be used to extend $t$, and reciprocally.
 
@@ -2511,7 +2525,7 @@ Let $M$ be an untyped term with a beta-normal form.
 (ii) Traversals rules defining $\travsetnorm$ all have bounded non-determinism therefore by (i) $\travsetnorm$ is finite.
 \end{proof}
 \begin{remarkbox}
-Observe that the above proof crucially relies on termination of leftmost linear reduction.
+Observe that the above proof crucially relies on termination of leftmost linear reduction for terms with a normal form.
 \end{remarkbox}
 
 \begin{proposition}
@@ -2939,8 +2953,10 @@ Head linear reduction is  a non-standard reduction strategy for the lambda calcu
 
 \appendix
 
-%\section*{Appendix: Proofs}
-%\printproofs
+\ifdefined\placeproofsatend
+\section*{Appendix: Proofs}
+\printproofs
+\fi
 
 %\input{notes_neildaniil.tex}
 
