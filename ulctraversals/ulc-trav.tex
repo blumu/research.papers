@@ -124,7 +124,7 @@
 \fixstatement{theorem}
 \fixstatement{proposition}
 
-\setlist[itemize]{itemindent=0.5em}
+\setlist[itemize]{itemindent=0.3em}
 \setlist[description]{itemindent=0.2em}
 
 % Change the numbering used for Algorithms
@@ -1451,14 +1451,14 @@ The \defname{head-linear reduction} $\rightarrow_{hl}$ is defined as the reducti
 The set of \defname{spine subterms} is defined by induction: a term is a spine subterm of itself; the spine subterms of $U V$ and $\lambda x. U$ are those of $U$.
 A \defname{prime redex} (ala Danos-Regnier) is a generalized redex $(\lambda x, A)$ such that the operator of the redex ($\lambda x . U$ for some $U$) is a spine subterm.
 
-Danos-Regnier showed the following result:
-\begin{theorem}[Soundness and completeness of head-linear reduction~\cite{danos-head}]
+Danos-Regnier showed the following result (Theorem~2 in \cite{danos-head}):
+\begin{theorem}[Soundness and completeness of head-linear reduction~\cite{danos-head}] \
 \label{thm:danosreigner_headlinred}
-\begin{compactitem}
+\begin{itemize}
 \item If $T \rightarrow^*_{hl} T$  then $T$ and $T'$ are $\beta$-equivalent.
 \item If $T$ is in quasi-head normal form and has $n$ prime redexes then the head reduction of $T$ leads to a head normal form in exactly $n$ steps.
 \item If $T$ is any term, the head linear reduction of $T$ terminates iff the head reduction of $T$ terminates.
-\end{compactitem}
+\end{itemize}
 \end{theorem}
 
 \subsubsection{Leftmost linear reduction strategy}
@@ -1582,16 +1582,15 @@ We have:
 \begin{enumerate}[label=(\roman*)]
 \item If $M \rightarrow_{l} N$ then $M$ and $N$ are beta-equivalent.
 \item If $M$ is in \emph{quasi normal form} and contains $n$ standard redexes then there is an evaluation strategy that reduces $M$ to its beta-normal form in exactly $n$ (trivial) beta-reductions.
-\item If $M$ has a beta-normal form then it has a \emph{quasi normal form}. (\ie, its left-most head linear reduction terminates).
+\item If $M$ has a beta-normal form then its left-most head linear reduction terminates (and thus yields a \emph{quasi normal form}).
 \end{enumerate}
 \end{theorem}
 \begin{proof}
-(i) This is the counterpart of Theorem 2 from \cite{danos-head} for the head linear reduction.
+(i) The proof is similar to that of Theorem~\ref{thm:danosreigner_headlinred}. We adapt the notion of \emph{consecutive redex} from \cite{danos-head} to  leftmost-linear reduction: Let $r = (\lambda x, V)$ and  $s =(\lambda y, W)$ be two generalized redexes. We say that $r$ contains $s$ if the node $\lambda y$ lies in the scope of $\lambda x$. We say that $r$ and $s$ are \emph{consecutive} if $r$ contains $s$; no other generalized redex other than $r$ and $s$ is contained in $r$ and contains $s$; and $s$ is the leftmost generalized redex contained in $r$ (\ie, any other redex $t$ contained in $r$ resides on the left of node $\lambda y$ in the usual tree representation of the term).
 
-The proof can be adapted from Danos-Regnier's proof of the same result for head-linear reduction~\cite{danos-head}.
-\begin{todobox}
-Include proof details by adapting Danos-Regnier proof to the definition of \emph{leftmost} linear reduction.
-\end{todobox}
+Let $r_0, \ldots, r_p$ denote the consecutive generalized redexes for $p\geq 0$ where $r_0$ is not contained in any other generalized redexes and $r_p$ is the \emph{lloc redex}. (This sequence necessarily exists by definition of the leftmost linear variable occurrence \emph{lloc}.)
+
+An induction on $p$ shows that $M$ and $N$ reduce to the same term by exactly $p-1$ standard reduction steps (\ie, the strategy reducing the leftmost outermost redex), observing that at every step, no redex can be introduced above or on the left of the \emph{lloc}.
 
 (ii) The idea consists in reducing the redex `inside-out' from left to right. By Proposition~\ref{prop:qnf_nf}(ii), each reduction is trivial and it is easy to see that  $lloc$ is preserved by trivial reduction, therefore each term in the reduction sequence is in \emph{qnf}. The last term in the sequence has no redex therefore it's in beta-normal form.
 
@@ -2539,7 +2538,7 @@ $$\travsetnorm(M)/{\sim} \ \cong\ \pathset(T) \ .$$
 \end{theorem}
 \begin{proof}
 Let's first assume that $M$ is in beta-normal form. Then its computation tree does not contain any $@$-node, therefore all nodes are external.
-Hence the arity threshold of a traversal ending with external variable $x$ is precisely $|x|$, the arity of $x$. A trivial induction on the traversal rules shows, that since the \rulename{Var} is never used, we necessarily have  $\travsetnorm(M) = \pathset(M)$. Further, since all nodes are externals, the projection $\coresymbol$ and $\pview{\_}$ functions both coincides with the identity function thus $\pview{\core{\travsetnorm(M)}} = \travsetnorm(M) = \pathset(M)$.
+Hence the arity threshold of a traversal ending with external variable $x$ is precisely $|x|$, the arity of $x$. A trivial induction on the traversal rules shows, that since the \rulenamet{Var} is never used, we necessarily have  $\travsetnorm(M) = \pathset(M)$. Further, since all nodes are externals, the projection $\coresymbol$ and $\pview{\_}$ functions both coincides with the identity function thus $\pview{\core{\travsetnorm(M)}} = \travsetnorm(M) = \pathset(M)$.
 
 Otherwise, since $M$ has a beta-nf, by Theorem~\ref{thm:soundness_leftmostlinearred}(iii) its \emph{leftmost linear reduction sequence} terminates and yields a \emph{quasi normal form} (qnf). By Prop.~\ref{prop:ulctrav_impl_linear_reduction} the set of traversals is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of traversals of the \emph{qnf} is isomorphic to the set of traversals of $M$.  Corollary~\ref{cor:qnf_and_nf_traveset_invariant} permits us to conclude.
 \end{proof}
