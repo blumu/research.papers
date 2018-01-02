@@ -1012,8 +1012,7 @@ The normalization procedure for STLC is given by Algorithm~\ref{algo:stlc_normal
 \end{algorithmic}
 \end{algorithm}
 
-\subsubsection*{Correctness}
-
+\subsubsection*{Correctness of STLC normalization}
 
 % Proof idea: ``traversals implement left-most linear reduction''.
 % The proof sketch:
@@ -1259,7 +1258,7 @@ Algorithm~\ref{algo:ulc_normalization_by_traversals} describes the ULC normaliza
 \ENSURE{The computation tree of the normal form of $M$.}
 \begin{enumerate}
   \item Enumerate maximal \emph{normalizing} traversals $\travsetnorm(M)$ using the rules of Table~\ref{tab:normalizing_trav_rules}:
-  \begin{itemize}
+  \begin{itemize}[leftmargin=0.5em]
   \item For each traversal, apply transformation $\coresymbol$ to get the traversal core;
   \item Take the P-view of the traversal core;
   \item Interpret the resulting sequence as a path
@@ -1271,7 +1270,353 @@ Algorithm~\ref{algo:ulc_normalization_by_traversals} describes the ULC normaliza
 \end{algorithmic}
 \end{algorithm}
 
-\subsubsection*{Correctness}
+\begin{table}
+\begin{ruletablebox}{Normalizing imaginary traversals of $\lambda$-calculus}
+\noindent {\bf PROGRAM - Structural rules}
+
+\infrule[$\rulefont{Root}_\normalizing$]
+    {r \mbox{ is the root of } \ctree(M)}
+    {\istraversal r}
+
+\infrule[$\rulefont{App}_\normalizing$]
+    {\istraversal t \cdot @ \andalso @ \enables_0 \alpha }
+    {\istraversal \Pstr[0.4cm]{t \cdot (at) @  \cdot (a-at,40:0) \alpha} \andalso (\alpha\in\NodesLmd)}
+
+\infrule[$\rulefont{Lam}^@_\normalizing$]
+     {\istraversal t \cdot \alpha
+     \andalso \alpha\in\NodesLmd
+     \andalso \child(\alpha) \in \NodesApp }
+     {\istraversal t \cdot \alpha \cdot \child(\alpha)\andalso \mbox{$\child(\alpha)$ has no pointer}}
+
+\infrule[$\rulefont{Lam}^{\sf var}_\normalizing$]
+     {\istraversal u \cdot \beta \cdot v \cdot \alpha
+     \quad \alpha\in\NodesLmd
+     \quad \child(\alpha) \in \NodesVar
+     \quad \beta \enables_i \child(\alpha), i \geq 1
+     \quad \beta \mbox{ visible at } \alpha }
+     {\istraversal \Pstr[0.5cm]{u \cdot (beta)\beta \cdot v \cdot \alpha \cdot (n-beta,30:i){\child(\alpha)
+     }}}
+
+\infrule[$\rulefont{Lam^\ghostlmd_\normalizing}$]
+    {
+        \istraversal \Pstr[0.5cm]{ t \cdot(alpha){\alpha} \cdot (m){m} \ldots (gl-m,40:i){\ghostlmd}}
+    }
+    {
+        \Pstr[0.5cm]{ \istraversal t \cdot(alpha){\alpha} \cdot
+        (m){m}
+         \ldots
+        (gl-m,40:i){\ghostlmd}\cdot (al-alpha,40:{|\alpha| + i - |m|}){\ghostvar}
+           }
+        \andalso(\alpha\in\ImNodesLmd, m \in\ImNodesVar)
+    }
+
+\emph{\bf PROGRAM - Copy-cat rules}
+
+\infrule[$\rulefont{Var}_\normalizing$]
+    {
+        \istraversal \Pstr[0.5cm]{t \cdot m \cdot (alpha){\alpha}
+        \ldots (n-alpha,50:i){n}}
+        \andalso n \in \ImNodesVar \setminus \ExtNodes
+        \andalso m \enables_i \beta
+        \andalso i>0
+    }
+    {
+        \istraversal \Pstr[0.5cm]{ t \cdot
+        (m){m} \cdot (a){\alpha}  \ldots (n-a,30:i){n}
+            \cdot (letai-m,35:i){\beta}
+            }
+        \andalso (m \in \ImNodesVar\union\NodesApp, \alpha,\beta\in\ImNodesLmd)
+    }
+
+\emph{\bf DATA - Input-variable rules}
+\infrule[$\rulefont{IVar_\normalizing}$]
+     {\istraversal t \cdot n
+      \andalso n \in \ImNodesVar\inter\ExtNodes
+      \andalso n \enables_i \alpha
+      \andalso 1\leq i \leq\arth(t)
+     }
+     {\istraversal\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,30:i){\alpha}}
+     \andalso(\alpha\in\NodesLmd)
+     }
+
+where $t, u, v$ range over (sub-sequences of) justified sequences of nodes.
+
+\caption{Normalizing traversals $\travsetnorm$ of the untyped lambda calculus.
+Those judgement rules define $\travsetnorm$ as a strict subset of imaginary traversals $\travulc$ from Table \ref{tab:trav_rules}. Only rule $\rulefont{IVar_\normalizing}$ and $\rulefont{IVar}$ differ.}
+\label{tab:normalizing_trav_rules}
+\end{ruletablebox}
+\end{table}
+
+
+\subsubsection*{Reading out the normal form}
+Algorithm~\ref{algo:ulc_normalization_by_traversals_with_readout}  gives a more
+detailed description of the normalization procedure with the steps involved in reconstructing the term tree from the set of paths, and in particular how to assign variable names to ghost variables.
+
+\begin{algorithm}[!ht]
+\begin{algorithmic}
+\caption{Normalization by traversals for the ULC with term read-out}
+\label{algo:ulc_normalization_by_traversals_with_readout}
+\REQUIRE{An untyped term $M$ that has a normal form.}
+\ENSURE{$\ctree(\betanf{M})$, the tree of the normal form of $M$.}
+\STATE $\travsetnorm \leftarrow $ Enumerate all maximal normalizing traversals using rules of Table~\ref{tab:normalizing_trav_rules}
+\STATE  $C \leftarrow \{ \pview{\core{t}} \ | \ t \in \travsetnorm \}$
+
+\STATE Let \parbox[t]{12cm}{$(P, L)$ be the labelled-tree induced by $C$:
+\begin{compactitem}
+\item Paths $P \subseteq \nat^*$ are given by the justified sequences in $C$: child index is $1$ for variable occurrences, and is given by the justification label for lambda nodes;
+\item Label function $L : \nat^* \rightarrow\ExtendedNodes \times P \times \nat$ defined by $L(n) = (l, b, i)$ where $l$ is the label of the corresponding occurrence in $C$, $b$ is the path to the binder node (given by the justification pointer in $C$), and $i$ is the label of the justification pointer in $C$.
+\end{compactitem}}
+
+\FORALL{node $n \in P$ (by depth-first enumeration)}
+    \STATE Let $(l,b,i) = L(n)$
+    \IF{$n \in \NodesVar \union \NodesLmd \union \NodesApp$}
+        \STATE $L'(n) \leftarrow l$
+        %\COMMENT{It's either $@$, some variable name $x$, or $\lambda x_1 \ldots x_m$ for $m\geq 0$}
+    \ELSIF{$n \in\ghostlmd$}
+        \STATE Let $\alpha$ be a fresh name
+        \COMMENT{that will be a prefix for names of variable bound by $n$}
+        \STATE $id(n) \leftarrow \alpha$
+        \STATE $arity \leftarrow \max \{ i \ | \ L(v) = (\ghostvar, n, i) \mbox{ for some } v \in P \}$
+        \STATE $L'(n) \leftarrow \lambda \alpha_1 \ldots \alpha_{arity} $
+    \ELSIF{$n \in\ghostvar$}
+            \STATE $\alpha \leftarrow id(b)$
+            \COMMENT{Get naming prefix associated with this binder}
+            \STATE $L'(n) \leftarrow \alpha_i $
+            \COMMENT{Two variable occurrences sharing same binder and justification label must have the same name.}
+    \ENDIF
+\ENDFOR
+\RETURN The labelled-tree $(P, L')$.
+\end{algorithmic}
+\end{algorithm}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Leftmost linear reduction}
+\label{sec:leftmostlinearred}
+
+\subsection{Background: Lambda calculus and reduction}
+We recall standard results of the lambda calculus.
+A \defname{redex} is a sub-term of the form $(\lambda x. M) N$.
+Reducing redex $(\lambda x. M) N$, or also \emph{firing} the redex, means substituting all free occurrences of $x$ in $M$ by the term $N$ using capture avoiding substitution (the bound variable is renamed afresh when recursively substituting under a lambda).
+
+A term is said to be in \defname{normal form} if it does not contain any redex.
+A term is in \defname{head normal form} if it can be written $\lambda x_1 \ldots x_n . y A_1 \ldots A_m$ for $n,m\geq0$. If a term is not in head normal form then its \defname{head beta-redex} is the left-most redex, otherwise the term does not have any head beta-redex.
+
+For any reduction relation $\rightarrow$ between terms we will write
+$\rightarrow^*$ to denote its reflexive transitive closure.
+
+The \defname{head reduction}, denoted $\rightarrow_{h}$, fires the head redex of a term if it exists. It can be shown that $\rightarrow^*_{h}$ yields the head-normal form. The \defname{normal-order reduction strategy}, also called leftmost-outermost reduction strategy, performs head reduction until reaching the head-normal form and then recursively applies head reduction on each operand of the head variable. This reduction strategy can be shown to yield the normal form if it exists.
+
+
+\subsection{Head-linear reduction}
+We now introduce the head-linear reduction of Danos-Regnier~\cite{danos-head}.
+
+In the standard lambda calculus, a redex is necessarily formed by the outermost lambda in operator position of an application: if the operator consists of consecutive lambda abstractions (\eg, as in $(\lambda x \lambda y . M) A_1 A_2$) then the outermost lambda (\eg, $\lambda x$) is the one that will form the redex. The notion of redex can be generalized to allow evaluation of arguments in any order. In particular, one can allow any of the consecutive $\lambda$-abstractions to form a redex (\eg, the abstraction $\lambda y$ and corresponding argument $A_2$ would be a valid redex). This is formalized by the notion of \emph{generalized redex} (a generalized version of the \emph{prime redex} of Danos-Regnier):
+
+\begin{definition}[Generalized redex]
+\label{dfn:generalized_redex}
+The set of generalized redexes of a term $M$, written $gr(M)$, is a set of pairs $(\lambda x, A)$ where $\lambda x$ is some abstraction in $M$ and $A$ is a subterm called the argument of $\lambda x$. The head $\lambda$ list of $M$, written $\lambda_l(M)$ is a list of lambda abstractions of $M$. They are defined by induction:
+\begin{align*}
+gr(v) &= \emptyset & \lambda_l(v) &= \emptyset\\
+gr(\lambda x. U) &= gr(U) & \lambda_l(\lambda x. U) &= \lambda x \cdot \lambda_l(U) \\
+gr(U V) &= \{ (\lambda x, V) \} \union gr(U) \union gr(V) &
+\lambda_l(U V) &= l & \mbox{if $\lambda_l(U) = \lambda x \cdot l$} \\
+gr(U V) &= gr(U) \union gr(V) & \lambda_l(U V) &= \epsilon & \mbox{if $\lambda_l(U) = \epsilon$.} \\
+\end{align*}
+where $v$ ranges over variable occurrences, $x$ ranges over variable names, $U, V$ range over subterms of $M$, and $\epsilon$ denotes the empty list.
+\end{definition}
+
+\begin{example} For any term $M, N, A_1, A_2$ we have
+(i) $gr((\lambda x \lambda y . M) A_1 A_2) = \{ (\lambda x, A_1), (\lambda y, A_2)\}$ and
+(ii) $gr((\lambda z . (\lambda x \lambda y . M) N) A_1 A_2) = \{ (\lambda z, A_1), (\lambda x, N), (\lambda y, A_2)\}$.
+\end{example}
+
+Note: In order to define head-linear reduction, one needs to consider specific \emph{occurrences} of variables and sub-terms in a given term. In particular, let's emphasize that when denoting a generalized redex by a pair $(\lambda x, A)$, the component $\lambda x$ and $A$ denote specific \emph{occurrences} of $\lambda x$ and subterm $A$.
+
+We say that a variable occurrence is \defname{involved} in the generalized redex $(\lambda x, A)$ if the variable occurrence is bound by $\lambda x$. A variable occurrence can therefore be involved in at most one generalized redex. We define the \defname{linear substitution} of $x$ for $A$ as the term obtained by performing capture-avoiding substitution of that single occurrence of $x$ by $A$. (Compare this to the standard substitution that applies to \emph{every} occurrence of $x$ in $M$.) When performing such substitution we say that we \defname{linearly fire} the generalized redex $(\lambda x, A)$ for that occurrence of $x$.
+
+We define the \defname{head variable occurrence} of a term as the left-most variable occurring in the term (\ie, the first variable found by depth-first traversal of the term tree.) If the head variable occurrence of a term is involved in a generalized redex then we call that redex the \defname{head-linear redex}.
+A term that does not have a head-linear redex is said to be in \defname{quasi head-normal form}.
+
+The \defname{head-linear reduction} $\rightarrow_{hl}$ is defined as the reduction that linearly fires the head linear redex, if it exists. It can be shown that the reflexive transitive closure $\rightarrow^*_{hl}$ yields the quasi head-normal form.
+
+\paragraph{Soundness}
+The set of \defname{spine subterms} is defined by induction: a term is a spine subterm of itself; the spine subterms of $U V$ and $\lambda x. U$ are those of $U$.
+A \defname{prime redex} (ala Danos-Regnier) is a generalized redex $(\lambda x, A)$ such that the operator of the redex ($\lambda x . U$ for some $U$) is a spine subterm.
+
+Danos-Regnier showed the following result:
+\begin{theorem}[Soundness and completeness of head-linear reduction~\cite{danos-head}]
+\label{thm:danosreigner_headlinred}
+\begin{compactitem}
+\item If $T \rightarrow^*_{hl} T$  then $T$ and $T'$ are $\beta$-equivalent.
+\item If $T$ is in quasi-head normal form and has $n$ prime redexes then the head reduction of $T$ leads to a head normal form in exactly $n$ steps.
+\item If $T$ is any term, the head linear reduction of $T$ terminates iff the head reduction of $T$ terminates.
+\end{compactitem}
+\end{theorem}
+
+\subsubsection{Leftmost linear reduction strategy}
+
+As the name indicates, the head-linear reduction is a linear version of the \emph{head} reduction. It thus only yields the quasi \emph{head}-normal form, not the normal form, and therefore is not complete for normalization.
+
+In the standard lambda calculus, normal-order reduction strategy is obtained by repeatedly applying head reduction to get to the head-normal form, and then continuously applying the head-reduction on each argument of the head variable.
+This ultimately yields the normal form of the term if it exists.
+
+We now define the linear counterpart of the normal-order reduction: Informally, the \defname{leftmost linear reduction strategy} is the strategy that performs head-linear reduction if possible, and otherwise, if the term is in quasi-head normal form, continuously (and recursively) applies the head-linear reduction on each argument (from left to right) of the head variable occurrence.
+Formally:
+
+\begin{definition}[Leftmost linear reduction]
+Given a term $M$, we write $\VarSet(M)$ for the set of variable occurrences in $M$
+and $\VarSet^\bot(M)$ for $\{\bot \} + \VarSet(M)$ where the bottom element $\bot$ represents the `undefined' occurrence. We introduce the partial order $\sqsubseteq$ on $\VarSet^\bot(M)$ defined by: for all $x,y \in \VarSet^\bot(M)$, $x \sqsubseteq y$ if and only if $x = y$ or $x = \bot$.
+
+We define the partial function $lloc_M$ from subterms of $M$ to variable occurrences by induction on the subterms of $M$:
+\begin{align*}
+lloc_M(v) &=
+    \begin{cases}
+    v &\mbox{if $v$ is involved in a generalized redex in $M$,} \\
+    \bot & \mbox {otherwise.}
+    \end{cases}  \\
+lloc_M(\lambda x . U) &= lloc_M(U) \\
+lloc_M(U V) &= \begin{cases}
+                lloc_M(U) &\mbox{if $lloc_M(U)\neq\bot$,} \\
+                lloc_M(V) &\mbox{if $lloc_M(U)=\bot$ and $\lambda_l(U) = \epsilon$,} \\
+                \bot & \mbox{if $lloc_M(U)=\bot$ and $\lambda_l(U) \neq \epsilon$.}
+              \end{cases}
+\end{align*}
+where $v$ ranges over variable occurrences in $M$,
+and for any subterm $N$, $lloc_M(N) = \bot$ denotes that $lloc$ is undefined at $N$.
+
+The \defname{leftmost linear variable occurrence} of $M$
+is defined as $lloc_M(M)$ if it exists and the generalized redex it's involved in is called the \defname{lloc redex}, otherwise $M$ is said to be in \defname{quasi normal form}, or \emph{qnf} for short.
+The \defname{leftmost linear reduction} strategy, written $\rightarrow_l$, is defined as the strategy that linearly fires the generalized redex involving the leftmost linear variable occurrence.
+\end{definition}
+
+Leftmost linear reduction proceeds by first locating the left-most variable occurrence and, if it is involved in a redex, linearly fires it. In comparison, the traditional left-most outermost reduction first locates the leftmost redex and then fires it by substituting all the variables involved in it.
+
+\begin{example}
+Take $M = (\lambda x. x x N) z$. We have $M \rightarrow_{hl} (\lambda x. z x N) z$ which is in quasi head normal form because the head variable $z$ is not involved in any generalized redex.
+But since the left-most occurrence $x$ is involved in the redex $(\lambda x, z)$ the leftmost linear reduction gives $(\lambda x. z x N) z \rightarrow_l (\lambda x. z z N) z$.
+\end{example}
+
+\begin{property}
+\label{prop:qnf_longapply}
+    Let $M$ be an untyped term and $y A_1 \ldots A_n$ be a subterm of $M$ for $n\geq1$ where $y$ is a variable not involved in any generalized redex then:
+    \begin{align*}
+    lloc_M(y A_1 \ldots A_n) &=
+        \begin{cases}
+         lloc_M (A_j) &\mbox{ where } j = \min \{ 1\leq i\leq n \ | \ lloc_M (A_i) \neq \bot\} \\
+         \bot &\mbox{ if } lloc_M(A_i) = \bot \mbox{ for all } 1\leq i\leq n.
+        \end{cases}
+    \end{align*}
+\end{property}
+\begin{proof}
+    Immediate from the definition of $lloc$ since $\lambda_l(y) = \epsilon$.
+\end{proof}
+
+We say that a standard redex $(\lambda x. N) A$ is \defname{trivial} if $x$ does not occur freely in $N$ in which case the redex can be \emph{trivially reduced} to just $N$.
+
+\begin{property}
+\label{prop:lloc_properties}
+Some immediate properties:
+\begin{enumerate}[label=(\roman*)]
+\item
+ If $N$ is a subterm of $M$ then $lloc_N(N) \sqsubseteq lloc_M(N)$;
+\item
+ If $M$ is beta-normal then $lloc_M(M) = \bot$;
+ \item
+ If $U V$ is in quasi normal form then so is $U$;
+\item
+ If $\lambda x . U$ is in quasi normal form then so is $U$;
+ \item If $M$ has a \emph{lloc} redex then $M$ has a redex;
+ \item If all the redexes in $M$ are trivial then $M$ is in \emph{qnf}.
+ If $M$ has at least one non-trivial redex then $M$ has a \emph{lloc} redex.
+\end{enumerate}
+\end{property}
+\begin{proof}
+(i) Immediate from the fact that generalized redexes of $N$ are also generalized redexes of $M$. (ii) If $lloc_M(M) \neq \bot$ then $M$ must contain a generalized redex and therefore must also contain a standard redex hence $M$ is not beta-normal.
+(iii) If $U V$ is in quasi normal form then $lloc_{UV}(UV) = \bot$ so by definition of $lloc$ we must have $lloc_{UV}(U) = \bot$. By (i) since $U$ is a subterm of $UV$ this implies $lloc_{UV}(U) = \bot$.
+(iv) We have $\bot = lloc_{\lambda x . U}(\lambda x . U) = lloc_{\lambda x . U}(U) \sqsupseteq lloc_{U}(U)$.
+(v) and (vi) are immediate from the definition of \emph{lloc} redex.
+\end{proof}
+
+\begin{proposition}[Trivial redexes in quasi normal forms]
+\label{prop:qnf_nf}
+Let $M$ be a term in quasi normal form and suppose that $M$ is not in beta-normal form. Then:
+\begin{itemize}
+\item[(i)] If $x$ is a variable occurrence in $M$ involved in a generalized redex of $M$ then $x$ occurs in operand position in a subterm of the form:
+$$(\lambda z .U) A_1 \ldots A_q (\ldots x \ldots) \qquad q\geq 0$$
+\item[(ii)] Let $(\lambda x . N) A$ be the leftmost standard redex occurring in $M$ such that $N$ does not contain any redex. Then $x$ does not occur freely in $N$.
+\end{itemize}
+\end{proposition}
+\begin{proof}
+\begin{compactitem}
+\item[(i)] By induction on $M$. Suppose $M = v$ for some variable $v$ then the result trivially holds since $M$ has no generalized redex. Suppose $M = \lambda x . U$ then by Property~\ref{prop:lloc_properties}(iv) $U$ is in \emph{qnf} and we conclude by the induction hypothesis.
+    Suppose $M = U V$. If $x$ occurs in $U$ then we conclude by the induction hypothesis ($U$ is in \emph{qnf} by Property~\ref{prop:lloc_properties}(iii)). If $x$ occurs in $V$ then if $V$ is in \emph{qnf} we conclude by the induction hypothesis. Otherwise by definition of $lloc$ we necessarily have $\lambda_l(U) \neq \epsilon$. Hence $U$ is either an abstraction or a redex with possibly multiple applied arguments. Consequently, so is $UV$ which proves (i).
+
+\item[(ii)] By induction on $M$. Suppose $M = v$ for some variable $v$ then it trivially holds since $M$ has no redex. Suppose $M = \lambda x . U$ then the result follows by the induction hypothesis since the redexes of $M$ are those of $U$.
+
+Suppose $M = U V$. Let's consider the three sub-cases depending on where the redex is located in $U V$:
+\begin{compactitem}
+  \item[(1)] The redex $(\lambda x . N) A$  is in $U$. Since $M$ is in quasi normal form, by Property~\ref{prop:lloc_properties}(iii) so is $U$, we can thus conclude by the induction hypothesis.
+
+  \item[(2)] The redex $(\lambda x . N) A$  is in $V$.
+If $\lambda_l(U) = \epsilon$ then by definition of $lloc$ we have $lloc_M(UV) = lloc_M(V) = \bot$ so we conclude by the induction hypothesis.
+If $\lambda_l(U) \neq \epsilon$, then either $U$ contains a redex or $U$ is an abstraction. But $U$ cannot be a redex since by assumption $N$ does not contain any redex, and $U$ being abstraction would make $M = U V$ itself a redex which would contradict the fact that redex $(\lambda x . N) A$ in $V$ is the leftmost redex in $M$.
+
+  \item[(3)] $U = \lambda x . N$ and $V = A$.
+  By assumption $UV$ is in \emph{qnf} therefore by Property~\ref{prop:lloc_properties}(iii) and (iv), $N$ is in \emph{qnf}.
+  Suppose $x$ occurs freely in $N$ then by the induction hypothesis (i), it must appear in operand position in consecutive applications to some lambda abstraction. But this contradicts the assumption that $N$ does not contain any redex.
+\end{compactitem}
+\end{compactitem}
+\end{proof}
+
+\begin{theorem}[Soundness and completeness of leftmost linear reduction]
+\label{thm:soundness_leftmostlinearred}
+We have:
+\begin{enumerate}[label=(\roman*)]
+\item If $M \rightarrow_{l} N$ then $M$ and $N$ are beta-equivalent.
+\item If $M$ is in \emph{quasi normal form} and contains $n$ standard redexes then there is an evaluation strategy that reduces $M$ to its beta-normal form in exactly $n$ (trivial) beta-reductions.
+\item If $M$ has a beta-normal form then it has a \emph{quasi normal form}. (\ie, its left-most head linear reduction terminates).
+\end{enumerate}
+\end{theorem}
+\begin{proof}
+(i) The proof can be adapted from Danos-Regnier's proof of the same result for head-linear reduction~\cite{danos-head}.
+%\todo{Include proof details by adapting Danos-Regnier proof to the definition of \emph{leftmost} linear reduction.}
+
+(ii) The idea consists in reducing the redex `inside-out' from left to right. By Proposition~\ref{prop:qnf_nf}(ii), each reduction is trivial and it is easy to see that  $lloc$ is preserved by trivial reduction, therefore each term in the reduction sequence is in \emph{qnf}. The last term in the sequence has no redex therefore it's in beta-normal form.
+
+(iii) We can either appeal to the proof argument of Danos-Regnier in~\cite{danos-head}, or the forthcoming paper by Berezun\cite{DaniilBerezun_Soundness}.
+%\todo{Hopefully the proof should not involve state machine/stack/environments, ...}
+\end{proof}
+
+\begin{definition}[Leftmost redex sequence]
+The leftmost redex sequence $LRS(M)$ of a term $M$ is a sequence of the generalized redexes of $M$ defined by induction as follows:
+\begin{align*}
+LRS(v) &= \emptyset \\
+LRS(\lambda x . U) &= LRS(U)\\
+LRS(U V) &=
+    \begin{cases}
+        (\lambda x, V) \cdot LRS(U) \cdot LRS(V) & \mbox{if $\lambda_l(U) = \lambda x \cdot l$ and $lloc_M(U) =\bot$ } \\
+        (\lambda x, V) \cdot  LRS(U) & \mbox{if $\lambda_l(U) = \lambda x \cdot l $ and $lloc_M(U) \neq \bot$} \\
+        LRS(U) & \mbox{if $\lambda_l(U) = \epsilon$ and $lloc_M(U) \neq \bot$} \\
+        LRS(U) \cdot LRS(V) & \mbox{if $\lambda_l(U) = \epsilon$ and $lloc_M(U) = \bot$}
+    \end{cases}
+\end{align*}
+where $v$ ranges over variable occurrences and $U,V$ over subterms of $M$.
+\end{definition}
+
+\begin{example}
+Take $M = (\lambda x . z ((\lambda w y . y)x)) U$ for any term $U$.
+Then $M$ is in quasi-head normal form with one prime spine redex $(x,U)$.
+Head reduction gives $M \rightarrow_h z ((\lambda w y. y) U)$.
+
+$M$ is also in quasi normal form. Indeed $lloc_M(M) = lloc_M (\lambda w y . y)$ which is undefined.
+The leftmost redex sequence of $M$ is $LRS(M) = (\lambda x, U) \cdot (\lambda w, x)$.
+Reducing the term with two head reduction gives
+$M \rightarrow_h z ((\lambda w y.y)x) \rightarrow_h z (\lambda y . y)$ which is in normal form.
+\end{example}
+
+
+%%%%%%%%%%%%%%%%%
+\subsection{Correctness of ULC normalization}
 
 Like in the STLC case, correctness is show via a Path Characterization Theorem.
 Unlike in the STLC case, however, we cannot rely on the correspondence with Game Semantics to show this characterization since we have not formally proven such correspondence in the untyped setting (Conjecture~\ref{conj:ulc_corresp}).
@@ -1629,7 +1974,7 @@ Similarly, it is \emph{surjective} by (B1) because $\travset^\dagger(M)$ is the 
 Hence we have $\coresymbol(\travset^\dagger(N)) \cong \coresymbol(\travset^\dagger(M))$, and because $\coresymbol$ eliminates internal nodes from traversals, we also have $\coresymbol(\travset(N)) \cong \coresymbol(\travset(M))$.
 \end{proof}
 
-%%%%% Soundness
+%%%%% Soundness of leftmost liner reduction
 We now show that normalizing traversals implement substitution in the sense that
 the sets of traversals $\travsetnorm$ before and after reduction are identical up to some mapping between nodes of the term and its reduct.
 \begin{proposition}[Traversals are sound for linear reduction]
@@ -2200,128 +2545,7 @@ where $\travulc^k(M)$ denotes the set of traversals of length $k$ at most and $\
 \end{remark}
 
 
-\subsubsection{Reading out the normal form}
-
-For completeness, we include Algorithm~\ref{algo:ulc_normalization_by_traversals_with_readout} which gives a more
-detailed description of the normalization procedure with the steps involved in reconstructing the term tree from the set of paths, and in particular how to assign names to the ghost variables.
-
-\begin{algorithm}[!ht]
-\begin{algorithmic}
-\caption{Normalization by traversals for the ULC with term read-out}
-\label{algo:ulc_normalization_by_traversals_with_readout}
-\REQUIRE{An untyped term $M$ that has a normal form.}
-\ENSURE{$\ctree(\betanf{M})$, the tree of the normal form of $M$.}
-\STATE $\travsetnorm \leftarrow $ Enumerate all maximal normalizing traversals using rules of Table~\ref{tab:normalizing_trav_rules}
-\STATE  $C \leftarrow \{ \pview{\core{t}} \ | \ t \in \travsetnorm \}$
-
-\STATE Let \parbox[t]{12cm}{$(P, L)$ be the labelled-tree induced by $C$:
-\begin{compactitem}
-\item Paths $P \subseteq \nat^*$ are given by the justified sequences in $C$: child index is $1$ for variable occurrences, and is given by the justification label for lambda nodes;
-\item Label function $L : \nat^* \rightarrow\ExtendedNodes \times P \times \nat$ defined by $L(n) = (l, b, i)$ where $l$ is the label of the corresponding occurrence in $C$, $b$ is the path to the binder node (given by the justification pointer in $C$), and $i$ is the label of the justification pointer in $C$.
-\end{compactitem}}
-
-\FORALL{node $n \in P$ (by depth-first enumeration)}
-    \STATE Let $(l,b,i) = L(n)$
-    \IF{$n \in \NodesVar \union \NodesLmd \union \NodesApp$}
-        \STATE $L'(n) \leftarrow l$
-        %\COMMENT{It's either $@$, some variable name $x$, or $\lambda x_1 \ldots x_m$ for $m\geq 0$}
-    \ELSIF{$n \in\ghostlmd$}
-        \STATE Let $\alpha$ be a fresh name
-        \COMMENT{that will be a prefix for names of variable bound by $n$}
-        \STATE $id(n) \leftarrow \alpha$
-        \STATE $arity \leftarrow \max \{ i \ | \ L(v) = (\ghostvar, n, i) \mbox{ for some } v \in P \}$
-        \STATE $L'(n) \leftarrow \lambda \alpha_1 \ldots \alpha_{arity} $
-    \ELSIF{$n \in\ghostvar$}
-            \STATE $\alpha \leftarrow id(b)$
-            \COMMENT{Get naming prefix associated with this binder}
-            \STATE $L'(n) \leftarrow \alpha_i $
-            \COMMENT{Two variable occurrences sharing same binder and justification label must have the same name.}
-    \ENDIF
-\ENDFOR
-\RETURN The labelled-tree $(P, L')$.
-\end{algorithmic}
-\end{algorithm}
-
-
-\begin{table}
-\begin{ruletablebox}{Normalizing imaginary traversals of $\lambda$-calculus}
-\noindent {\bf PROGRAM - Structural rules}
-
-\infrule[$\rulefont{Root}_\normalizing$]
-    {r \mbox{ is the root of } \ctree(M)}
-    {\istraversal r}
-
-\infrule[$\rulefont{App}_\normalizing$]
-    {\istraversal t \cdot @ \andalso @ \enables_0 \alpha }
-    {\istraversal \Pstr[0.4cm]{t \cdot (at) @  \cdot (a-at,40:0) \alpha} \andalso (\alpha\in\NodesLmd)}
-
-\infrule[$\rulefont{Lam}^@_\normalizing$]
-     {\istraversal t \cdot \alpha
-     \andalso \alpha\in\NodesLmd
-     \andalso \child(\alpha) \in \NodesApp }
-     {\istraversal t \cdot \alpha \cdot \child(\alpha)\andalso \mbox{$\child(\alpha)$ has no pointer}}
-
-\infrule[$\rulefont{Lam}^{\sf var}_\normalizing$]
-     {\istraversal u \cdot \beta \cdot v \cdot \alpha
-     \quad \alpha\in\NodesLmd
-     \quad \child(\alpha) \in \NodesVar
-     \quad \beta \enables_i \child(\alpha), i \geq 1
-     \quad \beta \mbox{ visible at } \alpha }
-     {\istraversal \Pstr[0.5cm]{u \cdot (beta)\beta \cdot v \cdot \alpha \cdot (n-beta,30:i){\child(\alpha)
-     }}}
-
-\infrule[$\rulefont{Lam^\ghostlmd_\normalizing}$]
-    {
-        \istraversal \Pstr[0.5cm]{ t \cdot(alpha){\alpha} \cdot (m){m} \ldots (gl-m,40:i){\ghostlmd}}
-    }
-    {
-        \Pstr[0.5cm]{ \istraversal t \cdot(alpha){\alpha} \cdot
-        (m){m}
-         \ldots
-        (gl-m,40:i){\ghostlmd}\cdot (al-alpha,40:{|\alpha| + i - |m|}){\ghostvar}
-           }
-        \andalso(\alpha\in\ImNodesLmd, m \in\ImNodesVar)
-    }
-
-\emph{\bf PROGRAM - Copy-cat rules}
-
-\infrule[$\rulefont{Var}_\normalizing$]
-    {
-        \istraversal \Pstr[0.5cm]{t \cdot m \cdot (alpha){\alpha}
-        \ldots (n-alpha,50:i){n}}
-        \andalso n \in \ImNodesVar \setminus \ExtNodes
-        \andalso m \enables_i \beta
-        \andalso i>0
-    }
-    {
-        \istraversal \Pstr[0.5cm]{ t \cdot
-        (m){m} \cdot (a){\alpha}  \ldots (n-a,30:i){n}
-            \cdot (letai-m,35:i){\beta}
-            }
-        \andalso (m \in \ImNodesVar\union\NodesApp, \alpha,\beta\in\ImNodesLmd)
-    }
-
-\emph{\bf DATA - Input-variable rules}
-\infrule[$\rulefont{IVar_\normalizing}$]
-     {\istraversal t \cdot n
-      \andalso n \in \ImNodesVar\inter\ExtNodes
-      \andalso n \enables_i \alpha
-      \andalso 1\leq i \leq\arth(t)
-     }
-     {\istraversal\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,30:i){\alpha}}
-     \andalso(\alpha\in\NodesLmd)
-     }
-
-where $t, u, v$ range over (sub-sequences of) justified sequences of nodes.
-
-\caption{Normalizing traversals $\travsetnorm$ of the untyped lambda calculus.
-Those judgement rules define $\travsetnorm$ as a strict subset of imaginary traversals $\travulc$ from Table \ref{tab:trav_rules}. Only rule $\rulefont{IVar_\normalizing}$ and $\rulefont{IVar}$ differ.}
-\label{tab:normalizing_trav_rules}
-\end{ruletablebox}
-\end{table}
-
-
-\subsection{ULC Normalization Examples}
+\section{ULC Normalization Examples}
 In this section we demonstrate on various walk-through examples, how the beta-normal form of a term can be calculated by traversing the term using the normalizing traversals of Table~\ref{tab:normalizing_trav_rules}.
 
 \begin{example}[Baby example]
@@ -2681,232 +2905,6 @@ The traversal can be represented more succinctly by keeping only the variable no
 \end{equation*}
 \end{example}
 
-\section{Leftmost linear reduction}
-\label{sec:leftmostlinearred}
-
-\subsection{Background: Lambda calculus and reduction}
-We recall from standard results of the lambda calculus.
-A \defname{redex} is a sub-term of the form $(\lambda x. M) N$.
-Reducing redex $(\lambda x. M) N$, or also \emph{firing} the redex, means substituting all free occurrences of $x$ in $M$ by the term $N$ using capture avoiding substitution (the bound variable is renamed afresh when recursively substituting under a lambda).
-
-A term is said to be in \defname{normal form} if it does not contain any redex.
-A term is in \defname{head normal form} if it can be written $\lambda x_1 \ldots x_n . y A_1 \ldots A_m$ for $n,m\geq0$. If a term is not in head normal form then its \defname{head beta-redex} is the left-most redex, otherwise the term does not have any head beta-redex.
-
-For any reduction relation $\rightarrow$ between terms we will write
-$\rightarrow^*$ to denote its reflexive transitive closure.
-
-The \defname{head reduction}, denoted $\rightarrow_{h}$, fires the head redex of a term if it exists. It can be shown that $\rightarrow^*_{h}$ yields the head-normal form. The \defname{normal-order reduction strategy}, also called leftmost-outermost reduction strategy, performs head reduction until reaching the head-normal form and then recursively applies head reduction on each operand of the head variable. This reduction strategy can be shown to yield the normal form if it exists.
-
-
-\subsection{Head-linear reduction}
-We now introduce the head-linear reduction of Danos-Regnier~\cite{danos-head}.
-
-In the standard lambda calculus, a redex is necessarily formed by the outermost lambda in operator position of an application: if the operator consists of consecutive lambda abstractions (\eg, as in $(\lambda x \lambda y . M) A_1 A_2$) then the outermost lambda (\eg, $\lambda x$) is the one that will form the redex. The notion of redex can be generalized to allow evaluation of arguments in any order. In particular, one can allow any of the consecutive $\lambda$-abstractions to form a redex (\eg, the abstraction $\lambda y$ and corresponding argument $A_2$ would be a valid redex). This is formalized by the notion of \emph{generalized redex} (a generalized version of the \emph{prime redex} of Danos-Regnier):
-
-\begin{definition}[Generalized redex]
-\label{dfn:generalized_redex}
-The set of generalized redexes of a term $M$, written $gr(M)$, is a set of pairs $(\lambda x, A)$ where $\lambda x$ is some abstraction in $M$ and $A$ is a subterm called the argument of $\lambda x$. The head $\lambda$ list of $M$, written $\lambda_l(M)$ is a list of lambda abstractions of $M$. They are defined by induction:
-\begin{align*}
-gr(v) &= \emptyset & \lambda_l(v) &= \emptyset\\
-gr(\lambda x. U) &= gr(U) & \lambda_l(\lambda x. U) &= \lambda x \cdot \lambda_l(U) \\
-gr(U V) &= \{ (\lambda x, V) \} \union gr(U) \union gr(V) &
-\lambda_l(U V) &= l & \mbox{if $\lambda_l(U) = \lambda x \cdot l$} \\
-gr(U V) &= gr(U) \union gr(V) & \lambda_l(U V) &= \epsilon & \mbox{if $\lambda_l(U) = \epsilon$.} \\
-\end{align*}
-where $v$ ranges over variable occurrences, $x$ ranges over variable names, $U, V$ range over subterms of $M$, and $\epsilon$ denotes the empty list.
-\end{definition}
-
-\begin{example} For any term $M, N, A_1, A_2$ we have
-(i) $gr((\lambda x \lambda y . M) A_1 A_2) = \{ (\lambda x, A_1), (\lambda y, A_2)\}$ and
-(ii) $gr((\lambda z . (\lambda x \lambda y . M) N) A_1 A_2) = \{ (\lambda z, A_1), (\lambda x, N), (\lambda y, A_2)\}$.
-\end{example}
-
-Note: In order to define head-linear reduction, one needs to consider specific \emph{occurrences} of variables and sub-terms in a given term. In particular, let's emphasize that when denoting a generalized redex by a pair $(\lambda x, A)$, the component $\lambda x$ and $A$ denote specific \emph{occurrences} of $\lambda x$ and subterm $A$.
-
-We say that a variable occurrence is \defname{involved} in the generalized redex $(\lambda x, A)$ if the variable occurrence is bound by $\lambda x$. A variable occurrence can therefore be involved in at most one generalized redex. We define the \defname{linear substitution} of $x$ for $A$ as the term obtained by performing capture-avoiding substitution of that single occurrence of $x$ by $A$. (Compare this to the standard substitution that applies to \emph{every} occurrence of $x$ in $M$.) When performing such substitution we say that we \defname{linearly fire} the generalized redex $(\lambda x, A)$ for that occurrence of $x$.
-
-We define the \defname{head variable occurrence} of a term as the left-most variable occurring in the term (\ie, the first variable found by depth-first traversal of the term tree.) If the head variable occurrence of a term is involved in a generalized redex then we call that redex the \defname{head-linear redex}.
-A term that does not have a head-linear redex is said to be in \defname{quasi head-normal form}.
-
-The \defname{head-linear reduction} $\rightarrow_{hl}$ is defined as the reduction that linearly fires the head linear redex, if it exists. It can be shown that the reflexive transitive closure $\rightarrow^*_{hl}$ yields the quasi head-normal form.
-
-\paragraph{Soundness}
-The set of \defname{spine subterms} is defined by induction: a term is a spine subterm of itself; the spine subterms of $U V$ and $\lambda x. U$ are those of $U$.
-A \defname{prime redex} (ala Danos-Regnier) is a generalized redex $(\lambda x, A)$ such that the operator of the redex ($\lambda x . U$ for some $U$) is a spine subterm.
-
-Danos-Regnier showed the following result:
-\begin{theorem}[Soundness and completeness of head-linear reduction~\cite{danos-head}]
-\label{thm:danosreigner_headlinred}
-\begin{compactitem}
-\item If $T \rightarrow^*_{hl} T$  then $T$ and $T'$ are $\beta$-equivalent.
-\item If $T$ is in quasi-head normal form and has $n$ prime redexes then the head reduction of $T$ leads to a head normal form in exactly $n$ steps.
-\item If $T$ is any term, the head linear reduction of $T$ terminates iff the head reduction of $T$ terminates.
-\end{compactitem}
-\end{theorem}
-
-\subsubsection{Leftmost linear reduction strategy}
-
-As the name indicates, the head-linear reduction is a linear version of the \emph{head} reduction. It thus only yields the quasi \emph{head}-normal form, not the normal form, and therefore is not complete for normalization.
-
-In the standard lambda calculus, normal-order reduction strategy is obtained by repeatedly applying head reduction to get to the head-normal form, and then continuously applying the head-reduction on each argument of the head variable.
-This ultimately yields the normal form of the term if it exists.
-
-We now define the linear counterpart of the normal-order reduction: Informally, the \defname{leftmost linear reduction strategy} is the strategy that performs head-linear reduction if possible, and otherwise, if the term is in quasi-head normal form, continuously (and recursively) applies the head-linear reduction on each argument (from left to right) of the head variable occurrence.
-Formally:
-
-\begin{definition}[Leftmost linear reduction]
-Given a term $M$, we write $\VarSet(M)$ for the set of variable occurrences in $M$
-and $\VarSet^\bot(M)$ for $\{\bot \} + \VarSet(M)$ where the bottom element $\bot$ represents the `undefined' occurrence. We introduce the partial order $\sqsubseteq$ on $\VarSet^\bot(M)$ defined by: for all $x,y \in \VarSet^\bot(M)$, $x \sqsubseteq y$ if and only if $x = y$ or $x = \bot$.
-
-We define the partial function $lloc_M$ from subterms of $M$ to variable occurrences by induction on the subterms of $M$:
-\begin{align*}
-lloc_M(v) &=
-    \begin{cases}
-    v &\mbox{if $v$ is involved in a generalized redex in $M$,} \\
-    \bot & \mbox {otherwise.}
-    \end{cases}  \\
-lloc_M(\lambda x . U) &= lloc_M(U) \\
-lloc_M(U V) &= \begin{cases}
-                lloc_M(U) &\mbox{if $lloc_M(U)\neq\bot$,} \\
-                lloc_M(V) &\mbox{if $lloc_M(U)=\bot$ and $\lambda_l(U) = \epsilon$,} \\
-                \bot & \mbox{if $lloc_M(U)=\bot$ and $\lambda_l(U) \neq \epsilon$.}
-              \end{cases}
-\end{align*}
-where $v$ ranges over variable occurrences in $M$,
-and for any subterm $N$, $lloc_M(N) = \bot$ denotes that $lloc$ is undefined at $N$.
-
-The \defname{leftmost linear variable occurrence} of $M$
-is defined as $lloc_M(M)$ if it exists and the generalized redex it's involved in is called the \defname{lloc redex}, otherwise $M$ is said to be in \defname{quasi normal form}, or \emph{qnf} for short.
-The \defname{leftmost linear reduction} strategy, written $\rightarrow_l$, is defined as the strategy that linearly fires the generalized redex involving the leftmost linear variable occurrence.
-\end{definition}
-
-Leftmost linear reduction proceeds by first locating the left-most variable occurrence and, if it is involved in a redex, linearly fires it. In comparison, the traditional left-most outermost reduction first locates the leftmost redex and then fires it by substituting all the variables involved in it.
-
-\begin{example}
-Take $M = (\lambda x. x x N) z$. We have $M \rightarrow_{hl} (\lambda x. z x N) z$ which is in quasi head normal form because the head variable $z$ is not involved in any generalized redex.
-But since the left-most occurrence $x$ is involved in the redex $(\lambda x, z)$ the leftmost linear reduction gives $(\lambda x. z x N) z \rightarrow_l (\lambda x. z z N) z$.
-\end{example}
-
-\begin{property}
-\label{prop:qnf_longapply}
-    Let $M$ be an untyped term and $y A_1 \ldots A_n$ be a subterm of $M$ for $n\geq1$ where $y$ is a variable not involved in any generalized redex then:
-    \begin{align*}
-    lloc_M(y A_1 \ldots A_n) &=
-        \begin{cases}
-         lloc_M (A_j) &\mbox{ where } j = \min \{ 1\leq i\leq n \ | \ lloc_M (A_i) \neq \bot\} \\
-         \bot &\mbox{ if } lloc_M(A_i) = \bot \mbox{ for all } 1\leq i\leq n.
-        \end{cases}
-    \end{align*}
-\end{property}
-\begin{proof}
-    Immediate from the definition of $lloc$ since $\lambda_l(y) = \epsilon$.
-\end{proof}
-
-We say that a standard redex $(\lambda x. N) A$ is \defname{trivial} if $x$ does not occur freely in $N$ in which case the redex can be \emph{trivially reduced} to just $N$.
-
-\begin{property}
-\label{prop:lloc_properties}
-Some immediate properties:
-\begin{enumerate}[label=(\roman*)]
-\item
- If $N$ is a subterm of $M$ then $lloc_N(N) \sqsubseteq lloc_M(N)$;
-\item
- If $M$ is beta-normal then $lloc_M(M) = \bot$;
- \item
- If $U V$ is in quasi normal form then so is $U$;
-\item
- If $\lambda x . U$ is in quasi normal form then so is $U$;
- \item If $M$ has a \emph{lloc} redex then $M$ has a redex;
- \item If all the redexes in $M$ are trivial then $M$ is in \emph{qnf}.
- If $M$ has at least one non-trivial redex then $M$ has a \emph{lloc} redex.
-\end{enumerate}
-\end{property}
-\begin{proof}
-(i) Immediate from the fact that generalized redexes of $N$ are also generalized redexes of $M$. (ii) If $lloc_M(M) \neq \bot$ then $M$ must contain a generalized redex and therefore must also contain a standard redex hence $M$ is not beta-normal.
-(iii) If $U V$ is in quasi normal form then $lloc_{UV}(UV) = \bot$ so by definition of $lloc$ we must have $lloc_{UV}(U) = \bot$. By (i) since $U$ is a subterm of $UV$ this implies $lloc_{UV}(U) = \bot$.
-(iv) We have $\bot = lloc_{\lambda x . U}(\lambda x . U) = lloc_{\lambda x . U}(U) \sqsupseteq lloc_{U}(U)$.
-(v) and (vi) are immediate from the definition of \emph{lloc} redex.
-\end{proof}
-
-\begin{proposition}[Trivial redexes in quasi normal forms]
-\label{prop:qnf_nf}
-Let $M$ be a term in quasi normal form and suppose that $M$ is not in beta-normal form. Then:
-\begin{itemize}
-\item[(i)] If $x$ is a variable occurrence in $M$ involved in a generalized redex of $M$ then $x$ occurs in operand position in a subterm of the form:
-$$(\lambda z .U) A_1 \ldots A_q (\ldots x \ldots) \qquad q\geq 0$$
-\item[(ii)] Let $(\lambda x . N) A$ be the leftmost standard redex occurring in $M$ such that $N$ does not contain any redex. Then $x$ does not occur freely in $N$.
-\end{itemize}
-\end{proposition}
-\begin{proof}
-\begin{compactitem}
-\item[(i)] By induction on $M$. Suppose $M = v$ for some variable $v$ then the result trivially holds since $M$ has no generalized redex. Suppose $M = \lambda x . U$ then by Property~\ref{prop:lloc_properties}(iv) $U$ is in \emph{qnf} and we conclude by the induction hypothesis.
-    Suppose $M = U V$. If $x$ occurs in $U$ then we conclude by the induction hypothesis ($U$ is in \emph{qnf} by Property~\ref{prop:lloc_properties}(iii)). If $x$ occurs in $V$ then if $V$ is in \emph{qnf} we conclude by the induction hypothesis. Otherwise by definition of $lloc$ we necessarily have $\lambda_l(U) \neq \epsilon$. Hence $U$ is either an abstraction or a redex with possibly multiple applied arguments. Consequently, so is $UV$ which proves (i).
-
-\item[(ii)] By induction on $M$. Suppose $M = v$ for some variable $v$ then it trivially holds since $M$ has no redex. Suppose $M = \lambda x . U$ then the result follows by the induction hypothesis since the redexes of $M$ are those of $U$.
-
-Suppose $M = U V$. Let's consider the three sub-cases depending on where the redex is located in $U V$:
-\begin{compactitem}
-  \item[(1)] The redex $(\lambda x . N) A$  is in $U$. Since $M$ is in quasi normal form, by Property~\ref{prop:lloc_properties}(iii) so is $U$, we can thus conclude by the induction hypothesis.
-
-  \item[(2)] The redex $(\lambda x . N) A$  is in $V$.
-If $\lambda_l(U) = \epsilon$ then by definition of $lloc$ we have $lloc_M(UV) = lloc_M(V) = \bot$ so we conclude by the induction hypothesis.
-If $\lambda_l(U) \neq \epsilon$, then either $U$ contains a redex or $U$ is an abstraction. But $U$ cannot be a redex since by assumption $N$ does not contain any redex, and $U$ being abstraction would make $M = U V$ itself a redex which would contradict the fact that redex $(\lambda x . N) A$ in $V$ is the leftmost redex in $M$.
-
-  \item[(3)] $U = \lambda x . N$ and $V = A$.
-  By assumption $UV$ is in \emph{qnf} therefore by Property~\ref{prop:lloc_properties}(iii) and (iv), $N$ is in \emph{qnf}.
-  Suppose $x$ occurs freely in $N$ then by the induction hypothesis (i), it must appear in operand position in consecutive applications to some lambda abstraction. But this contradicts the assumption that $N$ does not contain any redex.
-\end{compactitem}
-\end{compactitem}
-\end{proof}
-
-\begin{theorem}[Soundness and completeness of leftmost linear reduction]
-\label{thm:soundness_leftmostlinearred}
-We have:
-\begin{enumerate}[label=(\roman*)]
-\item If $M \rightarrow_{l} N$ then $M$ and $N$ are beta-equivalent.
-\item If $M$ is in \emph{quasi normal form} and contains $n$ standard redexes then there is an evaluation strategy that reduces $M$ to its beta-normal form in exactly $n$ (trivial) beta-reductions.
-\item If $M$ has a beta-normal form then it has a \emph{quasi normal form}. (\ie, its left-most head linear reduction terminates).
-\end{enumerate}
-\end{theorem}
-\begin{proof}
-(i) The proof can be adapted from Danos-Regnier's proof of the same result for head-linear reduction~\cite{danos-head}.
-%\todo{Include proof details by adapting Danos-Regnier proof to the definition of \emph{leftmost} linear reduction.}
-
-(ii) The idea consists in reducing the redex `inside-out' from left to right. By Proposition~\ref{prop:qnf_nf}(ii), each reduction is trivial and it is easy to see that  $lloc$ is preserved by trivial reduction, therefore each term in the reduction sequence is in \emph{qnf}. The last term in the sequence has no redex therefore it's in beta-normal form.
-
-(iii) We can either appeal to the proof argument of Danos-Regnier in~\cite{danos-head}, or the forthcoming paper by Berezun\cite{DaniilBerezun_Soundness}.
-%\todo{Hopefully the proof should not involve state machine/stack/environments, ...}
-\end{proof}
-
-\begin{definition}[Leftmost redex sequence]
-The leftmost redex sequence $LRS(M)$ of a term $M$ is a sequence of the generalized redexes of $M$ defined by induction as follows:
-\begin{align*}
-LRS(v) &= \emptyset \\
-LRS(\lambda x . U) &= LRS(U)\\
-LRS(U V) &=
-    \begin{cases}
-        (\lambda x, V) \cdot LRS(U) \cdot LRS(V) & \mbox{if $\lambda_l(U) = \lambda x \cdot l$ and $lloc_M(U) =\bot$ } \\
-        (\lambda x, V) \cdot  LRS(U) & \mbox{if $\lambda_l(U) = \lambda x \cdot l $ and $lloc_M(U) \neq \bot$} \\
-        LRS(U) & \mbox{if $\lambda_l(U) = \epsilon$ and $lloc_M(U) \neq \bot$} \\
-        LRS(U) \cdot LRS(V) & \mbox{if $\lambda_l(U) = \epsilon$ and $lloc_M(U) = \bot$}
-    \end{cases}
-\end{align*}
-where $v$ ranges over variable occurrences and $U,V$ over subterms of $M$.
-\end{definition}
-
-\begin{example}
-Take $M = (\lambda x . z ((\lambda w y . y)x)) U$ for any term $U$.
-Then $M$ is in quasi-head normal form with one prime spine redex $(x,U)$.
-Head reduction gives $M \rightarrow_h z ((\lambda w y. y) U)$.
-
-$M$ is also in quasi normal form. Indeed $lloc_M(M) = lloc_M (\lambda w y . y)$ which is undefined.
-The leftmost redex sequence of $M$ is $LRS(M) = (\lambda x, U) \cdot (\lambda w, x)$.
-Reducing the term with two head reduction gives
-$M \rightarrow_h z ((\lambda w y.y)x) \rightarrow_h z (\lambda y . y)$ which is in normal form.
-\end{example}
-
-
-
 \section{Further directions}
 
 \subsection{Higher-order collapsible pushdown automata}
@@ -2941,9 +2939,8 @@ Head linear reduction is  a non-standard reduction strategy for the lambda calcu
 
 \appendix
 
-\section*{Appendix: Proofs}
-
-\printproofs
+%\section*{Appendix: Proofs}
+%\printproofs
 
 %\input{notes_neildaniil.tex}
 
