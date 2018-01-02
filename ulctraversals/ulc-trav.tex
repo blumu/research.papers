@@ -576,15 +576,17 @@ and every $i\geq1$ we have $t \cdot n \cdot\alpha\in\travulc$ with $\alpha$ poin
 
 Some immediate property that can be shown by induction on the rules:
 \begin{property}
+    \label{prop:trav_immediate}
    For any traversal $t$
    \begin{enumerate}
    \item $t$ verifies the alternation condition;
-   \item $t\filter\ExtNodes$ is a valid justified sequence (with respect to the enabling relation $\enables$) verifying the alternation condition.
+   \item $t\filter\ExtNodes$ is a valid justified sequence (with respect to the enabling relation $\enables$) verifying the alternation condition;
+   \item If the last node in $t$ is external then all the nodes in $\oview{t}$ are also external;
+        % By induction on \oview{t}
+   \item All occurrences of ghost lambda $\ghostlmd$ in $t$ are internal (hereditarily justified by an @-node).
+        %This is because ghost lambda can only be introduced with the copy-cat var rule, but if $\beta$ is external then so is $m$, therefore $m$ is an external variable which by rule IVar implies that $\alpha$ is an external lambda, which in turns implies that $n$ is an external variable, contradicting the premise of rule Var.
    \end{enumerate}
 \end{property}
-
-
-
 
 \paragraph{On-the-fly expansion}
 The following definition explicit the notions of \emph{on-the-fly eta-expansion} implemented by the
@@ -700,15 +702,18 @@ Let $t \cdot n\in\justseqset(M)$ denote a justified sequence where $t$ is the pr
     & \mbox{if } n\in(\ImNodesVar\inter\IntNodes)\union\NodesApp \\
 \coresymbol_{\epsilon}(t) \cdot \lambda \overline{x}\overline{y}
     & \mbox{if } n\in\NodesLmd\inter\ExtNodes, n \mbox{ labelled } \lambda\overline{x}\\
-\coresymbol_{\epsilon}(t) \cdot\lambda\overline{y}
-    & \mbox{if } n\in\ghostlmd\inter\ExtNodes \\
 \coresymbol_{\overline{x} \overline{y}}(t)
     & \mbox{if } n\in\NodesLmd\inter\IntNodes, n \mbox{ labelled } \lambda\overline{x} \\
+\coresymbol_{\epsilon}(t) \cdot\lambda\overline{y}
+    & \mbox{if } n\in\ghostlmd\inter\ExtNodes \\
 \coresymbol_{\overline{y}}(t)
     & \mbox{if } n\in\ghostlmd\inter\IntNodes \ .
+%%%%%
 \end{cases}
 \end{equation*}
-The above definition is pointer-preserving, so that the justifiers in $\coresymbol(t\cdot n)$ are defined to be the corresponding occurrences to the justifiers in $t \cdot n$.
+The above definition is pointer-preserving, so that the justifiers in $\coresymbol(t\cdot n)$ are defined to be the occurrences corresponding to the original justifiers in $t \cdot n$.
+
+Note that if $t$ is a traversal, the second last case is not needed since ghost lambdas are necessarily internal by Prop~\ref{prop:trav_immediate}.
 
 We call $\coresymbol_\epsilon(t)$ the \defname{core} of $t$ which we abbreviate as $\core{t}$. The P-view of the core $\pview{\core{t}}$ is called the \defname{core P-view} of $t$.
 \end{definition}
@@ -721,9 +726,15 @@ Since the core of a justified sequence only contains external nodes it follows t
     Then $\coresymbol(t) = \lambda wy \cdot z$.
 \end{example}
 
-\begin{todobox}
-Add an example of core projection involving an external ghost lambda nodes.
-\end{todobox}
+
+\begin{example} Take $\lambda^{(r)} . (\lambda x . x x)(\lambda y . y)$ with traversal
+$$t = \Pstr[0.7cm]{(n0){\lambda^{(r)}}\ (n1){@}\ (n2-n1){\lambda x}\ (n3-n2){x}\ (n4-n1){\lambda y}\ (n5-n4){y}\ (n6-n3){\lambda }\ (n7-n2){x}\ (n8-n1){\lambda y}\ (n9-n8){y}\ (n10-n7){{\ghostlmd^{1}}}\ (n11-n6){{\ghostvar^{1}}}\ (n12-n5){{\ghostlmd^{1}}}\ (n13-n4){{\ghostvar^{2}}}\ (n14-n3){{\ghostlmd^{2}}}\ (n15-n2){{\ghostvar^{2}}}\ (n16-n1){{\ghostlmd^{2}}}\ (n17-n0){{\ghostvar^{1}}}\ }$$
+
+Projecting nodes hereditarily justified by the root gives
+$t \filter \lambda^{(r)} = \Pstr[0.7cm]{(n0){\lambda }\ (n1-n0){{\ghostvar^1}}}$
+while the core projection gives
+$\coresymbol(t) = \Pstr[0.7cm]{(n0){\lambda y}\ (n1-n0){y}}$.
+\end{example}
 
 \subsection{Imaginary traversals subsume STLC traversals}
 
@@ -1245,7 +1256,7 @@ We define the set of \defname{normalizing traversals}, noted $\travsetnorm$ as t
      {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:i){\alpha}}\in\travsetnorm}
 where $\alpha = \ghostlmd$ just if $i>|n|$.
 
-Table~\ref{tab:normalizing_trav_rules} recapitulates the rules of $\travsetnorm$ using judgement derivation rules where the judgement notations ``$\istraversal t$'' means ``$t\in\travsetnorm$''.
+Table~\ref{tab:normalizing_trav_rules} recapitulates the rules thus obtained  using judgement derivation where the judgement notations ``$\istraversal t$'' means ``$t\in\travsetnorm$''.
 \end{definition}
 
 \begin{remark}
@@ -1594,9 +1605,9 @@ An induction on $p$ shows that $M$ and $N$ reduce to the same term by exactly $p
 
 (ii) The idea consists in reducing the redex `inside-out' from left to right. By Proposition~\ref{prop:qnf_nf}(ii), each reduction is trivial and it is easy to see that  $lloc$ is preserved by trivial reduction, therefore each term in the reduction sequence is in \emph{qnf}. The last term in the sequence has no redex therefore it's in beta-normal form.
 
-(iii) We can either appeal to the proof argument of Danos-Regnier in~\cite{danos-head}, or the forthcoming paper by Berezun\cite{DaniilBerezun_Soundness}.
+(iii) We can either appeal to the proof argument of Danos-Regnier in~\cite{danos-head}.
 \begin{todobox}
-Hopefully the proof should not involve state machine/stack/environments, ...
+...or the forthcoming paper by Berezun\cite{DaniilBerezun_Soundness}, hopefully their final proof will not involve state machine/stack/environments.
 \end{todobox}
 \end{proof}
 
@@ -1623,7 +1634,7 @@ Head reduction gives $M \rightarrow_h z ((\lambda w y. y) U)$.
 
 $M$ is also in quasi normal form. Indeed $lloc_M(M) = lloc_M (\lambda w y . y)$ which is undefined.
 The leftmost redex sequence of $M$ is $LRS(M) = (\lambda x, U) \cdot (\lambda w, x)$.
-Reducing the term with two head reduction gives
+Reducing the term with two head reductions gives
 $M \rightarrow_h z ((\lambda w y.y)x) \rightarrow_h z (\lambda y . y)$ which is in normal form.
 \end{example}
 
@@ -2900,7 +2911,7 @@ t_\Omega = \lambda \cdot @ \cdot \lambda x \cdot  x_1 \cdot \lambda y \cdot y_1
     \right]
 \end{equation*}
 where $\sum$ represents sequence concatenation and $u^i$ represents the concatenation of $i$ copies of $u$ for $i\geq 0$.
-The traversal can be represented more succinctly by keeping only the variable nodes and omitting the redundant lambda and @ nodes:
+The traversal can be represented more succinctly by keeping only the variable nodes and omitting the redundant lambda and application nodes:
 \begin{equation*}
     t_\Omega \filter \NodesVar =  x_1 \cdot y_1
     \cdot  \sum_{i\geq 1}
@@ -2908,8 +2919,14 @@ The traversal can be represented more succinctly by keeping only the variable no
             x_2 \cdot y_1 \cdot
              \ghostvar^{2^i -1}\cdot y_2
                  \sum_{1\leq j <i} (\ghostvar^{2^j -1} \cdot y_2)
-        \right] \ .
+        \right]
 \end{equation*}
+and without ghost nodes:
+\begin{equation*}
+    t_\Omega \filter \NodesVar\inter\ExtNodes =  x_1 \cdot y_1
+    \cdot  \sum_{i\geq 1} x_2 \cdot y_1 \cdot {y_2}^i \ .
+\end{equation*}
+
 \end{example}
 
 \section{Further directions}
