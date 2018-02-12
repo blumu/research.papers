@@ -2021,19 +2021,70 @@ An induction on $p$ shows that $M$ and $N$ reduce to the same term by exactly $p
 
 % REMARK: We chose to prove the following termination result directly, and use it in the next section to show that normalizing traversals are necessarily finite. Observe that if we were to show independently that traversals are finite, the following theorem would follow from it.
 
+\begin{property}
+\label{property:lambdalist_linearred}
+    Let $M_1, M_2$ be two lambda terms:
+    \begin{compactitem}[(i)]
+        \item If $M_1 \rightarrow_\beta M_2$ then $|\lambda_l(M_2)| \geq
+        |\lambda_l(M_1)|$;
+        \item If $M_1 \llred M_2$ then $|\lambda_l(M_2)| \geq
+        |\lambda_l(M_1)|$;
+        \item If $M_1$ trivially reduces to $M_2$ then $\lambda_l(M_2) =
+        \lambda_l(M_1)$.
+    \end{compactitem}
+\end{property}
+\begin{proof}
+    (i) and (ii) follow from the fact that performing substitution in an operand of an application does not affect its lambda-list, while substituting a variable in operator position in the application, appends the lambda-list of the substituted term to the lambda-list of the application.
+    (iii) follows trivially by definition of $\lambda_l$.
+\end{proof}
+\begin{example}
+Take $M_1 = (\lambda x . x) (\lambda y z . y)$. We have $\lambda_l(M_1) = \epsilon$ but $M \rightarrow_\beta \lambda y z . y = M_2$,
+$M_1 \llred (\lambda x . (\lambda y z . y)) (\lambda y z . y) = M_3$ and
+and $\lambda_l(M_2) = \lambda_l(M_3) = (\lambda y, \lambda z)$.
+
+Take $N = (\lambda x . U) V$ where $x$ does not occur in $U$ then $N$ trivially reduces to $U$ and $\lambda_l(N) = \lambda_l(U)$.
+\end{example}
+
+\begin{property}
+\label{prop:qnf_betanf_empty_lambdalist}
+    \begin{compactitem}[(i)]
+    \item If $M$ is in beta-nf and $\lambda_l(M) = \epsilon$ then $M$ is not an abstraction.
+    \item If $M$ is in \emph{qnf} and $M$ has a beta-nf then the beta-normal form of $M$ is not an abstraction.
+    \end{compactitem}
+\end{property}
+\begin{proof}
+(i) If $M$ were an abstraction $\lambda x. N$ we would have $\lambda_l(M) = \lambda x$ which contradicts the assumption.
+(ii) By Proposition\ref{prop:qnf_nf}(ii), we have that $M$ trivially reduces to
+its beta-nf so by Property~\ref{property:lambdalist_linearred},
+$M$ and its normal form must have the same lambda list. We can then conclude using (i).
+\end{proof}
+
+
 \begin{theorem}[Completeness of leftmost linear reduction]
 \label{thm:completeness_leftmostlinearred}
 If $M$ has a beta-normal form then its left-most head linear reduction terminates (and thus yields a quasi normal form).
 \end{theorem}
 \begin{proof}
-Suppose $M$ has a beta-normal form.
+Suppose $M$ has a beta-normal form then by a standard result of lambda calculus its head-reduction terminates, therefore by Theorem~\ref{thm:danosreigner_headlinred} the $\hlred$-reduction of $M$ terminates and yields its quasi-\emph{head}-normal form. Since $\hlred$ coincides with $\llred$, for terms not in \emph{qhnf}, we can without loss of generality assume that $M$ is in \emph{qhnf}.
 
-
+By induction on $M$. For the variable case, $\llred$ trivially terminates.
+If $M = \lambda x . U$ then $U$ must also admit a beta-nf so we can conclude by induction. Suppose $M = U V$. If $M$ is in \emph{qnf} then we conclude immediately. Otherwise, $M$ must have a \emph{lloc} occurrence that is distinct from the \emph{hoc} occurrence. Two cases:
+\begin{compactitem}
+\item Suppose that the lloc is in $U$. Then $lloc_M(U) \ne \bot$.
 
 \begin{todobox}
-We can either appeal to the proof argument of Danos-Regnier in~\cite{danos-head}.
-...or the forthcoming paper by Berezun\cite{DaniilBerezun_Soundness}, hopefully their final proof will not involve state machine/stack/environments.
+    Type notes!
 \end{todobox}
+
+\item Suppose that the lloc is in $V$.
+Then by definition of the \emph{lloc} for the application case, we must have $lloc_M(U) =\bot$ and $\lambda_l(U)=\epsilon$.
+Hence $U$ is a term in \emph{qnf} and by Proposition~\ref{prop:qnf_nf} it must
+have a beta-normal form. By Property~\ref{prop:qnf_betanf_empty_lambdalist}
+$U$'s normal form is not an abstraction. Hence since $M$ has a normal form so must $V$ and we have $\betanf{M} = \betanf{U} \betanf{V}$.
+By the induction hypothesis the $\llred$-reduction of $V$ must terminate.
+We can then conclude by observing that the linear-substitutions performed in the
+linear-reduction sequence of $M$ map one-to-one to those in the linear-reduction sequence of $V$ (\ie, if $V \llred V_2 \llred \ldots V_i \llred \ldots$ then $M = U V \llred U V_2 \llred \ldots U V_i \llred \ldots$)
+\end{compactitem}
 \end{proof}
 
 \begin{definition}[Leftmost redex sequence]
