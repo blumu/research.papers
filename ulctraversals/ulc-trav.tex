@@ -201,6 +201,12 @@
 % et al
 \newcommand{\etal}{\textit{et al}. }
 
+% head linear reduction
+\newcommand{\hlred}{\rightarrow_{hl}}
+
+% leftmost linear reduction
+\newcommand{\llred}{\rightarrow_{ll}}
+
 % set of justified sequences of M using quadruplet encoding
 \def\justseqset{\mathcal{J}}
 \def\istraversal{\models}
@@ -1040,7 +1046,7 @@ The normalization procedure for the simply-typed lambda calculus is given by Alg
 % Proof idea: ``traversals implement left-most linear reduction''.
 % The proof sketch:
 % \begin{itemize}
-% \item Show that `leftmost linear reduction' yields the `quasi normal form'.  (Theorem \ref{thm:soundness_leftmostlinearred})
+% \item Show that `leftmost linear reduction' yields the `quasi normal form'.  (Proposition~\ref{prop:qnf_nf}(ii))
 % \item Observe that if $M$ is beta-normal then (trivially) its set of traversal cores P-views is precisely the set of paths in the tree representation of M
 % \item If $M$ reduces to $N$ using the leftmost linear reduction then the traversal cores P-views of $N$ are isomorphic to the traversals core P-views of $M$.
 % \item Reducing a trivial redex preserves (modulo some traversal prefix) the set of traversals.
@@ -1807,7 +1813,7 @@ In the standard lambda calculus, a redex is necessarily formed by the outermost 
 \label{dfn:generalized_redex}
 The set of generalized redexes of a term $M$, written $gr(M)$, is a set of pairs $(\lambda x, A)$ where $\lambda x$ is some abstraction in $M$ and $A$ is a subterm called the argument of $\lambda x$. The head $\lambda$ list of $M$, written $\lambda_l(M)$ is a list of lambda abstractions of $M$. They are defined by induction:
 \begin{align*}
-gr(v) &= \emptyset & \lambda_l(v) &= \emptyset\\
+gr(v) &= \emptyset & \lambda_l(v) &= \epsilon\\
 gr(\lambda x. U) &= gr(U) & \lambda_l(\lambda x. U) &= \lambda x \cdot \lambda_l(U) \\
 gr(U V) &= \{ (\lambda x, V) \} \union gr(U) \union gr(V) &
 \lambda_l(U V) &= l & \mbox{if $\lambda_l(U) = \lambda x \cdot l$} \\
@@ -1828,7 +1834,7 @@ We say that a variable occurrence is \defname{involved} in the generalized redex
 The \defname{head variable occurrence} (abbreviated \emph{hoc}) of a term is the left-most variable occurring in the term (\ie, the first variable found by depth-first traversal of the term tree.) If the head variable occurrence of a term is involved in a generalized redex then we call that redex the \defname{head-linear redex}.
 A term that does not have a head-linear redex is said to be in \defname{quasi head-normal form}.
 
-The \defname{head-linear reduction} $\rightarrow_{hl}$ is defined as the reduction that linearly fires the head linear redex, if it exists. It can be shown that the reflexive transitive closure $\rightarrow^*_{hl}$ yields the quasi head-normal form.
+The \defname{head-linear reduction} $\hlred$ is defined as the reduction that linearly fires the head linear redex, if it exists. It can be shown that the reflexive transitive closure $\rightarrow^*_{hl}$ yields the quasi head-normal form.
 
 \paragraph{Soundness}
 The set of \defname{spine subterms} is defined by induction: a term is a spine subterm of itself; the spine subterms of $U V$ and $\lambda x. U$ are those of $U$.
@@ -1877,19 +1883,28 @@ and for any subterm $N$, $lloc_M(N) = \bot$ denotes that $lloc$ is undefined at 
 
 The \defname{leftmost linear variable occurrence} of $M$
 is defined as $lloc_M(M)$ if it exists and the generalized redex it's involved in is called the \defname{lloc redex}, otherwise $M$ is said to be in \defname{quasi normal form}, or \emph{qnf} for short.
-The \defname{leftmost linear reduction} strategy, written $\rightarrow_l$, is defined as the strategy that linearly fires the generalized redex involving the leftmost linear variable occurrence.
+The \defname{leftmost linear reduction} strategy, written $\llred$, is defined as the strategy that linearly fires the generalized redex involving the leftmost linear variable occurrence.
 \end{definition}
 
 Leftmost linear reduction proceeds by first locating the left-most variable occurrence and, if it is involved in a redex, linearly fires it. In comparison, the traditional left-most outermost reduction first locates the leftmost redex and then fires it by substituting all the variables involved in it.
 
 \begin{example}
-Take $M = (\lambda x. x x N) z$. We have $M \rightarrow_{hl} (\lambda x. z x N) z$ which is in quasi head normal form because the head variable $z$ is not involved in any generalized redex.
-But since the left-most occurrence $x$ is involved in the redex $(\lambda x, z)$ the leftmost linear reduction gives $(\lambda x. z x N) z \rightarrow_l (\lambda x. z z N) z$.
+Take $M = (\lambda x. x x N) z$. We have $M \hlred (\lambda x. z x N) z$ which is in quasi head normal form because the head variable $z$ is not involved in any generalized redex.
+But since the left-most occurrence $x$ is involved in the redex $(\lambda x, z)$ the leftmost linear reduction gives $(\lambda x. z x N) z \llred (\lambda x. z z N) z$.
 \end{example}
 
-The \emph{lloc} generalizes the \emph{hoc} to accounts for arguments of the head variable. Contrary to the \emph{hoc}, however, the definition of the \emph{lloc} requires it to be involved in a generalized redex. If the \emph{hoc} is involved in a generalized redex then it coincides with the \emph{lloc}.
+In effect, the \emph{lloc} generalizes the notion of \emph{hoc} to arguments of the head variable. Observe, however, that contrary to the \emph{hoc}, which is not necessarily involved in a generalized redex, the definition requires the \emph{lloc} to be involved in a generalized redex.
 \begin{example}In the term $M = (\lambda x y . z y x) (\lambda u . u) (\lambda v . v)$, the \emph{hoc} variable $z$ is not involved in any generalized redex, whereas the \emph{lloc} variable $y$ is involved in generalized redex $(\lambda y, (\lambda v.v))$.
 \end{example}
+On the other hand, if the \emph{hoc} is involved in a generalized redex then by definition it necessarily coincides with the \emph{lloc}.
+
+\begin{property}
+    If $\lambda_l(M) = \langle \lambda x_1 \ldots x_n \rangle$ and $M$ has a $\beta$-normal form then its beta-normal form starts with at least $n$ lambda abstractions, \ie, up to variable renaming it is of the shape $\lambda x_1 \ldots x_n . M'$ for some beta-normal term $M'$.
+\end{property}
+\begin{proof}
+    Trivial induction.
+\end{proof}
+
 
 \begin{property}
 \label{prop:qnf_longapply}
@@ -1922,7 +1937,6 @@ Some immediate properties:
  If $\lambda x . U$ is in quasi normal form then so is $U$;
  \item If $M$ has a \emph{lloc} redex then $M$ has a redex;
  \item If all the redexes in $M$ are trivial then $M$ is in \emph{qnf}.
- If $M$ has at least one non-trivial redex then $M$ has a \emph{lloc} redex.
 \end{enumerate}
 \end{property}
 \begin{proof}
@@ -1932,53 +1946,77 @@ Some immediate properties:
 (v) and (vi) are immediate from the definition of \emph{lloc} redex.
 \end{proof}
 
-\begin{proposition}[Trivial redexes in quasi normal forms]
+The following example shows that the converse of (vi) does not hold:
+\begin{example}
+Take $M= (\lambda z.u)((\lambda x . x) y)$. Then $lloc_M(M) = \bot$ since $\lambda_l(\lambda z.y)\ne\epsilon$ and $lloc_M(\lambda z.u) = \bot$.
+So $M$ is in quasi-normal form, even though it has a non-trivial redex in the argument $(\lambda x . x) y$.
+\end{example}
+
+We now introduce a $\beta$-reduction strategy (in the standard sense).
+We define the \defname{leftmost spinal-innermost} standard $\beta$-redex of $N$ as the $\beta$-redex $(\lambda x . N) A$ such that there is no other redex in $M$ occurring left of it and such that $N$ contains no other redex ($A$ on the other-hand, may contain other redexes).
+The idea consists in reducing the redexes `inside-out' from left to right.
+This definition should be distinguished from the \emph{leftmost innermost} reduction strategy from the lambda calculus literature.
+In particular $(\lambda x . y) \Omega$ reduces to $y$ with the leftmost spinal-innermost strategy, while the leftmost innermost strategy does not normalize it.
+% See http://www.cs.columbia.edu/~verma/classes/fa17/coms3261/lec/L24-Lambda_Calculus_II.html: the leftmost innermost strategy reduces any redex in the argument first, whereas here the "inner" only refers to the body of the operator.
+
+\begin{proposition}[Trivial reduction of quasi normal forms]
 \label{prop:qnf_nf}
-Let $M$ be a term in quasi normal form and suppose that $M$ is not in beta-normal form. Then:
+Let $M$ be a term in quasi normal form.
+Then:
 \begin{itemize}
-\item[(i)] If $x$ is a variable occurrence in $M$ involved in a generalized redex of $M$ then $x$ occurs in operand position in a subterm of the form:
-$$(\lambda z .U) A_1 \ldots A_q (\ldots x \ldots) \qquad q\geq 0$$
-\item[(ii)] Let $(\lambda x . N) A$ be the leftmost standard redex occurring in $M$ such that $N$ does not contain any redex. Then $x$ does not occur freely in $N$.
+% \item[(X)] If $x$ is a variable occurrence in $M$ involved in a generalized redex of $M$ then $x$ occurs in operand position in a subterm of the form:
+% $$(\lambda z .U) A_1 \ldots A_q (\ldots x \ldots) \qquad q\geq 0$$
+\item[(i)]
+ If $M$ is not in beta-normal form then its \emph{leftmost spinal-innermost standard $\beta$-redex} $(\lambda x . N) A$ is trivial.
+(\ie, $x$ does not occur freely in $N$).
+
+\item[(ii)] $M$ has a beta-normal form and the leftmost spinal-innermost $\beta$-reduction sequence normalizes $M$.
+
 \end{itemize}
 \end{proposition}
 \begin{proof}
 \begin{compactitem}
-\item[(i)] By induction on $M$. Suppose $M = v$ for some variable $v$ then the result trivially holds since $M$ has no generalized redex. Suppose $M = \lambda x . U$ then by Property~\ref{prop:lloc_properties}(iv) $U$ is in \emph{qnf} and we conclude by the induction hypothesis.
-    Suppose $M = U V$. If $x$ occurs in $U$ then we conclude by the induction hypothesis ($U$ is in \emph{qnf} by Property~\ref{prop:lloc_properties}(iii)). If $x$ occurs in $V$ then if $V$ is in \emph{qnf} we conclude by the induction hypothesis. Otherwise by definition of $lloc$ we necessarily have $\lambda_l(U) \neq \epsilon$. Hence $U$ is either an abstraction or a redex with possibly multiple applied arguments. Consequently, so is $UV$ which proves (i).
+% \item[(X)] By induction on $M$. Suppose $M = v$ for some variable $v$ then the result trivially holds since $M$ has no generalized redex. Suppose $M = \lambda x . U$ then by Property~\ref{prop:lloc_properties}(iv) $U$ is in \emph{qnf} and we conclude by the induction hypothesis.
 
-\item[(ii)] By induction on $M$. Suppose $M = v$ for some variable $v$ then it trivially holds since $M$ has no redex. Suppose $M = \lambda x . U$ then the result follows by the induction hypothesis since the redexes of $M$ are those of $U$.
+%     Suppose $M = U V$. If $x$ occurs in $U$ then we conclude by the induction hypothesis ($U$ is in \emph{qnf} by Property~\ref{prop:lloc_properties}(iii)). If $x$ occurs in $V$ then if $V$ is in \emph{qnf} we conclude by the induction hypothesis. Otherwise by definition of $lloc$ we necessarily have $\lambda_l(U) \neq \epsilon$. Hence $U$ is either an abstraction or a redex with possibly multiple applied arguments. Consequently, so is $UV$ which proves (i).
+\item[(i)]
+By induction on $M$. Suppose $M = (\lambda x . N) A$. By assumption $N$ is in beta-normal form therefore if $x$ occurs freely in $N$ it is involved in the generalized redex $(\lambda x, A)$ of $M$ and by bottom-up evaluation of $lloc$ this gives $lloc_M(M) = x$ which contradict the assumption that $M$ is in \emph{qnf}.
 
-Suppose $M = U V$. Let's consider the three sub-cases depending on where the redex is located in $U V$:
+Suppose $M = \lambda z . U$ then $U$ is in \emph{qnf} by Property~\ref{prop:lloc_properties}(iv) and the result follows by the induction hypothesis
+since the redexes of $M$ are those of $U$ and the free variables of $M$ are a subset of those of $U$.
+
+Suppose $M = U V$. We consider the three sub-cases depending on where the redex is located within $U V$:
 \begin{compactitem}
-  \item[(1)] The redex $(\lambda x . N) A$  is in $U$. Since $M$ is in quasi normal form, by Property~\ref{prop:lloc_properties}(iii) so is $U$, we can thus conclude by the induction hypothesis.
+  \item[(1)] The redex $(\lambda x . N) A$  is in $U$. Since $M$ is in \emph{qnf}, by Property~\ref{prop:lloc_properties}(iii) so is $U$, we can thus conclude by the induction hypothesis.
 
   \item[(2)] The redex $(\lambda x . N) A$  is in $V$.
 If $\lambda_l(U) = \epsilon$ then by definition of $lloc$ we have $lloc_M(UV) = lloc_M(V) = \bot$ so we conclude by the induction hypothesis.
 If $\lambda_l(U) \neq \epsilon$, then either $U$ contains a redex or $U$ is an abstraction. But $U$ cannot be a redex since by assumption $N$ does not contain any redex, and $U$ being abstraction would make $M = U V$ itself a redex which would contradict the fact that redex $(\lambda x . N) A$ in $V$ is the leftmost redex in $M$.
 
-  \item[(3)] $U = \lambda x . N$ and $V = A$.
-  By assumption $UV$ is in \emph{qnf} therefore by Property~\ref{prop:lloc_properties}(iii) and (iv), $N$ is in \emph{qnf}.
-  Suppose $x$ occurs freely in $N$ then by the induction hypothesis (i), it must appear in operand position in consecutive applications to some lambda abstraction. But this contradicts the assumption that $N$ does not contain any redex.
+  \item[(3)] $U = \lambda x . N$ and $V = A$. This is the base case of the induction already treated above.
 \end{compactitem}
+
+\item[(ii)]
+By (i) each reduction of the leftmost spinal-innermost reduction strategy is trivial and it is easy to see that $lloc$ is preserved by trivial reduction, therefore each term in the reduction sequence is in \emph{qnf}.
+Since a trivial reduction cannot possibly create new $\beta$-redexes, the reduction sequence necessarily terminates and yields the beta-normal form.
 \end{compactitem}
 \end{proof}
 
+Observe that if $M$ is in \emph{qnf}, its redexes are not all necessarily trivial, but the non-trival redexes get eliminated by the trivial reductions:
+\begin{example}
+The term $M = (\lambda x . u) ((\lambda z .z) y)$ is in \emph{qnf} and trivially reduces to $u$ but contains the non-trivial redex $(\lambda z .z) y$.
+\end{example}
+
 \begin{theorem}[Soundness of leftmost linear reduction]
 \label{thm:soundness_leftmostlinearred}
-We have:
-\begin{enumerate}[label=(\roman*)]
-\item If $M \rightarrow_{l} N$ then $M$ and $N$ are beta-equivalent.
-\item If $M$ is in \emph{quasi normal form} and contains $n$ standard redexes then there is an evaluation strategy that reduces $M$ to its beta-normal form in exactly $n$ (trivial) beta-reductions.
-\end{enumerate}
+If $M \rightarrow_{l} N$ then $M$ and $N$ are beta-equivalent.
 \end{theorem}
 \begin{proof}
-(i) The proof is similar to that of Theorem~\ref{thm:danosreigner_headlinred}. We adapt the notion of \emph{consecutive redex} from \cite{danos-head} to  leftmost-linear reduction: Let $r = (\lambda x, V)$ and  $s =(\lambda y, W)$ be two generalized redexes. We say that $r$ contains $s$ if the node $\lambda y$ lies in the scope of $\lambda x$. We say that $r$ and $s$ are \emph{consecutive} if $r$ contains $s$; no other generalized redex other than $r$ and $s$ is contained in $r$ and contains $s$; and $s$ is the leftmost generalized redex contained in $r$ (\ie, any other redex $t$ contained in $r$ resides on the left of node $\lambda y$ in the usual tree representation of the term).
+The proof is similar to that of Theorem~\ref{thm:danosreigner_headlinred}. We adapt the notion of \emph{consecutive redex} from \cite{danos-head} to  leftmost-linear reduction: Let $r = (\lambda x, V)$ and  $s =(\lambda y, W)$ be two generalized redexes. We say that $r$ contains $s$ if the node $\lambda y$ lies in the scope of $\lambda x$. We say that $r$ and $s$ are \emph{consecutive} if $r$ contains $s$; no other generalized redex other than $r$ and $s$ is contained in $r$ and contains $s$; and $s$ is the leftmost generalized redex contained in $r$ (\ie, any other redex $t$ contained in $r$ resides on the left of node $\lambda y$ in the usual tree representation of the term).
 
 Let $r_0, \ldots, r_p$ denote the consecutive generalized redexes for $p\geq 0$ where $r_0$ is not contained in any other generalized redexes and $r_p$ is the \emph{lloc redex}. (This sequence necessarily exists by definition of the leftmost linear variable occurrence \emph{lloc}.)
 
 An induction on $p$ shows that $M$ and $N$ reduce to the same term by exactly $p-1$ standard reduction steps (\ie, the strategy reducing the leftmost outermost redex), observing that at every step, no redex can be introduced above or on the left of the \emph{lloc}.
-
-(ii) The idea consists in reducing the redex `inside-out' from left to right. By Proposition~\ref{prop:qnf_nf}(ii), each reduction is trivial and it is easy to see that  $lloc$ is preserved by trivial reduction, therefore each term in the reduction sequence is in \emph{qnf}. The last term in the sequence has no redex therefore it's in beta-normal form.
 \end{proof}
 
 % REMARK: We chose to prove the following termination result directly, and use it in the next section to show that normalizing traversals are necessarily finite. Observe that if we were to show independently that traversals are finite, the following theorem would follow from it.
@@ -1999,7 +2037,7 @@ We can either appeal to the proof argument of Danos-Regnier in~\cite{danos-head}
 \end{proof}
 
 \begin{definition}[Leftmost redex sequence]
-The leftmost redex sequence $LRS(M)$ of a term $M$ is a sequence of the generalized redexes of $M$ defined by induction as follows:
+The leftmost redex sequence $LRS(M)$ of a term $M$ is a sequence of generalized redexes of $M$ defined by induction as follows:
 \begin{align*}
 LRS(v) &= \emptyset \\
 LRS(\lambda x . U) &= LRS(U)\\
@@ -2392,12 +2430,12 @@ the sets of traversals $\travsetnorm$ before and after reduction are identical u
 \begin{proposition}[Traversals are sound for linear reduction]
 \label{prop:ulctrav_impl_linear_reduction}
 Let $M$ be an untyped term.
-$$M \rightarrow_l N \implies \coresymbol(\travsetnorm(M)) \cong \coresymbol(\travsetnorm(N)) \ .
+$$M \llred N \implies \coresymbol(\travsetnorm(M)) \cong \coresymbol(\travsetnorm(N)) \ .
 $$
 \end{proposition}
 %\begin{proof}
 \proofatend
-Suppose that $M \rightarrow_l N$. Let $x$ denote the leftmost linear variable occurrence in $M$ and
+Suppose that $M \llred N$. Let $x$ denote the leftmost linear variable occurrence in $M$ and
 let $(\lambda x, A)$ be the generalized redex involving it, so that $N$ is the term obtained after
 firing the generalized redex $(\lambda x, A)$. A property of linear head reduction is that the reduct contains the original
 term itself, modulo alpha conversion and relabelling of the \emph{lloc} node. This induces an implicit map $\Phi$ from nodes
@@ -2515,7 +2553,7 @@ We proceed by showing that for each of the three cases, there is an injection $\
     \draw[<-] ([xshift=2.5cm,yshift=-2cm]root.east) -- +(2cm,0)
     node[midway, above] {$\Phi$};
     \end{tikzpicture}
-    \caption{(Case 1) Reduction $M\rightarrow_l N$ where node $x$ has at least one operand, and $A$ is a non-dummy
+    \caption{(Case 1) Reduction $M\llred N$ where node $x$ has at least one operand, and $A$ is a non-dummy
      abstraction $\lambda\overline{y} . R$. Linearly firing  generalized redex $(\lambda x, A)$ for $x$ in $M$ (left)
      yields $N$ (right) where $R'$ is a copy of $R$ with fresh names to avoid variable capture.
     Function $\Phi$ maps nodes from the right tree to the left tree.}
@@ -2688,7 +2726,7 @@ Hence $M$ and $N$ are in $\phi$-bisimulation, thus because $\phi$ is injective a
 
 \begin{proposition}[Traversals are sound for trivial reduction]
 \label{prop:ulctrav_sound_for_trivialreduction}
-    Let $M$ be an untyped term containing only trivial redexes, and $N$ the reduct obtained by firing the leftmost innermost trivial redex, then $\coresymbol(\travsetnorm(M)) \cong \coresymbol(\travsetnorm(N))$.
+    Let $M$ be an untyped term containing only trivial redexes, and $N$ the reduct obtained by firing the \emph{leftmost spinal-innermost} trivial redex, then $\coresymbol(\travsetnorm(M)) \cong \coresymbol(\travsetnorm(N))$.
 \end{proposition}
 \proofatend
 %\begin{proof}
@@ -2750,7 +2788,7 @@ Let's consider the tree structure at the trivial redex on Figure~\ref{fig:reduci
             node[midway, above] {trivial reduction} ;
         \end{tikzpicture}
 
-        \caption{Reducing a (leftmost innermost) trivial redex. Case $r>1$ (top) and $r=1$ (bottom).}
+        \caption{Reducing a (leftmost spinal-innermost) trivial redex. Case $r>1$ (top) and $r=1$ (bottom).}
 \label{fig:reducing_trivialredex}
     \end{figure}
 
@@ -2903,7 +2941,7 @@ $\Pstr[10pt]{(l){\lambda x^{[z]}} \cdot (gv-l,32:2)\ghostvar }$, itself equivale
 If $M$ is in \emph{qnf} and has beta-normal form $N$ then $\coresymbol(\travsetnorm(M)) \cong \coresymbol(\travsetnorm(N))$.
 \end{corollary}
 \begin{proof}
-By Theorem~\ref{thm:soundness_leftmostlinearred}(ii) a \emph{qnf} trivially reduces to its beta-nf: there is a beta reduction sequence $M = M_1 \rightarrow_\beta M_2 \ldots \rightarrow_\beta M_q= N$, $q\geq1$  where for each reduction step, $M_{i+1}$ is obtained by reducing the leftmost innermost standard redex of $M_i$ (of the form $(\lambda x . U) T$ such that $U$ does not contain any redex). By Proposition~\ref{prop:qnf_nf}(ii), each such redex is trivial: $x$ does not occur freely in $U$ and therefore no substitution is performed to reduce the redex.
+By Proposition~\ref{prop:qnf_nf}(ii) a \emph{qnf} trivially reduces to its beta-nf: there is a beta reduction sequence $M = M_1 \rightarrow_\beta M_2 \ldots \rightarrow_\beta M_q= N$, $q\geq1$  where for each reduction step, $M_{i+1}$ is obtained by reducing the leftmost spinal-innermost standard redex of $M_i$ (of the form $(\lambda x . U) T$ such that $U$ does not contain any redex). By Proposition~\ref{prop:qnf_nf}(i), each such redex is trivial: $x$ does not occur freely in $U$ and therefore no substitution is performed to reduce the redex.
 
 By Proposition~\ref{prop:ulctrav_sound_for_trivialreduction} the set $\core{\travsetnorm}$ is an invariant (up to isomorphism) throughout this trivial reduction sequence, which yields the desired result.
 \end{proof}
@@ -2917,7 +2955,7 @@ Let $M$ be an untyped term with a beta-normal form.
 \end{enumerate}
 \end{proposition}
 \begin{proof}
-(i) If $M$ has a normal form then by Theorem~\ref{thm:completeness_leftmostlinearred} its linear reduction sequence yields a quasi-normal form $Q$ and by Theorem~\ref{thm:soundness_leftmostlinearred}(i) $Q$ and $M$ are beta-equivalent. Thus by Prop.~\ref{prop:ulctrav_impl_linear_reduction} the sets of traversals of $M$ and $Q$ are isomorphic. So if $M$ has an infinite traversal then so does $Q$, which contradicts Proposition~\ref{prop:qnf_traversals_are_finite}.
+(i) If $M$ has a normal form then by Theorem~\ref{thm:completeness_leftmostlinearred} its linear reduction sequence yields a quasi-normal form $Q$ and by Theorem~\ref{thm:soundness_leftmostlinearred} $Q$ and $M$ are beta-equivalent. Thus by Prop.~\ref{prop:ulctrav_impl_linear_reduction} the sets of traversals of $M$ and $Q$ are isomorphic. So if $M$ has an infinite traversal then so does $Q$, which contradicts Proposition~\ref{prop:qnf_traversals_are_finite}.
 (ii) Traversals rules defining $\travsetnorm$ all have bounded non-determinism therefore by (i) $\travsetnorm$ is finite.
 \end{proof}
 %%%% REMARK: (i) It would be possible to prove (i) directly without appealing to Theorem~\ref{thm:completeness_leftmostlinearred}. (In which case this theorem  would follow from the above proposition). The proof would follow a similar argument as that of Theorem~\ref{thm:completeness_leftmostlinearred}, by showing that traversals lead to the head variable in the beta-nf, and recursively to head variables of its arguments. So an infinte traversals would yield (through P-view) to an infinite sequence of paths in the beta-normal form, which is a contradiction since beta-nf have a finite tree representation.
