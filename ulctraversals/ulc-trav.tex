@@ -221,11 +221,10 @@ We introduce a method to reduce untyped lambda terms that yields the normal-form
 
 This technique requires little modifications to the traversal theory of the simply-typed lambda calculus~\cite{BlumPhd}. A notable improvement is that eta-long transformation is unnecessary: we traverse some syntax tree of the original unmodified lambda term.
 
-In the typed setting, when traversing a redex the eta-long transform ensures that the argument can be determined from the operands of the application node involved in the redex.
-Traversing untyped terms by blindly applying the same rules fails when the application node lacks the required operand. To work around this limitation we relax the structural restriction altogether and just pretend that the missing operand exists. This induces the notion of ``imaginary'' nodes: those are tree nodes that would exist if the subterm with the missing operand were to be eta-expanded. This trick allows the traversal to proceed.
+In the typed setting, the eta-long transform ensures that
+when traversing an application, every possible argument of the operator (an application or variable node) is itself represented by some other subterm in the original term. Blindly applying the rules of typed traversals on untyped terms, where eta-long transform is undefined, therefore fails when an operator  node lacks the required operand. To work around this limitation, we create missing operands on-the-fly and proceed as if it existed in the original term. We denote missing operands in the traversals using ``imaginary'' nodes representing nodes that would exist in the term-tree if the application subterm lacking the operand were to be eta-expanded. We call the resulting traversal an ``imaginary traversal''.
 
-We further show that by bounding the non-determinism of the free variable rule, one can effectively compute a subset of traversals characterizing the set of paths in the beta-normal form of the term. This yields a normalization algorithm for untyped terms admitting a normal form.
-Finally we prove correctness of the reduction procedure by showing that traversals implements \emph{leftmost linear reduction}, a generalization of the head linear reduction of Danos-Regnier~\cite{danos-head}.
+We further show that by bounding the non-determinism of the free variable rule, one can effectively compute a subset of traversals characterizing the set of paths in the beta-normal form of the term. This yields an evaluation algorithm for untyped lambda-terms. Finally we prove correctness of the reduction procedure by showing that traversals implements \emph{leftmost linear reduction}, a generalization of the head linear reduction of Danos-Regnier~\cite{danos-head}.
 \end{abstract}
 
 \tableofcontents
@@ -1990,6 +1989,8 @@ If $M$ has a beta-normal form then its left-most head linear reduction terminate
 \end{theorem}
 \begin{proof}
 Suppose $M$ has a beta-normal form.
+
+
 
 \begin{todobox}
 We can either appeal to the proof argument of Danos-Regnier in~\cite{danos-head}.
