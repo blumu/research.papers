@@ -207,6 +207,9 @@
 % leftmost linear reduction
 \newcommand{\llred}{\rightarrow_{ll}}
 
+% head variable occurence (from Danos-Reigner def)
+\newcommand{\hoc}{\emph{hoc}}
+
 % set of justified sequences of M using quadruplet encoding
 \def\justseqset{\mathcal{J}}
 \def\istraversal{\models}
@@ -799,8 +802,7 @@ It is helpful to think of ghost nodes as the counterpart of complex numbers some
 to prove trigonometry identities: they are introduced intermediately to perform some computation or calculation (e.g.\ using De Moivre's Theorem) but do not appear in the final result. Just like the imaginary number $i$ is created out of the impossibility of calculating the square root of $-1$, ghost nodes are defined from the impossibility of ``traversing'' a beta-redex of a lambda term due to an insufficient number of operands.
 
 
-Ghost nodes appear in a traversal when the arity of a node is too low to continue a
-structural traversal of the tree:
+Ghost nodes appear in a traversal when the arity of a node is too low to be able to structurally traverse it:
 \begin{property}
 \label{prop:ghost_justifier_arity}
 If $\Pstr[0.5cm]{(x){x} \cdots (y-x,30:i){y}} \in \travulc$ then
@@ -1110,7 +1112,6 @@ For any occurrence $n$ in $t$ that is hereditarily justified by the root, we cal
 \label{dfn:arity-threshold}
 Let $t$ be traversal ending with a variable node hereditarily justified by the root.
 Let $\underline{\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ \underline{n_1}$ be the strand of $t$ ending at $t^\omega$, (so that $n_1 = t^\omega$) for some $k>0$  where $\alpha_j \in \ImNodesLmd$, and $n_j \in \ImNodesVar$ for all $1\leq j\leq k$.
-
 We define the \defname{arity threshold} of $t$ as:
 \begin{align*}
 \arth(t) &= \max_{q=1..k-1} \left( |n_q| + \sum_{j=1..q-1} (|n_j| - |\alpha_j|) \right)\ .
@@ -1120,8 +1121,7 @@ We define the \defname{arity threshold} of $t$ as:
 We will use the abbreviation $ \delta_j = |n_j| - |\alpha_j|$
 so that the arity threshold can be more concisely expressed as:
 \begin{align*}
-    \arth(t) &= \max_{q=1..k-1} \left( |n_q| + \sum_{j=1..q-1} \delta_j \right) \\
-    &= \max_{q=1..k-1} \left( |\alpha_q| + \sum_{j=1..q} \delta_j\right)
+    \arth(t) &= \max_{q=1..k-1} \left( |n_q| + \sum_{j=1..q-1} \delta_j \right)     = \max_{q=1..k-1} \left( |\alpha_q| + \sum_{j=1..q} \delta_j\right)
 \end{align*}
 
 
@@ -1817,7 +1817,7 @@ gr(v) &= \emptyset & \lambda_l(v) &= \epsilon\\
 gr(\lambda x. U) &= gr(U) & \lambda_l(\lambda x. U) &= \lambda x \cdot \lambda_l(U) \\
 gr(U V) &= \{ (\lambda x, V) \} \union gr(U) \union gr(V) &
 \lambda_l(U V) &= l & \mbox{if $\lambda_l(U) = \lambda x \cdot l$} \\
-gr(U V) &= gr(U) \union gr(V) & \lambda_l(U V) &= \epsilon & \mbox{if $\lambda_l(U) = \epsilon$.} \\
+gr(U V) &= gr(U) \union gr(V) & \lambda_l(U V) &= \epsilon & \mbox{if $\lambda_l(U) = \epsilon$.}
 \end{align*}
 where $v$ ranges over variable occurrences, $x$ ranges over variable names, $U, V$ range over subterms of $M$, and $\epsilon$ denotes the empty list.
 \end{definition}
@@ -1888,6 +1888,8 @@ The \defname{leftmost linear reduction} strategy, written $\llred$, is defined a
 
 Leftmost linear reduction proceeds by first locating the left-most variable occurrence and, if it is involved in a redex, linearly fires it. In comparison, the traditional left-most outermost reduction first locates the leftmost redex and then fires it by substituting all the variables involved in it.
 
+Since the \emph{lloc} is uniquely defined, a given term has a unique left-most linear reduction sequence $M \llred M_1 \llred M_2 \llred \ldots$ (also abbreviated as \defname{linear reduction sequence}).
+
 \begin{example}
 Take $M = (\lambda x. x x N) z$. We have $M \hlred (\lambda x. z x N) z$ which is in quasi head normal form because the head variable $z$ is not involved in any generalized redex.
 But since the left-most occurrence $x$ is involved in the redex $(\lambda x, z)$ the leftmost linear reduction gives $(\lambda x. z x N) z \llred (\lambda x. z z N) z$.
@@ -1926,7 +1928,7 @@ We say that a standard redex $(\lambda x. N) A$ is \defname{trivial} if $x$ does
 \begin{property}
 \label{prop:lloc_properties}
 Some immediate properties:
-\begin{enumerate}[label=(\roman*)]
+\begin{enumerate}[noitemsep,label=(\roman*)]
 \item
  If $N$ is a subterm of $M$ then $lloc_N(N) \sqsubseteq lloc_M(N)$;
 \item
@@ -1952,6 +1954,27 @@ Take $M= (\lambda z.u)((\lambda x . x) y)$. Then $lloc_M(M) = \bot$ since $\lamb
 So $M$ is in quasi-normal form, even though it has a non-trivial redex in the argument $(\lambda x . x) y$.
 \end{example}
 
+\begin{definition}[Arguments of the hoc]
+Let $z$ be the \emph{hoc} of $M$. The arguments of the \emph{hoc} occurrence, written ${\sf Args}(M)$, is a list of subterms of $M$ defined by induction:
+\begin{align*}
+{\sf Args}(z) &= \epsilon \\
+{\sf Args}(\lambda x . U ) &= {\sf Args}(U) \\
+{\sf Args}(U V) &= \begin{cases}
+             {\sf Args}(U) \cdot V & \mbox{if } \lambda_l(U) = \epsilon\\
+             {\sf Args}(U)         & \mbox{if } \lambda_l(U) \neq \epsilon
+            \end{cases}
+\end{align*}
+Note that the variable case where $x\neq z$ is not needed since the induction proceeds by spinal descent to the head occurrence.
+\end{definition}
+
+\begin{property}
+\label{property:hoc_argument_count_in_headnf}
+    If $M$ is in quasi-head-normal form, then the head variable of its head-normal form has precisely $|{\sf Args}(M)|$ arguments.
+\end{property}
+\begin{proof}
+By Theorem~\ref{thm:danosreigner_headlinred}, the \emph{hoc} of a quasi-head normal form becomes the head variable of the head-normal form after reducing the prime redexes, and it is easy to show by structural induction that standard beta-reduction preserves the number of pending hoc arguments.
+\end{proof}
+
 We now introduce a $\beta$-reduction strategy (in the standard sense).
 We define the \defname{leftmost spinal-innermost} standard $\beta$-redex of $N$ as the $\beta$-redex $(\lambda x . N) A$ such that there is no other redex in $M$ occurring left of it and such that $N$ contains no other redex ($A$ on the other-hand, may contain other redexes).
 The idea consists in reducing the redexes `inside-out' from left to right.
@@ -1961,8 +1984,7 @@ In particular $(\lambda x . y) \Omega$ reduces to $y$ with the leftmost spinal-i
 
 \begin{proposition}[Trivial reduction of quasi normal forms]
 \label{prop:qnf_nf}
-Let $M$ be a term in quasi normal form.
-Then:
+Let $M$ be a term in \emph{qnf}.
 \begin{itemize}
 % \item[(X)] If $x$ is a variable occurrence in $M$ involved in a generalized redex of $M$ then $x$ occurs in operand position in a subterm of the form:
 % $$(\lambda z .U) A_1 \ldots A_q (\ldots x \ldots) \qquad q\geq 0$$
@@ -1970,7 +1992,7 @@ Then:
  If $M$ is not in beta-normal form then its \emph{leftmost spinal-innermost standard $\beta$-redex} $(\lambda x . N) A$ is trivial.
 (\ie, $x$ does not occur freely in $N$).
 
-\item[(ii)] $M$ has a beta-normal form and the leftmost spinal-innermost $\beta$-reduction sequence normalizes $M$.
+\item[(ii)] $M$ has a beta-normal form and the leftmost spinal-innermost strategy normalizes $M$.
 
 \end{itemize}
 \end{proposition}
@@ -2007,6 +2029,16 @@ Observe that if $M$ is in \emph{qnf}, its redexes are not all necessarily trivia
 The term $M = (\lambda x . u) ((\lambda z .z) y)$ is in \emph{qnf} and trivially reduces to $u$ but contains the non-trivial redex $(\lambda z .z) y$.
 \end{example}
 
+\begin{example}
+    Take $M = (\lambda x . z ((\lambda w y . y)x)) U$ for any term $U$.
+    Then $M$ is in quasi-head normal form with one prime spine redex $(x,U)$.
+    Performing one head reduction gives $M \rightarrow_h z ((\lambda w y. y) U)$
+    which brings the \emph{hoc} in head position.
+
+    $M$ is also in quasi normal form. Indeed $lloc_M(M) = lloc_M (\lambda w y . y) = \bot$. Reducing the term with the leftmost spinal-innermost reduction strategy gives  $M \rightarrow (\lambda x . z (\lambda y . y)) U
+    \rightarrow  z (\lambda y . y) $ which yields a beta-normal form.
+\end{example}
+
 \begin{theorem}[Soundness of leftmost linear reduction]
 \label{thm:soundness_leftmostlinearred}
 If $M \rightarrow_{l} N$ then $M$ and $N$ are beta-equivalent.
@@ -2024,14 +2056,14 @@ An induction on $p$ shows that $M$ and $N$ reduce to the same term by exactly $p
 \begin{property}
 \label{property:lambdalist_linearred}
     Let $M_1, M_2$ be two lambda terms:
-    \begin{compactitem}[(i)]
+    \begin{enumerate}[noitemsep,label=(\roman*)]
         \item If $M_1 \rightarrow_\beta M_2$ then $|\lambda_l(M_2)| \geq
         |\lambda_l(M_1)|$;
         \item If $M_1 \llred M_2$ then $|\lambda_l(M_2)| \geq
         |\lambda_l(M_1)|$;
         \item If $M_1$ trivially reduces to $M_2$ then $\lambda_l(M_2) =
         \lambda_l(M_1)$.
-    \end{compactitem}
+    \end{enumerate}
 \end{property}
 \begin{proof}
     (i) and (ii) follow from the fact that performing substitution in an operand of an application does not affect its lambda-list, while substituting a variable in operator position in the application, appends the lambda-list of the substituted term to the lambda-list of the application.
@@ -2047,10 +2079,10 @@ Take $N = (\lambda x . U) V$ where $x$ does not occur in $U$ then $N$ trivially 
 
 \begin{property}
 \label{prop:qnf_betanf_empty_lambdalist}
-    \begin{compactitem}[(i)]
+    \begin{enumerate}[noitemsep,label=(\roman*)]
     \item If $M$ is in beta-nf and $\lambda_l(M) = \epsilon$ then $M$ is not an abstraction.
-    \item If $M$ is in \emph{qnf} and $M$ has a beta-nf then the beta-normal form of $M$ is not an abstraction.
-    \end{compactitem}
+    \item If $M$ is in \emph{qnf} and $M$ has a beta-nf then its beta-normal form is not an abstraction.
+    \end{enumerate}
 \end{property}
 \begin{proof}
 (i) If $M$ were an abstraction $\lambda x. N$ we would have $\lambda_l(M) = \lambda x$ which contradicts the assumption.
@@ -2059,60 +2091,125 @@ its beta-nf so by Property~\ref{property:lambdalist_linearred},
 $M$ and its normal form must have the same lambda list. We can then conclude using (i).
 \end{proof}
 
-
 \begin{theorem}[Completeness of leftmost linear reduction]
 \label{thm:completeness_leftmostlinearred}
-If $M$ has a beta-normal form then its left-most head linear reduction terminates (and thus yields a quasi normal form).
+If $M$ has a beta-normal form then its left-most linear reduction terminates (and thus yields a quasi normal form).
 \end{theorem}
 \begin{proof}
 Suppose $M$ has a beta-normal form then by a standard result of lambda calculus its head-reduction terminates, therefore by Theorem~\ref{thm:danosreigner_headlinred} the $\hlred$-reduction of $M$ terminates and yields its quasi-\emph{head}-normal form. Since $\hlred$ coincides with $\llred$, for terms not in \emph{qhnf}, we can without loss of generality assume that $M$ is in \emph{qhnf}.
+%%%%%%%%%%%
+We prove the result by two nested inductions.
 
-By induction on $M$. For the variable case, $\llred$ trivially terminates.
-If $M = \lambda x . U$ then $U$ must also admit a beta-nf so we can conclude by induction. Suppose $M = U V$. If $M$ is in \emph{qnf} then we conclude immediately. Otherwise, $M$ must have a \emph{lloc} occurrence that is distinct from the \emph{hoc} occurrence. Two cases:
-\begin{compactitem}
-\item Suppose that the lloc is in $U$. Then $lloc_M(U) \ne \bot$.
+%%%%%%%%%
+We first prove by induction on the \emph{size} of $M$ that
+\begin{quote}
+(H1) If $M$ has a beta-nf then its linear reduction sequence terminates.
+\end{quote}
+For the variable case, $\llred$ trivially terminates.
+If $M = \lambda x . U$ then $U$ must also admit a beta-nf so we can conclude by induction. Suppose $M = U V$. If $M$ is in \emph{qnf} then we conclude immediately. Otherwise, $M$ must have a \emph{lloc} occurrence that is distinct from the \emph{hoc} occurrence.
+\begin{enumerate}[noitemsep,label=(\roman*)]
+\item Suppose that the \emph{lloc} of $M$ is in $U$ ($lloc_M(U) \ne \bot$).
 
-\begin{todobox}
-    Type notes!
-\end{todobox}
+    %%%%%%%%%%%%%%%%%%%%%%%
+    We show by finite \emph{structural} induction on subterms $T$ of $U$ that:
+    \begin{quote}
+    (H2) If $lloc_M(T) \neq \bot$ and $hoc(M)$ is in $T$ then there are at most a finite number of steps in the linear reduction sequence of $M$ that involve a linear substitutions in (reducts of) $T$.
+    \end{quote}
+
+    \begin{compactitem}
+        \item $T$ is a variable. Since $M$'s \emph{hoc} is in $T$, it must be $T$ itself. Because $M$ is in quasi-head-normal form, the \empg{hoc} is not involved in any generalized redex and therefore $T$ is not involved in any substitution of the linear reduction sequence of $M$.
+
+        \item $T =\lambda x . T'$ then the \emph{hoc} and \emph{lloc} must be in $T'$ and we can conclude by the induction hypothesis (H2).
+
+        \item $T = T_1 T_2$. By definition, the \emph{hoc} is necessarily in $T_1$.
+
+        \begin{enumerate}[noitemsep,label=(\alph*)]
+
+            \item Suppose that $\emph{lloc}$ is in $T_2$. Then we have $lloc_M(T_1) =\bot$ therefore none of the steps in the linear reduction sequence of $M$ will involve substitutions in $T_1$ (there is no variable in $T_1$ involved in a  general redex therefore subsequent linear reduction steps can only introduce general redexes on the right of $T_1$).
+
+            \begin{compactitem}
+                \item Suppose $T_1$ is a variable $x$ then it must be the \emph{hoc} and we have $T = x~T_2$.
+
+                We show the result by induction on the number of pending arguments of the \emph{hoc}.
+                \begin{compactitem}
+                \item Base: $z$ has a single argument which must be $T_2$.
+
+                By Theorem~\ref{thm:danosreigner_headlinred}, reducing all the prime redexes in $M$ yields itshead normal form
+                with $x$ as the head variable.
+                Let $\gamma$ denotes the sequence of substitutions performed on $M$ to reduce the prime redexes, so that $\gamma(M)$ is the head normal form of $M$.
+                Then $\gamma(T_2)$ will becomes the (unique) argument of $x$ in the head normal form. And because $M$ has a beta-nf, the term $\gamma(T_2)$ must also have a beta-nf.
+
+                Because $z$ has a single hoc argument, all the subsequent linear substitutions in $M$ must necessarily occur under $T_2$ and its reducts: the \emph{lloc} will never get out of $T_2$.
+                (Indeed, otherwise by the inductive definition of \emph{lloc} there would be a subterm $U' V'$ of $M$ where $U'$ contains $z T_2$ and $\lambda_l(U;) \neq \epsilon$, which by definition of {\sf Args} would imply that $V'$ is another hoc argument, contradicting the assumption that the hoc has a single argument.)
+
+                Therefore if we consider the term $M'$ obtained by replacing
+                the subterm $T$ by just $T_2$, the $\llred$-reduction sequence of $M$ coincides with that of $M'$.
+
+                Now $M'$ must necessarily have a beta-normal form. Otherwise it's standard beta-reduction sequence would not terminate, which would imply that $\gamma(T_2)$ does not terminate, which contradicts the fact that $\gamma(T_2)$ is the argument of the head variable in the head normal form!
+
+                Thus, since $M'$ is by definition smaller than $M$,by the induction hypothesis H1, its linear-reduction sequence terminates. We can then conclude since we have shown that
+                the linear reduction sequences of $M$ and $M'$ coincide.
+
+                %%%%%%%%%%%%%%%
+                \item Inductive case: suppose the result holds for terms with $n \geq 1$ \hoc arguments, and suppose ${\sf Args}(M) = n+1$.
+
+                Let $U_{n+1} V_{n+1}$ denote the subterm of $M$ such that $V_{n+1}$ is the last \hoc argument of $M$.
+
+                We consider the term $M'$ obtained from $M$ by removing the last \hoc argument of $M$ (\ie replacing the subterm $U_{n+1} V_{n+1}$ by just $U_{n+1}$).
+                Observe that the last argument of the hoc cannot be possibly be argument of any generalized redex. Therefore the linear reduction of
+                $M$ must  coincide with that of $M'$ up until the \hoc of the reduct of $M$ lies under the last \hoc argument $U_{n+1}$.
+
+                By induction hypothesis (H3), the $\llred$-reductions sequences of $M'$ involves a finite number of substitutions under $T_2$. Consequently the same holds in $M$.
+
+            \begin{todobox}
+            Where do we use Property \ref{property:hoc_argument_count_in_headnf} ?
+            \end{todobox}
+
+                \item  Suppose $T_1$ is not a variable. Let $z$ denote a fresh variable in $M$, and $M' = M[z/T_1]$ be the term obtained by replacing the subterm $T_1$ in $M$ by the fresh variable $z$.
+
+                Since $T_1$ is not a variable, $M'$ must be strictly smaller than $M$. And since $M$ has a beta-nf, so must $M'$, thus by the induction hypothesis (H1), the $\llred$ reduction sequence of $M'$ terminates. Consequently, there is only a finite number of steps in the linear reduction of $M'$ that involve substitutions in reducts of $z~T_2$.
+
+                Clearly, the linear reduction steps under $T_2$ in $M'$ coincide with those of $T_2$ in $M$. Hence we can conclude that at most a finite number of substitutions take place under $T= T_1 T_2$ in the linear reduction sequence of $M$.
+            \end{compactitem}
+
+
+            \item Suppose that $\emph{lloc}$ is in $T_1$. Then by the induction hypothesis (H2) there is a finite number of steps in the linear reduction sequence of $M$ that involve (reducts of) $T_1$. Let us consider the first reduct $R$ of $M$ in the $\llred$ reduction sequence such that the \emph{lloc} is not under a reduct of $T_1$.  Observe that in the linear reduction sequence of $T$, the subterm $T_2$ remains unmodified as long as the \emph{lloc} remains in (the reduct) of $T_1$.
+
+            At $R$, if the \emph{lloc} is not under $T_2$ then none of the further steps in the linear reduction sequence of $R$ will involve $T_2$ (\ie, subsequent substitutions will occur outside of $T$ -- on its right,  more precisely). We can therefore conclude.
+
+            If instead at $R$ the \emph{lloc} lies under the subterm $T_2$: $lloc_R(T2) \ne\bot$, then $T_1$ cannot be a variable, otherwise it would be both the \emph{hoc} and the \emph{lloc} of $M$ which contradict the assumption. We can therefore conclude by applying the same reasoning as case (a) above to the reduct $R$.
+        \end{enumerate}
+
+    \end{compactitem}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \item Suppose that the lloc is in $V$.
 Then by definition of the \emph{lloc} for the application case, we must have $lloc_M(U) =\bot$ and $\lambda_l(U)=\epsilon$.
 Hence $U$ is a term in \emph{qnf} and by Proposition~\ref{prop:qnf_nf} it must
 have a beta-normal form. By Property~\ref{prop:qnf_betanf_empty_lambdalist}
 $U$'s normal form is not an abstraction. Hence since $M$ has a normal form so must $V$ and we have $\betanf{M} = \betanf{U} \betanf{V}$.
-By the induction hypothesis the $\llred$-reduction of $V$ must terminate.
+By the induction hypothesis (H1) the $\llred$-reduction of $V$ must terminate.
 We can then conclude by observing that the linear-substitutions performed in the
-linear-reduction sequence of $M$ map one-to-one to those in the linear-reduction sequence of $V$ (\ie, if $V \llred V_2 \llred \ldots V_i \llred \ldots$ then $M = U V \llred U V_2 \llred \ldots U V_i \llred \ldots$)
-\end{compactitem}
+linear-reduction sequence of $M$ map one-to-one to those in the linear-reduction sequence of $V$ (\ie, if $V \llred V_2 \llred \ldots V_i$ then $M = U V \llred U V_2 \llred \ldots U V_i$ for some $i\geq 0$)
+\end{enumerate}
 \end{proof}
 
-\begin{definition}[Leftmost redex sequence]
-The leftmost redex sequence $LRS(M)$ of a term $M$ is a sequence of generalized redexes of $M$ defined by induction as follows:
-\begin{align*}
-LRS(v) &= \emptyset \\
-LRS(\lambda x . U) &= LRS(U)\\
-LRS(U V) &=
-    \begin{cases}
-        (\lambda x, V) \cdot LRS(U) \cdot LRS(V) & \mbox{if $\lambda_l(U) = \lambda x \cdot l$ and $lloc_M(U) =\bot$ } \\
-        (\lambda x, V) \cdot  LRS(U) & \mbox{if $\lambda_l(U) = \lambda x \cdot l $ and $lloc_M(U) \neq \bot$} \\
-        LRS(U) & \mbox{if $\lambda_l(U) = \epsilon$ and $lloc_M(U) \neq \bot$} \\
-        LRS(U) \cdot LRS(V) & \mbox{if $\lambda_l(U) = \epsilon$ and $lloc_M(U) = \bot$}
-    \end{cases}
-\end{align*}
-where $v$ ranges over variable occurrences and $U,V$ over subterms of $M$.
-\end{definition}
-
-\begin{example}
-Take $M = (\lambda x . z ((\lambda w y . y)x)) U$ for any term $U$.
-Then $M$ is in quasi-head normal form with one prime spine redex $(x,U)$.
-Head reduction gives $M \rightarrow_h z ((\lambda w y. y) U)$.
-
-$M$ is also in quasi normal form. Indeed $lloc_M(M) = lloc_M (\lambda w y . y)$ which is undefined.
-The leftmost redex sequence of $M$ is $LRS(M) = (\lambda x, U) \cdot (\lambda w, x)$.
-Reducing the term with two head reductions gives
-$M \rightarrow_h z ((\lambda w y.y)x) \rightarrow_h z (\lambda y . y)$ which is in normal form.
-\end{example}
+%%%% NOTE 2/17/2018. This definition is not very useful after all, since after the first genredex is fired a new general redex may be introduced!!
+% \begin{definition}[Leftmost redex sequence]
+% The leftmost redex sequence $LRS(M)$ of a term $M$ is a sequence of generalized redexes of $M$ defined by induction as follows:
+% \begin{align*}
+% LRS(v) &= \emptyset \\
+% LRS(\lambda x . U) &= LRS(U)\\
+% LRS(U V) &=
+%     \begin{cases}
+%         (\lambda x, V) \cdot LRS(U) \cdot LRS(V) & \mbox{if $\lambda_l(U) = \lambda x \cdot l$ and $lloc_M(U) =\bot$ } \\
+%         (\lambda x, V) \cdot  LRS(U) & \mbox{if $\lambda_l(U) = \lambda x \cdot l $ and $lloc_M(U) \neq \bot$} \\
+%         LRS(U) & \mbox{if $\lambda_l(U) = \epsilon$ and $lloc_M(U) \neq \bot$} \\
+%         LRS(U) \cdot LRS(V) & \mbox{if $\lambda_l(U) = \epsilon$ and $lloc_M(U) = \bot$}
+%     \end{cases}
+% \end{align*}
+% where $v$ ranges over variable occurrences and $U,V$ over subterms of $M$.
+% \end{definition}
 
 
 %%%%%%%%%%%%%%%%%
