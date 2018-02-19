@@ -6,7 +6,12 @@
 %%Daemon> custom_args="-synctex=1 -enable-installer"
 
 
-\documentclass{article}
+%\documentclass{article}
+
+% See https://www.elsevier.com/__data/assets/pdf_file/0009/56844/elsdoc2.pdf
+
+\documentclass{elsarticle}
+
 
 \usepackage{etex,etoolbox}
 \usepackage{lscape}
@@ -32,7 +37,7 @@
 %%%%%%%% Inline/deferred proof macros
 % Define this macro to defer complex proofs to the end of the document?
 % or comment out to keep default behaviour (inline proof)
-%\def\placeproofsatend{}
+\def\placeproofsatend{}
 
 %%%%%%%% Uncomment to include TODO boxes
 \def\includetodos{}
@@ -215,7 +220,14 @@
 \def\istraversal{\models}
 
 \author{William Blum}
-\title{Reducing Lambda Terms with Imaginary Traversals}
+\ead{william.blum@microsoft.com}
+\address{Microsoft Research, One Microsoft Way, Redmond, WA, 98052, USA}
+
+\title{Traversing Untyped Lambda Terms (preprint)}
+% Traversal Theory of the Untyped Lambda Calculus
+% Imaginary Traversals of Untyped Lambda Terms
+% Reducing Lambda Terms with Imaginary Traversals (preprint)
+% Reduction of Untyped Lambda Terms by Imaginary Traversals
 % Normalizing Untyped Lambda Terms via Imaginary Traversals
 % Imaginary Normalizing Traversals
 % Imaginary Traversals and Leftmost Linear Reduction
@@ -223,18 +235,20 @@
 % Normalizing Lambda Terms via Traversals and on-the-fly eta-expansion
 % Normalizing Lambda Terms with Imaginary Traversals
 
+
 \begin{document}
-\maketitle
+
 \begin{abstract}
-We introduce a method to reduce untyped lambda terms that yields the normal-form if it exists. The method combines the theory of traversals, a term-tree traversing techniques inspired from Game Semantics~\cite{Ong2006,BlumPhd}, with judicious use of the eta-conversion rule of the lambda calculus.
+    We introduce a method to evaluate untyped lambda terms by combining the theory of traversals, a term-tree traversing techniques inspired from Game Semantics~\cite{Ong2006,BlumPhd}, with judicious use of the eta-conversion rule of the lambda calculus.
 
-This technique requires little modifications to the traversal theory of the simply-typed lambda calculus~\cite{BlumPhd}. A notable improvement is that eta-long transformation is unnecessary: we traverse some syntax tree of the original unmodified lambda term.
+    The traversal theory for the simply-typed lambda calculus relies on the eta-long transform to ensure that when traversing an application, each possible argument of the operator is represented by some other subterm of the expanded term \cite{BlumPhd, Ong2006}. In the untyped setting, we instead exhibit the missing operand via ad-hoc application of the eta-expansion rule, which allows the traversal to proceed as if the operand existed in the original term. This gives rise to the concept of ``imaginary traversal''. A notable improvement, in addition to handling untyped terms, is that no preliminary transformation is required: the original unaltered lambda term is traversed.
 
-In the typed setting, the eta-long transform ensures that
-when traversing an application, every possible argument of the operator (an application or variable node) is itself represented by some other subterm in the original term. Blindly applying the rules of typed traversals on untyped terms, where eta-long transform is undefined, therefore fails when an operator  node lacks the required operand. To work around this limitation, we create missing operands on-the-fly and proceed as if it existed in the original term. We denote missing operands in the traversals using ``imaginary'' nodes representing nodes that would exist in the term-tree if the application subterm lacking the operand were to be eta-expanded. We call the resulting traversal an ``imaginary traversal''.
+    %Blindly applying the rules of typed traversals on untyped terms, where eta-long transform is undefined, therefore fails when an operator  node lacks the required operand. To work around this limitation, we create missing operands on-the-fly and proceed as if it existed in the original term. We denote missing operands in the traversals using ``imaginary'' nodes representing nodes that would exist in the term-tree if the application subterm lacking the operand were to be eta-expanded. We call the resulting traversal an ``imaginary traversal''.
 
-We further show that by bounding the non-determinism of the free variable rule, one can effectively compute a subset of traversals characterizing the set of paths in the beta-normal form of the term. This yields an evaluation algorithm for untyped lambda-terms. Finally we prove correctness of the reduction procedure by showing that traversals implements \emph{leftmost linear reduction}, a generalization of the head linear reduction of Danos-Regnier~\cite{danos-head}.
+    We show that by bounding the non-determinism of the traversal rule for free variables, one can effectively compute a set of traversals characterizing the paths in the tree representation of the beta-normal form, when it exists. This yields an evaluation algorithm for untyped lambda-terms. We prove correctness by showing that traversals implements \emph{leftmost linear reduction}, a generalization of the head linear reduction of Danos-Regnier~\cite{danos-head,danosherbelinregnier1996}.
 \end{abstract}
+
+\maketitle
 
 \tableofcontents
 
@@ -261,9 +275,9 @@ The normalization algorithm presented in this paper was implemented in the HOG t
 \subsection{Related work}
 
 \subsubsection{Head linear reduction}
-In 2004, Danos and Regnier showed the connection between Game Semantics and \emph{head linear reduction}. The various notions of traversals discussed in this paper, including Berezun-Jones, are all essentially methods based on evaluating the head linear reduction sequence of a lambda term. Traversals start by performing a depth-first search to locate the \emph{head occurrence} of the \emph{hoc redex}. They implement linear substitution by ``jumping'' to the node in the tree that represents the term to be substituted for the head occurrence. At this point the traversal continues as if the head occurrence in the tree was replaced by the subtree representing the argument of the redex. Since all the terms obtained in the head linear reduction sequence are made of sub-terms of the original term, there is no need for environments or closure to evaluate the beta-redex. Instead those can be replaced by some pointer mechanism to capture a given context.
+The connection between Game Semantics and the concept of \emph{head linear reduction} was first established by Danos \etal\cite{danos-head,danosherbelinregnier1996}. The notions of traversals discussed in this paper, as well as Berezun-Jones'\cite{JonesBerezunLLL}, are essentially implementations of the head linear reduction sequence of a lambda term from Danos-Reigner. Traversals start with a depth-first search for the \emph{head occurrence} of the \emph{hoc redex}. They implement linear substitution by ``jumping'' to the node in the tree that represents the term to be substituted for the head occurrence. At this point the traversal continues as if the head occurrence in the tree was replaced by the subtree representing the argument of the redex. Since all the terms obtained in the head linear reduction sequence are made of sub-terms of the original term, there is no need for environments or closure to evaluate the beta-redex. Instead those can be replaced by some pointer mechanism to capture a given context.
 
-Despite the connection established in this 2004 paper, it is not explicitly shown how the head linear reduction helps normalize a term. The \emph{Pointer Abstract Machine} introduced in the same paper, for instance, yields what they call ``\emph{quasi-head normal form (qhn)}'' of the term, not the normal form itself. The resulting \emph{qhn} still needs to be first reduced to head normal form (using head reduction) and then normalized by appealing to the standard $\lambda$-calculus theory that tells us that head reduction terminates.
+Despite the connection established by Danos \etal, their work does not explicitly describe how head linear reduction can be used to fully evaluate a lambda term. The \emph{Pointer Abstract Machine} introduced in the same paper, for instance, yields the ``\emph{quasi-head normal form (qhn)}'' of the term, not the normal form itself. The resulting \emph{qhn} still needs to be first reduced to head normal form (using head reduction) and then normalized by appealing to the standard $\lambda$-calculus theory that tells us that head reduction terminates.
 In this paper we generalize this notion to \emph{leftmost linear reduction}, a strategy that recursively applies head linear reduction very much like how the standard reduction recursively applies head reduction. We show how \emph{imaginary traversals} introduced in the present paper effectively implement the leftmost linear reduction, which proves soundness of the traversal normalization procedure.
 
 \subsubsection{Traversal of STLC}
@@ -876,10 +890,10 @@ The argument should follow the same structure as for STLC~\cite{BlumPhd} but usi
 
 \section{Normalizing Traversals}
 
-We will now show how traversals can be used to normalize lambda terms. The crux of it lies in the \emph{Path Characterization} result (Proposition~\ref{prop:path_charact_stlc} and Theorem~\ref{thm:path_charact_ulc})) which states that the set of traversals \emph{core P-views} captures what is strictly required from traversals in order to reconstruct the normal form of a term.
+We will now show how traversals can be used to evaluate lambda terms and find the normal form when it exists. The crux of it lies in the \emph{Path Characterization} result (Proposition~\ref{prop:path_charact_stlc} and Theorem~\ref{thm:path_charact_ulc})) which states that the set of traversals \emph{core P-views} captures what is strictly required from traversals in order to reconstruct the normal form of a term.
 For STLC, the characterization result follows from the Game Semantics correspondence; we prove its untyped counterpart using a term-rewriting argument.
 
-This characterization result suggests a normalization method based on enumerating the entire set of traversals. The caveat is that the set of traversals may be infinite! This is because the non-determinism of the free variable rule can give rise to arbitrarily long traversals.
+This characterization result suggests a normalization method based on enumerating the entire set of traversals. The caveat is that the set of traversals may be infinite, even for terms with a beta-normal from! This is because the non-determinism of the free variable rule can give rise to arbitrarily long traversals.
 
 Fortunately, not all traversals need to be enumerated: it is sufficient to enumerate a subset of traversals that covers all the core P-views. Some traversals are `redundant' in the sense that there exist shorter traversals with identical core P-view. We capture this notion by introducing equivalence classes on traversals: two traversals are in the same class just if they have the same core P-view. It then suffices to exhibit a traversal subset that is \emph{complete} for the equivalence classes, in the sense that it contains at least one traversal for each equivalence class. If such subset is effectively computable and finite then it yields a normalization procedure.
 
@@ -1976,8 +1990,8 @@ By Theorem~\ref{thm:danosreigner_headlinred}, the \emph{hoc} of a quasi-head nor
 \end{proof}
 
 We now introduce a $\beta$-reduction strategy (in the standard sense).
-We define the \defname{leftmost spinal-innermost} standard $\beta$-redex of $N$ as the $\beta$-redex $(\lambda x . N) A$ such that there is no other redex in $M$ occurring left of it and such that $N$ contains no other redex ($A$ on the other-hand, may contain other redexes).
-The idea consists in reducing the redexes `inside-out' from left to right.
+We define the \defname{leftmost spinal-innermost} standard $\beta$-redex of $M$ as the $\beta$-redex $(\lambda x . N) A$ such that there is no other redex in $M$ occurring left of it and such that $N$ contains no other redex; the argument $A$ on the other-hand, may contain other redexes.
+The idea consists in reducing $M$'s redexes in `inside-out left-to-right' order.
 This definition should be distinguished from the \emph{leftmost innermost} reduction strategy from the lambda calculus literature.
 In particular $(\lambda x . y) \Omega$ reduces to $y$ with the leftmost spinal-innermost strategy, while the leftmost innermost strategy does not normalize it.
 % See http://www.cs.columbia.edu/~verma/classes/fa17/coms3261/lec/L24-Lambda_Calculus_II.html: the leftmost innermost strategy reduces any redex in the argument first, whereas here the "inner" only refers to the body of the operator.
@@ -1996,7 +2010,7 @@ Let $M$ be a term in \emph{qnf}.
 
 \end{itemize}
 \end{proposition}
-\begin{proof}
+\proofatend
 \begin{compactitem}
 % \item[(X)] By induction on $M$. Suppose $M = v$ for some variable $v$ then the result trivially holds since $M$ has no generalized redex. Suppose $M = \lambda x . U$ then by Property~\ref{prop:lloc_properties}(iv) $U$ is in \emph{qnf} and we conclude by the induction hypothesis.
 
@@ -2022,7 +2036,7 @@ If $\lambda_l(U) \neq \epsilon$, then either $U$ contains a redex or $U$ is an a
 By (i) each reduction of the leftmost spinal-innermost reduction strategy is trivial and it is easy to see that $lloc$ is preserved by trivial reduction, therefore each term in the reduction sequence is in \emph{qnf}.
 Since a trivial reduction cannot possibly create new $\beta$-redexes, the reduction sequence necessarily terminates and yields the beta-normal form.
 \end{compactitem}
-\end{proof}
+\endproofatend
 
 Observe that if $M$ is in \emph{qnf}, its redexes are not all necessarily trivial, but the non-trival redexes get eliminated by the trivial reductions:
 \begin{example}
@@ -2095,29 +2109,23 @@ $M$ and its normal form must have the same lambda list. We can then conclude usi
 \label{thm:completeness_leftmostlinearred}
 If $M$ has a beta-normal form then its left-most linear reduction terminates (and thus yields a quasi normal form).
 \end{theorem}
-\begin{proof}
+\proofatend
 Suppose $M$ has a beta-normal form then by a standard result of lambda calculus its head-reduction terminates, therefore by Theorem~\ref{thm:danosreigner_headlinred} the $\hlred$-reduction of $M$ terminates and yields its quasi-\emph{head}-normal form. Since $\hlred$ coincides with $\llred$, for terms not in \emph{qhnf}, we can without loss of generality assume that $M$ is in \emph{qhnf}.
-%%%%%%%%%%%
-We prove the result by two nested inductions.
-
-%%%%%%%%%
-We first prove by induction on the \emph{size} of $M$ that
+We prove by induction on the \emph{size} of $M$ that
 \begin{quote}
-(H1) If $M$ has a beta-nf then its linear reduction sequence terminates.
+{\bf (H1)} If $M$ has a beta-nf then its linear reduction sequence terminates.
 \end{quote}
 For the variable case, $\llred$ trivially terminates.
 If $M = \lambda x . U$ then $U$ must also admit a beta-nf so we can conclude by induction. Suppose $M = U V$. If $M$ is in \emph{qnf} then we conclude immediately. Otherwise, $M$ must have a \emph{lloc} occurrence that is distinct from the \emph{hoc} occurrence.
-\begin{enumerate}[noitemsep,label=(\roman*)]
+\begin{enumerate}[noitemsep,label=(\roman*),leftmargin=1pc]
 \item Suppose that the \emph{lloc} of $M$ is in $U$ ($lloc_M(U) \ne \bot$).
-
-    %%%%%%%%%%%%%%%%%%%%%%%
     We show by finite \emph{structural} induction on subterms $T$ of $U$ that:
     \begin{quote}
-    (H2) If $lloc_M(T) \neq \bot$ and $hoc(M)$ is in $T$ then there are at most a finite number of steps in the linear reduction sequence of $M$ that involve a linear substitutions in (reducts of) $T$.
+    {\bf (H2)} If $lloc_M(T) \neq \bot$ and $hoc(M)$ is in $T$ then there are at most a finite number of steps in the linear reduction sequence of $M$ that involve a linear substitutions in (reducts of) $T$.
     \end{quote}
 
-    \begin{compactitem}
-        \item $T$ is a variable. Since $M$'s \emph{hoc} is in $T$, it must be $T$ itself. Because $M$ is in quasi-head-normal form, the \empg{hoc} is not involved in any generalized redex and therefore $T$ is not involved in any substitution of the linear reduction sequence of $M$.
+    \begin{enumerate}[noitemsep,leftmargin=0pt,label=-]
+        \item $T$ is a variable. Since $M$'s \hoc\ is in $T$, it must be $T$ itself. Because $M$ is in quasi-head-normal form, the \hoc~is not involved in any generalized redex and therefore $T$ is not involved in any substitution of the linear reduction sequence of $M$.
 
         \item $T =\lambda x . T'$ then the \emph{hoc} and \emph{lloc} must be in $T'$ and we can conclude by the induction hypothesis (H2).
 
@@ -2125,45 +2133,44 @@ If $M = \lambda x . U$ then $U$ must also admit a beta-nf so we can conclude by 
 
         \begin{enumerate}[noitemsep,label=(\alph*)]
 
-            \item Suppose that $\emph{lloc}$ is in $T_2$. Then we have $lloc_M(T_1) =\bot$ therefore none of the steps in the linear reduction sequence of $M$ will involve substitutions in $T_1$ (there is no variable in $T_1$ involved in a  general redex therefore subsequent linear reduction steps can only introduce general redexes on the right of $T_1$).
+            \item Suppose that $\emph{lloc}$ is in $T_2$. Then we have $lloc_M(T_1) =\bot$ therefore none of the steps in the linear reduction sequence of $M$ will involve substitutions in $T_1$ (there is no  variable in $T_1$ involved in a  general redex therefore subsequent linear reduction steps can only introduce general redexes on the right of $T_1$).
 
             \begin{compactitem}
                 \item Suppose $T_1$ is a variable $x$ then it must be the \emph{hoc} and we have $T = x~T_2$.
 
-                We show the result by induction on the number of pending arguments of the \emph{hoc}.
-                \begin{compactitem}
-                \item Base: $z$ has a single argument which must be $T_2$.
+                    We show the result by induction on the number of pending arguments of the \emph{hoc}.
 
-                By Theorem~\ref{thm:danosreigner_headlinred}, reducing all the prime redexes in $M$ yields itshead normal form
-                with $x$ as the head variable.
-                Let $\gamma$ denotes the sequence of substitutions performed on $M$ to reduce the prime redexes, so that $\gamma(M)$ is the head normal form of $M$.
-                Then $\gamma(T_2)$ will becomes the (unique) argument of $x$ in the head normal form. And because $M$ has a beta-nf, the term $\gamma(T_2)$ must also have a beta-nf.
+                    \begin{compactitem}
+                    \item Base: $z$ has a single argument which must be $T_2$.
 
-                Because $z$ has a single hoc argument, all the subsequent linear substitutions in $M$ must necessarily occur under $T_2$ and its reducts: the \emph{lloc} will never get out of $T_2$.
-                (Indeed, otherwise by the inductive definition of \emph{lloc} there would be a subterm $U' V'$ of $M$ where $U'$ contains $z T_2$ and $\lambda_l(U;) \neq \epsilon$, which by definition of {\sf Args} would imply that $V'$ is another hoc argument, contradicting the assumption that the hoc has a single argument.)
+                    By Theorem~\ref{thm:danosreigner_headlinred}, reducing all the prime redexes in $M$ yields itshead normal form
+                    with $x$ as the head variable.
+                    Let $\gamma$ denotes the sequence of substitutions performed on $M$ to reduce the prime redexes, so that $\gamma(M)$ is the head normal form of $M$.
+                    Then $\gamma(T_2)$ will becomes the (unique) argument of $x$ in the head normal form. And because $M$ has a beta-nf, the term $\gamma(T_2)$ must also have a beta-nf.
 
-                Therefore if we consider the term $M'$ obtained by replacing
-                the subterm $T$ by just $T_2$, the $\llred$-reduction sequence of $M$ coincides with that of $M'$.
+                    Because $z$ has a single hoc argument, all the subsequent linear substitutions in $M$ must necessarily occur under $T_2$ and its reducts: the \emph{lloc} will never get out of $T_2$.
+                    (Indeed, otherwise by the inductive definition of \emph{lloc} there would be a subterm $U' V'$ of $M$ where $U'$ contains $z T_2$ and $\lambda_l(U;) \neq \epsilon$, which by definition of {\sf Args} would imply that $V'$ is another hoc argument, contradicting the assumption that the hoc has a single argument.)
 
-                Now $M'$ must necessarily have a beta-normal form. Otherwise it's standard beta-reduction sequence would not terminate, which would imply that $\gamma(T_2)$ does not terminate, which contradicts the fact that $\gamma(T_2)$ is the argument of the head variable in the head normal form!
+                    Therefore if we consider the term $M'$ obtained by replacing
+                    the subterm $T$ by just $T_2$, the $\llred$-reduction sequence of $M$ coincides with that of $M'$.
 
-                Thus, since $M'$ is by definition smaller than $M$,by the induction hypothesis H1, its linear-reduction sequence terminates. We can then conclude since we have shown that
-                the linear reduction sequences of $M$ and $M'$ coincide.
+                    Now $M'$ must necessarily have a beta-normal form. Otherwise it's standard beta-reduction sequence would not terminate, which would imply that $\gamma(T_2)$ does not terminate, which contradicts the fact that $\gamma(T_2)$ is the argument of the head variable in the head normal form!
 
-                %%%%%%%%%%%%%%%
-                \item Inductive case: suppose the result holds for terms with $n \geq 1$ \hoc arguments, and suppose ${\sf Args}(M) = n+1$.
+                    Thus, since $M'$ is by definition smaller than $M$,by the induction hypothesis H1, its linear-reduction sequence terminates. We can then conclude since we have shown that
+                    the linear reduction sequences of $M$ and $M'$ coincide.
 
-                Let $U_{n+1} V_{n+1}$ denote the subterm of $M$ such that $V_{n+1}$ is the last \hoc argument of $M$.
+                    %%%%%%%%%%%%%%%
+                    \item Inductive case: suppose the result holds for terms with $n \geq 1$ \hoc\ arguments, and suppose ${\sf Args}(M) = n+1$.
 
-                We consider the term $M'$ obtained from $M$ by removing the last \hoc argument of $M$ (\ie replacing the subterm $U_{n+1} V_{n+1}$ by just $U_{n+1}$).
-                Observe that the last argument of the hoc cannot be possibly be argument of any generalized redex. Therefore the linear reduction of
-                $M$ must  coincide with that of $M'$ up until the \hoc of the reduct of $M$ lies under the last \hoc argument $U_{n+1}$.
+                    Let $U_{n+1} V_{n+1}$ denote the subterm of $M$ such that $V_{n+1}$ is the last \hoc\ argument of $M$. We consider the term $M'$ obtained from $M$ by removing the last \hoc\ argument of $M$ (\ie~replacing $U_{n+1} V_{n+1}$ by $U_{n+1}$).
+                    Observe that the last argument of the hoc cannot be possibly be argument of any generalized redex, therefore the linear reduction of $M$ must  coincide with that of $M'$ up until the \hoc\ of the reduct of $M$ lies under the last \hoc\ argument $U_{n+1}$.
 
-                By induction hypothesis (H3), the $\llred$-reductions sequences of $M'$ involves a finite number of substitutions under $T_2$. Consequently the same holds in $M$.
+                    By induction hypothesis (H3), the $\llred$-reductions sequences of $M'$ involves a finite number of substitutions under $T_2$. Consequently the same holds in $M$.
+                    \end{compactitem}
 
-            \begin{todobox}
-            Where do we use Property \ref{property:hoc_argument_count_in_headnf} ?
-            \end{todobox}
+            % \begin{todobox}
+            % Where do we use Property \ref{property:hoc_argument_count_in_headnf} ?
+            % \end{todobox}
 
                 \item  Suppose $T_1$ is not a variable. Let $z$ denote a fresh variable in $M$, and $M' = M[z/T_1]$ be the term obtained by replacing the subterm $T_1$ in $M$ by the fresh variable $z$.
 
@@ -2180,19 +2187,19 @@ If $M = \lambda x . U$ then $U$ must also admit a beta-nf so we can conclude by 
             If instead at $R$ the \emph{lloc} lies under the subterm $T_2$: $lloc_R(T2) \ne\bot$, then $T_1$ cannot be a variable, otherwise it would be both the \emph{hoc} and the \emph{lloc} of $M$ which contradict the assumption. We can therefore conclude by applying the same reasoning as case (a) above to the reduct $R$.
         \end{enumerate}
 
-    \end{compactitem}
+    \end{enumerate}
     %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\item Suppose that the lloc is in $V$.
-Then by definition of the \emph{lloc} for the application case, we must have $lloc_M(U) =\bot$ and $\lambda_l(U)=\epsilon$.
-Hence $U$ is a term in \emph{qnf} and by Proposition~\ref{prop:qnf_nf} it must
-have a beta-normal form. By Property~\ref{prop:qnf_betanf_empty_lambdalist}
-$U$'s normal form is not an abstraction. Hence since $M$ has a normal form so must $V$ and we have $\betanf{M} = \betanf{U} \betanf{V}$.
-By the induction hypothesis (H1) the $\llred$-reduction of $V$ must terminate.
-We can then conclude by observing that the linear-substitutions performed in the
-linear-reduction sequence of $M$ map one-to-one to those in the linear-reduction sequence of $V$ (\ie, if $V \llred V_2 \llred \ldots V_i$ then $M = U V \llred U V_2 \llred \ldots U V_i$ for some $i\geq 0$)
+    \item Suppose that the lloc is in $V$.
+    Then by definition of the \emph{lloc} for the application case, we must have $lloc_M(U) =\bot$ and $\lambda_l(U)=\epsilon$.
+    Hence $U$ is a term in \emph{qnf} and by Proposition~\ref{prop:qnf_nf} it must
+    have a beta-normal form. By Property~\ref{prop:qnf_betanf_empty_lambdalist}
+    $U$'s normal form is not an abstraction. Hence since $M$ has a normal form so must $V$ and we have $\betanf{M} = \betanf{U} \betanf{V}$.
+    By the induction hypothesis (H1) the $\llred$-reduction of $V$ must terminate.
+    We can then conclude by observing that the linear-substitutions performed in the
+    linear-reduction sequence of $M$ map one-to-one to those in the linear-reduction sequence of $V$ (\ie, if $V \llred V_2 \llred \ldots V_i$ then $M = U V \llred U V_2 \llred \ldots U V_i$ for some $i\geq 0$)
 \end{enumerate}
-\end{proof}
+\endproofatend
 
 %%%% NOTE 2/17/2018. This definition is not very useful after all, since after the first genredex is fired a new general redex may be introduced!!
 % \begin{definition}[Leftmost redex sequence]
@@ -2247,11 +2254,11 @@ If $v$ is empty then the node following $u$ in $t$, if it exists, is necessarily
 \end{proof}
 
 \begin{definition}[Strand types]
-    \label{def:strandtypes} We distinguish two types of strands based on their shape. A strand is of type:
-    \begin{itemize}
+    \label{def:strandtypes} We distinguish two types of strands based on their shape:
+    \begin{itemize}[nosep]
         \item $S$ (structural) if it is the form $\underline{\lambda\overline{\eta}} \cdot u \cdot \underline{x}$
             where
-            \begin{itemize}
+            \begin{itemize}[nosep]
             \item $\lambda\overline{\eta}$ is an external structural lambda node verifying $lloc_M(\lambda\overline\eta) = \bot$,
             \item $u$ is a (possibly empty) \emph{spinal descents} of internal nodes,
             \item $x$ is an external structural variable node;
@@ -2259,7 +2266,7 @@ If $v$ is empty then the node following $u$ in $t$, if it exists, is necessarily
 
         \item $G$ (ghost) if it is of the form $\underline{\ghostlmd} \cdot  v \cdot \lambda\overline{y} \cdot u \cdot \underline{x}$
         where
-        \begin{itemize}
+        \begin{itemize}[nosep]
             \item $\ghostlmd$ is an external ghost lambda node,
             \item $v$ is a \emph{pending parameter lookup} (ghost nodes) of length shorter than $u$,
             \item $\lambda\overline{y}$ is an internal lambda node verifying $lloc_M(\lambda\overline{y}) = \bot$,
@@ -3140,11 +3147,11 @@ Otherwise, since $M$ has a beta-nf, by Theorem~\ref{thm:completeness_leftmostlin
 
 \paragraph{Soundness} of the normalization procedure then follows from Theorem~\ref{thm:path_charact_ulc} and the fact that a term is uniquely characterized by its set of paths $\pathset$ (Property~\ref{prop:tree_path_charact}). The last step of the algorithm (assignment of labels to the tree nodes) is sound because by Property~\ref{prop:tree_path_charact} justification pointers uniquely determine variables names.
 
-\begin{remark}
-The infinitary counterpart of the characterization theorem for lambda terms with no normal form (not shown in this paper) can be stated as:
-$$ \Union_{k\geq0} \left(\travulc^k(M)/{\sim}\right) = \pathset(BT(M))$$
-where $\travulc^k(M)$ denotes the set of traversals of length $k$ at most and $\pathset(BT(M))$ denotes the set of \emph{possibly infinite} maximal paths in the B\"oem tree $BT(M)$ of $M$ (the infinitary computation tree of the term obtained by reducing beta-redexes ad-infinitum~\cite{barendregt2013lambda}).\footnote{See also~\cite{Blum17-HomogNotRestriction, Ong2006} for a formal definition of infinitary computation trees.}
-\end{remark}
+% \begin{remark}
+% The infinitary counterpart of the characterization theorem for lambda terms with no normal form (not shown in this paper) can be stated as:
+% $$ \Union_{k\geq0} \left(\travulc^k(M)/{\sim}\right) = \pathset(BT(M))$$
+% where $\travulc^k(M)$ denotes the set of traversals of length $k$ at most and $\pathset(BT(M))$ denotes the set of \emph{possibly infinite} maximal paths in the B\"oem tree $BT(M)$ of $M$ (the infinitary computation tree of the term obtained by reducing beta-redexes ad-infinitum~\cite{barendregt2013lambda}).\footnote{See also~\cite{Blum17-HomogNotRestriction, Ong2006} for a formal definition of infinitary computation trees.}
+% \end{remark}
 
 \section{Conclusion and further directions}
 
@@ -3180,6 +3187,8 @@ More recently, the theory of traversals \cite{OngLics2006} was shown to correspo
 
 %  The generated tree would be an order-$0$ tree representation of the beta-normal of a term: each terminal symbol of the automaton would correspond to a ``token'' of the lambda term: either a lambda node (represented by non-terminal of type $o\rightarrow o$), or a variable node (represented by a non-terminal of type $o^k\rightarrow o$ where $k\geq0$ is the number of operands applied to the variable in the beta normal form of the term.
 
+\subsection*{Acknowledgement}
+This work was inspired by the slides of the Galop 2016 presentation by Daniil Berezun and Neil D. Jones on Partial Evaluation and Normalization by Traversals \cite{berezunjones_partialevalbytraversals}. It benefited from email communications with the authors as well as memorable discussion with Neil D. Jones during his visit at Microsoft Research in May 2017.
 
 \bibliographystyle{abbrv}
 \bibliography{ulctrav}
