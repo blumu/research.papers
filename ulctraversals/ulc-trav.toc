@@ -1,13 +1,13 @@
-\contentsline {section}{\numberline {1}Background}{2}
+\contentsline {section}{\numberline {1}Background and overview}{2}
 \contentsline {subsection}{\numberline {1.1}Related work}{3}
 \contentsline {subsubsection}{\numberline {1.1.1}Head linear reduction}{3}
-\contentsline {subsubsection}{\numberline {1.1.2}Traversal of STLC}{3}
+\contentsline {subsubsection}{\numberline {1.1.2}Traversal of STLC}{4}
 \contentsline {subsubsection}{\numberline {1.1.3}Berezun-Jones traversals}{4}
 \contentsline {subsection}{\numberline {1.2}Rest of the paper}{5}
 \contentsline {section}{\numberline {2}Terms, trees and justified sequences}{5}
 \contentsline {subsection}{\numberline {2.1}Untyped lambda calculus}{5}
 \contentsline {subsection}{\numberline {2.2}Computation tree and enabling relation}{5}
-\contentsline {subsection}{\numberline {2.3}Ghost nodes}{6}
+\contentsline {subsection}{\numberline {2.3}Ghost nodes}{7}
 \contentsline {subsection}{\numberline {2.4}Justified sequence of nodes}{7}
 \contentsline {paragraph}{Justified paths of the term tree}{10}
 \contentsline {section}{\numberline {3}Traversals}{11}
@@ -16,8 +16,8 @@
 \contentsline {paragraph}{Path-View correspondence}{13}
 \contentsline {paragraph}{Traversal core}{14}
 \contentsline {subsection}{\numberline {3.2}Imaginary traversals subsume STLC traversals}{15}
-\contentsline {subsection}{\numberline {3.3}Property of ghost nodes}{16}
-\contentsline {subsection}{\numberline {3.4}Correspondence with Game semantics}{17}
+\contentsline {subsection}{\numberline {3.3}Property of ghost nodes}{17}
+\contentsline {subsection}{\numberline {3.4}Correspondence with Game semantics}{18}
 \contentsline {paragraph}{Game semantics Correspondence for ULC}{18}
 \contentsline {section}{\numberline {4}Normalizing Traversals}{18}
 \contentsline {subsection}{\numberline {4.1}Quotienting}{19}
@@ -25,8 +25,8 @@
 \contentsline {subsection}{\numberline {4.3}Normalization procedure for eta-long forms (STLC)}{21}
 \contentsline {paragraph}{Implementation}{22}
 \contentsline {subsection}{\numberline {4.4}Arity threshold and normalizing traversals}{22}
-\contentsline {subsection}{\numberline {4.5}Normalization procedure for ULC}{24}
-\contentsline {section}{\numberline {5}ULC Normalization Examples}{26}
+\contentsline {subsection}{\numberline {4.5}Normalization procedure for ULC}{25}
+\contentsline {section}{\numberline {5}ULC Normalization Examples}{25}
 \contentsline {section}{\numberline {6}Leftmost linear reduction}{34}
 \contentsline {subsection}{\numberline {6.1}Background: Lambda calculus and reduction}{34}
 \contentsline {subsection}{\numberline {6.2}Head-linear reduction}{35}
