@@ -7,32 +7,32 @@
 \contentsline {section}{\numberline {2}Terms, trees and justified sequences}{5}
 \contentsline {subsection}{\numberline {2.1}Untyped lambda calculus}{5}
 \contentsline {subsection}{\numberline {2.2}Computation tree and enabling relation}{5}
-\contentsline {subsection}{\numberline {2.3}Ghost nodes}{7}
+\contentsline {subsection}{\numberline {2.3}Ghost nodes}{6}
 \contentsline {subsection}{\numberline {2.4}Justified sequence of nodes}{7}
 \contentsline {paragraph}{Justified paths of the term tree}{10}
-\contentsline {section}{\numberline {3}Traversals}{11}
-\contentsline {subsection}{\numberline {3.1}Definition and properties}{11}
-\contentsline {paragraph}{On-the-fly expansion}{11}
-\contentsline {paragraph}{Path-View correspondence}{13}
-\contentsline {paragraph}{Traversal core}{14}
-\contentsline {subsection}{\numberline {3.2}Imaginary traversals subsume STLC traversals}{15}
-\contentsline {subsection}{\numberline {3.3}Property of ghost nodes}{17}
-\contentsline {subsection}{\numberline {3.4}Correspondence with Game semantics}{18}
-\contentsline {paragraph}{Game semantics Correspondence for ULC}{18}
-\contentsline {section}{\numberline {4}Normalizing Traversals}{18}
-\contentsline {subsection}{\numberline {4.1}Quotienting}{19}
-\contentsline {subsection}{\numberline {4.2}Branching traversals}{19}
-\contentsline {subsection}{\numberline {4.3}Normalization procedure for eta-long forms (STLC)}{21}
-\contentsline {paragraph}{Implementation}{22}
-\contentsline {subsection}{\numberline {4.4}Arity threshold and normalizing traversals}{22}
-\contentsline {subsection}{\numberline {4.5}Normalization procedure for ULC}{25}
+\contentsline {section}{\numberline {3}Traversals}{10}
+\contentsline {subsection}{\numberline {3.1}Definition and properties}{10}
+\contentsline {paragraph}{On-the-fly expansion}{12}
+\contentsline {paragraph}{Path-View correspondence}{12}
+\contentsline {paragraph}{Traversal core}{13}
+\contentsline {subsection}{\numberline {3.2}Imaginary traversals subsume STLC traversals}{14}
+\contentsline {subsection}{\numberline {3.3}Property of ghost nodes}{16}
+\contentsline {subsection}{\numberline {3.4}Correspondence with Game semantics}{16}
+\contentsline {paragraph}{Game semantics Correspondence for ULC}{17}
+\contentsline {section}{\numberline {4}Normalizing Traversals}{17}
+\contentsline {subsection}{\numberline {4.1}Quotienting}{18}
+\contentsline {subsection}{\numberline {4.2}Branching traversals}{18}
+\contentsline {subsection}{\numberline {4.3}Normalization procedure for eta-long forms (STLC)}{20}
+\contentsline {paragraph}{Implementation}{21}
+\contentsline {subsection}{\numberline {4.4}Arity threshold and normalizing traversals}{21}
+\contentsline {subsection}{\numberline {4.5}Normalization procedure for ULC}{23}
 \contentsline {section}{\numberline {5}ULC Normalization Examples}{25}
-\contentsline {section}{\numberline {6}Leftmost linear reduction}{34}
-\contentsline {subsection}{\numberline {6.1}Background: Lambda calculus and reduction}{34}
-\contentsline {subsection}{\numberline {6.2}Head-linear reduction}{35}
-\contentsline {paragraph}{Soundness}{36}
-\contentsline {subsection}{\numberline {6.3}Leftmost linear reduction strategy}{36}
-\contentsline {section}{\numberline {7}Correctness of ULC normalization}{39}
-\contentsline {paragraph}{Traversal bisimulation}{42}
-\contentsline {paragraph}{Soundness}{44}
-\contentsline {section}{\numberline {8}Conclusion and further directions}{45}
+\contentsline {section}{\numberline {6}Leftmost linear reduction}{31}
+\contentsline {subsection}{\numberline {6.1}Background: Lambda calculus and reduction}{31}
+\contentsline {subsection}{\numberline {6.2}Head-linear reduction}{32}
+\contentsline {paragraph}{Soundness}{33}
+\contentsline {subsection}{\numberline {6.3}Leftmost linear reduction strategy}{33}
+\contentsline {section}{\numberline {7}Correctness of ULC normalization}{37}
+\contentsline {paragraph}{Traversal bisimulation}{39}
+\contentsline {paragraph}{Soundness}{41}
+\contentsline {section}{\numberline {8}Conclusion and further directions}{42}
