@@ -323,12 +323,13 @@ We consider the set of terms $\Lambda$ of the untyped lambda calculus constructe
 $$\Lambda := x\ |\ (\Lambda\ \Lambda)\ |\ \lambda x. \Lambda $$
 where $x$ ranges over a countable set of variable names.
 
-For conciseness when writing lambda terms, we will abbreviate ``consecutive'' lambda abstraction $\lambda x_1 \ldots \lambda x_n . U$ for some $n\geq 0$ and term $U$ as just
-$\lambda x_1 \ldots x_n . U$. If $\overline{x}$ denote the list of variables $x_1 \ldots x_n$ we will just write $\lambda \overline{x} . U$.
+For conciseness we abbreviate consecutive lambda abstractions when writing lambda terms, so that $\lambda x_1 \ldots \lambda x_n . U$ for some $n\geq 0$ and term $U$ will be written $\lambda x_1 \ldots x_n . U$; or just
+$\lambda \overline{x} . U$ if $\overline{x}$ denotes the variable list $x_1 \ldots x_n$.
 
 \subsection{Computation tree and enabling relation}
 
-Given an untyped lambda term $M$ we define its \defname{computation tree} as the abstract syntax tree (AST) representation of the lambda term where consecutive lambda abstractions are merged into a single node labelled by the list of bound variables and with a single child, and similarly consecutive applications are represented by a single node labelled $@$ with multiple children: one for the operator and one for each application operand. Formally:
+Given an untyped lambda term $M$ we define its \defname{computation tree} as the abstract syntax tree (AST) representation of the term where consecutive lambda abstractions are merged into a single node labelled by the list of bound variables and with a single child; and consecutive applications are represented by a single node labelled $@$ whose first child represents the operator, and each subsequent child represents its operands.
+This definition is similar to that of STLC~\cite{Ong2006, BlumPhd} with the notable difference that the term does not get eta-long expanded prior to constructing the computation tree:
 \begin{definition}[Computation tree of an untyped term]
 	Let $M$ be an untyped lambda term with variable names in $\VarSet$.
 \begin{itemize}
@@ -356,37 +357,39 @@ where the expression `$l\langle t_1, \ldots, t_m \rangle$' for $m \geq 0$ denote
 
 Note that any lambda term can indeed be written in one of the two forms above. In particular, applicative terms are handled by the case $n=0$ of the form $\lambda . N$ for some term $N$ where `$\lambda$' is referred to as a ``dummy lambda''. This compact representation turns out to be useful to maintain alternation between lambda nodes (at odd level, counting from 1 onwards) and variable nodes (at even level).
 
-Observe that the definition is similar to that of STLC~\cite{Ong2006, BlumPhd} with the notable difference that the term does not get eta-long expanded prior to constructing the computation tree.
 
-We define the \defname{enabling relation} $\enables$ between nodes of the computation tree as the relation associating each lambda node to all the variable nodes that it binds, the root of the tree to all the free variable nodes, and every variable and application node to each of their child node. We write $m \enables_k \alpha$ to indicate that a lambda node $\alpha$ is the $k$th child of a variable or application node $m$ for some $k\geq0$; and $\alpha \enables_k m$ to indicate that the node $m$ is labelled by the $k$th variable bound by $\alpha$ for $k\geq1$.
+We define the \defname{enabling relation} $\enables$ between nodes of the computation tree as the relation associating each lambda node to all the variable nodes that it binds, the root of the tree to all the free variable nodes, and every variable and application node to each of their child node. We write $m \enables_k \alpha$ to indicate that a lambda node $\alpha$ is the $k$th child of a variable or application node $m$ for some $k\geq0$; and $\alpha \enables_k m$ to indicate that node $m$ is labelled by the $k$th variable bound by $\alpha$ for $k\geq1$.
 
-We define \defname{hereditarily enabling} as the reflexive transitive closure $\enables^*$ of the enabling relation, and we say that node $m$ \defname{hereditarily enables} node $n$ if $m \enables^* n$.
+We define \defname{hereditarily enabling} as the reflexive transitive closure $\enables^*$ of the enabling relation, and we say that node $m$ \defname{hereditarily enables} $n$ if $m \enables^* n$.
 
-A tree node is \defname{external} if it is hereditarily enabled by the root, otherwise it is \defname{internal}. We write $\ExtNodes$ to denote the set of external nodes, that is the image of the tree root by the reflexive transitive closure of the enabling relation. Internal nodes are therefore precisely the nodes hereditarily justified by application nodes $@$. We write $\IntNodes$ to denote the set of internal nodes.
+A tree node is \defname{external} if it is hereditarily enabled by the root, otherwise it is \defname{internal}. We write $\ExtNodes$ for the set of external nodes, that is the image of the tree root by the reflexive transitive closure of the enabling relation. Internal nodes are therefore precisely the nodes hereditarily justified by application nodes $@$. We write $\IntNodes$ to denote the set of internal nodes.
 
-We define the \defname{arity} of a node as follows: the arity of a lambda node $\lambda x_1 \cdots x_k$ for $k\geq 0$ is denoted by $|\lambda x_1 \cdots x_k|$ and is defined as $k$; the arity of a variable node $x$, denoted $|x|$ is the number of children of $x$ in the computation tree; the arity of a $@$ node is the number of its children nodes minus 1 (\ie, the number of operands in the application).
+We define the \defname{arity} of a node $n$, written $|n|$ as follows: the arity of a lambda node $\lambda x_1 \cdots x_k$ for $k\geq 0$ is defined as $k$; the arity of a variable node $x$ is given by the number of its children in the computation tree; the arity of an $@$-node is the number of its children nodes minus 1 (\ie, the number of operands in the application).
 
 \subsection{Ghost nodes}
-We extend the concept of computation tree nodes by introducing two infinite classes of ``imaginary'' nodes called \defname{ghost nodes}:
-one class of ``ghost variable nodes'', denoted $\ghostvar$, and one class of ``ghost lambda nodes'', denoted $\ghostlmd$. By abuse of notation we will use $\ghostvar$ and $\ghostlmd$ to refer to individual elements of the two respective classes. In the upcoming definition of traversals, ghost nodes will be used as placeholders representing lambda nodes and variable nodes from eta-expanded subterms.
+The set of nodes $\Nodes$ of the computation tree all correspond to some tokens in the syntax representation of the lambda term. We refer to them as \defname{structural nodes}.
 
-We simultaneously define ghost nodes and extend the enabling relation $\enables$ for them by induction: for every (ghost) variable or application node $m$ and for all $k>|m|$ there is a ghost lambda node $\ghostlmd$ such that $m \enables_k \ghostlmd$; for all (ghost) lambda node $\alpha$ and all $k>|\alpha|$ there is a ghost variable node $\ghostvar$ such that $\alpha \enables_k \ghostvar$. Thus, each ghost variable and ghost lambda node is uniquely defined by its enabler node (possibly itself a ghost node) and associated label $k\geq 1$.
+We now complement them, with two additional infinite sets of fictitious nodes:
+(i) the set of ``ghost variable nodes'', denoted $\ghostvar$, (ii) the set of ``ghost lambda nodes'', denoted $\ghostlmd$. Together, nodes in $\ghostlmd$ and $\ghostvar$ are called the \defname{ghost nodes}. We write $\ExtendedNodes$ for the extended set of nodes $\Nodes + \ghostvar + \ghostlmd$; $\ImNodesLmd$ as a shorthand for $\NodesLmd + \ghostlmd$ and $\ImNodesVar$ as a shorthand for $\NodesVar + \ghostvar$.
 
-We refer to nodes $\Nodes$ of the computation tree as \defname{structural nodes}
-and $\ExtendedNodes$ for the extended set $\Nodes + \ghostvar + \ghostlmd$ where $\ghostvar$ and $\ghostlmd$ denote the sets of ghost nodes uniquely determined by $\Nodes$ together with the enabling relation $\enables$. Nodes in $\ghostlmd$ and $\ghostvar$ are called \defname{ghost nodes}. We write $\ImNodesLmd$ as a shorthand for $\NodesLmd + \ghostlmd$ and $\ImNodesVar$ as a shorthand for $\NodesVar + \ghostvar$.
+Ghost lambda nodes and ghost variables all have the same unique label
+$\ghostlmd$ and $\ghostvar$ respectively. We will often not distinguish between them and will just use the identifiers $\ghostvar$ and $\ghostlmd$ as placeholders to refer to `some ghost variable node' or `some ghost lambda node'.
+
+We simultaneously define ghost nodes and the extension of the enabling relation $\enables$ to ghost nodes as follows: (i) for every (ghost) variable or application node $m$ and for all $k>|m|$ there is a ghost lambda node $\ghostlmd$ such that $m \enables_k \ghostlmd$; (ii) for every (ghost) lambda node $\alpha$ and $k>|\alpha|$ there is a ghost variable node $\ghostvar$ such that $\alpha \enables_k \ghostvar$. Thus, each ghost variable and ghost lambda node is uniquely defined by its enabler node (possibly itself a ghost node) and associated label $k\geq 1$.
+The sets $\ghostvar$ and $\ghostlmd$ are therefore uniquely determined by the pair $(\Nodes, \enables)$.
 
 By convention ghost variables and lambda nodes are assigned arity $0$.
 
 \subsection{Justified sequence of nodes}
 \label{sec:justseq}
 
-A \defname{justified sequence} is a sequence of nodes from the computation tree where every node occurrence $n$ in the sequence, except the first one, has an associated link (the ``justification pointer'') pointing to some previous node occurrence $j$ in the sequence (called its ``justifier'') with an associated ``link label'' $l\geq0$, such as the justifier node enables the node pointing to it by the enabling relation $\enables$ with the corresponding label (\ie, $j \enables_l n$). We represent justified sequences as a sequence of labelled occurrences of nodes with back-pointing arrows representing justification pointers:
+A \defname{justified sequence} is defined a sequence of (extended) nodes from the computation tree where every occurrence $n$ in the sequence, except the first one, has an associated link--the ``justification pointer''--pointing to some previous node occurrence $j$ in the sequence--its ``justifier''--with an associated ``link label'' $l\geq0$, such as the justifier node enables the node pointing to it by the enabling relation $\enables$ with the corresponding label (\ie, $j \enables_l n$). We represent justified sequences as a sequence of labelled node occurrences with back-pointing arrows representing justification pointers:
 $$\Pstr[10pt]{ s = \cdots (j){j} \ldots (n-j,25){n} }$$
 
-Whereas the enabling relation is \emph{statically} induced by the structure of the tree, justification is a relation defined on \emph{occurrences} of nodes for one specific justified sequence.
+Note that the enabling relation is \emph{statically} induced by the structure of the tree whereas the justification relation is defined on node \emph{occurrences} in one specific justified sequence.
 
 We call \defname{set of justified sequences over $M$}  the set of all possible
- justified sequences over $\ExtendedNodes$ (\ie, nodes of the computation tree augmented with ghost nodes).
+ justified sequences over the extended set of nodes $\ExtendedNodes$ of the computation tree.
 
 \begin{definition}[Justified sequence encoding]
     Let $\mathcal{V}$ denote sequences of variable names taken from $\mathcal{V}$ (as defined in Equation~\ref{eqn:node_label_set}).
@@ -2144,12 +2147,12 @@ If $M = \lambda x . U$ then $U$ must also admit a beta-nf so we can conclude by 
             \begin{compactitem}
                 \item Suppose $T_1$ is a variable $x$ then it must be the \emph{hoc} and we have $T = x~T_2$.
 
-                    We show the result by induction on the number of pending arguments of the \emph{hoc}.
+                    We show the result by induction (H3) on the number of pending arguments of the \emph{hoc}.
 
                     \begin{compactitem}
                     \item Base: $z$ has a single argument which must be $T_2$.
 
-                    By Theorem~\ref{thm:danosreigner_headlinred}, reducing all the prime redexes in $M$ yields itshead normal form
+                    By Theorem~\ref{thm:danosreigner_headlinred}, reducing all the prime redexes in $M$ yields its head-normal form
                     with $x$ as the head variable.
                     Let $\gamma$ denotes the sequence of substitutions performed on $M$ to reduce the prime redexes, so that $\gamma(M)$ is the head normal form of $M$.
                     Then $\gamma(T_2)$ will becomes the (unique) argument of $x$ in the head normal form. And because $M$ has a beta-nf, the term $\gamma(T_2)$ must also have a beta-nf.
