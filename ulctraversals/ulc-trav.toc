@@ -11,17 +11,17 @@
 \contentsline {subsection}{\numberline {2.4}Ghost nodes}{7}
 \contentsline {subsection}{\numberline {2.5}Justified sequence of nodes}{7}
 \contentsline {subsection}{\numberline {2.6}Justified paths of the term tree}{10}
-\contentsline {section}{\numberline {3}Traversals}{11}
-\contentsline {subsection}{\numberline {3.1}Definition and properties}{11}
-\contentsline {paragraph}{On-the-fly expansion}{13}
-\contentsline {paragraph}{Path-View correspondence}{14}
+\contentsline {section}{\numberline {3}Imaginary Traversals}{12}
+\contentsline {subsection}{\numberline {3.1}Definition and properties}{12}
+\contentsline {paragraph}{On-the-fly expansion}{12}
+\contentsline {paragraph}{Path-View correspondence}{12}
 \contentsline {paragraph}{Traversal core}{14}
 \contentsline {subsection}{\numberline {3.2}Imaginary traversals subsume STLC traversals}{15}
 \contentsline {subsection}{\numberline {3.3}Property of ghost nodes}{17}
 \contentsline {subsection}{\numberline {3.4}Correspondence with Game semantics}{17}
 \contentsline {paragraph}{Game semantics Correspondence for ULC}{18}
 \contentsline {section}{\numberline {4}Normalizing Traversals}{18}
-\contentsline {subsection}{\numberline {4.1}Quotienting}{18}
+\contentsline {subsection}{\numberline {4.1}Quotienting}{19}
 \contentsline {subsection}{\numberline {4.2}Branching traversals}{19}
 \contentsline {subsection}{\numberline {4.3}Normalization procedure for eta-long forms (STLC)}{20}
 \contentsline {paragraph}{Implementation}{21}
@@ -30,12 +30,12 @@
 \contentsline {section}{\numberline {5}Examples of Normalization by Traversals}{25}
 \contentsline {section}{\numberline {6}Leftmost linear reduction}{29}
 \contentsline {subsection}{\numberline {6.1}Lambda calculus background and notations}{29}
-\contentsline {subsection}{\numberline {6.2}Head-linear reduction}{29}
+\contentsline {subsection}{\numberline {6.2}Head-linear reduction}{30}
 \contentsline {paragraph}{Soundness}{30}
-\contentsline {subsection}{\numberline {6.3}Leftmost linear reduction}{30}
+\contentsline {subsection}{\numberline {6.3}Leftmost linear reduction}{31}
 \contentsline {section}{\numberline {7}Correctness of ULC normalization}{34}
 \contentsline {paragraph}{Traversal bisimulation}{36}
-\contentsline {paragraph}{Soundness}{37}
+\contentsline {paragraph}{Soundness}{38}
 \contentsline {section}{\numberline {8}Conclusion and further directions}{38}
-\contentsline {section}{Appendix \numberline {A}Tables}{39}
-\contentsline {section}{Appendix \numberline {B}Proofs}{41}
+\contentsline {section}{Appendix \numberline {A}Tables}{40}
+\contentsline {section}{Appendix \numberline {B}Proofs}{42}

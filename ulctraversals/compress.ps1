@@ -5,8 +5,9 @@ cp aux-latexmk\*.pdf .
 cp aux-latexmk\*.bbl .
 cp aux-latexmk\*.toc .
 Write-Host "Compressing sources..."
+# Exclude files not needed for arxiv submission
 ls *  -File `
-| where { $_.Extension -notin @('.gz', '.zip') }`
+| where { $_.Extension -notin @('.gz', '.zip', '.aux', '.log', '.pdf', '.blg', '.spl') }`
 | where { -not $_.Name.StartsWith('notes') } `
 | Compress-Archive -DestinationPath "$filebase.zip" -Force
 Write-Host "Source file compressed to $filebase.zip"
