@@ -13,9 +13,15 @@
                 "%DOC%.tex"
             ]
         }
+       /*, {
+            "command" : "bibtex",
+            "args":[
+                "%DOCFILE%"
+            ]
+        }*/
     ],
     "latex-workshop.latex.additionalBib": [
-        "ulctrav.bib"
+
     ],
     "latex-workshop.chktex.enabled": false,
     "cSpell.words": [
