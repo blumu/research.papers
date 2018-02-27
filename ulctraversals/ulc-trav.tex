@@ -1423,10 +1423,8 @@ We will prove correctness of the procedure in Section~\ref{sec:correctness_ulc_n
 \end{algorithm}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{ULC Normalization Examples}
-This section walks through the ULC normalization algorithm~\ref{algo:ulc_normalization_by_traversals}
-and traversal enumeration of Table~\ref{tab:normalizing_trav_rules}
-on several examples of lambda terms.
+\section{Examples of Normalization by Traversals}
+This section walks you through the ULC normalization algorithm~\ref{algo:ulc_normalization_by_traversals} and traversal enumeration of Table~\ref{tab:normalizing_trav_rules} on several examples of lambda terms.
 
 For readability when representing traversals, we will sometime omit the justification pointers and indicate the link label in exponent of the source occurrence.
 
@@ -1769,7 +1767,7 @@ $.
 \section{Leftmost linear reduction}
 \label{sec:leftmostlinearred}
 
-\subsection{Background: Lambda calculus and reduction}
+\subsection{Lambda calculus background and notations}
 We recall standard results of the lambda calculus.
 A \defname{redex} is a sub-term of the form $(\lambda x. M) N$.
 Reducing redex $(\lambda x. M) N$, or also \emph{firing} the redex, means substituting all free occurrences of $x$ in $M$ by the term $N$ using capture avoiding substitution (the bound variable is renamed afresh when recursively substituting under a lambda).
@@ -1822,7 +1820,7 @@ A \defname{prime redex} (ala Danos-Regnier) is a generalized redex $(\lambda x, 
 \end{itemize}
 \end{theorem}
 
-\subsection{Leftmost linear reduction strategy}
+\subsection{Leftmost linear reduction}
 
 As the name indicates, the head-linear reduction is a linear version of the \emph{head} reduction. It thus only yields the quasi \emph{head}-normal form, not the normal form, and therefore is not complete for normalization.
 

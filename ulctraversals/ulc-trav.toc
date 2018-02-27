@@ -27,12 +27,12 @@
 \contentsline {paragraph}{Implementation}{21}
 \contentsline {subsection}{\numberline {4.4}Arity threshold and normalizing traversals}{21}
 \contentsline {subsection}{\numberline {4.5}Normalization procedure for ULC}{25}
-\contentsline {section}{\numberline {5}ULC Normalization Examples}{25}
+\contentsline {section}{\numberline {5}Examples of Normalization by Traversals}{25}
 \contentsline {section}{\numberline {6}Leftmost linear reduction}{29}
-\contentsline {subsection}{\numberline {6.1}Background: Lambda calculus and reduction}{29}
+\contentsline {subsection}{\numberline {6.1}Lambda calculus background and notations}{29}
 \contentsline {subsection}{\numberline {6.2}Head-linear reduction}{29}
 \contentsline {paragraph}{Soundness}{30}
-\contentsline {subsection}{\numberline {6.3}Leftmost linear reduction strategy}{30}
+\contentsline {subsection}{\numberline {6.3}Leftmost linear reduction}{30}
 \contentsline {section}{\numberline {7}Correctness of ULC normalization}{34}
 \contentsline {paragraph}{Traversal bisimulation}{36}
 \contentsline {paragraph}{Soundness}{37}
