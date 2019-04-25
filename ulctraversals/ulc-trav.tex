@@ -1,5 +1,5 @@
 % add pdflatex cue for arxiv submission
-\pdfoutput=1 
+\pdfoutput=1
 % -*- TeX -*- -*- Soft -*-
 %Daemon> filter=err+warn
 %Daemon> ini=pdflatex
@@ -279,10 +279,18 @@ In this paper we (i) generalize game-semantic traversals of the simply-typed lam
 \emph{Key idea behind imaginary traversals}: In the absence of types, eta-long expansion is not feasible as it would yield an infinite term. Imaginary traversals overcome this problem by performing eta-expansion \emph{on-demand}.
 Traversing an untyped lambda term using the original traversal rules can lead
 the traversal to get stuck. This happens when the operator sub-term of an application has an insufficient number of operands. In such situation, there is no operand node in the term tree that the traversal can jump to.
-In the term $(\lambda f.f)(\lambda y.y)$, for example, an STLC traversal would get stuck when trying to resolve the ``$y$ argument'' of the variable occurrence $f$.
-In contrasts, an imaginary traversal just jumps to a fictitious fresh node $z$ that would exist if the term were eta-expanded as $\lambda z. (\lambda f.f)(\lambda y.y) z$. This trick allows the traversal to proceed.
+In the term $(\lambda f.f)(\lambda x.x)$, for example, an STLC traversal would get stuck when trying to resolve the ``$x$ argument'' of the variable occurrence $f$.
+An imaginary traversal, on the other hand, jumps to a fictitious fresh node $y$ that would exist if
+the sub-term $\lambda f .f$ were eta-expanded
+as $\lambda f y.f\, y$. This trick allows the traversal to proceed using the usual rules of STLC; until reaching that fictitious node $y$.
+A second eta-expansion, this time of the term itself, to
+$\lambda z. (\lambda f y.f\, y)(\lambda x.x) z$
+then unblocks the traversal which terminates at node $z$.
 
-For terms having a beta-normal form, normalization can then be implemented by traversal enumeration. Although the set of imaginary traversals can be infinite, it is sufficient to consider sufficiently enough traversals to cover all paths of the tree representation of the beta-normal form. We demonstrated how such set is effectively computable by restricting the non-determinism of the free-variable rule. In other words, only a finite number of on-demand eta-expansions is required to evaluate the term. We implemented the normalization procedure in the HOG software~\cite{Blum-HogTool}. The last section provides some examples of terms normalized with it.
+The traversal rules of STLC implicitly define the next subterm to eta-expand: among all the possible subterms that could be eta-expanded, only one will create the fictitious nodes required to unblock the traversal using the unmodified traversal rules of STLC. In the above example, the first appropriate eta-expansion is that of $\lambda f .f$; eta-expanding the term itself first would yield $\lambda z. (\lambda f .f)(\lambda x.x) z$, which an STLC traversal cannot traverse due to the fact that $f$ still does not have an immediate argument.
+In practice, it is not necessary to actually eta-expand the untyped term before traversing the term; the expansion occurs fictitiously and ``on the fly'' as we traverse the term. An untyped traversal, however, bares sufficient traces of those successive eta-expansions to allow reconstruction the eta-expanded term effectively being traversed.
+
+Normalizing an untyped term (with a beta-normal form) then boils down to  enumerating its imaginary traversals. Although this set may be infinite, it is sufficient to consider just enough traversals to cover all paths of the tree representation of the beta-normal form. Such set is effectively computable by restricting the non-determinism of the free-variable rule. In other words, only a finite number of on-the-fly eta-expansions is required to normalize the term. We have implemented the normalization procedure in HOG, a tool used to study higher-order grammars and traversals~\cite{Blum-HogTool}. The last section provides some examples of terms normalized with it.
 
 Finally, to prove correctness of the evaluation procedure, we show that traversals essentially implement a recursive version of \emph{head linear reduction}, a non-standard reduction strategy based on an alternative notion of redex where individual variable occurrences are matched to their corresponding arguments and where substitution occurs one variable occurrence at a time.\footnote{This is reminiscent of the standard call-by-name strategy except that linear reduction can occur under lambda, and performs substitution one variable occurrence at a time.}
 

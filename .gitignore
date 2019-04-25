@@ -17,3 +17,5 @@ safecpda/safecpda.zip
 /ulctraversals/aux-latexmk/*
 /ulctraversals/ulc-trav.dvi
 /ulctraversals/ulc-trav.pdf
+*.fdb_latexmk
+*.fls
