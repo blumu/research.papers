@@ -293,8 +293,14 @@ Similarly, a second eta-expansion, this time of the term itself to
 $\lambda z. (\lambda f y.f\, y)(\lambda x.x) z$,
 unblocks the traversal which finally terminates at node $z$.
 
-The traversal rules of STLC implicitly define the next subterm to eta-expand: among all the possible subterms that could be eta-expanded, only one can create the fictitious nodes required to unblock the traversal using the unmodified traversal rules of STLC. In the above example, the first appropriate eta-expansion is that of $\lambda f .f$; eta-expanding the term itself first would yield $\lambda z. (\lambda f .f)(\lambda x.x) z$, which an STLC traversal cannot traverse due to the fact that $f$ still does not have an immediate argument.
-Actually eta-expanding the untyped term is not necessary to traverse the term; the expansion occurs fictitiously ``on the fly'' as the traversal unfolds. A traversal, however, bares traces of those successive eta-expansions; which makes it possible to reconstruct the eta-expanded term effectively being traversed.
+The traversal rules of the simply-typed lambda calculus guide the eta-expansion strategy that is implicitly implemented by untyped traversals:
+ among all the possible subterm eta-expansions, only one creates the additional nodes required to apply a STLC traversal rule at that point.
+  In the above example, the  first eta-expansion considered is that of $\lambda f .f$ because at some point, an STLC traversal could only
+   visit an immediate argument of $f$; whereas eta-expanding the term itself would yield $\lambda z. (\lambda f .f)(\lambda x.x) z$,
+    which an STLC traversal cannot traverse since $f$ does not have an immediate argument.
+In practice, one does not need to actually eta-expand an untyped term when traversing it; the expansion occurs fictitiously and ``on the fly'' as the traversal unfolds.
+ An untyped traversal, however, bares traces of those successive fictitious eta-expansions, from which
+  one can reconstruct the eta-expanded term effectively being traversed.
 
 Normalizing an untyped term (with a beta-normal form) then boils down to  enumerating its imaginary traversals. Although this set may be infinite, it is sufficient to consider just enough traversals to cover all paths of the tree representation of the beta-normal form. Such set is effectively computable by restricting the non-determinism of the free-variable rule. In other words, only a finite number of on-the-fly eta-expansions is required to normalize the term. We have implemented the normalization procedure in HOG, a tool used to study higher-order grammars and traversals~\cite{Blum-HogTool}. The last section provides some examples of terms normalized with it.
 
@@ -3104,7 +3110,8 @@ $$\travsetnorm(M)/{\sim} \ \cong\ \pathset(T) \ .$$
 \end{theorem}
 \begin{proof}
 Let's first assume that $M$ is in beta-normal form. Then its computation tree cannot contain any $@$-node and all nodes must be external.
-Hence the arity threshold of a traversal ending with external variable $x$ is precisely $|x|$, the arity of $x$. A trivial induction on the traversal rules shows, that since the \rulenamet{Var} is never used, we necessarily have  $\travsetnorm(M) = \pathset(M)$. Further, since all nodes are externals, the projection $\coresymbol$ and $\pview{\_}$ functions both coincides with the identity function thus $\pview{\core{\travsetnorm(M)}} = \travsetnorm(M) = \pathset(M)$.
+Hence the arity threshold of a traversal ending with external variable $x$ is precisely $|x|$, the arity of $x$. A straightforward induction on the traversal
+rules shows, that since the \rulenamet{Var} is never used, we necessarily have  $\travsetnorm(M) = \pathset(M)$. Further, since all nodes are externals, the projection $\coresymbol$ and $\pview{\_}$ functions both coincides with the identity function thus $\pview{\core{\travsetnorm(M)}} = \travsetnorm(M) = \pathset(M)$.
 
 Otherwise, since $M$ has a beta-nf, by Theorem~\ref{thm:completeness_leftmostlinearred} its \emph{leftmost linear reduction sequence} terminates and yields a \emph{qnf}. By Prop.~\ref{prop:ulctrav_impl_linear_reduction} the set of traversals is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of traversals of the \emph{qnf} is isomorphic to the set of traversals of $M$. Corollary~\ref{cor:qnf_and_nf_traveset_invariant} permits us to conclude.
 \end{proof}
