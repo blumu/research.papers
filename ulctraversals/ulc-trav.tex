@@ -258,7 +258,7 @@
 \begin{abstract}
     We introduce a method to evaluate untyped lambda terms by combining the theory of traversals, a term-tree traversing technique inspired from Game Semantics~\cite{Ong2006,BlumPhd}, with judicious use of the eta-conversion rule of the lambda calculus.
 
-    The traversal theory of the simply-typed lambda calculus relies on the eta-long transform to ensure that when traversing an application, there is a subterm representing every possible operator's argument\cite{BlumPhd, Ong2006}. In the untyped setting, we instead exhibit the missing operand via ad-hoc instantiation of the eta-expansion rule, which allows the traversal to proceed as if the operand existed in the original term. This gives rise to a more generic concept of traversals for lambda terms. A notable improvement, in addition to handling untyped terms, is that no preliminary transformation is required: the original unaltered lambda term is traversed.
+    The traversal theory of the simply-typed lambda calculus relies on the eta-long transform to ensure that when traversing an application, there exists a subterm representing every possible operator's argument\cite{BlumPhd, Ong2006}. In the untyped setting, we instead exhibit the missing operand via ad-hoc instantiation of the eta-expansion rule, which allows the traversal to proceed as if the operand existed in the original term. This gives rise to a more generic concept of traversals for lambda terms. A notable improvement, in addition to handling untyped terms, is that no preliminary transformation is required: the original unaltered lambda term is traversed.
 
     %Blindly applying the rules of typed traversals on untyped terms, where eta-long transform is undefined, therefore fails when an operator  node lacks the required operand. To work around this limitation, we create missing operands on-the-fly and proceed as if it existed in the original term. We denote missing operands in the traversals using ``imaginary'' nodes representing nodes that would exist in the term-tree if the application subterm lacking the operand were to be eta-expanded. We call the resulting traversal an ``imaginary traversal''.
 
@@ -271,24 +271,30 @@
 
 \section{Background and overview}
 
-Traversals were originally introduced in the context of higher-order recursion schemes~\cite{Ong2006} as tree generators.
-They were then extended to the more general setting of simply-typed languages with higher-order free variables, such as the simply-typed lambda calculus (STLC)~\cite{BlumPhd}. In the typed setting, the traversal theory has a well understood relationship with Game Semantics: traversals are in bijection with the plays of the game denotation of a term in which all the internal moves are revealed. Further, the \emph{core projections} of traversals are in bijection with the \emph{standard} game denotation, in which internal moves are hidden (Theorem~\ref{thm:gamesem_correspondence_stlc}). This correspondence gives rise to a method for reducing beta-redexes of a simply-typed lambda term that does not involve the traditional capture-avoiding substitution~\cite{danos-head,BlumPhd,BlumGalop2008,Blum-LocalBeta2008}.
+The theory of traversals was originally introduced in the context of higher-order recursion schemes~\cite{Ong2006} as tree generators, and were
+then extended to simply-typed languages with higher-order free variables, such as the simply-typed lambda calculus (STLC)~\cite{BlumPhd}.
 
-In this paper we (i) generalize game-semantic traversals of the simply-typed lambda calculus\cite{BlumPhd} to the untyped lambda calculus (ULC), which we call \emph{imaginery travserals}; (ii) infer a method to evaluate untyped lambda terms based on enumeration of their traversals; (iii) formalize the connection between traversals and the notion of \emph{head linear reduction}.
+A traversal consists of a sequence of nodes taken from some tree-representation of the term, where every node occurrence may have an associated labelled link, or ``justification pointer'', referring to some previous occurrence in the sequence. A traversal always starts from the root of the tree and successively visits other nodes by either descending deeper into the tree structure, or  jumping to a node from another branch in the tree. A small set of rules formally defines how to extend a traversal--that is which nodes can be visited next and what its associated justification pointer should be. This yields a prefix-closed set of justified sequences of nodes defining the set of traversals of the term.
+
+In the typed setting, the traversal theory bears a strong connection with Game Semantics: traversals are in bijection with plays of the term's game denotation where all internal moves are revealed~\cite{BlumPhd}.
+The game denotation of a term, in its standard sense where internal moves gets hidden, corresponds to the set of \emph{core projections} of traversals
+(Theorem~\ref{thm:gamesem_correspondence_stlc}); obtained by a simple filtering operation on the justified sequences. Such correspondence gives rise to a method for reducing beta-redexes of a simply-typed lambda term that does not involve the traditional capture-avoiding substitution~\cite{danos-head,BlumPhd,BlumGalop2008,Blum-LocalBeta2008}.
+
+In this paper we: (i) Generalize the notion of traversals to the untyped lambda calculus (ULC), which we call \emph{imaginery travserals}; (ii) Introduce a method to evaluate untyped lambda terms based on enumeration of their traversals; (iii) Formalize the connection between traversals and the notion of \emph{head linear reduction}.
 
 \emph{Key idea behind imaginary traversals}: In the absence of types, eta-long expansion is not feasible as it would yield an infinite term. Imaginary traversals overcome this problem by performing eta-expansion \emph{on-demand}.
 Traversing an untyped lambda term using the original traversal rules can lead
 the traversal to get stuck. This happens when the operator sub-term of an application has an insufficient number of operands. In such situation, there is no operand node in the term tree that the traversal can jump to.
-In the term $(\lambda f.f)(\lambda x.x)$, for example, an STLC traversal would get stuck when trying to resolve the ``$x$ argument'' of the variable occurrence $f$.
-An imaginary traversal, on the other hand, jumps to a fictitious fresh node $y$ that would exist if
-the sub-term $\lambda f .f$ were eta-expanded
-as $\lambda f y.f\, y$. This trick allows the traversal to proceed using the usual rules of STLC; until reaching that fictitious node $y$.
-A second eta-expansion, this time of the term itself, to
-$\lambda z. (\lambda f y.f\, y)(\lambda x.x) z$
-then unblocks the traversal which terminates at node $z$.
+Take the untyped term $(\lambda f.f)(\lambda x.x)$ for example. Traversing it using the rules of STLC gets you stuck after visiting node $x$ because there is no subterm corresponding to the ``$x$ argument'' of the variable occurrence $f$.
+%(The actual traversal without pointers is $\lambda f \cdot f \cdot \lambda x \cdot x$.)
+An imaginary traversal, on the other hand, may jump to a fictitious fresh node $y$ that would exist if the sub-term $\lambda f .f$ were eta-expanded
+as $\lambda f y.f\, y$. This trick then allows the traversal to proceed using the usual rules of STLC; until reaching that fictitious node $y$.
+Similarly, a second eta-expansion, this time of the term itself to
+$\lambda z. (\lambda f y.f\, y)(\lambda x.x) z$,
+unblocks the traversal which finally terminates at node $z$.
 
-The traversal rules of STLC implicitly define the next subterm to eta-expand: among all the possible subterms that could be eta-expanded, only one will create the fictitious nodes required to unblock the traversal using the unmodified traversal rules of STLC. In the above example, the first appropriate eta-expansion is that of $\lambda f .f$; eta-expanding the term itself first would yield $\lambda z. (\lambda f .f)(\lambda x.x) z$, which an STLC traversal cannot traverse due to the fact that $f$ still does not have an immediate argument.
-In practice, it is not necessary to actually eta-expand the untyped term before traversing the term; the expansion occurs fictitiously and ``on the fly'' as we traverse the term. An untyped traversal, however, bares sufficient traces of those successive eta-expansions to allow reconstruction the eta-expanded term effectively being traversed.
+The traversal rules of STLC implicitly define the next subterm to eta-expand: among all the possible subterms that could be eta-expanded, only one can create the fictitious nodes required to unblock the traversal using the unmodified traversal rules of STLC. In the above example, the first appropriate eta-expansion is that of $\lambda f .f$; eta-expanding the term itself first would yield $\lambda z. (\lambda f .f)(\lambda x.x) z$, which an STLC traversal cannot traverse due to the fact that $f$ still does not have an immediate argument.
+Actually eta-expanding the untyped term is not necessary to traverse the term; the expansion occurs fictitiously ``on the fly'' as the traversal unfolds. A traversal, however, bares traces of those successive eta-expansions; which makes it possible to reconstruct the eta-expanded term effectively being traversed.
 
 Normalizing an untyped term (with a beta-normal form) then boils down to  enumerating its imaginary traversals. Although this set may be infinite, it is sufficient to consider just enough traversals to cover all paths of the tree representation of the beta-normal form. Such set is effectively computable by restricting the non-determinism of the free-variable rule. In other words, only a finite number of on-the-fly eta-expansions is required to normalize the term. We have implemented the normalization procedure in HOG, a tool used to study higher-order grammars and traversals~\cite{Blum-HogTool}. The last section provides some examples of terms normalized with it.
 
