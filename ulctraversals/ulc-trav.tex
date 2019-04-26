@@ -741,7 +741,7 @@ $M^t = (\lambda u . u~(y_1~(\lambda \alpha. u (\lambda \beta.\alpha \beta))) (\l
 \end{example}
 
 \paragraph{Path-View correspondence}
-We now generalize a known result from the theory of traversals for higher-order grammars~\cite{Ong2006} and simply-typed lambda terms~\cite[Proposition 4.29]{BlumPhd} to the untyped setting. The game-semantic concept of `Proponent view' from definition~\ref{def:views} corresponds to the concept of `tree path' in the following sense:
+We now generalize a known result from the theory of traversals for higher-order grammars~\cite{Ong2006} and simply-typed lambda terms~\cite[Proposition 4.29]{BlumPhd} to the untyped setting. The game-semantic concept of `Proponent view' from Definition~\ref{def:views} corresponds to the concept of `tree path' in the following sense:
 
 \begin{proposition}[Path-View correspondence for ULC]
 \label{prop:pathview_ulc}
@@ -1122,7 +1122,7 @@ The normalization procedure for the simply-typed lambda calculus is given by Alg
 \ENSURE{The tree of the eta-long beta-normal form of $M$.}
 \begin{enumerate}[nosep]
   \item Calculate the eta-long form $\etalf{M}$ of $M$ \emph{wrt} $T$;
-  \item Enumerate maximal \emph{branching} traversals of $\etalf{M}$ from Def.~\ref{dfn:branching_traversals}:
+  \item Enumerate maximal \emph{branching} traversals of $\etalf{M}$ from Definition~\ref{dfn:branching_traversals}:
   \begin{itemize}[nosep]
   \item For each traversal $t$, get the \emph{traversal core} $\core{t}$ by removing all internal nodes;
   \item Calculate the P-view of the traversal core $\pview{\core{t}}$;
@@ -1337,7 +1337,7 @@ We then conclude by applying the same argument as (i) for all $q<r$.
 This weaving property suggests that instantiations of the external variable rule that exceeds the arity threshold are not relevant for normalization since they essentially expand external ghost variable nodes into deeper external ghost variable nodes. This observation gives rise to a stricter version of traversals:
 \begin{definition}[Normalizing traversals]
 \label{def:normalizing_traversals}
-The set $\travsetnorm$ of \defname{normalizing traversals}, is the subset of branching traversals defined by the rules of Def.~\ref{dfn:branching_traversals} where the index $i$ in rule \rulenamet{IVar} is bounded by the arity threshold of the traversal.
+The set $\travsetnorm$ of \defname{normalizing traversals}, is the subset of branching traversals defined by the rules of Definition~\ref{dfn:branching_traversals} where the index $i$ in rule \rulenamet{IVar} is bounded by the arity threshold of the traversal.
 % \infrule[$\rulefont{IVar_\normalizing}$]
 %      { t \cdot n \in\travsetnorm
 %      \andalso n \in\ExtNodes\inter\ImNodesVar
@@ -2223,7 +2223,7 @@ A subsequence of a traversal is a
 
 %For any node $n$ of the tree of $M$ we write $M^{(n)}$ for the subterm of $M$ rooted at $n$, and $lloc_M(n)$ to denote $lloc_M(M^{(n)})$.
 \begin{definition}[lloc of a node]
-For any tree node $n$ we write $lloc_M(n)$ to denote $lloc_M(N)$ where $N$ is the subterm of $M$ rooted at $n$ and $lloc$ denotes the leftmost linear occurrence from Def.~\ref{def:leftmostlinearreduction}.
+For any tree node $n$ we write $lloc_M(n)$ to denote $lloc_M(N)$ where $N$ is the subterm of $M$ rooted at $n$ and $lloc$ denotes the leftmost linear occurrence from Definition~\ref{def:leftmostlinearreduction}.
 \end{definition}
 %We say that a traversal $t$ is \defname{head-normal} if it ends with a structural lambda node with undefined lloc (\ie, $t^\omega = \lambda\overline\eta$ and $lloc_M(t^\omega) = \bot$).
 
@@ -2506,7 +2506,7 @@ for $r\geq0$, where $@_r$ denotes the parent node of the redex argument, and $\l
 \end{enumerate}
 \end{lemma}
 \proofatend
-(i) By definition of generalized redexes and lambda lists (Def.~\ref{dfn:generalized_redex}), $@_r$ necessarily occurs in the path from $\lambda\overline{x}$ to the root. Further the path from $@_r$ to $\lambda\overline{x}$ is necessarily a spinal descent (\ie, it contains only lambda and application nodes, and no variable node). Indeed, if it contained a variable node $z$ then the lambda-list at the subterm rooted at $z$ would be empty, in which case no argument could possibly form a generalized redex with $\lambda x$.
+(i) By definition of generalized redexes and lambda lists (Definition~\ref{dfn:generalized_redex}), $@_r$ necessarily occurs in the path from $\lambda\overline{x}$ to the root. Further the path from $@_r$ to $\lambda\overline{x}$ is necessarily a spinal descent (\ie, it contains only lambda and application nodes, and no variable node). Indeed, if it contained a variable node $z$ then the lambda-list at the subterm rooted at $z$ would be empty, in which case no argument could possibly form a generalized redex with $\lambda x$.
 
 (ii) We show by induction on $k$ that $x$ is the variable abstracted by the $i_k$th lambda in $\lambda_l(\lambda\overline{x_k})$, which implies the result since by definition $\lambda x$ forms a generalized redex with the $i_k$th argument of $@_k$.
 Base case $k=1$. By assumption, $\lambda x$ is the $i$th lambda in the bulk lambda $\lambda\overline{x}$. Let $k\geq 1$. By the induction hypothesis $\lambda x$ is the $i_{k-1}$ lambda in $\lambda_l(\lambda\overline{x_{k-1}})$.
@@ -3135,7 +3135,7 @@ Daniil Berezun and Neil Jones were first to introduce a notion of traversals for
 The control pointers would be what Danos-Regnier call the ``price to pay for having no stacks or environments'' in their definition of the argument lookup transition of the Pointer Abstract Machine~\cite{danos-head}.
 
 In imaginary traversals, however, node occurrence have at most one justification pointer. Instead, we pay for the absence of stacks and environment by introducing ghost occurrences. In particular,
-we performs the necessary ``gymnastics to find the argument of a subterm''\cite{danos-head} by traversing the `pending argument lookup` (Def.~\ref{def:spinaldescent_pendingarglookup}) consisting of ghost occurrences, until
+we performs the necessary ``gymnastics to find the argument of a subterm''\cite{danos-head} by traversing the `pending argument lookup` (Definition~\ref{def:spinaldescent_pendingarglookup}) consisting of ghost occurrences, until
 a structural node gets materialized\footnote{The ghost materialization loop  implemented by
 rule \rulenamet{Lam^\ghostlmd} and \rulenamet{Var} essentially calculates the quantity ``$|\alpha|+i-|m|$'' at each iteration, which is the exact same quantity ($r-a+l$) used in step 2. (b) of the PAM transition from \cite{danos-head}.}
 
