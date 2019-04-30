@@ -220,7 +220,7 @@
 % leftmost linear reduction
 \newcommand{\llred}{\rightarrow_{ll}}
 
-% head variable occurrence (from Danos-Reigner def)
+% head variable occurrence (from Danos-Regnier def)
 \newcommand{\hoc}{\emph{hoc}}
 
 % Term equivalence up to alpha renaming
@@ -337,7 +337,7 @@ The absence of an $\eta$-long transform of the term is a notable difference with
 \subsubsection{Head linear reduction}
 Danos \etal established the first connection between Game Semantics and the concept of \emph{head linear reduction}~\cite{danos-head,danosherbelinregnier1996}. Despite this connection, their work does not explicitly describe how to use head linear reduction to fully evaluate a lambda term. The \emph{pointer abstract machine} introduced in the same paper, for instance, yields the ``\emph{quasi-head normal form (qhn)}'' of the term, not the normal form itself. The resulting \emph{qhn} still needs to be first reduced to head normal form (using head reduction) and then normalized using standard normal reduction, which must terminate by the $\lambda$-calculus theory.
 
-Traversals are essentially a recursive implementation of the head linear reduction strategy on lambda terms. A traversal starts with a depth-first search for what Danos-Reigner call the \emph{head occurrence} of the \emph{hoc redex}. Traversals implement linear substitution by ``jumping'' to the node in the tree that represents the term to be substituted for the head occurrence. After a jump, a traversal just continues its descent for the next head occurrence, as if the first head occurrence in the tree had been replaced by the redex argument. A property of head-linear reduction is that all the terms appearing in the reduction sequence consist of sub-terms of the original term. This property means that there is no need for the traditional notions of environments or closures to reduce beta-redexes. Such mechanisms are instead replaced by a system of pointers referencing subterms of the original term.
+Traversals are essentially a recursive implementation of the head linear reduction strategy on lambda terms. A traversal starts with a depth-first search for what Danos-Regnier call the \emph{head occurrence} of the \emph{hoc redex}. Traversals implement linear substitution by ``jumping'' to the node in the tree that represents the term to be substituted for the head occurrence. After a jump, a traversal just continues its descent for the next head occurrence, as if the first head occurrence in the tree had been replaced by the redex argument. A property of head-linear reduction is that all the terms appearing in the reduction sequence consist of sub-terms of the original term. This property means that there is no need for the traditional notions of environments or closures to reduce beta-redexes. Such mechanisms are instead replaced by a system of pointers referencing subterms of the original term.
 
 In this paper, we generalize head linear reduction to \emph{leftmost linear reduction}, a strategy that recursively applies head linear reduction; just like normal reduction from the lambda calculus literature which proceeds by recursive application of head reduction.
 We show how the \emph{imaginary traversals} effectively implement leftmost linear reduction, which proves soundness of the traversal normalization procedure.
@@ -1841,7 +1841,7 @@ The \defname{head-linear reduction} $\hlred$ is defined as the reduction that li
 The set of \defname{spine subterms} is defined by induction: a term is a spine subterm of itself; the spine subterms of $U V$ and $\lambda x. U$ are those of $U$.
 A \defname{prime redex} ({\it \`a la} Danos-Regnier) is a generalized redex $(\lambda x, A)$ such that the operator of the redex ($\lambda x . U$ for some $U$) is a spine subterm. Danos-Regnier showed the following result (Theorem~2 in \cite{danos-head}):
 \begin{theorem}[Soundness and completeness of head-linear reduction~\cite{danos-head}] \
-\label{thm:danosreigner_headlinred}
+\label{thm:danosregnier_headlinred}
 \begin{itemize}[nosep]
 \item If $T \rightarrow^*_{hl} T$  then $T$ and $T'$ are $\beta$-equivalent.
 \item If $T$ is in quasi-head normal form and has $n$ prime redexes then the head reduction of $T$ leads to a head normal form in exactly $n$ steps.
@@ -1970,7 +1970,7 @@ Note that the variable case where $x\neq z$ is not needed since the induction pr
     If $M$ is in quasi-head-normal form, then the head variable of its head-normal form has precisely $|{\sf Args}(M)|$ arguments.
 \end{property}
 \begin{proof}
-By Theorem~\ref{thm:danosreigner_headlinred}, the \emph{hoc} of a quasi-head normal form becomes the head variable of the head-normal form after reducing the prime redexes, and it is easy to show by structural induction that standard beta-reduction preserves the number of pending hoc arguments.
+By Theorem~\ref{thm:danosregnier_headlinred}, the \emph{hoc} of a quasi-head normal form becomes the head variable of the head-normal form after reducing the prime redexes, and it is easy to show by structural induction that standard beta-reduction preserves the number of pending hoc arguments.
 \end{proof}
 
 We now introduce a $\beta$-reduction strategy (in the standard sense).
@@ -2044,7 +2044,7 @@ $M$ is also in quasi normal form. Indeed $lloc_M(M) = lloc_M (\lambda w y . y) =
 If $M \rightarrow_{l} N$ then $M$ and $N$ are beta-equivalent.
 \end{theorem}
 \begin{proof}
-The proof is like that of Theorem~\ref{thm:danosreigner_headlinred}. We adapt the notion of \emph{consecutive redex} from \cite{danos-head} to  leftmost-linear reduction: Let $r = (\lambda x, V)$ and  $s =(\lambda y, W)$ be two generalized redexes. We say that $r$ contains $s$ if the node $\lambda y$ lies in the scope of $\lambda x$. We say that $r$ and $s$ are \emph{consecutive} if $r$ contains $s$; no other generalized redex other than $r$ and $s$ is contained in $r$ and contains $s$; and $s$ is the leftmost generalized redex contained in $r$ (\ie, any other redex $t$ contained in $r$ resides on the left of node $\lambda y$ in the usual tree representation of the term). Let $r_0, \ldots, r_p$ denote the consecutive generalized redexes for $p\geq 0$ where $r_0$ is not contained in any other generalized redexes and $r_p$ is the \emph{lloc redex}. (This sequence necessarily exists by definition of \emph{lloc}.) An induction on $p$ shows that $M$ and $N$ reduce to the same term by exactly $p-1$ standard reduction steps (\ie, the strategy reducing the leftmost outermost redex), observing that at every step, no redex can be introduced above or on the left of the \emph{lloc}.
+The proof is like that of Theorem~\ref{thm:danosregnier_headlinred}. We adapt the notion of \emph{consecutive redex} from \cite{danos-head} to  leftmost-linear reduction: Let $r = (\lambda x, V)$ and  $s =(\lambda y, W)$ be two generalized redexes. We say that $r$ contains $s$ if the node $\lambda y$ lies in the scope of $\lambda x$. We say that $r$ and $s$ are \emph{consecutive} if $r$ contains $s$; no other generalized redex other than $r$ and $s$ is contained in $r$ and contains $s$; and $s$ is the leftmost generalized redex contained in $r$ (\ie, any other redex $t$ contained in $r$ resides on the left of node $\lambda y$ in the usual tree representation of the term). Let $r_0, \ldots, r_p$ denote the consecutive generalized redexes for $p\geq 0$ where $r_0$ is not contained in any other generalized redexes and $r_p$ is the \emph{lloc redex}. (This sequence necessarily exists by definition of \emph{lloc}.) An induction on $p$ shows that $M$ and $N$ reduce to the same term by exactly $p-1$ standard reduction steps (\ie, the strategy reducing the leftmost outermost redex), observing that at every step, no redex can be introduced above or on the left of the \emph{lloc}.
 \end{proof}
 
 % REMARK: We chose to prove the following termination result directly, and use it in the next section to show that normalizing traversals are necessarily finite. Observe that if we were to show independently that traversals are finite, the following theorem would follow from it.
@@ -2092,7 +2092,7 @@ If $M$ has a beta-normal form then its left-most linear reduction terminates (an
 \end{theorem}
 The technical proof is in appendix.
 \proofatend
-Suppose $M$ has a beta-normal form then by a standard result of lambda calculus its head-reduction terminates, therefore by Theorem~\ref{thm:danosreigner_headlinred} the $\hlred$-reduction of $M$ terminates and yields its quasi-\emph{head}-normal form. Since $\hlred$ coincides with $\llred$, for terms not in \emph{qhnf}, we can without loss of generality assume that $M$ is in \emph{qhnf}.
+Suppose $M$ has a beta-normal form then by a standard result of lambda calculus its head-reduction terminates, therefore by Theorem~\ref{thm:danosregnier_headlinred} the $\hlred$-reduction of $M$ terminates and yields its quasi-\emph{head}-normal form. Since $\hlred$ coincides with $\llred$, for terms not in \emph{qhnf}, we can without loss of generality assume that $M$ is in \emph{qhnf}.
 We prove by induction on the \emph{size} of $M$ that
 \begin{quote}
 {\bf (H1)} If $M$ has a beta-nf then its linear reduction sequence terminates.
@@ -2125,7 +2125,7 @@ If $M = \lambda x . U$ then $U$ must also admit a beta-nf so we can conclude by 
                     \begin{compactitem}
                     \item Base: $z$ has a single argument which must be $T_2$.
 
-                    By Theorem~\ref{thm:danosreigner_headlinred}, reducing all the prime redexes in $M$ yields its head-normal form
+                    By Theorem~\ref{thm:danosregnier_headlinred}, reducing all the prime redexes in $M$ yields its head-normal form
                     with $x$ as the head variable.
                     Let $\gamma$ denotes the sequence of substitutions performed on $M$ to reduce the prime redexes, so that $\gamma(M)$ is the head normal form of $M$.
                     Then $\gamma(T_2)$ will becomes the (unique) argument of $x$ in the head normal form. And because $M$ has a beta-nf, the term $\gamma(T_2)$ must also have a beta-nf.
