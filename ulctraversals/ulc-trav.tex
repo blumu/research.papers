@@ -268,54 +268,56 @@
 
 \tableofcontents
 
-\section{Background and overview}
+\section{Background}
 
-The theory of traversals was originally introduced in the context of higher-order recursion schemes~\cite{Ong2006} as tree generators, and were
+The theory of traversals was originally introduced in the context of higher-order recursion schemes~\cite{Ong2006} as tree generators, and was
 then extended to simply-typed languages with higher-order free variables, such as the simply-typed lambda calculus (STLC)~\cite{BlumPhd}.
 
-A traversal consists of a sequence of nodes taken from some tree-representation of the term, where every node occurrence may have an associated labelled link, or ``justification pointer'', referring to some previous occurrence in the sequence. A traversal always starts from the root of the tree and successively visits other nodes by either descending deeper into the tree structure, or  jumping to a node from another branch in the tree. A small set of rules formally defines how to extend a traversal--that is which nodes can be visited next and what its associated justification pointer should be. This yields a prefix-closed set of justified sequences of nodes defining the set of traversals of the term.
+A traversal consists of a sequence of nodes taken from a tree-representation of the term, where every node occurrence may have an associated labelled link, or ``justification pointer'', referring to some previous occurrence in the sequence. A traversal always starts from the root of the tree and successively visits other nodes by either descending deeper into the tree structure, or  jumping to a node from another branch in the tree. A small set of rules formally defines how to extend a traversal--what node to visit next with which justification pointer. This yields a prefix-closed set of justified sequences of nodes defining the set of traversals of the term.
 
-In the typed setting, the traversal theory bears a strong connection with Game Semantics: The game denotation of a term is in bijection with the set of \emph{core projections} of its traversals (Theorem~\ref{thm:gamesem_correspondence_stlc}), where the core projection of a traversal is the subsequence obtained by keeping only node occurrences that are
+In the typed setting, the traversal theory bears a strong connection with Game Semantics: The game denotation of a term is in bijection with the set of \emph{core projections} of its traversals (Theorem~\ref{thm:gamesem_correspondence_stlc}), where the core projection of a traversal is the subsequence obtained by keeping only occurrences that are
 transitively justified by the initial node.
 The set of traversals itself, on the other hand, corresponds to the game semantic denotation of a term where all the internal moves are revealed, also called ``interaction game semantics''~\cite{BlumPhd}.
 
-This correspondence gives rise to a method for finding the normal form of a simply-typed lambda term~\cite{BlumPhd,BlumGalop2008,Blum-LocalBeta2008} where each traversal explores a different branch of the tree representation of the normal form. The sequence of nodes and associated justification pointers underlying a traversal records the intermediate internal steps of the reduction procedure, as well as the choices of branches taken while traversing variable nodes of the normal form.
+This correspondence gives rise to a method for finding the normal form of a simply-typed lambda term~\cite{BlumPhd,BlumGalop2008,Blum-LocalBeta2008}.
+Each traversal explores a branch in the tree representation of the normal form. Its underlying sequence of nodes and pointers encodes the unfolding of the normalization procedure for that branch. There are two kinds of nodes: the \emph{internal} nodes record intermediate steps of the reduction procedure, while \emph{external} nodes represent actual nodes from the tree representation of the normal form. The core projection of a traversal effectively removes all its internal nodes, which yields a path in the abstract syntax tree of the normal form.
 
-This contrasts with term rewriting approaches that gradually transform and refine some representation of the term until reaching a normal form.
-One notable difference is that it does no require the ``capture-avoiding'' substitution traditionally used in the definition of beta reduction to avoid variable capture when reducing redexes. Other reduction methods exist in the literature with the same property, such as Lamping's graphs, the Calculus of Construction, or combinators~\cite{Lamping:1989:AOL:96709.96711, Gonthier:1992:GOL:143165.143172, curry_combinatorylogic, the-implementation-of-functional-programming-languages}.
-One difference with those approaches, is that traversals do not require any prior transformation of the term, into a different structure like a combinator expression or an interaction net: traversals operates on the unmodified term tree structure. Just like Lamping's graphs, variable names are not essential to the reduction procedure: traversals have explicit justification pointers from which variable bindings are entirely recoverable. The theory of traversals, on the other hand, is not concerned with optimizing reduction, as defined by Levy~\cite{optimal-reduction-levy}.
+This procedure contrasts with term rewriting approaches that gradually transform and refine some representation of the term until reaching a normal form. In particular, it does not involve the ``capture-avoiding'' substitution used in the standard definition of beta reduction to avoid variable capture when reducing redexes. Other reduction methods exist in the literature with the same property such as combinators, Lamping's graphs, or their variant based on the geometry of interaction~\cite{Lamping:1989:AOL:96709.96711, Gonthier:1992:GOL:143165.143172, curry_combinatorylogic, Barendregt84, the-implementation-of-functional-programming-languages}.
+Just like those methods, variable names are not essential to the reduction procedure: traversals have explicit justification pointers from which variable bindings are entirely recoverable; variable names in Lamping's graphs are recoverable from their corresponding binding lambda; and combinators removes variables altogether through \emph{abstraction elimination}.
+Just like graph-based reduction, the traversal reduction procedure involves a final ``read-back'' phase to reconstruct the resulting normal form: all the explored tree branches are assembled together to form the tree representation of the normal form.
 
-Just like Lamping's graphs, the traversal-based reduction procedure involves a final ``read-back'' phase to reconstruct the resulting normal form by  merging together all explored branches to form the term tree representation of the normal form.
+Those other reduction methods, on the other hand, require transforming the term into some intermediate structure, such as a combinator expression or an interaction net, whereas traversals operate directly on the abstract syntax tree of the term. On the other hand, unlike Lamping's graphs, traversal-based reduction is not optimal in Levy's sense~\cite{optimal-reduction-levy}.
 
 %The closest related reduction device would be the Pointer Abstract Machine of Danos \etal~\cite{danos-head,danosherbelinregnier1996}
-\cite{Barendregt84}
 
 
 %%%%%%%%%%%%%%%
-
+\section{Overview}
 In this paper we: (i) Generalize the notion of traversals to the untyped lambda calculus (ULC), which we call \emph{imaginery travserals}; (ii) Introduce a method to evaluate untyped lambda terms based on enumeration of their traversals; (iii) Formalize the connection between traversals and the notion of \emph{head linear reduction}.
 
 \emph{Key idea behind imaginary traversals}: In the absence of types, eta-long expansion is not feasible as it would yield an infinite term. Imaginary traversals overcome this problem by eta-expanding the term ``on-demand''.
 Traversing an untyped lambda term using the original traversal rules can lead
 the traversal to get stuck. This happens when the operator sub-term of an application has an insufficient number of operands. In such situation, there is no operand node in the term tree that the traversal can jump to.
-Take the untyped term $(\lambda f.f)(\lambda x.x)$ for example. Traversing it using the rules of STLC gets you stuck after visiting node $x$ because there is no subterm corresponding to the ``$x$ argument'' of the variable occurrence $f$.
+Take the untyped term $(\lambda f.f)(\lambda x.x)$ for example. Traversing it using the rules of STLC gets one stuck after visiting node $x$ because there is no subterm representing the ``$x$ argument'' of the variable occurrence $f$.
 %(The actual traversal without pointers is $\lambda f \cdot f \cdot \lambda x \cdot x$.)
-An imaginary traversal, on the other hand, may jump to a fictitious fresh node $y$ that would exist if the sub-term $\lambda f .f$ were eta-expanded
-as $\lambda f y.f\, y$. This trick then allows the traversal to proceed using the usual rules of STLC; until reaching that fictitious node $y$.
+An imaginary traversal, on the other hand, may jump to a fictitious fresh node $y$ that would exist if $f$ were eta-expanded
+as $\lambda y.f\, y$. This trick then allows the traversal to proceed with the usual traversal rules of STLC; until reaching that fictitious node $y$.
 Similarly, a second eta-expansion, this time of the term itself to
 $\lambda z. (\lambda f y.f\, y)(\lambda x.x) z$,
-unblocks the traversal which finally terminates at node $z$.
+unblocks the traversal, until it finally terminates at node $z$. The traversal  obtained is thus $\lambda f \cdot f \cdot \lambda x \cdot x$, where justification pointers are omitted.
 
-The traversal rules of the simply-typed lambda calculus guide the eta-expansion strategy that is implicitly implemented by untyped traversals:
- among all the possible subterm eta-expansions, only one creates the additional nodes required to apply a STLC traversal rule at that point.
-  In the above example, the  first eta-expansion considered is that of $\lambda f .f$ because at some point, an STLC traversal could only
-   visit an immediate argument of $f$; whereas eta-expanding the term itself would yield $\lambda z. (\lambda f .f)(\lambda x.x) z$,
-    which an STLC traversal cannot traverse since $f$ does not have an immediate argument.
+Continuing with this idea, we infer the implicit eta-expansion strategy of untyped traversals from the traversal rules of the simply-typed lambda calculus:
+ among all possible subterms to eta-expand, only one creates the additional nodes required to apply a STLC traversal rule at that point.
+In the above example, the  first eta-expansion considered is that of $f$ because at the same point, the rules of STLC would only allow us to
+visit an immediate argument of $f$. If instead we were to eta-expand the term itself, it would yield $\lambda z. (\lambda f .f)(\lambda x.x) z$,
+which an STLC traversal cannot traverse since $f$ does not have an immediate argument.
+Or put in a more intuitive way: at $x$ the traversal has already figured out that the subterm $\lambda x.x$ should be substituted for variable $f$, therefore to determine what $x$ should be substituted for, it needs to look for the first argument of $f$. Since $f$ has no direct argument, it must be eta-expanded.
+
 In practice, one does not need to actually eta-expand an untyped term when traversing it; the expansion occurs fictitiously and ``on the fly'' as the traversal unfolds.
  An untyped traversal, however, bares traces of those successive fictitious eta-expansions, from which
   one can reconstruct the eta-expanded term effectively being traversed.
 
-Normalizing an untyped term (with a beta-normal form) then boils down to  enumerating its imaginary traversals. Although this set may be infinite, it is sufficient to consider just enough traversals to cover all paths of the tree representation of the beta-normal form. Such a set is effectively computable by restricting the non-determinism of the free-variable rule. In other words, only a finite number of on-the-fly eta-expansions is required to normalize the term. We have implemented the normalization procedure in HOG, a tool used to study higher-order grammars and traversals~\cite{Blum-HogTool}. The last section provides some examples of terms normalized with it.
+Normalizing an untyped term (with a beta-normal form) then boils down to  enumerating its imaginary traversals. Although this set may be infinite, it is sufficient to consider just enough traversals to cover all paths of the tree representation of the beta-normal form. Such a set is effectively computable by restricting the non-determinism of the free-variable rule. In other words, only a finite number of on-the-fly eta-expansions is required to normalize the term. We have implemented the normalization procedure in HOG, a tool used to study traversals and pushdown automata generated from Higher-Order Grammars and lambda terms~\cite{Blum-HogTool}. The last section provides examples of untyped lambda terms that were normalized using it.
 
 Finally, to prove correctness of the evaluation procedure, we show that traversals essentially implement a recursive version of \emph{head linear reduction}, a non-standard reduction strategy based on an alternative notion of redex where individual variable occurrences are matched to their corresponding arguments and where substitution occurs one variable occurrence at a time.\footnote{This is reminiscent of the standard call-by-name strategy except that linear reduction can occur under lambda, and performs substitution one variable occurrence at a time.}
 
@@ -324,34 +326,33 @@ Finally, to prove correctness of the evaluation procedure, we show that traversa
 
 \subsubsection{Game-semantics Traversal of STLC}
 
-In~\cite{BlumPhd} we extended the theory of traversals to the simply-typed lambda calculus by introducing the new traversal rule \rulenamet{IVar} to traverse higher-order free variables. We formalized the correspondence between the theory of traversals and Game semantics by establishing a bijection between traversals and the game denotation of a term. This technical proof relies on several concepts~\cite{BlumPhd}:
+In~\cite{BlumPhd} we extended the theory of traversals to the simply-typed lambda calculus. We formalized the correspondence between the theory of traversals and Game semantics by establishing a bijection between traversals and the game denotation of a term. This technical proof relies on several concepts~\cite{BlumPhd}:
 \begin{description}
-  \item[Free variables] The introduction of the traversal rule \rulenamet{IVar} modeling  free variables of the lambda calculus.
-  Such a rule is not needed in the original presentation of traversals because higher-order recursion schemes are necessarily closed terms of ground type where terminals are all of order $1$ at most~\cite{Ong2006}.
-  \item[Interaction Game Semantics] Traversals do not immediately correspond to the standard game denotation of a term. Instead they correspond to a more verbose variant of the innocent game denotation that preserves all the internal moves played while composing the sub-strategy denoting its subterms; as opposed to the standard innocent game denotation which hides all internal moves;
-  \item[Traversal core] The correspondence makes use of various operations on justified sequences and traversals. The \emph{projection with respect to the tree root}, also called  ``core of a traversal'', plays a key role in the proof.
+  \item[Free variables] The introduction of the traversal rule \rulenamet{IVar} to model free variables.  Such a rule is not needed in the original presentation of traversals since higher-order recursion schemes are necessarily closed terms of ground type where terminals are all of order $1$ at most~\cite{Ong2006}.
+  \item[Traversal core] The correspondence makes use of various operations on justified sequences and traversals. The \emph{projection with respect to the tree root}, also called  ``core of a traversal'', in particular, is   essential to the proof.
+  \item[Interaction Game Semantics] Traversals do not exactly correspond to the standard game denotation of a term, which hides all internal moves. It corresponds instead to a verbose variant that preserves all the internal moves played while recursively composing sub-strategies.
 \end{description}
 
- This correspondence with Game Semantics yields a method to reduce beta-redexes in eta-long simply-typed lambda-terms. This procedure was studied in~\cite{BlumPhd,BlumGalop2008,Blum-HogTool,Ong-NormByTrav2015} and implemented in the HOG~\cite{BlumGalop2008, BlumPhd}, a software tool to study the traversal theory of higher-order grammars and lambda terms. We recall these results in Section~\ref{sec:traversal_correspondence_stlc}.
+ This game semantic correspondence yields a method to reduce beta-redexes in eta-long simply-typed lambda-terms. It was studied in~\cite{BlumPhd,BlumGalop2008,Blum-HogTool,Ong-NormByTrav2015} and implemented in HOG, a software tool to study the traversal theory of higher-order grammars and lambda terms~\cite{BlumGalop2008, BlumPhd}. We recall these results in Section~\ref{sec:traversal_correspondence_stlc}.
 
- The results presented in the present paper can be viewed as a generalization of this work to the untyped case. Adapting the traversal theory to the untyped setting requires new ingredients detailed in the rest of the paper. In particular:
+
+ The results presented in the present paper generalize this work to the untyped case. Adapting the traversal theory to the untyped setting requires new ingredients detailed in the rest of the paper. In particular:
 \begin{itemize}[nosep]
- \item Eta-expansion is performed `on-the-fly' at each point where the traditional STLC traversal would get stuck: when there is insufficiently many operands in an application to continue traversing the term.
- \item  We augment the rules traversing lambda and variable nodes to support ad-hoc eta-expansion.
+ \item Traversals perform eta-expansion `on-the-fly' at each point where the traditional STLC traversal would get stuck; \ie, when there is insufficiently many operands in an application to continue traversing the term.
  \item We introduce the concept of ``ghost'' nodes: those are fictitious tree nodes that progressively appear as the traversal eta-expands the sub-terms.
-\item The term tree itself is not altered during eta-expansion. Ghost nodes only fictitiously appear in the traversal and are only visible in the context where they get introduced.
+ \item The term tree itself is not altered during eta-expansion. Ghost nodes only fictitiously appear in the traversal and are only visible in the context where they get introduced.
+ \item The rules traversing lambda and variable nodes handles the fictitious nodes created by the ad-hoc eta-expansions.
 \item We constrain the non-determinism of the rule traversing free variables by a critical quantity called the \emph{arity threshold}, calculated in linear time from the traversal itself. This limit guarantees that the normalization procedure terminates when the beta-normal form exists.
 \end{itemize}
 
-Conveniently, when restricted to simply-typed terms, the two notions of traversal coincide (Proposition~\ref{prop:ulc_and_stlc_trav_coincide}).
-
-The absence of an $\eta$-long transform of the term is a notable difference with the traversals for recursion schemes~\cite{Ong2006} or the simply-typed lambda calculus~\cite{BlumPhd}. It simplifies the presentation as the traversed tree is a straight abstract syntax representation of the original, unmodified, lambda term. Similarly, the evaluation procedure from Algorithm~\ref{algo:ulc_normalization_by_traversals} produces the traditional beta-normal form rather than its beta-\emph{eta-long} normal form. Furthermore, we prove soundness by establishing a connection with head-linear reduction rather than appealing to Game Semantics.
-
+The absence of an $\eta$-long transform of the term is a notable difference with the traversals for recursion schemes~\cite{Ong2006} or the simply-typed lambda calculus~\cite{BlumPhd}. This simplifies the presentation as the traversed tree is an abstract syntax representation directly obtained from the the original, unmodified, lambda term. Similarly, the evaluation procedure from Algorithm~\ref{algo:ulc_normalization_by_traversals} produces the traditional beta-normal form rather than its beta-\emph{eta-long} normal form.
+When restricted to simply-typed terms, the two notions of traversal conveniently coincide (Proposition~\ref{prop:ulc_and_stlc_trav_coincide}).
+Finally, in the untyped case we prove soundness through a connection with the notion of head-linear reduction rather than appealing to Game Semantics.
 
 \subsubsection{Head linear reduction}
 Danos \etal established the first connection between Game Semantics and the concept of \emph{head linear reduction}~\cite{danos-head,danosherbelinregnier1996}. Despite this connection, their work does not explicitly describe how to use head linear reduction to fully evaluate a lambda term. The \emph{pointer abstract machine} introduced in the same paper, for instance, yields the ``\emph{quasi-head normal form (qhn)}'' of the term, not the normal form itself. The resulting \emph{qhn} still needs to be first reduced to head normal form (using head reduction) and then normalized using standard normal reduction, which must terminate by the $\lambda$-calculus theory.
 
-Traversals are essentially a recursive implementation of the head linear reduction strategy on lambda terms. A traversal starts with a depth-first search for what Danos-Regnier call the \emph{head occurrence} of the \emph{hoc redex}. Traversals implement linear substitution by ``jumping'' to the node in the tree that represents the term to be substituted for the head occurrence. After a jump, a traversal just continues its descent for the next head occurrence, as if the first head occurrence in the tree had been replaced by the redex argument. A property of head-linear reduction is that all the terms appearing in the reduction sequence consist of sub-terms of the original term. This property means that there is no need for the traditional notions of environments or closures to reduce beta-redexes. Such mechanisms are instead replaced by a system of pointers referencing subterms of the original term.
+Traversals are essentially a recursive implementation of the head linear reduction strategy on lambda terms. A traversal starts with a depth-first search for what Danos-Regnier call the \emph{head occurrence} of the \emph{hoc redex}. It implements linear substitution by ``jumping'' to the node in the tree that represents the term to be substituted for the head occurrence. After a jump, a traversal just continues its descent for the next head occurrence, as if the first head occurrence in the tree had been replaced by the redex argument. A property of head-linear reduction is that all the terms appearing in the reduction sequence consist of sub-terms of the original term. This property means that there is no need for the traditional notions of environments or closures to reduce beta-redexes. Such mechanisms are instead replaced by a system of pointers referencing subterms of the original term.
 
 In this paper, we generalize head linear reduction to \emph{leftmost linear reduction}, a strategy that recursively applies head linear reduction; just like normal reduction from the lambda calculus literature which proceeds by recursive application of head reduction.
 We show how the \emph{imaginary traversals} effectively implement leftmost linear reduction, which proves soundness of the traversal normalization procedure.
