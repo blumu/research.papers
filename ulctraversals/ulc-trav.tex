@@ -388,13 +388,25 @@ In this paper we introduce basic definitions from the traversal theory and intro
  \emph{Labelled trees:} Given a set of labels $\mathcal{L}$, we use expressions of the form `$l\langle t_1, \ldots, t_m \rangle$' for $m \geq 0$ to denote a $\mathcal{L}$-labelled tree with root labelled $l\in \mathcal{L}$. If $m=0$ then the tree is a leaf otherwise it's a node labelled $l$ with $m$ ordered children trees $t_1$, \ldots, $t_m$. We will also use the formal definition of a labelled-tree given by a partial function $\nat^* \rightarrow \mathcal{L}$ mapping directed tree-paths to labels in $\mathcal{L}$, where
  a directed path is given by the sequence of child indices to follow to reach a given node from the tree root (represented by the empty sequence).
 
-\subsection{Untyped lambda calculus}
+\subsection{Lambda calculus background and notations}
+\label{sec:lambdacalculus_basics}
+
 We consider the set of terms $\Lambda$ of the untyped lambda calculus constructed from the grammar $\Lambda := x\ |\ (\Lambda\ \Lambda)\ |\ \lambda x. \Lambda $
 where $x$ ranges over a countable set of variable names $\VarSet$.
 For conciseness we abbreviate consecutive lambda abstractions when writing lambda terms, so that $\lambda x_1 \ldots \lambda x_n . U$ for some $n\geq 0$ and term $U$ will be written $\lambda x_1 \ldots x_n . U$; or just
-$\lambda \overline{x} . U$ if $\overline{x} = x_1 \ldots x_n$. We write $M \alphaequiv N$ to denote that $M$ and $N$ are equal up to variable renaming.
-
+$\lambda \overline{x} . U$ if $\overline{x} = x_1 \ldots x_n$.
+We will also drop brackets, and assume left-associative application so that $U~V~W$ means $(U~V)~W$. We write $M \alphaequiv N$ to denote that $M$ and $N$ are equal up to variable renaming.
 In the rest of the paper, we use uppercase letters $M, N, T, U, V$ for lambda terms and lowercase $x,y,z$ to denote variables. Terms will all have variable names ranging in some fixed set $\VarSet$ of identifiers.
+
+We recall standard results of the lambda calculus.
+A \defname{redex} is a sub-term of the form $(\lambda x. M) N$.
+Reducing redex $(\lambda x. M) N$, or also \emph{firing} the redex, means substituting all free occurrences of $x$ in $M$ by the term $N$ using capture avoiding substitution (the bound variable is renamed afresh when recursively substituting under a lambda).
+A term is said to be in \defname{normal form} if it does not contain any redex.
+A term is in \defname{head normal form} if it can be written $\lambda x_1 \ldots x_n . y A_1 \ldots A_m$ for $n,m\geq0$. If a term is not in head normal form then its \defname{head beta-redex} is the left-most redex, otherwise the term does not have any head beta-redex. For any reduction relation $\rightarrow$ between terms we will write
+$\rightarrow^*$ to denote its reflexive transitive closure.
+
+The \defname{head reduction}, denoted $\rightarrow_{h}$, fires the head redex of a term if it exists. It can be shown that $\rightarrow^*_{h}$ yields the head-normal form. The \defname{normal-order reduction strategy}, also called leftmost-outermost reduction strategy, performs head reduction until reaching the head-normal form and then recursively applies head reduction on each operand of the head variable. A standard result is that this reduction strategy yields the normal form if it exists.
+
 
 \subsection{Computation tree and enabling relation}
 
@@ -1821,16 +1833,8 @@ or after variable renaming $\lambda x y s z . s (x s (y s z))$.
 \section{Leftmost linear reduction}
 \label{sec:leftmostlinearred}
 
-\subsection{Lambda calculus background and notations}
-We recall standard results of the lambda calculus.
-A \defname{redex} is a sub-term of the form $(\lambda x. M) N$.
-Reducing redex $(\lambda x. M) N$, or also \emph{firing} the redex, means substituting all free occurrences of $x$ in $M$ by the term $N$ using capture avoiding substitution (the bound variable is renamed afresh when recursively substituting under a lambda).
-A term is said to be in \defname{normal form} if it does not contain any redex.
-A term is in \defname{head normal form} if it can be written $\lambda x_1 \ldots x_n . y A_1 \ldots A_m$ for $n,m\geq0$. If a term is not in head normal form then its \defname{head beta-redex} is the left-most redex, otherwise the term does not have any head beta-redex. For any reduction relation $\rightarrow$ between terms we will write
-$\rightarrow^*$ to denote its reflexive transitive closure.
-
-The \defname{head reduction}, denoted $\rightarrow_{h}$, fires the head redex of a term if it exists. It can be shown that $\rightarrow^*_{h}$ yields the head-normal form. The \defname{normal-order reduction strategy}, also called leftmost-outermost reduction strategy, performs head reduction until reaching the head-normal form and then recursively applies head reduction on each operand of the head variable. A standard result is that this reduction strategy yields the normal form if it exists.
-
+% lambda calculus basic definitions moved to section
+% \ref{sec:lambdacalculus_basics}
 
 \subsection{Head-linear reduction}
 
