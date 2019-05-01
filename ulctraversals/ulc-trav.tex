@@ -268,7 +268,9 @@
 
 \tableofcontents
 
-\section{Background}
+\section{Introduction}
+
+\subsection{Background}
 
 The theory of traversals was originally introduced in the context of higher-order recursion schemes~\cite{Ong2006} as tree generators, and was
 then extended to simply-typed languages with higher-order free variables, such as the simply-typed lambda calculus (STLC)~\cite{BlumPhd}.
@@ -291,7 +293,7 @@ Just like graph-based reduction, the traversal reduction procedure involves a fi
 
 
 %%%%%%%%%%%%%%%
-\section{Overview}
+\subsection{Overview}
 In this paper we: (i) Generalize the notion of traversals to the untyped lambda calculus (ULC), which we call \emph{imaginery travserals}; (ii) Introduce a method to evaluate untyped lambda terms based on enumeration of their traversals; (iii) Formalize the connection between traversals and the notion of \emph{head linear reduction}.
 
 The key idea behind imaginary traversals lies in a judicious use of eta-expansion. In the absence of types, eta-long expansion is not feasible as it would yield an infinite term. Indeed, attempting to traverse an untyped lambda term using the original traversal rules can cause the traversal to get stuck. This happens when the operator sub-term of an application has an insufficient number of operands. In such situation, there is no operand node in the term tree that the traversal can jump to.
@@ -300,12 +302,12 @@ To take an analogy with abstract machine evaluators, this would be like a broken
 
 This situation never occurs in the typed setting since STLC traversal rules conveniently assume that the lambda term is fully eta-expanded with respect to its type, yielding well-defined rules. In ULC, we cannot fully eta-expand terms since they are untyped. So instead, we eta-expand ``on-demand''. To continue with the same example, an imaginary traversal may jump to a fictitious fresh node $y$ that would exist if $f$ were eta-expanded
 as $\lambda y.f\, y$. This trick allows the traversal to proceed with the usual traversal rules of STLC; until reaching that fictitious node $y$.
-Once again, a second eta-expansion, this time of the term itself to
+A second eta-expansion, this time of the term itself to
 $\lambda z. (\lambda f y.f\, y)(\lambda x.x) z$,
 unblocks the traversal, until it reaches node $z$, at which point we have a maximal traversal per the STLC rules. The final traversal of the eta-expanded term is given by the sequence $t = \lambda z \cdot @ \cdot \lambda f y \cdot f \cdot \lambda x \cdot x \cdot \lambda \cdot y \cdot \lambda \cdot z$, where `@` represents the application node in the AST, and the dummy lambda `$\lambda$' is syntactic sugar which can be ignored for now.
 
-Generalizing this idea, one can infer the implicit eta-expansion strategy of untyped traversals from the traversal rules of STLC: at any given point where a traversal get stuck, among all possible subterms to eta-expand, only one creates the additional nodes required to extend the traversal with the STLC traversal rules.
-In the above example, the first eta-expansion considered is that of $f$ because at that point, the rules of STLC only lets us
+Generalizing this idea, one can infer the implicit `eta-expansion strategy' of untyped traversals from the traversal rules of STLC: at any given point where a traversal get stuck, among all possible subterms to eta-expand, only one creates the additional nodes required to extend the traversal with the STLC traversal rules.
+In the above example, the first expansion considered is that of $f$ because at that point, the rules of STLC only lets us
 visit an immediate argument of $f$. If instead we were to eta-expand the term itself, it would yield $\lambda z. (\lambda f .f)(\lambda x.x) z$
 which an STLC traversal cannot traverse since $f$ does not have an immediate argument. Presented in a more intuitive way: at $x$ the traversal has already figured out that the subterm $\lambda x.x$ should be substituted for variable $f$, therefore to determine what $x$ should be substituted for, it needs to look for the first argument of $f$. Since $f$ has no direct argument, it must be eta-expanded.
 
@@ -316,7 +318,7 @@ Observe that in this simple example, the nodes visited after unblocking the trav
 % It might be surprising at first
 % For comparison with standard evaluation of lambda terms, observe that an abstract machine such as a Krivine machine, which like
 
-In practice, one does not need to actually eta-expand an untyped term when traversing it; the expansion occurs fictitiously and ``on the fly'' as the traversal unfolds. An untyped traversal, however, bares sufficient traces of those successive fictitious eta-expansions for one to reconstruct the eta-expanded term effectively being traversed.
+In practice, one does not need to actually eta-expand an untyped term when traversing it; the expansion occurs fictitiously and ``on the fly'' as the traversal unfolds. An untyped traversal, however, bares sufficient traces of those successive fictitious eta-expansions for one to reconstruct the term effectively being traversed.
 
 The free variable rule is responsible for implementing the on-the-fly eta expansion. Just like STLC, it has an unbounded `arity index', chosen non-deterministically, defining which argument of the variable to visit next.
 In ULC, however, that number is unbounded: if it is greater than the number of arguments actually present in the term then a fictitious eta-expansion takes place.
@@ -326,11 +328,20 @@ This intuitively defines the number of arguments beyond which eta-expansions bec
 
 The read-out phase of the algorithm appeals to a path-correspondence property of traversals to extract tree paths of the normal form the traversals. In the above example, traversal $t$ yields the path $\lambda z \cdot z$. And since the term has a single traversal, its beta-normal form is $\lambda z. z$, up to variable renaming.
 
- Finally, to prove correctness of the evaluation procedure, we show that traversals essentially implement a recursive version of \emph{head linear reduction}, a non-standard reduction strategy based on an alternative notion of redex where individual variable occurrences are matched to their corresponding arguments and where substitution occurs one variable occurrence at a time.\footnote{This is reminiscent of the standard call-by-name strategy except that linear reduction can occur under lambda, and performs substitution one variable occurrence at a time.}
+ To prove correctness of the evaluation procedure, we show that traversals essentially implement a recursive version of \emph{head linear reduction}, a non-standard reduction strategy based on an alternative notion of redex where individual variable occurrences are matched to their corresponding arguments and where substitution occurs one variable occurrence at a time.\footnote{This is reminiscent of the standard call-by-name strategy except that linear reduction can occur under lambda, and performs substitution one variable occurrence at a time.}
 
  We have implemented the normalization procedure in HOG, a tool used to study traversals and pushdown automata generated from Higher-Order Grammars and lambda terms~\cite{Blum-HogTool}. The last section provides examples of untyped lambda terms that were normalized using it.
 
 \subsection{Related work}
+
+\subsubsection{Lambda term evaluation}
+
+\begin{todobox}
+This paper is about reducing lambda terms, so I was surprised that the related work section only discussed a very narrow line leading to the results of the paper.
+As mentioned above, environment machines and other evaluation methods could be at least mentioned (and saying why this is different).
+-	But there are other topics that are much closer: geometry of interaction for example shares some of issues that are discussed here, but in that approach a token traverses the structure of terms (both typed and untyped) and eta-expansion of the term is not needed.
+-	There is some interesting comparison to be done here I believe, but was a little surprised that nothing was mentioned.
+\end{todobox}
 
 
 \subsubsection{Game-semantics Traversal of STLC}
@@ -432,6 +443,11 @@ $\mathcal{L} = \{ @ \} \union \VarSet \union \{ \lambda x_1 \ldots x_n \ | \ x_1
 \item For any lambda node $\alpha\in\NodesLmd$ we write $\child(\alpha)$ to denote its unique child node (either an $@$ or variable node).
 \end{itemize}
 \end{definition}
+
+
+\begin{todobox}
+I was expecting some diagrams to be given close to the definition of computation tree - a few are given much later in the paper (far from the definition). I picture might help the reader to fix to your notation.
+\end{todobox}
 
 Note that any lambda term can indeed be written in one of the two forms above. In particular, applicative terms are handled by the case $n=0$ of the form $\lambda . N$ for some term $N$ where `$\lambda$' is referred to as a ``dummy lambda''. This compact tree representation helps maintain alternation between lambda nodes (at odd level, counting from 1 onwards) and variable nodes (at even level).
 
@@ -893,9 +909,9 @@ The traversal rules defined in Table~\ref{tab:trav_rules} closely match those of
   \item[No $\eta$-long expansion] In the original STLC traversals, the term is eta-long expanded prior to calculating the set of traversals. This guarantees that the operand of an application always exists in the tree.
   Imaginary traversals, on the other hand, are defined on the unmodified tree representation of the term.
 
-  \item[On-the-fly $\eta$-expansion] In the untyped setting, eta-long expansion is an infinite process, so instead of eta-long expanding the term prior to traversing it, imaginary traversals perform eta-expansion  `on the fly'. Eta-expansion occurs in rule \rulenamet{Var} when the arity of a variable in operand position is too low to statically determine the operand of an application (case $i>|n|$). When the variable arity is high enough ($i\geq|n|$), the definition of the rule coincides with STLC and the static tree representation of the term dictates the next node to visit.
+  \item[On-the-fly $\eta$-expansion] In the untyped setting, eta-long expansion is an infinite process, so instead of expanding the term prior to traversing it, imaginary traversals perform eta-expansion  `on the fly'. This occurs in rule \rulenamet{Var} when the arity of a variable in operand position is too low to statically determine the operand of an application (case $i>|n|$). When the variable arity is high enough ($i\geq|n|$), the definition of the rule coincides with STLC and the static tree representation of the term dictates the next node to visit.
 
-  \item[Free variables] Eta-expansion can also occur on free variables, so like for  rule \rulenamet{Var}, the input-variable rule allows for infinitely many eta-expansions ($k>0$).
+  \item[Free variables] Eta-expansion can also occur on free variables, so like for rule \rulenamet{Var}, the input-variable rule allows for infinitely many eta-expansions ($k>0$).
 
   \item[Traversal core] In the typed setting, the core is  obtained by just filtering nodes with respect to the tree root. In the untyped settings, lambda nodes also get relabelled after filtering.
 
@@ -1551,7 +1567,7 @@ $\core{t_\epsilon} = \Pstr[0.7cm]{(n0){\lambda} \cdot (n9-n0){{\ghostvar^2}} }$
 and therefore $\pview{\core{t_\epsilon}} =  \lambda\cdot \ghostvar^2$ is a path in  $\betanf{M}$.
 This means that $\betanf{M}$ must be of the form $\lambda y s \ldots \cdot y N_1 \ldots \ldots N_q$ for some fresh variable $y$ and $s$ and $q\geq0$.
 
-\item To determine each argument $N_k$ from the normal form, we enumerate every possible non-deterministic choice corresponding to  eta-expansion of each possible argument for $k\geq 1$ using rule $\rulename{IVar}$. We then  maximally extend the traversal until the next non-deterministic choice. For $k=1$ this gives
+\item To determine each argument $N_k$ from the normal form, we enumerate every possible non-deterministic choice corresponding to the eta-expansion of each possible argument for $k\geq 1$ using rule $\rulename{IVar}$. We then  maximally extend the traversal until the next non-deterministic choice. For $k=1$ this gives
 $t_1 = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda x y s z}\ (n3-n2){x}\ (n4-n1){\lambda s z}\
 (n5-n4){s}\ (n6-n3){\lambda }\
 (n7-n2){s}\ (n8-n1){\ghostlmd^3}\
@@ -1702,7 +1718,7 @@ child {node{$@$}
 With STLC traversals, one can traverse $t_1$ all the way to variable $v$ at which point one gets stuck due to the lack of operand applied to the last occurrence of $u$ (the occurrence  at the bottom of the left branch in the tree).
 $$t_1 = \Pstr[0.7cm]{(n0){\lambda }\,(n1){@}\,(n2-n1){\lambda u}\,(n3-n2){u}\,(n4-n1){\lambda v}\,(n5-n4){v}\,(n6-n3){\lambda }\,(n7-n0){y_1}\,(n8-n7){\lambda }\,(n9-n2){u}\,(n10-n1){\lambda v}\,(n11-n10){v}\,(n12-n9){{\ghostlmd^{1}}}\,(n13-n8){{\ghostvar^{1}}}\,(n14-n13){{\ghostlmd^{1}}}\,(n15-n12){{\ghostvar^{1}}}\,(n16-n11){\lambda }\,(n17-n0,35){y_2}\,}
 $$
-Using imaginary traversals, that operands gets created on-the-fly through eta-expansion and is represented by ghost lambda node $\ghostlmd^1$.
+Using imaginary traversals, that operands gets created on-the-fly and is represented by ghost lambda node $\ghostlmd^1$.
 The other maximal traversal is$$
 t_2 = \Pstr[0.7cm]{(n0){\lambda }\,(n1){@}\,(n2-n1){\lambda u}\,(n3-n2){u}\,(n4-n1){\lambda v}\,(n5-n4){v}\,(n6-n3){\lambda }\,(n7-n0,30){y_1}\,(n8-n7){{\ghostlmd^{2}}}\,(n9-n6){{\ghostvar^{1}}}\,(n10-n5){\lambda }\,(n11-n0,30){y_2}\,}
 $$
