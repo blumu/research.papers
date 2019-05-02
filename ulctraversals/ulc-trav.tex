@@ -425,23 +425,19 @@ Given an untyped lambda term $M$ we define its \defname{computation tree} as the
 This definition is similar to that of STLC~\cite{Ong2006, BlumPhd} with the notable difference that we do not eta-long expand the term prior to constructing the computation tree.
 \begin{definition}[Computation tree]
 Let $M$ be an untyped lambda term with variable names in $\VarSet$.
-\begin{itemize}
-\item The set of labels
+We consider the set of labels
 $\mathcal{L} = \{ @ \} \union \VarSet \union \{ \lambda x_1 \ldots x_n \ | \ x_1 ,\ldots, x_n \in
-    \VarSet, n\in\nat \}$
-\item
-    The \defname{computation tree} $\ctree(M)$ is a $\mathcal{L}$-labelled tree defined inductively on the syntax of $M$:
-    \begin{eqnarray*}
-        \ctree(\lambda \overline{x} . z s_1 \ldots s_m) &=& \lambda \overline{x}\; \langle\; z\; \langle \ctree(s_1),\ldots,\ctree(s_m)\rangle\rangle\\
-        && \hbox {where $m\geq 0$, $z \in \VarSet$}, \\
- \ctree(\lambda \overline{x} . (\lambda y.t) s_1 \ldots s_m) &=& \lambda \overline{x}\; \langle\; @ \; \langle \ctree(\lambda y.t),\ctree(s_1),\ldots,\ctree(s_m) \rangle \rangle \enspace\\
-&&  \hbox{where $m\geq 1$, $y\in \VarSet$}.
-    \end{eqnarray*}
+    \VarSet, n\in\nat \}$.
+The \defname{computation tree} $\ctree(M)$ is a $\mathcal{L}$-labelled tree defined inductively on the syntax of $M$:
+\begin{align*}
+    \ctree(\lambda \overline{x} . z s_1 \ldots s_m) &= \lambda \overline{x}\; \langle\; z\; \langle \ctree(s_1),\ldots,\ctree(s_m)\rangle\rangle
+&    \hbox{for $m\geq 0$, $z \in \VarSet$},
+\\
+\ctree(\lambda \overline{x} . (\lambda y.t) s_1 \ldots s_m) &= \lambda \overline{x}\; \langle\; @ \; \langle \ctree(\lambda y.t),\ctree(s_1),\ldots,\ctree(s_m) \rangle \rangle \enspace
+&  \hbox{for $m\geq 1$, $y\in \VarSet$}.
+\end{align*}
 
-\item We write $\Nodes(M)$ to denote the set of nodes of $\ctree(M)$, or just $\Nodes$ if the term is clear from context; $\NodesVar$ for the set of variable nodes; $\NodesLmd$ for lambda nodes, and $\NodesApp$ for  application nodes.
-
-\item For any lambda node $\alpha\in\NodesLmd$ we write $\child(\alpha)$ to denote its unique child node (either an $@$ or variable node).
-\end{itemize}
+ We write $\Nodes(M)$ to denote the set of nodes of $\ctree(M)$, or just $\Nodes$ if the term is clear from context; $\NodesVar$ for the set of variable nodes; $\NodesLmd$ for lambda nodes, and $\NodesApp$ for  application nodes. For any lambda node $\alpha\in\NodesLmd$ we write $\child(\alpha)$ to denote its unique child node (either a variable node or $@$).
 \end{definition}
 
 Figure~\ref{fig:comptree_examples} illustrates examples of computation trees.
@@ -538,7 +534,7 @@ Figure~\ref{fig:comptree_examples} illustrates examples of computation trees.
 
 \end{todobox}
 
-Note that any lambda term can indeed be written in one of the two forms above. In particular, applicative terms are handled by the case $n=0$ of the form $\lambda . N$ for some term $N$ where `$\lambda$' is referred to as a ``dummy lambda''. This compact tree representation helps maintain alternation between lambda nodes (at odd level, counting from 1 onwards) and variable nodes (at even level).
+Note that any lambda term can indeed be written in one of the two forms above. In particular, applicative terms are handled by the case $n=0$ of the form $\lambda . N$ for some term $N$ where `$\lambda$' is referred to as a ``dummy lambda''. One property of this compact tree representation is the alternation between lambda nodes and variable nodes at odd/even levels.
 
 We define the \defname{enabling relation} $\enables$ on tree nodes $\Nodes$ as the relation mapping (i) each lambda node to all the variable nodes that it binds (ii) the root of the tree to all the free variable nodes (iii) variable and application node to each one of their child node. We write $m \enables_k \alpha$ to indicate that a lambda node $\alpha$ is the $k$th child of a variable or application node $m$ for some $k\geq0$; and $\alpha \enables_k m$ to indicate that variable node $m$ is labelled by the $k$th variable bound by $\alpha$ for $k\geq1$.
 
@@ -633,15 +629,15 @@ In the rest of the paper we will consider occurrences and justified sequences eq
 We call a justified sequence \defname{canonical} just if the \emph{pending lambda} components are all empty. Observe that if we fix the term, a canonical justified sequence encoding uniquely determines its structure: discarding the label information yields the structure; reciprocally the labels can be uniquely reconstructed from the structure of the sequence and the term's enabling relation.
 
 \begin{example}
-    Alpha-conversion, does not impact the structure of a sequence, obviously, so for instance we have $\Pstr[10pt]{ (l){\lambda x y} \cdot (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda z y} \cdot (n-l,25){z}}$. The number of variable bindings in a lambda node may also change without changing the structure, as long as justification links are unaffected, so for instance we have $\Pstr[10pt]{ (l){\lambda x y z w t} \cdot (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda x} \cdot (n-l,25){x}}$ since both sequences have structure $(\lambda,0)\cdot({\sf Var},1)$.
+    Alpha-conversion does not impact the structure of a sequence, by definition, so for instance we have $\Pstr[10pt]{ (l){\lambda x y} \cdot (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda z y} \cdot (n-l,25){z}}$. The number of variable bindings in a lambda node may also change without impacting its structure, as long as justification link labels are unaffected, so for instance we have $\Pstr[10pt]{ (l){\lambda x y z w t} \cdot (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda x} \cdot (n-l,25){x}}$ since both sequences have structure $(\lambda,0)\cdot({\sf Var},1)$.
 \end{example}
 
 We will use non-canonical justified sequences to analyze the effect of
 $\beta$-reduction on a justified sequence, where the \emph{pending lambda} component helps define two useful operations:
-\begin{itemize}
+\begin{enumerate}
     \item Lambda merging: where abstractions are merged in a combined bunch lambda node;
     \item Node materialization: where a ghost node materializes into an occurrence of a bound or free variable. This occurs when a ghost variable points to a lambda node $\lambda\overline{x}^{[\overline{y}]}$ with label $i$ strictly greater than the arity of $|x|$ but smaller than $|x|+|y|$.
-\end{itemize}
+\end{enumerate}
 
 %%%% TODO --- Define `pretty printing' with node materialization:
 % The variable name of an occurrence of variable type is induced by the justification label together with its lambda node justifier: if a variable occurrence points to lambda node $\lambda\overline{x}$ with link label $i\leq|x|$ then the variable name is $x_i$.
@@ -649,7 +645,6 @@ $\beta$-reduction on a justified sequence, where the \emph{pending lambda} compo
 %%%
 
 A justified sequence verifies the \defname{alternation condition} if the first node is a lambda node and subsequent nodes occurrences alternate between (i) a variable or application node (ii) a lambda node.
-
 We say that an occurrence of a node in a justified sequence is \defname{hereditarily justified by some other occurrence} if recursively following justification pointers starting from the first occurrence in the sequence leads to the second one. Because justification pointers must honor the enabling relation $\enables$ induced by the term structure, if a node occurrence $n$ is hereditarily justified by some occurrence of a node $m\in\Nodes$ then $n$ is necessarily hereditarily enabled by $m$. Further if $m$ occurs only once in the justified sequence then the occurrences hereditarily justified by $m$ are precisely the occurrences of nodes that are hereditarily \emph{enabled} by $m$.
 
 For any justified sequence $t$ we write $t^\omega$ to denote the last occurrence in $t$. The notion of sequence prefix naturally extends to justified sequences.
@@ -686,22 +681,29 @@ $$\begin{array}{rcll}
     \\
  \pview{s \cdot n }  &=&  n & \mbox{if $n$ is a lambda node with no pointer.}
 \end{array}$$
-The O-view, denoted $\oview{s}$, is the defined dually:
-$$\begin{array}{rcll}
- \oview{\epsilon} &=&  \epsilon \\
- \oview{s \cdot n }  &=&  \oview{s} \cdot n
-    & \mbox{if $n$ is an $\lambda$-node;}
-    \\
- \oview{\Pstr[10pt]{s \cdot (m){m} \cdot \cdots \cdot (x-m,30){n}}} &=&
-    \Pstr{ \oview{s} \cdot (m2){m} \cdot (n2-m2,60){n} }
-    & \mbox{if $n$ is a variable node;}
-    \\
- \oview{s \cdot n }  &=&  n
-    & \mbox{if $n$ is an $@$ node.}
-\end{array}$$
+
+We define the dual notion $\oview{s}$ of O-view by
+$\oview{\epsilon} = \epsilon$;
+$\oview{s \cdot n }  =  \oview{s} \cdot n$ for $\lambda$-node $n$;
+$\oview{\Pstr[10pt]{s \cdot (m){m} \cdots (x-m,30){x}}}= \Pstr{ \oview{s} \cdot (m2){m} \cdot (n2-m2,45){x} }$ for variable node $x$; and $\oview{s \cdot @ } = @$.
+
+% Expanded version of the O-View definition:
+% The dual notion of O-view, denoted $\oview{s}$, is defined by:
+% $$\begin{array}{rcll}
+%  \oview{\epsilon} &=&  \epsilon \\
+%  \oview{s \cdot n }  &=&  \oview{s} \cdot n
+%     & \mbox{if $n$ is an $\lambda$-node;}
+%     \\
+%  \oview{\Pstr[10pt]{s \cdot (m){m} \cdot \cdots \cdot (x-m,30){n}}} &=&
+%     \Pstr{ \oview{s} \cdot (m2){m} \cdot (n2-m2,60){n} }
+%     & \mbox{if $n$ is a variable node;}
+%     \\
+%  \oview{s \cdot n }  &=&  n
+%     & \mbox{if $n$ is an $@$ node.}
+% \end{array}$$
 \end{definition}
 
-Given two node occurrences $n$ and $m$ in a justified sequence $s$, we say that $n$ is \defname{visible at} $m$ just if $n$ occurs in the P-view $\pview{s_{\leq m}}$.
+Given two occurrences $n$ and $m$ in a justified sequence $s$, we say that $n$ is \defname{visible at} $m$ just if $n$ occurs in the P-view $\pview{s_{\leq m}}$.
 
 \subsection{Justified paths of the term tree}
 
@@ -723,7 +725,7 @@ We will consider paths of a term tree as a set of justified sequences. For any t
   \}$.
 \end{example}
 
-Algorithm~\ref{algo:termtree_readout_from_justitied_paths} shows how to reconstruct the tree from a set of justified sequences that is isomorphic to the justified paths of the term. Note how ghost variables get materialized by  assigning real variable names. Observe as well that variable nodes with same binder and same link label are assigned the same variable name. This assignment is sound since by Property~\ref{prop:tree_path_charact} justification pointers in justified paths uniquely determine variables names.
+Algorithm~\ref{algo:termtree_readout_from_justitied_paths} shows how to reconstruct the tree from a set of justified sequences that is isomorphic to the justified paths of the term. Note how ghost variables get materialized by  assigning real variable names. Observe as well that variable nodes with same binder and same link label are assigned the same variable name. This assignment is sound since by Property~\ref{prop:tree_path_charact}, justification pointers in a justified path uniquely determine variables names.
 
 \begin{definition}[Induced labelled-tree]
 Let $\mathcal{P}$ be a set of justified sequences of $M$ that is isomorphic to justified paths $\pathset(M_2)$ of some other term $M_2$.
@@ -733,12 +735,12 @@ Then $\mathcal{P}$ induces the labelled-tree $(P,L)$ defined as follows:
     \item Labels are $\mathcal{L} = \ExtendedNodes \times P \times \nat$.
     \item Label function $L : P \rightarrow\mathcal{L}$.
     For $p\neq\epsilon$, let $s = s' \cdot n$ be any sequence in $\mathcal{P}$ generating path $p$.
-    If $n$ has not justifier then $L(p) = (n, p, 0)$.
+    If $n$ has no justifier then $L(p) = (n, p, 0)$.
     Otherwise $L(p) = (n, b, i)$ where
     $b$ is the prefix of $p$ corresponding to $n$'s justifier and $i$ is the label of $n$'s justification pointer.
     \end{itemize}
 \end{definition}
-It is well-defined because sequences in $\mathcal{P}$ correspond to actual paths in some other computation tree, therefore for any two sequences $s_1, s_2$ generating a given path $p$, their last occurrence must have be the same node and have the same justifier.
+It is well-defined because sequences in $\mathcal{P}$ correspond to actual paths in the tree of $M_2$, therefore any two sequences $s_1, s_2$ generating the same path $p$ must end with the same tree node with the same justifier.
 
 \begin{algorithm}[!ht]
 \begin{algorithmic}
@@ -1022,8 +1024,8 @@ $$\travstlc(\Gamma \entail M : T) = \travulc'(\etalf{M})$$
 where $\travulc'$ denote the set of traversals obtained with rules of Table~\ref{tab:trav_rules} with the exclusion of the eta-expanded case in \rulenamet{IVar}.
 \end{proposition}
 \begin{proof}
-Because the term is eta-long, the condition $i>|m|$ in rules \rulenamet{Var} never holds while traversing the term. This is shown by induction on the rules, observing that the arity of an $@$ node is necessarily equal to the arity of its $0$th child lambda node, and the arity of a variable node with binding index $i$ is necessarily equal to the arity of the $i$th child of its binder's parent.
-And since the eta-expanded rule \rulenamet{IVar}  is excluded, traversals in $\travulc'(\etalf{M})$ do not contain any ghost node. Other rules coincide with STLC, therefore the equality holds.
+Because the term is eta-long, the condition $i>|m|$ in rule \rulenamet{Var} never holds while traversing the term. This is shown by induction on the rules, observing that the arity of an $@$ node is necessarily equal to the arity of its $0$th child lambda node, and the arity of a variable node with binding index $i$ is necessarily equal to the arity of the $i$th child of its binder's parent.
+Since the eta-expanded sub-case of \rulenamet{IVar} is excluded, traversals in $\travulc'(\etalf{M})$ do not contain any ghost node. Other rules coincide with STLC, therefore the equality holds.
 \end{proof}
 
 
@@ -1640,7 +1642,7 @@ therefore the normal form is of the shape $\lambda y s \ldots \cdot s (y R_1 \ld
 How many more $k$ do we need to look at? The answer: we need to keep iterating until the point where applying the traversal rules is guaranteed to only produce ghost variables and ghost lambda-nodes. Because there is a finite number of nodes in the computation tree, the variable node arities are bounded. Therefore, for high enough index $k$, the eta-expansion case from rule \rulenamet{Var} will never be met:
 after applying rule \rulenamet{IVar} on $t_\epsilon$, all subsequent extensions of the traversal will be constructed using repeated applications of rule $\rulename{Lam^\ghostvar}$ or the eta-expanded case of rule $\rulename{Var}$.
 
-The upper-bound $q$ for $k$ is precisely given by the \emph{arity threshold} of the traversal $t_\epsilon$ as defined in~\ref{dfn:arity-threshold}:
+That upper-bound for $k$ is precisely given by the \emph{arity threshold} of the traversal $t_\epsilon$ from Definition~\ref{dfn:arity-threshold}:
     \begin{align*}
      \arth(t_\epsilon)
      &= \max \{ |s^2| , %\\
@@ -1652,17 +1654,18 @@ The upper-bound $q$ for $k$ is precisely given by the \emph{arity threshold} of 
                 %& 2 + (2 - 4) + (1 - 2) + (0 - 0)
             \} = 1
      \end{align*}
-     Thus, we do not have to consider higher values of $k$ at $t_\epsilon$. Hence we have $\betanf{M} = \lambda y s \ldots \cdot s (y R_1 \ldots R_{q_2})$.
+     Thus, we do not have to consider higher values of $k$ at $t_\epsilon$, and  we have $\betanf{M} = \lambda y s \ldots \cdot s (y R_1 \ldots R_{q_2})$.
 
 %\item
 
 The arity threshold of $t_1$ is $\arth(t_1) = |z| + |y| - |\lambda^2| = 0+2-0 = 2$ hence  $\betanf{M}$ is of the form $\lambda y s \ldots \cdot s (y R_1 R_2)$.
-
-Let's now apply rule \rulenamet{IVar} for child index $k_2$ ranging from $1$ to $q_2 = 2$. For the case $k_2 = 1$, we obtain the following traversal, where we underlined the last occurrence of its prefix $t_1$:
+We thus apply rule \rulenamet{IVar} for child index $k_2$ ranging from $1$ to $ 2$. For the case $k_2 = 1$, we obtain the following traversal, where we underlined the last occurrence of its prefix $t_1$:
 
 $t_{11} = \Pstr[0.7cm]{
 (n0){\lambda }\
-(n1){@}\ (n2-n1){\lambda x y s z}\ (n3-n2){x}\ (n4-n1){\lambda s z}\ (n5-n4){s}\ (n6-n3){\lambda }\ (n7-n2){s}\ (n8-n1){\ghostlmd^3}\ (n9-n0){\ghostvar^2}
+(n1){@}\ (n2-n1){\lambda x y s z}\
+(n3-n2){x}\
+(n4-n1){\lambda s z}\ (n5-n4){s}\ (n6-n3){\lambda }\ (n7-n2){s}\ (n8-n1){\ghostlmd^3}\ (n9-n0){\ghostvar^2}
 (n10-n9){\ghostlmd^1}
 (n11-n8){\ghostvar^1}
 (n12-n7){\ghostlmd^1}
@@ -1681,7 +1684,7 @@ $t_{11} = \Pstr[0.7cm]{
 (n25-n0,48:2) {\ghostvar^2}
 }$
 
-Thus $\pview{\core{t_{11}}} =
+We have $\pview{\core{t_{11}}} =
 \Pstr[0.7cm]{
 (n0){\lambda }\
  (n9-n0){\ghostvar^2}
@@ -1689,7 +1692,7 @@ Thus $\pview{\core{t_{11}}} =
 (n19-n0){\ghostvar^1}
 (n20-n19){\ghostlmd^1}
 (n25-n0,48:2){\ghostvar^2}
-}$. Hence $\betanf{M}$ is of the form $\lambda y s \ldots \cdot s\ (y\ s\ R_2)$.
+}$ therefore $\betanf{M}$ is of the form $\lambda y s \ldots \cdot s\ (y\ s\ R_2)$.
 
 %\item
 And with $k_2 = 2$, \rulenamet{IVar} extends $t_1$ to:
@@ -1738,7 +1741,6 @@ Assembling the two maximal tree paths together yields $M$'s beta normal form $\l
 \label{ex:missingoperand}
 This example illustrates how on-the-fly eta-expansion helps resolve the ``missing argument'' problem faced when using the traversal rules of STLC. Take $M = (\lambda u . u\ (y_1\ u)) (\lambda v . v\ y_2)$ whose computation tree  and two maximal normalizing traversals are:
 
-\begin{tabular}{lp{12cm}}
 \begin{tikzpicture}[baseline=(root.north),level distance=3ex,inner ysep=0.5mm,sibling distance=10mm]
 \node (root)
 {$\lambda$}
@@ -1763,21 +1765,17 @@ child {node{$@$}
             }
         }
     };
-\node (t1) at (5,0) {$t_1 = \Pstr[4ex]{(n0){\lambda }\,(n1){@}\,(n2-n1){\lambda u}\,(n3-n2){u}\,(n4-n1){\lambda v}\,(n5-n4){v}\,(n6-n3){\lambda }\,(n7-n0){y_1}\,(n8-n7){\lambda }\,(n9-n2){u}\,(n10-n1){\lambda v}\,(n11-n10){v}\,(n12-n9){{\ghostlmd^{1}}}\,(n13-n8){{\ghostvar^{1}}}\,(n14-n13){{\ghostlmd^{1}}}\,(n15-n12){{\ghostvar^{1}}}\,(n16-n11){\lambda }\,(n17-n0,35){y_2}\,}
-$}
-;
-\node (t2) at (5,5) {$t_2 = \Pstr[4ex]{(n0){\lambda }\,(n1){@}\,(n2-n1){\lambda u}\,(n3-n2){u}\,(n4-n1){\lambda v}\,(n5-n4){v}\,(n6-n3){\lambda }\,(n7-n0,30){y_1}\,(n8-n7){{\ghostlmd^{2}}}\,(n9-n6){{\ghostvar^{1}}}\,(n10-n5){\lambda }\,(n11-n0,30){y_2}\,}
-$}
-    ;
+\node (t1) at (7cm,-3ex) {
+        $t_1 = \Pstr[4ex]{(n0){\lambda }\,(n1){@}\,(n2-n1){\lambda u}\,(n3-n2){u}\,(n4-n1){\lambda v}\,(n5-n4){v}\,(n6-n3){\lambda }\,(n7-n0){y_1}\,(n8-n7){\lambda }\,(n9-n2){u}\,(n10-n1){\lambda v}\,(n11-n10){v}\,(n12-n9){{\ghostlmd^{1}}}\,(n13-n8){{\ghostvar^{1}}}\,(n14-n13){{\ghostlmd^{1}}}\,(n15-n12){{\ghostvar^{1}}}\,(n16-n11){\lambda }\,(n17-n0,35){y_2}\,}$
+};
+\node (t2) at (7cm,-15ex) {
+    $t_2 = \Pstr[4ex]{(n0){\lambda }\,(n1){@}\,(n2-n1){\lambda u}\,(n3-n2){u}\,(n4-n1){\lambda v}\,(n5-n4){v}\,(n6-n3){\lambda }\,(n7-n0,30){y_1}\,(n8-n7){{\ghostlmd^{2}}}\,(n9-n6){{\ghostvar^{1}}}\,(n10-n5){\lambda }\,(n11-n0,30){y_2}\,}$
+};
 \end{tikzpicture}
-%&
-%$$t_1 = \Pstr[4ex]{(n0){\lambda }\,(n1){@}\,(n2-n1){\lambda u}\,(n3-n2){u}\,(n4-n1){\lambda v}\,(n5-n4){v}\,(n6-n3){\lambda }\,(n7-n0){y_1}\,(n8-n7){\lambda }\,(n9-n2){u}\,(n10-n1){\lambda v}\,(n11-n10){v}\,(n12-n9){{\ghostlmd^{1}}}\,(n13-n8){{\ghostvar^{1}}}\,(n14-n13){{\ghostlmd^{1}}}\,(n15-n12){{\ghostvar^{1}}}\,(n16-n11){\lambda }\,(n17-n0,35){y_2}\,}$$
-%$$t_2 = \Pstr[4ex]{(n0){\lambda }\,(n1){@}\,(n2-n1){\lambda u}\,(n3-n2){u}\,(n4-n1){\lambda v}\,(n5-n4){v}\,(n6-n3){\lambda }\,(n7-n0,30){y_1}\,(n8-n7){{\ghostlmd^{2}}}\,(n9-n6){{\ghostvar^{1}}}\,(n10-n5){\lambda }\,(n11-n0,30){y_2}\,}$$
-\end{tabular}
 
-Traversing $M$ with STLC rules gets all the way to the second occurrence of $v$ in $t_1$, where the traversal gets stuck due to bottom node $u$ lacking an operand. Whereas an imaginary traversal creates that missing operand on-the-fly, and refers to it with a ghost lambda node $\ghostlmd^1$.
+Traversing $M$ with the STLC rules lets you follow $t_1$ until the second occurrence of $v$ in $t_1$, where the traversal gets stuck due to the bottom node $u$ lacking an operand. Whereas the imaginary traversal instantiates that missing operand on-the-fly, via the ghost child lambda node $\ghostlmd^1$ of $u$.
 
-Traversal $t_2$ illustrates a different situation where instead of being stuck, the STLC traversals misses a path from the beta normal form: variable $y_1$ does have one argument in $M$, which gets traversed by STLC traversals. But the ULC traversal $t_2$ pushes the exploration further by traversing an imaginary second argument to $y_1$, represented by $\ghostlmd^2$, which eventually materializes into existing node $y_2$ of $M$.
+Traversal $t_2$ illustrates a different situation where, instead of being stuck, the STLC traversals misses a valid path from the beta normal form: variable $y_1$ does have one argument in $M$, which gets traversed by STLC traversals. But the ULC traversal $t_2$ pushes the exploration further by traversing an imaginary second argument to $y_1$, represented by $\ghostlmd^2$, which eventually materializes into a real node $y_2$ from $M$, which ends up being the second argument of $y_1$ in the normal form.
 
 The core P-views
 $\pview{\core{t_1}} = \lambda \ y_1\ \lambda \ \ghostvar^{1}
