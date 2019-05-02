@@ -30,7 +30,7 @@
 \contentsline {paragraph}{Implementation}{24}
 \contentsline {subsection}{\numberline {4.4}Arity threshold and normalizing traversals}{24}
 \contentsline {subsection}{\numberline {4.5}Normalization procedure for ULC}{26}
-\contentsline {section}{\numberline {5}Examples of Normalization by Traversals}{28}
+\contentsline {section}{\numberline {5}Examples of Normalization by Traversals}{26}
 \contentsline {section}{\numberline {6}Leftmost linear reduction}{31}
 \contentsline {subsection}{\numberline {6.1}Head-linear reduction}{31}
 \contentsline {paragraph}{Soundness}{32}

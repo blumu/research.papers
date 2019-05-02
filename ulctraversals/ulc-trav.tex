@@ -979,54 +979,52 @@ $$t = \Pstr[0.7cm]{(n0){\lambda}~(n1){@}~(n2-n1){\lambda x}~(n3-n2){x}~(n4-n1){\
 
 \subsection{Imaginary traversals subsume STLC traversals}
 
-Traversals for simply-typed languages were previously studied in~\cite{BlumPhd}.
-The traversal rules defined in Table~\ref{tab:trav_rules} closely match those of the simply-typed lambda calculus and PCF from~\cite{BlumPhd} with some important differences:
-\begin{description}[nosep]
-  \item[No interpreted constants] Unlike PCF, there are no interpreted constants in the present setting therefore the rule \rulenamet{Value} and \rulenamet{InputValue} from the original presentation are not needed.
-
-  \item[No $\eta$-long expansion] In the original STLC traversals, the term is eta-long expanded prior to calculating the set of traversals. This guarantees that the operand of an application always exists in the tree.
-  Imaginary traversals, on the other hand, are defined on the unmodified tree representation of the term.
-
-  \item[On-the-fly $\eta$-expansion] In the untyped setting, eta-long expansion is an infinite process, so instead of expanding the term prior to traversing it, imaginary traversals perform eta-expansion  `on the fly'. This occurs in rule \rulenamet{Var} when the arity of a variable in operand position is too low to statically determine the operand of an application (case $i>|n|$). When the variable arity is high enough ($i\geq|n|$), the definition of the rule coincides with STLC and the static tree representation of the term dictates the next node to visit.
-
-  \item[Free variables] Eta-expansion can also occur on free variables, so like for rule \rulenamet{Var}, the input-variable rule allows for infinitely many eta-expansions ($k>0$).
-
-  \item[Traversal core] In the typed setting, the core is  obtained by just filtering nodes with respect to the tree root. In the untyped settings, lambda nodes also get relabelled after filtering.
-
-  \item[Traversing ghost nodes] There is an additional rule \rulenamet{Lam^\ghostlmd} for the case where a traversal ends with a ghost lambda node. In the concrete sub-case, rule \rulenamet{Lam} visits the unique child node of the last lambda node in the traversal. In the eta-expanded sub-case where the last node is a ghost lambda node, there is no such child node, so we visit an imaginary one: the variable node that would be created if we were to eta-expand the sub-term under the lambda.
-
-   The ghost placeholder $\ghostvar$ thus represents an occurrence of the $j$th variable that would be bound by lambda node $\alpha$ if the sub-term at node $\alpha$ were eta-expanded $i-|n|$ times: hence $j = |\alpha| + i - |n|$.
-   (Observe that in this case we necessarily have $i>|n|$ since the $i$th child of $n$ is a ghost variable node.)
-\end{description}
-
-Let's fix a simply-typed term-in-context $\Gamma \entail M :T$, with typed-context $\Gamma$ (a set of typed variables), and simple type $T$. Its \defname{eta-long form} is defined inductively on the type $T$ and is obtained by recursively eta-expanding every subterm as many times as possible with respect to the type of the subterm~\cite{Ong2006,BlumPhd}.
+Traversals for simply-typed languages, such as STLC and PCF, were previously studied in~\cite{BlumPhd}. A notable limitation is that they are defined for eta-long forms only.
+Let us fix a simply-typed term-in-context $\Gamma \entail M :T$, with typed-context $\Gamma$ (a set of typed variables), and simple type $T$. Its \defname{eta-long form}, defined inductively on the type $T$, is obtained by recursively eta-expanding every subterm as many times as possible with respect to the subterm type~\cite{Ong2006,BlumPhd}.
 By abuse of language we say that an untyped term $M$ is in eta-long form if it inhabits a simple type $T$ such that it equates its own eta-long expansion with respect to $T$, modulo variable renaming.
 
-STLC traversals from~\cite{BlumPhd}
-are defined for eta-long form only. The rules
-consist of the same rules as the imaginary traversal from Table~\ref{tab:trav_rules} with the exclusion of all sub-cases required to implement `on-the-fly eta-expansion' or to traverse ghost nodes:
+The rules of imaginary traversals from Table~\ref{tab:trav_rules} closely resemble those of STLC and PCF~\cite{BlumPhd}: the traversal rules of STLC are precisely those of imaginary traversals with the exclusion of all sub-cases involving ghost nodes:
 \begin{definition}[STLC traversal~\cite{BlumPhd}]
-Let $\Gamma \entail M : T$ be a simply-typed term in context. The set of traversals $\travstlc(\Gamma \entail M : T)$ from \cite{BlumPhd} is  the set of traversals of the \emph{eta-long form} of $M$ generated from the rules of Table~\ref{tab:trav_rules} with the exclusion of \rulenamet{Lam^\ghostlmd} and the `eta-expanded` sub-cases of \rulenamet{Var} and \rulenamet{IVar}.
+The set of traversals $\travstlc(\Gamma \entail M : T)$
+of a simply-typed term in context $\Gamma \entail M : T$
+is the set of traversals of its \emph{eta-long form} using the rules of Table~\ref{tab:trav_rules} with the exclusion of \rulenamet{Lam^\ghostlmd} and the `eta-expanded' sub-cases of \rulenamet{Var} and \rulenamet{IVar}.
 \end{definition}
 
-ULC and STLC traversals coincide on eta-long forms in the following sense:
+This definition captures STLC traversal rules as originally defined~\cite{BlumPhd}, though in practice, imaginary and STLC traversals coincide on eta-long forms in a slightly more general way:
 \begin{proposition}
 \label{prop:ulc_and_stlc_trav_coincide}
-Let $M$ be an untyped term inhabiting a simple type $T$ for some context $\Gamma$ ($\Gamma \entail M : T$) and $\etalf{M}$ denote its \emph{eta-long normal form} with respect to $T$. Then  we have
-$$\travstlc(\Gamma \entail M : T) = \travulc'(\etalf{M})$$
-where $\travulc'$ denote the set of traversals obtained with rules of Table~\ref{tab:trav_rules} with the exclusion of the eta-expanded case in \rulenamet{IVar}.
+Let $M$ be an untyped term inhabiting a simple type $T$ for some context $\Gamma$ and $\etalf{M}$ be its eta-long normal form with respect to $T$. Then $\travstlc(\Gamma \entail M : T)$ is precisely the
+set of traversals of $\etalf{M}$ obtained with rules of Table~\ref{tab:trav_rules} with the exclusion of the eta-expanded case in \rulenamet{IVar}.
 \end{proposition}
 \begin{proof}
 Because the term is eta-long, the condition $i>|m|$ in rule \rulenamet{Var} never holds while traversing the term. This is shown by induction on the rules, observing that the arity of an $@$ node is necessarily equal to the arity of its $0$th child lambda node, and the arity of a variable node with binding index $i$ is necessarily equal to the arity of the $i$th child of its binder's parent.
-Since the eta-expanded sub-case of \rulenamet{IVar} is excluded, traversals in $\travulc'(\etalf{M})$ do not contain any ghost node. Other rules coincide with STLC, therefore the equality holds.
+Since the eta-expanded sub-case of \rulenamet{IVar} is excluded, no ghost node can possibly be traversed. Other rules coincide with STLC, therefore the equality holds.
 \end{proof}
+
+\begin{todobox}
+consider moving to introd
+\end{todobox}
+Some important differences between ULC and STLC traversals:
+\begin{description}[nosep]
+  %\item[No interpreted constants] Unlike PCF, there are no interpreted constants in the present setting.
+
+  \item[No $\eta$-long form] The original STLC traversals were defined for terms in eta-long form only. This guarantees that the operand of an application always exists. In the untyped setting, eta-long expansion would be an infinite process, so instead imaginary traversals must work on the unmodified tree representation of the term.
+
+  \item[On-the-fly $\eta$-expansion]
+  Eta-expansion occurs `on the fly` in variable rules \rulenamet{Var} and \rulenamet{IVar} when the arity of a variable is too low to statically determine the operand of an application. When the variable arity is high enough, the definition of the rule coincides with STLC; in which case the tree statically dictates the node to traverse next.
+
+  \item[Relabelling in traversal core] In the typed setting, the core is  obtained by just filtering nodes with respect to the tree root. In the untyped settings, lambda nodes need to be relabelled after filtering.
+
+  \item[Traversing ghost lambdas]   Rule \rulenamet{Lam} traverses a lambda node by visiting its unique child node in the tree. No such child node exists for a ghost lambda, instead rule \rulenamet{Lam^\ghostlmd} traverses a ghost lambda by visiting the imaginary ghost variable that would be created if we were to eta-expand the sub-term under that lambda.
+
+   The ghost placeholder $\ghostvar$ represents an occurrence of the $j$th variable bound by lambda node $\alpha$ if the sub-term at node $\alpha$ were eta-expanded $i-|n|$ times: hence $j = |\alpha| + i - |n|$.
+   (Observe that we necessarily have $i>|n|$ since the $i$th child of $n$ is a ghost variable node.)
+\end{description}
 
 
 \subsection{Property of ghost nodes}
 
-It is helpful to think of ghost nodes as the counterpart of complex numbers which are sometimes used in mathematics
-to prove trigonometry identities: they are introduced intermediately to perform some calculation (e.g.\ using De Moivre's Theorem) but do not appear in the final result. Just like the imaginary number $i$ is created out of the impossibility of calculating the square root of $-1$, ghost nodes are defined from the impossibility of ``traversing'' a beta-redex of a lambda term due to an insufficient number of operands.
-
+To understand ghost node, it can be helpful to take an analogy with complex numbers in mathematics which can be used to prove trigonometry identities: they are intermediate concepts used to perform some calculation (e.g.\ using De Moivre's Theorem) but do not appear in the final result. Just like imaginary number $i$ was created from the impossibility of calculating the square root of $-1$, ghost nodes are defined from the impossibility of ``traversing'' a beta-redex of a lambda term due to an insufficient number of operands.
 
 Ghost nodes appear in a traversal when the arity of a node is too low to be able to structurally traverse it:
 \begin{property}
@@ -1066,18 +1064,16 @@ where
 In~\cite{BlumPhd} we formalized the correspondence between the theory of traversals and Game Semantics in the setting of simply-typed languages: there is a bijection between the set of traversals of a term and its revealed interaction game denotation. Furthermore, the core projection yields a bijection with the standard innocent game denotation.
 In other words, the traversal cores are precisely plays from the game denotation of the term.
 Formally:
-\begin{theorem}[Traversal-Play Correspondence for STLC (Theorem 4.96 in~\cite{BlumPhd})]
+\begin{theorem}[Traversal-Play Correspondence for STLC-- Theorem 4.96 in~\cite{BlumPhd}]
 \label{thm:gamesem_correspondence_stlc}
-The following two bijections hold for every simply-typed term $\Gamma \entail M :T$ with eta-long normal form $\etalf{M}$:
-\begin{eqnarray*}
-    \travstlc(M) & \cong & \revsem{\Gamma \entail M :T} \\
-    \travstlc^\coresymbol(\etalf{M}) & \cong & \sem{\Gamma \entail M :T} \enspace .
-\end{eqnarray*}
-where $\revsem{\Gamma \entail M : T}$ and
-$\sem{\Gamma \entail M : T}$
-denote respectively the \emph{revealed game denotation} and \emph{innocent game denotation} of
-$\Gamma \entail M : T$;
-and $travstlc^\coresymbol$ denotes the image of $travstlc$ by $\coresymbol$ (\ie, set of justified sequences that are \emph{core} of some STLC-traversal).
+Let $\Gamma \entail M :T$ be a simply-typed term-in-context with eta-long normal form $\etalf{M}$. Then
+(i) $\travstlc(M)$ is in bijection with the \emph{revealed game denotation} $\revsem{\Gamma \entail M :T}$ of the term,
+(ii) The image of $\travstlc$ by $\coresymbol$--justified sequences that are \emph{core} of some STLC-traversal--
+is in bijection with the innocent game denotation $\sem{\Gamma \entail M :T}$.
+% \begin{eqnarray*}
+%     \travstlc(M) & \cong & \revsem{\Gamma \entail M :T} \\
+%     \travstlc^\coresymbol(\etalf{M}) & \cong & \sem{\Gamma \entail M :T} \enspace .
+% \end{eqnarray*}
 \end{theorem}
 
 
@@ -1198,9 +1194,9 @@ For structural rules \rulenamet{Root}, \rulenamet{App} and \rulenamet{Lam} it fo
 Rule \rulenamet{Var}: If $m_q \in \NodesVar$ then by the Path-View correspondence, $\pview{u_{<m_q}}$ is a path in the tree from the root to $m_q$ therefore $m_q$'s binder necessarily occur in $u$, we can therefore conclude using the I.H.~on $u_{<m_q}$ and applying \rulenamet{Var} on $u_{<m_q}$ to get $u_{\leq m_q}$.
 \end{itemize}
 Suppose that $t$ contains ghost occurrences then we consider the term $M^t$.
-By Prop.~\ref{prop:eta_expanded_trav}(i), $\eta_t(t)$ is a traversal of $M^t$. Hence by the above, there exists $u'\in\travsetnorm(M^t)$ such that
+By Proposition~\ref{prop:eta_expanded_trav}(i), $\eta_t(t)$ is a traversal of $M^t$. Hence by the above, there exists $u'\in\travsetnorm(M^t)$ such that
 $\pview{\core{u'}}=\pview{\core{\eta_t(t)}}$.
-By Prop.~\ref{prop:eta_expanded_trav}(ii),
+By Proposition~\ref{prop:eta_expanded_trav}(ii),
 there exists $u \in \travulc(M)$ such that
 $u' = \eta_t(u)$. Recall that the normalizing traversals is defined as the subset of traversals where external lambda nodes always point to their immediate predecessor. Therefore since $\eta_t$ is pointer-preserving $u$ must necessarily belong to $\travsetnorm(M)$.
 
@@ -1232,7 +1228,7 @@ Let $M$ be an untyped term in eta-long form (with respect to some simple type it
 \end{enumerate*}
 \end{property}
 \begin{proof}
-By Proposition~\ref{prop:ulc_and_stlc_trav_coincide}, traversals in $\travsetbr(M)$ do not contain any ghost node therefore Prop.~\ref{prop:branching_spine_property} implies (i).
+By Proposition~\ref{prop:ulc_and_stlc_trav_coincide}, traversals in $\travsetbr(M)$ do not contain any ghost node therefore Property~\ref{prop:branching_spine_property} implies (i).
 (ii) Traversal rules that are not involving ghost nodes all have bounded non-determinism therefore a traversal only has a finite number of immediate extensions. Since traversals are finite by (i), this implies that the set of traversals is itself finite.
 \end{proof}
 
@@ -3173,7 +3169,7 @@ Let $M$ be an untyped term with a beta-normal form. Then
 \end{enumerate*}
 \end{proposition}
 \begin{proof}
-(i) If $M$ has a normal form then by Theorem~\ref{thm:completeness_leftmostlinearred} its linear reduction sequence yields a quasi-normal form $Q$ and by Theorem~\ref{thm:soundness_leftmostlinearred} $Q$ and $M$ are beta-equivalent. Thus by Prop.~\ref{prop:ulctrav_impl_linear_reduction} the sets of traversals of $M$ and $Q$ are isomorphic. So if $M$ has an infinite traversal then so does $Q$, which contradicts Proposition~\ref{prop:qnf_traversals_are_finite}.
+(i) If $M$ has a normal form then by Theorem~\ref{thm:completeness_leftmostlinearred} its linear reduction sequence yields a quasi-normal form $Q$ and by Theorem~\ref{thm:soundness_leftmostlinearred} $Q$ and $M$ are beta-equivalent. Thus by Proposition~\ref{prop:ulctrav_impl_linear_reduction} the sets of traversals of $M$ and $Q$ are isomorphic. So if $M$ has an infinite traversal then so does $Q$, which contradicts Proposition~\ref{prop:qnf_traversals_are_finite}.
 (ii) Traversals rules defining $\travsetnorm$ all have bounded non-determinism therefore by (i) $\travsetnorm$ is finite.
 \end{proof}
 %%%% REMARK: (i) It would be possible to prove (i) directly without appealing to Theorem~\ref{thm:completeness_leftmostlinearred}. (In which case this theorem  would follow from the above proposition). The proof would follow a similar argument as that of Theorem~\ref{thm:completeness_leftmostlinearred}, by showing that traversals lead to the head variable in the beta-nf, and recursively to head variables of its arguments. So an i traversals would yield (through P-view) to an infinite sequence of paths in the beta-normal form, which is a contradiction since beta-nf have a finite tree representation.
@@ -3206,7 +3202,7 @@ Let's first assume that $M$ is in beta-normal form. Then its computation tree ca
 Hence the arity threshold of a traversal ending with external variable $x$ is precisely $|x|$, the arity of $x$. A straightforward induction on the traversal
 rules shows, that since the \rulenamet{Var} is never used, we necessarily have  $\travsetnorm(M) = \pathset(M)$. Further, since all nodes are externals, the projection $\coresymbol$ and $\pview{\_}$ functions both coincides with the identity function thus $\pview{\core{\travsetnorm(M)}} = \travsetnorm(M) = \pathset(M)$.
 
-Otherwise, since $M$ has a beta-nf, by Theorem~\ref{thm:completeness_leftmostlinearred} its \emph{leftmost linear reduction sequence} terminates and yields a \emph{qnf}. By Prop.~\ref{prop:ulctrav_impl_linear_reduction} the set of traversals is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of traversals of the \emph{qnf} is isomorphic to the set of traversals of $M$. Corollary~\ref{cor:qnf_and_nf_traveset_invariant} permits us to conclude.
+Otherwise, since $M$ has a beta-nf, by Theorem~\ref{thm:completeness_leftmostlinearred} its \emph{leftmost linear reduction sequence} terminates and yields a \emph{qnf}. By Proposition~\ref{prop:ulctrav_impl_linear_reduction} the set of traversals is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of traversals of the \emph{qnf} is isomorphic to the set of traversals of $M$. Corollary~\ref{cor:qnf_and_nf_traveset_invariant} permits us to conclude.
 \end{proof}
 
 \paragraph{Soundness} of the normalization procedure follows from Theorem~\ref{thm:path_charact_ulc} and the fact that a term is uniquely characterized by its set of justified paths $\pathset$ (Property~\ref{prop:tree_path_charact}).
