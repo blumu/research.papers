@@ -561,43 +561,37 @@ $\Pstr[10pt]{ s = \cdots (j){j} \ldots (n-j,25:l){n} }$.
 For readability, we sometime just indicate the link label in exponent of the justified occurrence, or even omit the justification pointers altogether.
 Note that the enabling relation is \emph{statically} induced by the structure of the tree whereas the justification relation is defined on node \emph{occurrences} in one specific justified sequence. The set $\justseqset(M)$ of justified sequences over $M$ consists of all justified sequences over the extended set of nodes $\ExtendedNodes$.
 
-{\bf Name-free representation}: We define the \defname{structure} of a justified sequence as the sequence obtained by discarding node labels while preserving node types. It is encoded as a sequence of triples $\{\lambda, {\sf Var}, @ \}\times\nat\times\nat$ where the first component indicates the type of each occurrence (lambda bunch, variable, application); the second component indicates the link distance, and the last component gives the link label ($0$ for no pointer).
+{\bf Name-free encoding}: The \defname{structure} of a justified sequence refers to the sequence obtained by discarding node labels while preserving node types. It is encoded as a sequence of triples $\{\lambda, {\sf Var}, @ \}\times\nat\times\nat$ where the first component indicates the type of each occurrence (lambda bunch, variable, application); the second component indicates the link distance, and the last component gives the link label ($0$ for no pointer).
 Two sequences $s$ and $u$ over possibly two distinct terms are \defname{equivalent}, written $s \equiv u$ just if they have the same structure: the types of the underlying nodes in the two sequences match pairwise (either two variable/@ nodes or two lambda nodes) and have the same justification pointers. Two equivalent sequences are not necessarily equal since they may have different variable names.
 We say that two subsets $J_1\subseteq \justseqset(M_1)$ and $J_2\subseteq\justseqset(M_2)$ are isomorphic, written $J_1\cong J_2$, if  there exists a structure-preserving bijection between $J_1$ and $J_2$. That is there exists a bijection $\phi :J_1\longrightarrow J_2$ such that for any $j\in J$, $j\equiv\phi(j)$.
 
-
-{\bf Quadruplet sequence}:
-We define the set of \defname{quadruplet sequences} over variables in $\mathcal{V}$ as $O_4^*$ where $O_4 = \nat^*\times \mathcal{V}^* \times\nat\times\nat$. The first component represents a \emph{node path}; the second is a sequence of variable names representing \emph{pending lambdas}; the third represents a \emph{link distance}, and the fourth is a \emph{link label}.
-
-\begin{definition}[Quadruplet encoding]
-\label{def:quadruplet_encoding}
-The following occurrence-wise encoding yields a sequence of quadruplets in $O_4^*$ that encodes a given justified sequence of nodes.
+The \defname{quadruplet encoding} of a justified sequence of nodes with variables in $\VarSet$ is a sequence of quadruplets in $O_4 = \nat^*\times \mathcal{V}^* \times\nat\times\nat$ defined occurrence-wise where each occurrence is encoded by the following quadruplet:
 \begin{enumerate}[nosep]
-    \item Node path: path to the extended node in the computation tree that uniquely defines the type and label of the occurrence;
-    \item Pending lambdas: empty list $\epsilon$;
-    \item Link distance: number of occurrences separating the encoded occurrence from its justifier;
-    \item Link label: label associated with the occurrence's justification pointer.
+\item \emph{Node path}: Path to the extended node in the tree that uniquely defines the type and label of the occurrence;
+\item \emph{Pending lambdas}: The empty list $\epsilon$;
+\item \emph{Link distance}: The number of occurrences separating the encoded occurrence from its justifier;
+\item \emph{Link label}: The justification pointer's label.
 \end{enumerate}
-\end{definition}
 
-One should interpret the `pending lambdas' component as a sequence of variable names to be `mentally' appended to the bulk of variables that are already bound by the lambda node. It is empty when encoding a raw justified sequence, but will be used to define transformations that modify the lambda node labels. This will allow us to interpret a justified sequence as a traversal over two distinct terms (\eg, before and after firing a redex).
+When decoding a justified sequence, the variables from the `pending lambda' get appended to the list of variables bound by a lambda node.
+Although it is empty in the initial encoding of a justified sequence, we use it later to define transformations that alter lambda node labels. This facilitates interpretation of a justified sequence over two distinct terms (\eg, before and after firing a redex).
 
 We adopt the quadruplet encoding throughout the rest of the paper and thus assume $\justseqset(M)$ to be a (strict) subset of $O_4^*$.
-
+%
 %%%
 % Observe that not every member of $\justseqset(M)$ corresponds to a valid justified sequence of $M$; but if it does then it's uniquely defined up to the equality relation Eq.
 %%%
-
+%
 % provides a tagging mechanism to alter the names of the binding variables in lambda node occurrences.
 %It will only be used for nodes of lambda type; for other nodes it will always be the empty list.
- When typesetting a sequence from $\justseqset(M)$, we represent occurrences by their associated node labels, and we write the \emph{pending lambdas} in exponent. For example:
-$t = \cdots @ \cdot x \cdot \lambda\overline{x}^{[y_1 \ldots y_n]}$
+ When typesetting a sequence from $\justseqset(M)$, we represent occurrences by their associated node labels, and we write the \emph{pending lambdas} in exponent. For example
+$\cdots @ \cdot x \cdot \lambda\overline{x}^{[y_1 \ldots y_n]}$
 where $\lambda\overline{x}$ is the label of the tree node associated with that occurrence, and $y_1 \ldots y_n$ represent \emph{pending lambdas} for this occurrence. We omit the exponent if the list of pending lambdas is empty.
 
 \begin{example}
 \label{examp:ghost_materialization}
-    Let $M = \lambda x. (\lambda y z.z) u$. The set of structural paths of the computation tree of $M$ is given by $\Sigma = \{\epsilon, 0, 00,000, 01,010\}$. The justified sequence
-    $t = \Pstr[10pt]{
+    Let $M = \lambda x. (\lambda y z.z) u$. The structural paths of the computation tree of $M$ are $\Sigma = \{\epsilon, 0, 00,000, 01,010\}$. The justified sequence
+    $\Pstr[10pt]{
         (l){\lambda x} \cdot (a)@ \cdot (lyz-a,25:0){\lambda y z} \cdot (z-lyz,25:2)z \cdot (gl-a,30:2)\ghostlmd \cdot (gv-l,32:2)\ghostvar }
     $
     has quadruplet encoding
@@ -608,7 +602,7 @@ where $\lambda\overline{x}$ is the label of the tree node associated with that o
 \end{example}
 
 Two justified sequences are considered \defname{equal} if, after appending
-the respective `pending lambdas` to the variables bound by each lambda node occurrence, they have the same structure and same variable names. Formally, given two terms $M$ and $N$ we define the relation
+the respective `pending lambdas' to the variables bound by each lambda node occurrence, they have the same structure and same variable names. Formally, for two terms $M$ and $N$ we define the relation
 $Eq_{M,N} \subseteq O_4(N) \times O_4(M)$ as:
 \begin{align*}
 (n,\overline{p},d,k)~Eq_{M,N}~(n',\overline{p'},d',k') &\iff
@@ -622,8 +616,7 @@ $Eq_{M,N} \subseteq O_4(N) \times O_4(M)$ as:
 \end{cases}
 \end{align*}
 The reflexive closure of $Eq_{M,N}^*$ defines an equivalence relation on
- the disjoint union $O_4(M) + O_4(N)$. By extension the relation $Eq_{M,N}^*$ defines an equivalence relation on the disjoint union $\justseqset(M) + \justseqset(N)$ where two sequences are in relation if their element-wise occurrences are.
-
+ the disjoint union $O_4(M) + O_4(N)$, and by extension $Eq_{M,N}^*$ defines an equivalence relation on $\justseqset(M) + \justseqset(N)$ where two sequences are in relation if their element-wise occurrences are.
 In the rest of the paper we will consider occurrences and justified sequences equal up to this equivalence relation. For all variable names $\overline{x}$ and $\overline{y}$ the two notations $\lambda\overline{x}^{[\overline{y}]}$ and $\lambda\overline{x}\overline{y}$ will denote the same occurrence and will be used interchangeably.
 
 We call a justified sequence \defname{canonical} just if the \emph{pending lambda} components are all empty. Observe that if we fix the term, a canonical justified sequence encoding uniquely determines its structure: discarding the label information yields the structure; reciprocally the labels can be uniquely reconstructed from the structure of the sequence and the term's enabling relation.
@@ -1349,7 +1342,7 @@ The arity threshold can be rewritten as
 $\arth(t) = \max_{q=1..k-1} b_q$
 where $b_q = |\alpha_q| + \sum_{j=1..q} \delta_j = |n_1| - |\alpha_1| + |n_2| - |\alpha_2| + \cdots + |n_{q-1}| - |\alpha_{q-1}| + |n_q|$, for $1\leq q\leq k-1$ or equivalently defined by the induction
  $b_1 = |n_1|$, $b_{q+1} = b_q + |n_{q+1}| - |\alpha_q|$, for $1 \leq q \leq k-2$.
-In other words, calculating the arity threshold boils down to  adding and subtracting the arity of the nodes starting from the last variable occurrence in the traversal strand and reading backwards until reaching the previous external variable. The maximal value calculated in that summation gives the arity threshold.
+Calculating the arity threshold thus boils down to alternatively adding and subtracting the node arities starting from the last variable occurrence in the traversal strand and reading backwards until reaching an external variable. The maximal value observed throughout that summation is the arity threshold.
 \end{remark}
 
 Observe that traversal rule $\rulename{IVar}$ leaves infinitely many choices for the link label: any value greater than $1$. The following property shows that if the link label exceeds the arity threshold then the traversal ends up traversing only ghost nodes that never materialize back to a structural node.
