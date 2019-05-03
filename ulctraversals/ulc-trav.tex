@@ -573,20 +573,18 @@ The \defname{quadruplet encoding} of a justified sequence of nodes with variable
 \item \emph{Link label}: The justification pointer's label.
 \end{enumerate}
 
-When decoding a justified sequence, the variables from the `pending lambda' get appended to the list of variables bound by a lambda node.
-Although it is empty in the initial encoding of a justified sequence, we use it later to define transformations that alter lambda node labels. This facilitates interpretation of a justified sequence over two distinct terms (\eg, before and after firing a redex).
+This initial encoding is said to be \defname{canonical} because the \emph{pending lambda} components are all empty. We will define subsequent transformations that alter the pending lambda components.
+Observe that given a fixed term, a canonical justified sequence encoding uniquely determines its structure, by just discarding the labels; and reciprocally, labels are uniquely recoverable from the sequence structure and the term's enabling relation.
+
+\emph{Decoding a quadruplet sequence} When interpreting a quadruplet sequence as a justified sequence, the variables from the `pending lambda' get appended to the list of variables bound by a lambda node. When typesetting a sequence from $\justseqset(M)$, we represent occurrences by their associated node labels and represent the \emph{pending lambdas} in exponent. For example in the sequence $\cdots @ \cdot x \cdot \lambda\overline{x}^{[y_1 \ldots y_n]}$, $\lambda\overline{x}$ is the label of the tree node associated with that occurrence and $y_1 \ldots y_n$ are the \emph{pending lambdas} for this occurrence. We omit the exponent if the list of pending lambdas is empty.
 
 We adopt the quadruplet encoding throughout the rest of the paper and thus assume $\justseqset(M)$ to be a (strict) subset of $O_4^*$.
 %
-%%%
 % Observe that not every member of $\justseqset(M)$ corresponds to a valid justified sequence of $M$; but if it does then it's uniquely defined up to the equality relation Eq.
-%%%
 %
-% provides a tagging mechanism to alter the names of the binding variables in lambda node occurrences.
-%It will only be used for nodes of lambda type; for other nodes it will always be the empty list.
- When typesetting a sequence from $\justseqset(M)$, we represent occurrences by their associated node labels, and we write the \emph{pending lambdas} in exponent. For example
-$\cdots @ \cdot x \cdot \lambda\overline{x}^{[y_1 \ldots y_n]}$
-where $\lambda\overline{x}$ is the label of the tree node associated with that occurrence, and $y_1 \ldots y_n$ represent \emph{pending lambdas} for this occurrence. We omit the exponent if the list of pending lambdas is empty.
+% They provide a tagging mechanism to alter the names of the binding variables in lambda node occurrences.
+%
+% It will only be used for nodes of lambda type; for other nodes it will always be the empty list.
 
 \begin{example}
 \label{examp:ghost_materialization}
@@ -601,36 +599,35 @@ where $\lambda\overline{x}$ is the label of the tree node associated with that o
     $.
 \end{example}
 
-Two justified sequences are considered \defname{equal} if, after appending
-the respective `pending lambdas' to the variables bound by each lambda node occurrence, they have the same structure and same variable names. Formally, for two terms $M$ and $N$ we define the relation
-$Eq_{M,N} \subseteq O_4(N) \times O_4(M)$ as:
-\begin{align*}
-(n,\overline{p},d,k)~Eq_{M,N}~(n',\overline{p'},d',k') &\iff
-\begin{cases}
-    n \mbox{ and $n'$ have the same type} \\
-    d = d' \\
-    k = k' \\
-    \mbox{If $n=\lambda\overline{x}$ and $n'=\lambda\overline{y}$ then
-        $\overline{x} \cdot \overline{p} = \overline{y} \cdot \overline{p'}$.
-    }
-\end{cases}
-\end{align*}
+We say that two justified sequences are \defname{equal} if their underlying canonical encodings have the same structure and variable names. Formally, for two terms $M$ and $N$ we define the relation
+$Eq_{M,N} \subseteq O_4(N) \times O_4(M)$ as $(n,\overline{p},d,k)~Eq_{M,N}~(n',\overline{p'},d',k')$
+just if  $n$ and $n'$ have the same type, $d = d'$, $k = k'$, and if $n$ and $n'$ are labelled $\lambda\overline{x}$ and $\lambda\overline{x'}$ respectively then $\overline{x} \cdot \overline{p} = \overline{x'} \cdot \overline{p'}$.
+% Definition expanded on multiple lines
+% \begin{align*}
+% (n,\overline{p},d,k)~Eq_{M,N}~(n',\overline{p'},d',k') &\iff
+% \begin{cases}
+%     n \mbox{ and $n'$ have the same type} \\
+%     d = d' \\
+%     k = k' \\
+%     \mbox{If $n=\lambda\overline{x}$ and $n'=\lambda\overline{y}$ then
+%         $\overline{x} \cdot \overline{p} = \overline{y} \cdot \overline{p'}$.
+%     }
+% \end{cases}
+% \end{align*}
 The reflexive closure of $Eq_{M,N}^*$ defines an equivalence relation on
- the disjoint union $O_4(M) + O_4(N)$, and by extension $Eq_{M,N}^*$ defines an equivalence relation on $\justseqset(M) + \justseqset(N)$ where two sequences are in relation if their element-wise occurrences are.
-In the rest of the paper we will consider occurrences and justified sequences equal up to this equivalence relation. For all variable names $\overline{x}$ and $\overline{y}$ the two notations $\lambda\overline{x}^{[\overline{y}]}$ and $\lambda\overline{x}\overline{y}$ will denote the same occurrence and will be used interchangeably.
+ the disjoint union $O_4(M) + O_4(N)$, and by occurrence-wise extension, $Eq_{M,N}^*$ defines an equivalence relation on $\justseqset(M) + \justseqset(N)$.
+ We will consider equality of occurrences and justified sequences according to this relation.  Given variable names $\overline{x}$ and $\overline{y}$, we will write interchangeably $\lambda\overline{x}^{[\overline{y}]}$ or $\lambda\overline{x}\overline{y}$.
 
-We call a justified sequence \defname{canonical} just if the \emph{pending lambda} components are all empty. Observe that if we fix the term, a canonical justified sequence encoding uniquely determines its structure: discarding the label information yields the structure; reciprocally the labels can be uniquely reconstructed from the structure of the sequence and the term's enabling relation.
-
-\begin{example}
-    Alpha-conversion does not impact the structure of a sequence, by definition, so for instance we have $\Pstr[10pt]{ (l){\lambda x y} \cdot (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda z y} \cdot (n-l,25){z}}$. The number of variable bindings in a lambda node may also change without impacting its structure, as long as justification link labels are unaffected, so for instance we have $\Pstr[10pt]{ (l){\lambda x y z w t} \cdot (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda x} \cdot (n-l,25){x}}$ since both sequences have structure $(\lambda,0)\cdot({\sf Var},1)$.
+ Pending lambdas provide a convenient way to interpret justified sequences over two distinct terms (\eg, before and after firing a redex).
+ \begin{example}
+    Alpha-conversion does not alter the structure of a sequence, so for instance we have $\Pstr[10pt]{ (l){\lambda x y} \cdot (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda z y} \cdot (n-l,25){z}}$. The number of variable bindings in a lambda node may also change without impacting its structure, as long as justification link labels are unaffected, so we also have $\Pstr[10pt]{ (l){\lambda x y z w t} \cdot (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda x} \cdot (n-l,25){x}}$ since the structure of both sequences is $(\lambda,0)\cdot({\sf Var},1)$.
 \end{example}
 
-We will use non-canonical justified sequences to analyze the effect of
-$\beta$-reduction on a justified sequence, where the \emph{pending lambda} component helps define two useful operations:
-\begin{enumerate}
-    \item Lambda merging: where abstractions are merged in a combined bunch lambda node;
-    \item Node materialization: where a ghost node materializes into an occurrence of a bound or free variable. This occurs when a ghost variable points to a lambda node $\lambda\overline{x}^{[\overline{y}]}$ with label $i$ strictly greater than the arity of $|x|$ but smaller than $|x|+|y|$.
-\end{enumerate}
+We will use non-canonical encodings to implement $\beta$-reduction on  justified sequences, where the \emph{pending lambda} component helps
+ merge two lambda nodes in a combined bunch lambda node, a process by which a ghost variable may materialize into a concrete node by getting assigned a variable name.
+
+% lambda merging indirectly helps with node materialization since a ghost variable may get its name after merging two lambda nodes.
+% This occurs when a ghost variable points to a lambda node $\lambda\overline{x}^{[\overline{y}]}$ with label $i$ strictly greater than the arity of $|x|$ but smaller than $|x|+|y|$.
 
 %%%% TODO --- Define `pretty printing' with node materialization:
 % The variable name of an occurrence of variable type is induced by the justification label together with its lambda node justifier: if a variable occurrence points to lambda node $\lambda\overline{x}$ with link label $i\leq|x|$ then the variable name is $x_i$.
@@ -659,7 +656,7 @@ Let $s$ be a justified sequence of nodes and $n$ be an occurrence in $s$.
 \end{itemize}
 \end{definition}
 
-The P-view of a justified sequence is the sub-sequence obtained by reading the sequence backwards and following the justification pointer every other node: (i) if the last node read is a variable node then follow its justification pointer (\ie, skip all the occurrences lying underneath) (ii) if the node is a lambda node then move to the preceding node. Formally:
+The P-view is the sub-sequence obtained by reading a justified sequence backwards and following the justification pointer every other node: if the last node is a variable node then follow its justification pointer (\ie, skip all the occurrences lying underneath); if it is a lambda node then move to the preceding node. Formally:
 \begin{definition}[Views]
 \label{def:views}
 The P-view $\pview{s}$ of a justified sequence $s$ is defined recursively by:
@@ -864,7 +861,7 @@ $$
 Observe that the tree obtained after eta-expansion with respect to $t$ contains the tree of $M$ itself, therefore paths in the tree of $M$ are also paths in the tree of $M^t$.
 
 \begin{example}
-Take $M = (\lambda u . u\ (y_1\ u)) (\lambda v . v\ y_2)$. Its computation tree is shown in Ex.~\ref{ex:missingoperand}. A valid traversal is $t = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda u}\ (n3-n2){u}\ (n4-n1){\lambda v}\ (n5-n4){v}\ (n6-n3){\lambda }\ (n7-n0){y_1}\ (n8-n7){\lambda }\ (n9-n2){u}\ (n10-n1){\lambda v}\ (n11-n10){v}\ (n12-n9){{\ghostlmd^{1}}}\ (n13-n8){{\ghostvar^{1}}}\ (n14-n13){{\ghostlmd^{1}}}\ (n15-n12){{\ghostvar^{1}}}\ (n16-n11){\lambda }\ (n17-n0,35){y_2}\ }$. The eta-expansion of $M$ with respect to $t$ is
+Take $M = (\lambda u . u\ (y_1\ u)) (\lambda v . v\ y_2)$. Its computation tree is shown in Ex.~\ref{ex:missingoperand}. A valid traversal is $t = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda u}\ (n3-n2){u}\ (n4-n1){\lambda v}\ (n5-n4){v}\ (n6-n3){\lambda }\ (n7-n0){y_1}\ (n8-n7){\lambda }\ (n9-n2,27){u}\ (n10-n1,27){\lambda v}\ (n11-n10){v}\ (n12-n9){{\ghostlmd^{1}}}\ (n13-n8){{\ghostvar^{1}}}\ (n14-n13){{\ghostlmd^{1}}}\ (n15-n12){{\ghostvar^{1}}}\ (n16-n11){\lambda }\ (n17-n0,25){y_2}\ }$. The eta-expansion of $M$ with respect to $t$ is
 $M^t = (\lambda u . u~(y_1~(\lambda \alpha. u (\lambda \beta.\alpha \beta))) (\lambda v . v~y_2)$.
 \end{example}
 
@@ -2184,6 +2181,9 @@ $M$ and its normal form must have the same lambda list. We can then conclude usi
 If $M$ has a beta-normal form then its left-most linear reduction terminates (and thus yields a quasi normal form).
 \end{theorem}
 The technical proof is in appendix.
+\begin{todobox}
+    include snippet of proof
+\end{todobox}
 \proofatend
 Suppose $M$ has a beta-normal form then by a standard result of lambda calculus its head-reduction terminates, therefore by Theorem~\ref{thm:danosregnier_headlinred} the $\hlred$-reduction of $M$ terminates and yields its quasi-\emph{head}-normal form. Since $\hlred$ coincides with $\llred$, for terms not in \emph{qhnf}, we can without loss of generality assume that $M$ is in \emph{qhnf}.
 We prove by induction on the \emph{size} of $M$ that
