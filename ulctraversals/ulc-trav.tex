@@ -523,29 +523,37 @@ Figure~\ref{fig:comptree_examples} illustrates examples of computation trees.
 
 Note that any lambda term can indeed be written in one of the two forms above. In particular, applicative terms are handled by the case $n=0$ of the form $\lambda . N$ for some term $N$ where `$\lambda$' is referred to as a ``dummy lambda''. One property of this compact tree representation is the alternation between lambda nodes and variable nodes at odd/even levels.
 
-We define the \defname{enabling relation} $\enables$ on tree nodes $\Nodes$ as the relation mapping (i) each lambda node to all the variable nodes that it binds; (ii) the root of the tree to all the free variable nodes; (iii) variable and application node to each one of their child node. We write $m \enables_k \alpha$ to indicate that a lambda node $\alpha$ is the $k$th child of a variable or application node $m$ for some $k\geq0$; and $\alpha \enables_k m$ to indicate that variable node $m$ is labelled by the $k$th variable bound by $\alpha$ for $k\geq1$. The \defname{hereditarily enabling} relation is the reflexive transitive closure of the enabling relation, and we say that node $m$ \defname{hereditarily enables} $n$ written $m \enables^* n$.
+We define the \defname{enabling relation} $\enables$ on tree nodes $\Nodes$ as the relation mapping (i) each lambda node to all the variable nodes that it binds; (ii) the root of the tree to all the free variable nodes; (iii) variable and application node to each one of their child node. We write $m \enables_k \alpha$ to indicate that a lambda node $\alpha$ is the $k$th child of a variable or application node $m$ for some $k\geq0$; and $\alpha \enables_k m$ to indicate that variable node $m$ is labelled by the $k$th variable bound by $\alpha$ for $k\geq1$.
+We say that node $m$ \defname{hereditarily enables} $n$ if they relate by the reflexive transitive closure of $\enables$.
+
+Because variable names and bindings are entirely recoverable from the enabling relation, the notion of computation tree could equivalently be defined as a name-free tree over three node labels $\{ \lambda, {\sf Var}, @ \}$ indicating the `type' of each node, together with the enabling relation.
 
 A tree node is \defname{external} if it is hereditarily enabled by the root, otherwise it is \defname{internal}. We write $\ExtNodes$ for the set of external nodes, that is the image of the tree root by the reflexive transitive closure of the enabling relation. Internal nodes are therefore precisely the nodes hereditarily justified by application nodes $@$. We write $\IntNodes$ to denote the set of internal nodes.
 The \defname{arity} of a node $n$, written $|n|$,
-is defined for a variable node as its number of arguments (\ie, children in the computation tree); for an $@$-node, the number of operands in the application (\ie, number of children nodes minus 1); for a lambda node $\lambda x_1 \cdots x_k$, $k\geq 0$, the number of bound variables $k$.
+is defined for a variable node as its number of arguments (\ie, children in the computation tree); for an $@$-node, as the number of operands in the application (\ie, number of children nodes minus 1); for a lambda node $\lambda x_1 \cdots x_k$, $k\geq 0$, as the number of bound variables $k$.
 
 \subsection{Ghost nodes}
-We refer to the nodes $\Nodes$ as \defname{structural nodes}
-because they correspond to tokens in the syntax representation of the lambda term.
-We augment them with two infinite sets of \defname{ghost nodes} representing fictitious term tokens:
-the \emph{ghost variable nodes} and
-\emph{ghost lambda nodes}.
+We extend the notion of computation tree by augmenting the
+ \defname{structural nodes} $\Nodes$, representing tokens in the syntax representation of the lambda term,
+with two countable sets of \defname{ghost nodes} representing fictitious tokens: The \emph{ghost lambda nodes}
+represent fictitious lambda abstractions,
+whereas \emph{ghost variable nodes} represent fictitious
+occurrences of variables bound by either a structural or a ghost lambda node.
 
-Ghost lambda and variable nodes all have the same unique label $\ghostlmd$ and $\ghostvar$ respectively. We will not distinguish between them and will just use the identifiers $\ghostvar$ and $\ghostlmd$ as placeholders to represent any ghost variable node or ghost lambda node respectively.
-We simultaneously define ghost nodes and extend the enabling relation $\enables$ to them by induction: (i) for every (ghost) variable or application node $m$ and for all $k>|m|$ we introduce a new unique ghost lambda node $\ghostlmd$ and define $m \enables_k \ghostlmd$; (ii) for every (ghost) lambda node $\alpha$ and $k>|\alpha|$ we introduce a unique ghost variable node $\ghostvar$ such that $\alpha \enables_k \ghostvar$.
-Ghost nodes are thus uniquely defined by their enabler node (possibly ghost themselves) and associated label $k\geq 1$.
+We simultaneously define ghost nodes and extend the enabling relation $\enables$ recursively as follows: for every (ghost) variable or application node $n$ with parent (ghost) lambda-node $\alpha$, and for all $k>|n|$, we define two new unique ghost nodes $\ghostlmd$ and $\ghostvar$
+such that
+$\ghostvar$ is the unique child of $\ghostlmd$, itself the unique child of $n$;
+and we define $n \enables_k \ghostlmd$
+and $\alpha \enables_{|\alpha|+ k} \ghostvar$; where by convention ghost nodes have arity $0$.
+The implicit binding relationship between ghost variables and their (possibly ghost) lambda-node binder allows us to forgo the notion of variables names altogether in ghost nodes. Thus
+ghost lambda and variable nodes all have the same unique label $\ghostlmd$ and $\ghostvar$ respectively.
 
-We write $\ExtendedNodes$ for the extended set of nodes $\Nodes + \ghostvar + \ghostlmd$, and use the shorthands $\ImNodesLmd$ for $\NodesLmd + \ghostlmd$ and $\ImNodesVar$ for $\NodesVar + \ghostvar$. By convention ghost nodes have arity $0$.
+We write $\ExtendedNodes$ for the extended set of nodes $\Nodes + \ghostvar + \ghostlmd$, and use the shorthands $\ImNodesLmd$ for $\NodesLmd + \ghostlmd$ and $\ImNodesVar$ for $\NodesVar + \ghostvar$.
 
 \subsection{Justified sequence of nodes}
 \label{sec:justseq}
 
-A \defname{justified sequence} is defined a sequence of (extended) nodes from the computation tree where every occurrence $n$ in the sequence, except the first one, has an associated link called ``justification pointer'' pointing to some previous node occurrence $j$ in the sequence, called its ``justifier'', with an associated ``link label'' $l\geq0$. The justifier node must $\enables$-enables the source node with the corresponding label; that is $j \enables_l n$ must hold. We represent a justified sequence as a sequence of labelled node occurrences with back-pointing arrows representing justification pointers, \eg, $\Pstr[10pt]{ s = \cdots (j){j} \ldots (n-j,25:l){n} }$.
+A \defname{justified sequence} is defined a sequence of nodes in $\ExtendedNodes$ from the extended computation tree where every occurrence $n$ in the sequence, except the first one, has an associated link called ``justification pointer'' pointing to some previous node occurrence $j$ in the sequence, called its ``justifier'', with an associated ``link label'' $l\geq0$; with the constraint that the justifier node $\enables$-enables the source node with the corresponding label; that is $j \enables_l n$ must hold. We represent a justified sequence as a sequence of labelled node occurrences with back-pointing arrows representing justification pointers, \eg, $\Pstr[10pt]{ s = \cdots (j){j} \ldots (n-j,25:l){n} }$.
 For readability, we sometimes indicate instead the link label in exponent of the justified occurrence, or even omit the justification pointers altogether.
 Note that the enabling relation is \emph{statically} induced by the structure of the tree whereas justification is defined on node \emph{occurrences} within a specific justified sequence. The set $\justseqset(M)$ of justified sequences over $M$ consists of all justified sequences over the extended set of nodes $\ExtendedNodes$.
 
@@ -553,13 +561,10 @@ The (name-free) \defname{structure} of a justified sequence refers to the sequen
 Two sequences $s$ and $u$ over possibly two distinct terms are \defname{equivalent}, written $s \equiv u$ just if they have the same structure: the types of the underlying nodes in the two sequences match pairwise (either both variable/@ nodes or both lambda nodes) and have the same justification pointers. Two equivalent sequences are not necessarily equal since they may have different variable names.
 We say that two subsets $J_1\subseteq \justseqset(M_1)$ and $J_2\subseteq\justseqset(M_2)$ are isomorphic, written $J_1\cong J_2$, if  there exists a structure-preserving bijection between $J_1$ and $J_2$. That is there exists a bijection $\phi :J_1\longrightarrow J_2$ such that for any $j\in J$, $j\equiv\phi(j)$.
 
-The \defname{quadruplet encoding} of a justified sequence of nodes with variables in $\VarSet$ is a sequence of quadruplets in $O_4 = \nat^*\times \mathcal{V}^* \times\nat\times\nat$ defined occurrence-wise where each occurrence is encoded by the following quadruplet:
-\begin{enumerate}[nosep]
-\item \emph{Node path}: Path to the extended node in the tree that uniquely defines the type and label of the occurrence;
-\item \emph{Pending lambdas}: The empty list $\epsilon$;
-\item \emph{Link distance}: The number of occurrences separating the encoded occurrence from its justifier;
-\item \emph{Link label}: The justification pointer's label.
-\end{enumerate}
+The \defname{quadruplet encoding} of a justified sequence of nodes with variables in $\VarSet$ is a sequence of quadruplets in $O_4 = \nat^*\times \mathcal{V}^* \times\nat\times\nat$ defined occurrence-wise where each quadruplets $(n,p,j,i) \in O_4$ is such that the \emph{Node path} $n$ is the path to the node in the (extended) computation tree uniquely defining the type and label of the occurrence;
+the \emph{Pending lambdas} $p$ is the empty list $\epsilon$;
+the \emph{Link distance} $j$ is the number of occurrences separating the occurrence from its justifier;
+the \emph{Link label} $i$ is the label of the justification pointer.
 
 This initial encoding is said to be \defname{canonical} because the \emph{pending lambda} components are all empty. We will define subsequent transformations that alter the pending lambda components.
 Observe that given a fixed term, a canonical justified sequence encoding uniquely determines its structure, by just discarding the labels; and reciprocally, labels are uniquely recoverable from the sequence structure and the term's enabling relation.
