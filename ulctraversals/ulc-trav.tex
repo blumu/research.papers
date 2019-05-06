@@ -255,9 +255,9 @@
 \begin{document}
 
 \begin{abstract}
-    We introduce a method to evaluate untyped lambda terms by combining the theory of traversals, a term-tree traversing technique inspired from Game Semantics~\cite{Ong2006,BlumPhd}, with judicious use of the eta-conversion rule of the lambda calculus.
+    We introduce a method to evaluate untyped lambda terms by combining the theory of traversals, a term-tree traversing technique inspired from Game Semantics~\cite{OngLics2006,BlumPhd}, with judicious use of the eta-conversion rule of the lambda calculus.
 
-    The traversal theory of the simply-typed lambda calculus relies on the eta-long transform to ensure that when traversing an application, there exists a subterm representing every possible operator's argument~\cite{BlumPhd, Ong2006}. In the untyped setting, we instead exhibit the missing operand via ad-hoc instantiation of the eta-expansion rule, which allows the traversal to proceed as if the operand existed in the original term. This gives rise to a more generic concept of traversals for lambda terms. A notable improvement, in addition to handling untyped terms, is that no preliminary transformation is required: the original unaltered lambda term is traversed.
+    The traversal theory of the simply-typed lambda calculus relies on the eta-long transform to ensure that when traversing an application, there exists a subterm representing every possible operator's argument~\cite{BlumPhd, OngLics2006}. In the untyped setting, we instead exhibit the missing operand via ad-hoc instantiation of the eta-expansion rule, which allows the traversal to proceed as if the operand existed in the original term. This gives rise to a more generic concept of traversals for lambda terms. A notable improvement, in addition to handling untyped terms, is that no preliminary transformation is required: the original unaltered lambda term is traversed.
 
     %Blindly applying the rules of typed traversals on untyped terms, where eta-long transform is undefined, therefore fails when an operator  node lacks the required operand. To work around this limitation, we create missing operands on-the-fly and proceed as if it existed in the original term. We denote missing operands in the traversals using ``imaginary'' nodes representing nodes that would exist in the term-tree if the application subterm lacking the operand were to be eta-expanded. We call the resulting traversal an ``imaginary traversal''.
 
@@ -279,7 +279,7 @@
 
 \subsection{Background and related work}
 
-The theory of traversals was originally introduced in the context of higher-order recursion schemes~\cite{Ong2006} as tree generators, and was
+The theory of traversals was originally introduced in the context of higher-order recursion schemes~\cite{OngLics2006} as tree generators, and was
 then extended to simply-typed languages with higher-order free variables, such as the simply-typed lambda calculus (STLC)~\cite{BlumPhd}.
 
 A traversal consists of a sequence of nodes taken from a tree-representation of the term, where every node occurrence may have an associated labelled link, or ``justification pointer'', referring to some previous occurrence in the sequence. It always starts from the root of the tree and successively visits other nodes by either descending deeper into the tree structure, or jumping to other tree branches. A small set of rules formally defines how to extend a traversal--what node to visit next with which justification pointer. This yields a prefix-closed set of justified sequences of nodes defining the set of traversals of the term.
@@ -352,7 +352,7 @@ Just like graph-based reduction, the traversal reduction procedure involves a fi
 
 \subsubsection{Game Semantic Theory of Traversals}
 
-The original paper on the theory of traversals concerns higher-order recursion schemes and therefore does not deal with free variables of higher-order rank~\cite{Ong2006}. In~\cite{BlumPhd} we extended the theory to the simply-typed lambda calculus and added traversal rule to model free variables. Both settings assume that the term or grammar is in eta-long form to guarantee that the operand of an application always exists.
+The original paper on the theory of traversals concerns higher-order recursion schemes and therefore does not deal with free variables of higher-order rank~\cite{OngLics2006}. In~\cite{BlumPhd} we extended the theory to the simply-typed lambda calculus and added traversal rule to model free variables. Both settings assume that the term or grammar is in eta-long form to guarantee that the operand of an application always exists.
 In the untyped setting, eta-long expansion would be an infinite process, so instead traversals must operate on the unmodified term tree.
 The present paper achieves this by eta-expanding subterms `on-the-fly' when there is insufficiently many operands in an application to continue the traversal. The term itself does not get altered: a traversal instantiates fictitious ``ghost'' nodes that would exist if the term were to be eta-expanded. We extend traversal rules to handle those fictitious nodes created in these ad-hoc eta-expansions. When restricted to simply-typed terms, the two notions of traversal conveniently coincide (Proposition~\ref{prop:ulc_and_stlc_trav_coincide}).
 
@@ -370,13 +370,13 @@ We show how the \emph{imaginary traversals} effectively implement leftmost linea
 
 
 \subsubsection{Berezun-Jones traversals}
-Berezun and Jones introduced the first notion of traversals for the \emph{untyped} lambda calculus (ULC)~\cite{JonesBerezunLLL}. Although they took inspiration from the Game Semantic traversals of~\cite{Ong2006,BlumGalop2008}, their definition is more operational in nature and does not directly relate to the game denotation of a term. Starting from an operational semantics of the untyped lambda calculus they derive a normalization method that, very much like the traversal of~\cite{Ong2006, BlumPhd}, proceeds by traversing some tree representation of the term.
+Berezun and Jones introduced the first notion of traversals for the \emph{untyped} lambda calculus (ULC)~\cite{JonesBerezunLLL-PEPM17}. Although they took inspiration from the Game Semantic traversals of~\cite{OngLics2006,BlumGalop2008}, their definition is more operational in nature and does not directly relate to the game denotation of a term. Starting from an operational semantics of the untyped lambda calculus they derive a normalization method that, very much like the traversal of~\cite{OngLics2006, BlumPhd}, proceeds by traversing some tree representation of the term.
 
 The tree representation used in Berezun-Jones' traversals is a direct abstract syntax tree representation of the lambda-term, whereas in the present paper we use a more compressed form where consecutive lambdas and applications are merged into a single bulk node. Unlike the original definition of traversals, where eta-long transformation is performed prior to traversing a term, neither Berezun-Jones' traversals nor imaginary traversals require any prior syntactic transformation of the input term.
 
 The Berezun-Jones traversals distinctively rely on two justification pointers: each `token' of the traversal can have one \emph{binding pointer} as well as one \emph{control pointer}. They also involve the use of a `flag` boolean parameter associated with every token of the traversal. In contrast to Berezun-Jones' traversals, imaginary traversals necessitate a single justification pointer per node occurrence.
 
-Another notable difference is that the normalization algorithm of Berezun-Jones requires a single traversal of the term. Our normalization algorithm, on the other hand, produces one traversal for every branch in the term tree of the beta-normal form. Each branching point corresponds to some occurrence of a variable in the normal form, and each branch corresponds to one operand of the variable. This non-deterministic branching may conceivably be eliminated by adding auxiliary pointers to allow imaginary traversals to backtrack: after the first operand of an application is evaluated, the traversal would return to the operator variable and start exploring the remaining operands.
+Another notable difference is that the normalization algorithm of Berezun-Jones requires a single traversal of the term. Our normalization algorithm, on the other hand, produces one traversal for every possible maximal path in the tree representation of the beta-normal form. Each branching point in the traversal enumeration corresponds to some occurrence of a variable in the normal form, where each branch corresponds to some operand of that variable. This non-deterministic branching may conceivably be eliminated by adding auxiliary pointers to allow imaginary traversals to backtrack: after the first operand of an application is evaluated, the traversal would return to the operator variable and start exploring the remaining operands.
 
 \subsection{Rest of the paper}
 
@@ -415,7 +415,7 @@ The \defname{head reduction}, denoted $\rightarrow_{h}$, fires the head redex of
 
 Given an untyped lambda term $M$ we define its \defname{computation tree} as an abstract syntax tree representation
 (AST) of the term where consecutive lambda abstractions are merged into a single `bulk' lambda-node and consecutive applications are represented by a single application node whose first child represents the operator, and subsequent children represents the operands.
-This definition is similar to that of STLC~\cite{Ong2006, BlumPhd} with the notable difference that we do not eta-long expand the term prior to constructing the computation tree.
+This definition is similar to that of STLC~\cite{OngLics2006, BlumPhd} with the notable difference that we do not eta-long expand the term prior to constructing the computation tree.
 \begin{definition}
 The \defname{computation tree} $\ctree(M)$ of an
  untyped lambda term $M$ is a $\mathcal{L}$-labelled tree
@@ -532,9 +532,9 @@ Because variable names and bindings are entirely recoverable from the enabling r
 
 A tree node is \defname{external} if it is hereditarily enabled by the root, otherwise it is \defname{internal}. We write $\ExtNodes$ for the set of external nodes, that is the image of the tree root by the reflexive transitive closure of the enabling relation. Internal nodes are therefore precisely the nodes hereditarily justified by application nodes $@$. We write $\IntNodes$ to denote the set of internal nodes.
 The \defname{arity} of a node $n$, written $|n|$,
-is defined for a variable node as its number of arguments (\ie, children in the computation tree); for an $@$-node, as the number of operands in the application (\ie, number of children nodes minus 1); for a lambda node $\lambda x_1 \cdots x_k$, $k\geq 0$, as the number of bound variables $k$.
+is defined for a variable node as the number of immediate arguments (\ie, children in the computation tree); for an application node, as the number of operands (\ie, number of children of the $@$-node minus 1); for a lambda node $\lambda x_1 \cdots x_k$, $k\geq 0$, as the number of bound variables $k$.
 
-\subsection{Ghost nodes}
+\subsection{Computation tree with ghost nodes}
 We extend the notion of computation tree by augmenting the
  \defname{structural nodes} $\Nodes$, representing tokens in the syntax representation of the lambda term,
 with two countable sets of \defname{ghost nodes} representing fictitious tokens: The \emph{ghost lambda nodes}
@@ -544,13 +544,13 @@ occurrences of variables bound by either a structural or a ghost lambda node.
 
 We simultaneously define ghost nodes and extend the enabling relation $\enables$ recursively as follows: for every (ghost) variable or application node $n$ with parent (ghost) lambda-node $\alpha$, and for all $k>|n|$, we define two new unique ghost nodes $\ghostlmd$ and $\ghostvar$
 such that
-$\ghostvar$ is the unique child of $\ghostlmd$, itself the unique child of $n$;
-and we define $n \enables_k \ghostlmd$
-and $\alpha \enables_{|\alpha|+ k} \ghostvar$; where by convention ghost nodes have arity $0$.
-The implicit binding relationship between ghost variables and their (possibly ghost) lambda-node binder allows us to forgo the notion of variables names altogether in ghost nodes. Thus
-ghost lambda and variable nodes all have the same unique label $\ghostlmd$ and $\ghostvar$ respectively.
+$\ghostvar$ is the unique child of $\ghostlmd$, itself defined as the $k$th-child of $n$;
+and we extend the enabling relation with $n \enables_k \ghostlmd$
+and $\alpha \enables_{|\alpha|+ k} \ghostvar$; where by convention ghost nodes have arity $0$, and the arity of structural nodes remains unchanged (\ie, given by their arity in the computation tree without ghost nodes).
+The implicit binding relationship between ghost variables and their (possibly ghost) lambda-node binder allows us to forgo the notion of variables names altogether in ghost nodes. We will thus
+use respectively $\ghostlmd$ and $\ghostvar$ as a unique label for all ghost lambda and variable nodes.
 
-We write $\ExtendedNodes$ for the extended set of nodes $\Nodes + \ghostvar + \ghostlmd$, and use the shorthands $\ImNodesLmd$ for $\NodesLmd + \ghostlmd$ and $\ImNodesVar$ for $\NodesVar + \ghostvar$.
+We write $\ExtendedNodes$ for the extended set of nodes $\Nodes + \ghostvar + \ghostlmd$, and use the shorthands $\ImNodesLmd$ for $\NodesLmd + \ghostlmd$ and $\ImNodesVar$ for $\NodesVar + \ghostvar$, where $+$ denotes disjoint union on sets.
 
 \subsection{Justified sequence of nodes}
 \label{sec:justseq}
@@ -633,12 +633,12 @@ A node occurrence in a justified sequence is \defname{hereditarily justified by 
 
 Let $s$ denote a justified sequence.
 We write $s^\omega$ to denote the last occurrence of $s$. For any occurrence $n$ in $s$ we write $s_{\leq n}$ for the prefix of $s$ ending at $n$, and $s_{<n}$ for the prefix ending immediately before $n$.
-%and $\jp(t)$ to denote the prefix of $t$ ending at the justifier of the last node of $t$.
+%and $\jp(s)$ to denote the prefix of $s$ ending at the justifier of the last node of $s$.
 We say that $s$ \defname{extends} $u$ if $u$ is a strict prefix of $s$.
 
 We borrow some standard operations on justified sequences from Game Semantics~\cite{Abr02}.
 \begin{definition}[Projections]
-Let $n$ be some occurrence of a justified sequence $s$. The \defname{projection} $s\filter n$ of $t$ with respect to $n$ is the subsequence obtained by keeping only occurrences hereditarily justified by $n$ in $s$. For a subset $A$ of nodes in $\Nodes$ we write $s \filter A$ to denote the subsequence of $s$ consisting of occurrences of nodes in $A$ only.
+Let $n$ be some occurrence of a justified sequence $s$. The \defname{projection} $s\filter n$ of $s$ with respect to $n$ is the subsequence obtained by keeping only occurrences hereditarily justified by $n$ in $s$. For a subset $A$ of nodes in $\Nodes$ we write $s \filter A$ to denote the subsequence of $s$ consisting of occurrences of nodes in $A$ only.
 
 We will consider the subsequence $s\filter\ExtNodes$ consisting of external nodes of $s$, which is equivalently given by $s\filter r_1 \filter \ldots \filter r_n$ where $r_1, \ldots r_n$, $n\geq 1$ are the occurrences of the root in $s$.
 \end{definition}
@@ -755,7 +755,7 @@ It is well-defined because sequences in $T$ correspond to actual paths in the tr
 \subsection{Definition and properties}
 
 \begin{definition}[ULC traversals]
-The set $\travulc(M)$ of \defname{traversals} of an untyped lambda term $M$, abbreviated $\travulc$ when the term is clear from context, is the set of justified sequences of nodes over $M$ recursively defined by the rules of Table~\ref{tab:trav_rules}.
+The set $\travulc(M)$ of \defname{traversals} of an untyped lambda term $M$, abbreviated $\travulc$ when the term is clear from context, is the set of justified sequences of nodes over the computation tree of $M$ extended with ghost nodes, recursively defined by the rules of Table~\ref{tab:trav_rules}.
 \end{definition}
 When referring to the traversal of an untyped term, we will used
 \emph{ULC traversal}, \emph{imaginary traversal} or just \emph{traversal} interchangeably.
@@ -783,29 +783,29 @@ $$\Pstr[0.5cm]{ t \cdot(alpha){\alpha} \cdot
 (n){n}
 \cdot \ldots \cdot
 (gl-n,40:i){\ghostlmd}\cdot (al-alpha,40:{|\alpha| + i - |n|}){\ghostvar}
-      \in\travulc}$$
+      \in\travulc}.$$
 \end{itemize}
 \emph{\bf PROGRAM -- Copy-cat rules}
 \begin{itemize}[leftmargin=3em]
-\item[\rulenamet{Var}] If \Pstr[0.5cm]{t \cdot (m){m} \cdot (alpha){\alpha}
-    \ldots (n-alpha,50:i){n} \in \travulc} for $i>0$, $m \in\ImNodesVar \union \NodesApp$, and internal nodes $\alpha \in \ImNodesLmd$ and $n \in \ImNodesVar$ then:
-  $$\Pstr[0.5cm]{ t  \cdot
+\item[\rulenamet{Var}] If \Pstr[0.5cm]{t\cdot(m){m}\cdot(alpha){\alpha}
+    \ldots (n-alpha,50:i){n}\in\travulc} for $i>0$, $m \in\ImNodesVar \union \NodesApp$ and internal nodes $\alpha \in \ImNodesLmd$, $n \in \ImNodesVar$ then if $\beta$ denote the $i$th child of $m$ we have:
+  $$\Pstr[0.3cm]{ t  \cdot
 (m){m} \cdot (lx){\alpha}  \ldots (x-lx,30:i){n}
     \cdot (letai-m,40:i){\beta}
-     \in\travulc}$$
+     \in\travulc}.$$
 \begin{description}[align=right,leftmargin=10em]
-\item[Concrete] $i \leq |m|$: $\beta\in\NodesLmd$ is the $i$th child of $m$;
-\item[Eta-expanded] $i > |m|$: $\beta$ is a ghost lambda node $\ghostlmd$.
+\item[Concrete case] If $i \leq |m|$ then $\beta$ is a structural lambda node in $\NodesLmd$;
+\item[Eta-expanded case] If $i > |m|$ then $\beta$ is a ghost lambda node $\ghostlmd$.
 \end{description}
 \end{itemize}
 
 \emph{\bf DATA -- Input-variable rules}
 \begin{itemize}[leftmargin=3em]
 \item[\rulenamet{IVar}] If $t \cdot n \in \travset$ with external node $n \in \ImNodesVar$ then for every node $m \in \ImNodesVar$ occurring in $\oview{t\cdot n}$
-and every $i\geq1$ we have $t \cdot n \cdot\alpha\in\travulc$ with $\alpha$ pointing to $m$ with label $i$, where:
+and every $i$th child node $\alpha$ of $m$, for $i\geq1$, we have $t \cdot n \cdot\alpha\in\travulc$ where $\alpha$ points to $m$ with label $i$.
 \begin{description}[align=right,leftmargin=10em]
-\item[Concrete] $i\leq|m|$: $\alpha\in\Nodes_\lambda$ is the $i$th child of $m$;
-\item[Eta-expanded] $i>|m|$: $\alpha$ is a ghost lambda node $\ghostlmd$.
+\item[Concrete case] If $i\leq|m|$ then $\alpha$ is a structural lambda node in $\Nodes_\lambda$;
+\item[Eta-expanded case] If $i>|m|$ then $\alpha$ is a ghost lambda node $\ghostlmd$.
 \end{description}
 \end{itemize}
 \caption{Imaginary traversals $\travulc$ of the untyped lambda calculus.}
@@ -866,7 +866,7 @@ We call \defname{ghost materialization} any instantiation of a traversal rule wh
 
 
 The underlying successive eta-expansions of $M$ can be reconstructed from the traversal itself:
-\begin{definition}[On-the-fly eta-expansion]
+\begin{definition}
 \label{def:onthefly_etaexpansion}
 Let $M$ be an untyped term. If $n\in \Nodes$ is the root node of some subterm $N$ of $M$ then we write ${\sf ETA}(M, n)$ for the term obtained by substituting in-place the subterm $N$ of $M$ with $\lambda\theta. N \theta$ for some fresh variable $\theta$.
 
@@ -888,7 +888,7 @@ $(\lambda u . u(y_1 (\lambda \alpha. u (\lambda \beta.\alpha\,\beta))) (\lambda 
 \end{example}
 
 \paragraph{Path-View correspondence}
-We now generalize a known result from the theory of traversals for higher-order grammars~\cite{Ong2006} and simply-typed lambda terms~\cite[Proposition 4.29]{BlumPhd} to the untyped setting. The game-semantic concept of P-view from Definition~\ref{def:views} corresponds to the concept of `tree path' in the following sense:
+We now generalize a known result from the theory of traversals for higher-order grammars~\cite{OngLics2006} and simply-typed lambda terms~\cite[Proposition 4.29]{BlumPhd} to the untyped setting. The game-semantic concept of P-view from Definition~\ref{def:views} corresponds to the concept of `tree path' in the following sense:
 
 \begin{proposition}[ULC Path-View correspondence]
 \label{prop:pathview_ulc}
@@ -926,7 +926,7 @@ such that its implicit \emph{element-wise pointer-preserving} extension $\eta_t 
 \end{proposition}
 \proofatend
 The tree $\ctree(M)$ being by definition a subtree of $\ctree(M^t)$, induces a one-to-one mapping from $\Nodes(M)$ to $\Nodes(M^t)$.
-We extend it to ghost nodes by mapping ghost occurrences in $t$ to the corresponding node resulting from the eta-expansions of subterms of $M$ in $M^t$, and all other ghost nodes not occurring in $t$ to the corresponding ghost nodes in $\ctree(M^t)$. Formally, we define $\eta_t$ by induction on the traversal $t$, observing that in rules \rulenamet{Var} and \rulenamet{IVar}, the on-the-fly eta-expansion of Definition~\ref{def:onthefly_etaexpansion} increments the arity of the justifier node $m$, which guarantees that the corresponding structural node exists in $\ctree(M^t)$.
+We extend it to ghost nodes by mapping ghost occurrences in $t$ to the corresponding node resulting from the eta-expansions of subterms of $M$ in $M^t$, and all other ghost nodes not occurring in $t$ to the corresponding ghost nodes in $\ctree(M^t)$. Formally, we define $\eta_t$ by induction on the traversal $t$, observing that the eta-expansion performed in rules \rulenamet{Var} and \rulenamet{IVar} in Definition~\ref{def:onthefly_etaexpansion} increments the arity of the justifier node $m$, which guarantees that the corresponding structural node exists in $\ctree(M^t)$.
 
 (i) By induction on $u$. Reusing the rule used to traverse $u$ to traverse $\eta_t(u)$. For the case \rulenamet{Var} and \rulenamet{IVar}, when the \emph{eta-expanded} subcase of the rule is used to traverse a ghost variable that also appeared in $t$, we use instead the \emph{concrete} sub-case used to traverse $\eta_t(u)$.
 
@@ -961,31 +961,31 @@ $x_1 \ldots x_n y_1 \ldots y_n$, the stack obtained after pushing the variables 
 \begin{definition}[Core projection]
 \label{def:coreprojection}
 Let $\overline{y} \in \VarSet^*$ denote a stack of variable names.
-We define the partial function $\coresymbol_{\overline{y}}\colon \justseqset(M) \longrightarrow \justseqset(M)$ by induction on the sequence: $\coresymbol_{\overline{y}}(\epsilon) = \epsilon$, and for any justified sequence $t \cdot n\in\justseqset(M)$ with prefix subsequence $t$ and last occurrence $n$:
+We define the partial function $\coresymbol_{\overline{y}}\colon \justseqset(M) \longrightarrow \justseqset(M)$ by induction: $\coresymbol_{\overline{y}}(\epsilon) = \epsilon$, and for any justified sequence $s \cdot n\in\justseqset(M)$ with prefix subsequence $s$ and last occurrence $n$:
 \begin{equation*}
-\coresymbol_{\overline{y}}(t\cdot n) =
+\coresymbol_{\overline{y}}(s\cdot n) =
 \begin{cases}
-\coresymbol_{\epsilon}(t) \cdot n
-    & \mbox{if } n\in\ImNodesVar\inter\ExtNodes \\
-\coresymbol_{pop_{|n|}(\overline{y})}(t)
-    & \mbox{if } n\in(\ImNodesVar\inter\IntNodes)\union\NodesApp \\
-\coresymbol_{\epsilon}(t) \cdot \lambda \overline{x}\overline{y}
-    & \mbox{if } n\in\NodesLmd\inter\ExtNodes, n \mbox{ labelled } \lambda\overline{x}\\
-\coresymbol_{\overline{x} \overline{y}}(t)
-    & \mbox{if } n\in\NodesLmd\inter\IntNodes, n \mbox{ labelled } \lambda\overline{x} \\
-\coresymbol_{\epsilon}(t) \cdot\lambda\overline{y}
-    & \mbox{if } n\in\ghostlmd\inter\ExtNodes \\
-\coresymbol_{\overline{y}}(t)
-    & \mbox{if } n\in\ghostlmd\inter\IntNodes \ .
+\coresymbol_{\epsilon}(s) \cdot n
+    & \mbox{if } n\in\ImNodesVar\inter\ExtNodes, \\
+\coresymbol_{pop_{|n|}(\overline{y})}(s)
+    & \mbox{if } n\in(\ImNodesVar\inter\IntNodes)\union\NodesApp, \\
+\coresymbol_{\epsilon}(s) \cdot \lambda \overline{x}\overline{y}
+    & \mbox{if } n\in\NodesLmd\inter\ExtNodes, n \mbox{ labelled } \lambda\overline{x},\\
+\coresymbol_{\overline{x} \overline{y}}(s)
+    & \mbox{if } n\in\NodesLmd\inter\IntNodes, n \mbox{ labelled } \lambda\overline{x}, \\
+\coresymbol_{\epsilon}(s) \cdot\lambda\overline{y}
+    & \mbox{if } n\in\ghostlmd\inter\ExtNodes, \\
+\coresymbol_{\overline{y}}(s)
+    & \mbox{if } n\in\ghostlmd\inter\IntNodes.
 %%%%%
 \end{cases}
 \end{equation*}
-The above equalities are assumed pointer-preserving, which is well-defined since an external node can only be justified by another external node. Note that if $t$ is a traversal, the second last case is not needed since ghost lambdas are necessarily internal by Property~\ref{prop:trav_immediate}.
-
-We call $\coresymbol_\epsilon(t)$ the \defname{core} of $t$ which we abbreviate as $\core{t}$. The P-view of the core $\pview{\core{t}}$ is called the \defname{core P-view} of $t$.
+The above equalities are assumed pointer-preserving, and are well-defined since an external node can only be justified by another external node. We define
+the \defname{core} of $s$ as $\core{s} = \coresymbol_\epsilon(s)$,
+and the \defname{core P-view} of $s$ as $\pview{\core{s}}$, the P-view of its core.
 \end{definition}
 
-The suffix parameter $\overline{y}$ in the definition of $\coresymbol$, is used as an accumulator for the list of variables forming the abstractions $\lambda \overline{y}$ that eventually gets prepended to the last external lambda nodes. We call it the \defname{stack of pending lambdas}. Hence, \emph{core projection} can be defined more succinctly as the sequence obtained by removing internal nodes and prepending to each external lambda node's label, the stack of \emph{pending lambdas} between that point to the next external node.
+In the above definition, the subscript parameter $\overline{y}$ is called \defname{stack of pending lambdas}. As the sequence is read backwards, it accumulates variable names which then get prepended to the last external lambda nodes in the sequence. The \emph{core projection} is the sub-sequence obtained by removing internal nodes and prepending to each external lambda node's label, the stack of \emph{pending lambdas} between that point to the next external node.
 
 Since the core of a justified sequence only contains external nodes it follows that $\coresymbol$ is idempotent.
 
@@ -1026,7 +1026,7 @@ $$t = \Pstr[0.5cm]{
 \subsection{Traversals of the Simply-Typed Lambda Calculus}
 
 Traversals for simply-typed languages, such as STLC and PCF, were previously studied in~\cite{BlumPhd}. A notable limitation is that they are defined for eta-long forms only.
-Let us fix a simply-typed term-in-context $\Gamma \entail M :T$, with typed-context $\Gamma$ (a set of typed variables), and simple type $T$. Its \defname{eta-long form}, defined inductively on the type $T$, is obtained by recursively eta-expanding every subterm as many times as possible with respect to the subterm type~\cite{Ong2006,BlumPhd}.
+Let us fix a simply-typed term-in-context $\Gamma \entail M :T$, with typed-context $\Gamma$ (a set of typed variables), and simple type $T$. Its \defname{eta-long form}, defined inductively on the type $T$, is obtained by recursively eta-expanding every subterm as many times as possible with respect to the subterm type~\cite{OngLics2006,BlumPhd}.
 By abuse of language we say that an untyped term $M$ is in eta-long form if it inhabits a simple type $T$ such that it equates its own eta-long expansion with respect to $T$, modulo variable renaming.
 
 The imaginary traversal rules strictly generalize the STLC traversal rules from~\cite{BlumPhd}:
@@ -1178,9 +1178,9 @@ Let $t\in \travsetbr$ be a branching traversal. If $t$ is infinite then it neces
 \begin{proof}
 Suppose $t$ does not contain any ghost node then
 $t$ is obtained without \rulenamet{Lam^\ghostvar_\branching} and without the `eta-expansion' subcases of the variable rules. The remaining rules correspond precisely to the traversal rules of
-\cite{Ong2006} (where \rulenamet{IVar} is renamed \rulenamet{Sig}).
+\cite{OngLics2006} (where \rulenamet{IVar} is renamed \rulenamet{Sig}).
 We can therefore appeal to the Spinal Decomposition Lemma
-\cite[Lemma 14]{Ong2006} which shows that if $t$ is infinite then there is an infinite sequence of prefixes of $t$ whose P-views (the \emph{spine} of $t$) is strictly increasing. By the Path correspondence this means that there is an infinite path in the computation tree of $M$ which gives a contradiction. Hence $t$ is either finite or contains a ghost node.
+\cite[Lemma 8]{OngLics2006} which shows that if $t$ is infinite then there is an infinite sequence of prefixes of $t$ whose P-views (the \emph{spine} of $t$) is strictly increasing. By the Path correspondence this means that there is an infinite path in the computation tree of $M$ which gives a contradiction. Hence $t$ is either finite or contains a ghost node.
 \end{proof}
 
 \begin{property}
@@ -1362,9 +1362,9 @@ for some structural internal lambda node $\lambda\overline{x}$, and consequently
 \end{proposition}
 \proofatend
 %\begin{proof}
-(i) By the alternation property of traversals, the last strand of $t$ consists of a succession of lambda nodes $\alpha_q$ and variable or $@$-nodes $n_q$, with indices going from $k$ down to $1$.
+(i) By the alternation property of traversals, the last strand of $t$ consists of a succession of lambda nodes $\alpha_q$ and variable or $@$-nodes $n_q$, with indices in $\{1..k\}$.
 
-We show by finite induction on $1 \leq q \leq k$ that the first $2k$ nodes after $t^\omega$ are successive pairs of ghost lambda and ghost variable nodes justified in order by $n_1, \alpha_1, n_2, \alpha_2, n_3, \ldots, n_k, \alpha_k$ with respective labels $i_1, i_2, i_2, i_3, i_3, \ldots, i_k, i_k, i_{k+1}$ defined by:
+We show by finite induction on $q\in\{1..k\}$ that the first $2k$ nodes after $t^\omega$ are successive pairs of ghost lambda and ghost variable nodes justified in order by $n_1, \alpha_1, n_2, \alpha_2, n_3, \ldots, n_k, \alpha_k$ with respective labels $i_1, i_2, i_2, i_3, i_3, \ldots, i_k, i_k, i_{k+1}$ defined by:
 \begin{equation*}
 \left\{
     \begin{aligned}
@@ -1375,7 +1375,7 @@ We show by finite induction on $1 \leq q \leq k$ that the first $2k$ nodes after
 \end{equation*}
 
 \begin{itemize}
-\item Base case $q=1$: Because $t^\omega$ is a ghost variable node hereditarily justified by the root, the only next rule that can be applied is \rulenamet{IVar_\branching}, and by assumption the following node is a ghost lambda node justified by $t^\omega$ with label $i_1 = i$. Then by rule \rulenamet{Lam^\ghostvar_\branching} the next node is a ghost variable justified by $\alpha$ with label $i_2 = i + |\alpha_1| - |t^\omega|$.
+\item Base case $q=1$: Because $t^\omega$ is a ghost external variable node, the only rule to apply is \rulenamet{IVar_\branching}, and by assumption the following node is a ghost lambda node justified by $t^\omega$ with label $i_1 = i$. By rule \rulenamet{Lam^\ghostvar_\branching} the next node is a ghost variable justified by $\alpha$ with label $i_2 = i + |\alpha_1| - |t^\omega|$.
 
 $$ t_{\max} = \Pstr[0.3cm]{ \cdots (alpha){\alpha_1}\ (m){t^\omega}\ (l-m,30:i){\ghostlmd}\ (t-alpha,45:i_2){\ghostvar} \cdots} $$
 
@@ -1881,12 +1881,6 @@ or after variable renaming $\lambda x y s z . s (x s (y s z))$.
 
 \subsection{Head-linear reduction}
 
-
-\begin{todobox}
-    - add ref from  Neil Jones
-\end{todobox}
-
-
 In the lambda calculus, a redex is necessarily formed by the outermost lambda in operator position of an application: if the operator consists of consecutive lambda abstractions (\eg, as in $(\lambda x \lambda y . M) A_1 A_2$) then the outermost lambda (\eg, $\lambda x$) is the one that will form the redex. The notion of redex can be generalized to allow evaluation of arguments in any order. In particular, one can allow any of the consecutive $\lambda$-abstractions to form a redex (\eg, the abstraction $\lambda y$ and corresponding argument $A_2$ would be a valid redex). This is formalized by the notion of \emph{generalized redex}--a generalization of the notion of \emph{prime redex} from Danos and Regnier~\cite{danos-head,REGNIER1994281}.
 \begin{definition}[Generalized redex]
 \label{dfn:generalized_redex}
@@ -1989,7 +1983,7 @@ Now if $M$ has a beta-normal form then the result follows by a straightforward i
     \begin{align*}
     lloc_M(y A_1 \ldots A_n) &=
         \begin{cases}
-         lloc_M (A_j) &\mbox{ where } j = \min \{ 1\leq i\leq n \ | \ lloc_M (A_i) \neq \bot\} \\
+         lloc_M (A_j) &\mbox{ where } j = \min_{1\leq i\leq n} \{ i\, | \ lloc_M (A_i) \neq \bot\} \\
          \bot &\mbox{ if } lloc_M(A_i) = \bot \mbox{ for all } 1\leq i\leq n.
         \end{cases}
     \end{align*}
@@ -3198,7 +3192,7 @@ Otherwise, since $M$ has a beta-nf, by Theorem~\ref{thm:completeness_leftmostlin
 % \begin{remark}
 % The infinitary counterpart of the characterization theorem for lambda terms with no normal form (not shown in this paper) can be stated as:
 % $$ \Union_{k\geq0} \left(\travulc^k(M)/{\sim}\right) = \pathset(BT(M))$$
-% where $\travulc^k(M)$ denotes the set of traversals of length $k$ at most and $\pathset(BT(M))$ denotes the set of \emph{possibly infinite} maximal paths in the B\"oem tree $BT(M)$ of $M$ (the infinitary computation tree of the term obtained by reducing beta-redexes ad-infinitum~\cite{barendregt2013lambda}).\footnote{See also~\cite{Blum17-HomogNotRestriction, Ong2006} for a formal definition of infinitary computation trees.}
+% where $\travulc^k(M)$ denotes the set of traversals of length $k$ at most and $\pathset(BT(M))$ denotes the set of \emph{possibly infinite} maximal paths in the B\"oem tree $BT(M)$ of $M$ (the infinitary computation tree of the term obtained by reducing beta-redexes ad-infinitum~\cite{barendregt2013lambda}).\footnote{See also~\cite{Blum17-HomogNotRestriction, OngLics2006} for a formal definition of infinitary computation trees.}
 % \end{remark}
 
 \section{Conclusion and further directions}
@@ -3207,7 +3201,7 @@ We presented a novel method to evaluate untyped lambda terms by generalizing the
 
 \subsection*{Connection with Berezun-Jones traversals of ULC}
 
-Daniil Berezun and Neil Jones were first to introduce a notion of traversals for the untyped lambda calculus~\cite{JonesBerezunLLL}. Their presentation has notable differences with ours. Firstly, they require two types of pointers: binding pointers and control pointers, instead of a single justification pointer for imaginary traversals.
+Daniil Berezun and Neil Jones were first to introduce a notion of traversals for the untyped lambda calculus~\cite{JonesBerezunLLL-PEPM17}. Their presentation has notable differences with ours. Firstly, they require two types of pointers: binding pointers and control pointers, instead of a single justification pointer for imaginary traversals.
 The control pointers would be what Danos-Regnier call the ``price to pay for having no stacks or environments'' in their definition of the argument lookup transition of the Pointer Abstract Machine~\cite{danos-head}.
 
 In imaginary traversals, node occurrences have at most one justification pointer. They trade the notions of stacks and environments with the concept of ghost occurrences. They implement the ``gymnastics to find the argument of a subterm''~\cite{danos-head} with the `pending argument lookup' of Definition~\ref{def:spinaldescent_pendingarglookup}, which traverses ghost occurrences until a structural node materializes\footnote{The ghost materialization loop  implemented by
@@ -3229,7 +3223,7 @@ We conjecture that a similar correspondence holds for the untyped lambda calculu
 
 % \subsection*{Higher-order collapsible pushdown automata}
 
-% In the typed-setting, there are well-understood correspondences between grammars and automaton. When used as tree-generating devices, for instances, higher-order recursion schemes can be turned into equivalent \emh{collapsible} higher-order pushdown automata, and reciprocally~\cite{Ong2006}. A recursion scheme can be viewed as a closed typed lambda-term with recursion of ground type with order-$1$ free constructors representing the nodes and leaves of the tree (itself of ground type). The automaton resulting from the first construction proceeds by simulating traversals over the tree representation of the recursion scheme.
+% In the typed-setting, there are well-understood correspondences between grammars and automaton. When used as tree-generating devices, for instances, higher-order recursion schemes can be turned into equivalent \emh{collapsible} higher-order pushdown automata, and reciprocally~\cite{OngLics2006}. A recursion scheme can be viewed as a closed typed lambda-term with recursion of ground type with order-$1$ free constructors representing the nodes and leaves of the tree (itself of ground type). The automaton resulting from the first construction proceeds by simulating traversals over the tree representation of the recursion scheme.
 
 % What would be the untyped counterpart of such transformation? What type of automaton can simulate the imaginary traversals?
 % Very likely just a turing machine!
