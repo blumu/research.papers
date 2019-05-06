@@ -268,6 +268,13 @@
 
 %\tableofcontents
 
+\begin{todobox}
+    -	Where proofs are not given, either leave out completely or better  write a sentence to give the proof method.
+    -	Some of the proofs from the appendix could have been brought into
+    the paper by showing just some interesting/non-standard cases.
+\end{todobox}
+
+
 \section{Introduction}
 
 \subsection{Background and related work}
@@ -332,7 +339,9 @@ The read-out phase of the algorithm appeals to a path-correspondence property of
 \begin{todobox}
 This paper is about reducing lambda terms, so I was surprised that the related work section only discussed a very narrow line leading to the results of the paper.
 As mentioned above, environment machines and other evaluation methods could be at least mentioned (and saying why this is different).
+
 -	But there are other topics that are much closer: geometry of interaction for example shares some of issues that are discussed here, but in that approach a token traverses the structure of terms (both typed and untyped) and eta-expansion of the term is not needed.
+
 -	There is some interesting comparison to be done here I believe, but was a little surprised that nothing was mentioned.
 \end{todobox}
 
@@ -404,7 +413,8 @@ The \defname{head reduction}, denoted $\rightarrow_{h}$, fires the head redex of
 
 \subsection{Computation tree and enabling relation}
 
-Given an untyped lambda term $M$ we define its \defname{computation tree} as the abstract syntax tree representation of the term where (i) consecutive lambda abstractions are merged into a single `bulk' node labelled by the list of bound variables and have a single child; (ii) consecutive applications are represented by a single node labelled $@$ whose first child represents the operator, and subsequent children represents the operands.
+Given an untyped lambda term $M$ we define its \defname{computation tree} as an abstract syntax tree representation
+(AST) of the term where consecutive lambda abstractions are merged into a single `bulk' lambda-node and consecutive applications are represented by a single application node whose first child represents the operator, and subsequent children represents the operands.
 This definition is similar to that of STLC~\cite{Ong2006, BlumPhd} with the notable difference that we do not eta-long expand the term prior to constructing the computation tree.
 \begin{definition}
 The \defname{computation tree} $\ctree(M)$ of an
@@ -421,7 +431,12 @@ defined inductively by:
 &  \hbox{for $m\geq 1$, $y\in \VarSet$}.
 \end{align*}
 
- We write $\Nodes(M)$ to denote the set of nodes of $\ctree(M)$, or just $\Nodes$ if the term is clear from context; $\NodesVar$ for the set of variable nodes; $\NodesLmd$ for lambda nodes, and $\NodesApp$ for  application nodes. For any lambda node $\alpha\in\NodesLmd$ we write $\child(\alpha)$ to denote its unique child node (either a variable node or $@$).
+Note that any lambda term can indeed be written in one of the two forms above. In particular, applicative terms are handled by the case $n=0$ of the form $\lambda . N$ for some term $N$ where `$\lambda$' is referred to as a ``dummy lambda''.
+
+The computation tree is just a more compact version of the traditional notion of term tree from the lambda calculus. One advantage is that application nodes indicate the presence of beta-redexes in the term. Computation trees without @-nodes are isomorphic to the notion of B\"ohm tree~\cite{Barendregt84}, with the implicit generalization of computation trees to infinitary terms.
+Another property of this representation is the alternation between lambda nodes and variable/application nodes at odd and even levels.
+
+We write $\Nodes(M)$ to denote the set of nodes of $\ctree(M)$, or just $\Nodes$ if the term is clear from context; $\NodesVar$ for the set of variable nodes; $\NodesLmd$ for lambda nodes, and $\NodesApp$ for  application nodes. For any lambda node $\alpha\in\NodesLmd$ we write $\child(\alpha)$ to denote its unique child node (either a variable node or $@$).
 \end{definition}
 
 Figure~\ref{fig:comptree_examples} illustrates examples of computation trees.
@@ -509,19 +524,6 @@ Figure~\ref{fig:comptree_examples} illustrates examples of computation trees.
 \label{fig:comptree_examples}
 \centering
 \end{figure}
-\begin{todobox}
-    -	Is there any relation with Bohm trees that could be said at this point also?
-\end{todobox}
-
-\begin{todobox}
-    -	 I found the paper a bit repetitive in places, for example, we are  told many times about eta-long forms.
-    -	Where proofs are not given, either leave out completely or better  write a sentence to give the proof method.
-    -	Some of the proofs from the appendix could have been brought into
-    the paper by showing just some interesting/non-standard cases.
-
-\end{todobox}
-
-Note that any lambda term can indeed be written in one of the two forms above. In particular, applicative terms are handled by the case $n=0$ of the form $\lambda . N$ for some term $N$ where `$\lambda$' is referred to as a ``dummy lambda''. One property of this compact tree representation is the alternation between lambda nodes and variable nodes at odd/even levels.
 
 We define the \defname{enabling relation} $\enables$ on tree nodes $\Nodes$ as the relation mapping (i) each lambda node to all the variable nodes that it binds; (ii) the root of the tree to all the free variable nodes; (iii) variable and application node to each one of their child node. We write $m \enables_k \alpha$ to indicate that a lambda node $\alpha$ is the $k$th child of a variable or application node $m$ for some $k\geq0$; and $\alpha \enables_k m$ to indicate that variable node $m$ is labelled by the $k$th variable bound by $\alpha$ for $k\geq1$.
 We say that node $m$ \defname{hereditarily enables} $n$ if they relate by the reflexive transitive closure of $\enables$.
