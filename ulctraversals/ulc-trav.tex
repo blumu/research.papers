@@ -212,7 +212,7 @@
 \newcommand\bulklambda[1]{{\lambda\overline{#1}}}
 
 % et al
-\newcommand{\etal}{\textit{et al}. }
+\def\etal{\textit{et al.}\@\xspace}
 
 % head linear reduction
 \newcommand{\hlred}{\rightarrow_{hl}}
@@ -292,10 +292,6 @@ This correspondence gives rise to a method for finding the normal form of a simp
 where traversals explore a branches in the tree representation of the normal form. The underlying sequences of nodes and pointers encode the unfolding of the normalization procedure over branches of the normal form. There are two kinds of nodes: the \emph{internal} nodes record intermediate steps of the reduction procedure, while \emph{external} nodes represent actual nodes from the tree representation of the normal form. The core projection of a traversal effectively removes all its internal nodes, which yields a path in the abstract syntax tree of the normal form.
 
 
-
-%The closest related reduction device would be the Pointer Abstract Machine of Danos \etal~\cite{danos-head,danosherbelinregnier1996}
-
-
 %%%%%%%%%%%%%%%
 \subsection{Overview}
 In this paper we: (i) Generalize the notion of traversals to the untyped lambda calculus (ULC), which we call \emph{imaginery travserals}; (ii) Introduce a method to evaluate untyped lambda terms based on enumeration of their traversals; (iii) Formalize the connection between traversals and the notion of \emph{head linear reduction}.
@@ -313,11 +309,6 @@ Generalizing this idea, the traversal rules of STLC induce the implicit `eta-exp
 In the above example, the first expansion considered is that of $f$ because at that point, the rules of STLC only lets us
 visit an immediate argument of $f$. If instead we were to eta-expand the term itself, it would yield $\lambda z. (\lambda f .f)(\lambda x.x) z$
 which an STLC traversal cannot traverse since $f$ does not have an immediate argument. More intuitively: at $x$ the traversal has figured out that the subterm $\lambda x.x$ should be substituted for variable $f$, therefore to determine what $x$ should be substituted for, it needs to look for the first argument of $f$. Since $f$ has no direct argument, it must be eta-expanded. In this simple example, the jump into the realm of fictitious nodes is indefinite: nodes subsequently traversed are all absent from the original term. There are situations, however, where it eventually leads to traversing an actual node from the original term tree. Example \ref{ex:missingoperand} illustrates this phenomenon on term $(\lambda u . u(y_1\, u)) (\lambda v . v\, y_2)$.
-
-% The reader may wonder why would , be wondering why would the traversal get stuck at this point since, for comparison, an abstract machine
-% %TODO \cite{}
-% It might be surprising at first
-% For comparison with standard evaluation of lambda terms, observe that an abstract machine such as a Krivine machine, which like
 
 In practice, it is not necessary to rewrite the term or alter its syntax representation to traverse it. The eta-expansion occurs fictitiously and ``on the fly'' as the traversal unfolds, and takes place when traversing a variable node. An untyped traversal, however, bares sufficient traces of those successive fictitious eta-expansions for one to reconstruct the expanded term effectively being traversed.
 
@@ -357,30 +348,52 @@ In the untyped setting, eta-long expansion would be an infinite process, so inst
 The present paper achieves this by eta-expanding subterms `on-the-fly' when there is insufficiently many operands in an application to continue the traversal. The term itself does not get altered: a traversal instantiates fictitious ``ghost'' nodes that would exist if the term were to be eta-expanded. We extend traversal rules to handle those fictitious nodes created in these ad-hoc eta-expansions. When restricted to simply-typed terms, the two notions of traversal conveniently coincide (Proposition~\ref{prop:ulc_and_stlc_trav_coincide}).
 
 STLC traversals were shown to correspond to the \emph{interaction game semantic denotation} of a term, where all internal moves from strategy composition are revealed; while the \emph{projection with respect to the tree root} operation, yields a correspondence with the standard Game Semantics~\cite{BlumPhd}.
-This induces a method to evaluate simply-typed lambda-terms, which was alluded to in~\cite{BlumPhd,BlumGalop2008,Blum-HogTool,Ong-NormByTrav2015} and implemented in~\cite{BlumGalop2008, BlumPhd}. The present paper states the STLC evaluation procedure in Algorithm~\ref{algo:ulc_normalization_by_traversals} and generalizes it to the untyped lambda calculus.
-Projecting traversals is slightly more complex than for STLC as it involves relabelling of the lambda nodes after filtering. A notable improvement is that it produces the traditional beta-normal form rather than the beta-\emph{eta-long} normal form. Another difference is that we prove soundness of the procedure through a connection with the notion of head-linear reduction rather than appealing to Game Semantics.
+This induces a method to evaluate simply-typed lambda-terms~\cite{BlumPhd,BlumGalop2008,Blum-HogTool,Ong-NormByTrav2015}, which we state in Algorithm~\ref{algo:ulc_normalization_by_traversals}, that was previously implemented in~\cite{Blum-HogTool}.
+
+This paper generalizes the evaluation procedure to the untyped lambda calculus,
+based on an extended notion of `projection with respect to the root'
+that involves relabelling of the lambda nodes after filtering. A notable improvement is that it produces the traditional beta-normal form rather than the beta-\emph{eta-long} normal form. Another difference is that we prove soundness of the procedure through a connection with the notion of head-linear reduction rather than appealing to Game Semantics.
 
 \subsubsection{Head linear reduction}
 Danos \etal established the first connection between Game Semantics and the concept of \emph{head linear reduction}~\cite{danos-head,danosherbelinregnier1996}. Despite this connection, their work does not explicitly describe how to use head linear reduction to fully evaluate a lambda term. The \emph{pointer abstract machine} introduced in the same paper, for instance, yields the ``\emph{quasi-head normal form (qhn)}'' of the term, not the normal form itself. The resulting \emph{qhn} still needs to be first reduced to head normal form (using head reduction) and then normalized using standard normal reduction, which must terminate by the $\lambda$-calculus theory.
 
-Traversals are essentially a recursive implementation of the head linear reduction strategy on lambda terms. A traversal starts, in a call-by-name-like fashion, with a depth-first search for what Danos-Regnier call the \emph{head occurrence} of the \emph{hoc redex}, and implements linear substitution by ``jumping'' to the node in the tree representing the sub-term to be substituted for that head occurrence. It then continues its descent to look for the next head occurrence, as if that first head occurrence had been replaced by the redex argument. A property of head-linear reduction is that all the terms appearing in the reduction sequence consist of sub-terms of the original term. This property means that there is no need for the traditional notions of environments or closures to reduce beta-redexes. In traversals, such mechanisms are replaced by a system of pointers referencing subterms of the original term.
+Traversals are essentially a recursive implementation of the head linear reduction strategy on lambda terms. A traversal starts, in a call-by-name-like fashion, with a depth-first search for \emph{head occurrence} of the \emph{hoc redex} as defined by Danos-Regnier, and implements linear substitution by ``jumping'' to the node in the tree representing the sub-term to be substituted for that head occurrence. It then continues its descent to look for the next head occurrence, as if that first head occurrence had been replaced by the redex argument. A property of head-linear reduction is that all the terms appearing in the reduction sequence consist of sub-terms of the original term. This property means that there is no need for the traditional notions of environments or closures to reduce beta-redexes. In traversals, such mechanisms are replaced by a system of pointers referencing subterms of the original term.
 
-The present paper formalizes this generalization with the notion of \emph{leftmost linear reduction} strategy that recursively applies head linear reduction; just like the normal reduction from the lambda calculus literature  proceeds by recursively applying head reduction.
-We show how the \emph{imaginary traversals} effectively implement leftmost linear reduction, which proves soundness of the traversal normalization procedure.
+This paper formalizes the notion of \emph{leftmost linear reduction} strategy that recursively applies head linear reduction; just like how the \emph{normal reduction} from the lambda calculus proceeds by recursively applying head reduction. We show how the \emph{imaginary traversals} effectively implement leftmost linear reduction, which proves soundness of the traversal normalization procedure.
+
+%%%%%%%%%%%%%%%%%
+An imaginary traversal implements what Danos \etal call ``the gymnastics to find the argument of a subterm''~\cite{danos-head} via
+the mechanism of `weaving' (Proposition~\ref{prop:weaving}),
+where it traverses a succession of ghost occurrences until the node representing the argument to be fetched materializes.
+A weaving consists of repeated instantiations of the lambda and variable
+traversal rules where the link label `$|\alpha|+i-|m|$' from the definition
+of the lambda rule in Table~\ref{tab:normalizing_trav_rules}, effectively calculates the quantity $r-a+l$ that appear in step 2.(b) of the PAM transition from \cite{danos-head}.
+
+% `pending argument lookup' (Definition~\ref{def:spinaldescent_pendingarglookup})
+%%%%%%%%%
+
+%The closest related reduction device would be the Pointer Abstract Machine of Danos \etal~\cite{danos-head,danosherbelinregnier1996}
 
 
 \subsubsection{Berezun-Jones traversals}
-Berezun and Jones introduced the first notion of traversals for the \emph{untyped} lambda calculus (ULC)~\cite{JonesBerezunLLL-PEPM17}. Although they took inspiration from the Game Semantic traversals of~\cite{OngLics2006,BlumGalop2008}, their definition is more operational in nature and does not directly relate to the game denotation of a term. Starting from an operational semantics of the untyped lambda calculus they derive a normalization method that, very much like the traversal of~\cite{OngLics2006, BlumPhd}, proceeds by traversing some tree representation of the term.
 
-The tree representation used in Berezun-Jones' traversals is a direct abstract syntax tree representation of the lambda-term, whereas in the present paper we use a more compressed form where consecutive lambdas and applications are merged into a single bulk node. Unlike the original definition of traversals, where eta-long transformation is performed prior to traversing a term, neither Berezun-Jones' traversals nor imaginary traversals require any prior syntactic transformation of the input term.
+Daniil Berezun and Neil Jones were first to introduce a notion of traversals for the untyped lambda calculus~\cite{JonesBerezunLLL-PEPM17}.
+Although they took inspiration from the Game Semantic traversals of~\cite{OngLics2006,BlumGalop2008}, their definition is more operational in nature and does not directly relate to the game denotation of a term. Starting from an operational semantics of the untyped lambda calculus they derive a normalization method that, very much like the traversal of~\cite{OngLics2006, BlumPhd}, proceeds by traversing some tree representation of the term.
 
-The Berezun-Jones traversals distinctively rely on two justification pointers: each `token' of the traversal can have one \emph{binding pointer} as well as one \emph{control pointer}. They also involve the use of a `flag` boolean parameter associated with every token of the traversal. In contrast to Berezun-Jones' traversals, imaginary traversals necessitate a single justification pointer per node occurrence.
+Their notion of tree is the traditional term tree representation of a lambda term where each node refers to a token from the lambda term syntax, whereas the present paper uses a more compressed form of tree where consecutive lambdas nodes, or consecutive applications nodes, are merged into a single bulk node. Unlike the original definition of traversals, involving eta-long transformation prior to traversing a term, neither Berezun-Jones' traversals nor imaginary traversals require any prior syntactic transformation of the input term.
 
-Another notable difference is that the normalization algorithm of Berezun-Jones requires a single traversal of the term. Our normalization algorithm, on the other hand, produces one traversal for every possible maximal path in the tree representation of the beta-normal form. Each branching point in the traversal enumeration corresponds to some occurrence of a variable in the normal form, where each branch corresponds to some operand of that variable. This non-deterministic branching may conceivably be eliminated by adding auxiliary pointers to allow imaginary traversals to backtrack: after the first operand of an application is evaluated, the traversal would return to the operator variable and start exploring the remaining operands.
+Berezun-Jones' traversals distinctively rely on two justification pointers: each token of the traversal can have one \emph{binding pointer} as well as one \emph{control pointer}. The control pointers would be what Danos-Regnier call the ``price to pay for having no stacks or environments'' in the definition of the argument lookup transition of the Pointer Abstract Machine~\cite{danos-head}. They also involve the use of a `flag` boolean parameter associated with every token of the traversal.
+In contrast, imaginary traversals necessitate a single justification pointer per node occurrence.
+
+Another notable difference is that the normalization algorithm of Berezun-Jones requires a single traversal of the term. Our normalization algorithm, on the other hand, produces one traversal for every possible maximal path in the tree representation of the beta-normal form. Each branching point in the traversal enumeration corresponds to some occurrence of a variable in the normal form, where each branch corresponds to some operand of that variable. This non-deterministic branching may conceivably be eliminated using auxiliary pointers to implement backtracking: once a variable operand is fully evaluated, the traversal would return to that variable node and start exploring remaining operands.
+
+Their `read-out' procedure to reconstruct the normal form from the traversals, shared by Berezun and Jones in a private correspondence, involves recursively applying rewriting rules to the traversal. In contrast, our read-out algorithm reconstructs the tree representation of the normal from from tree-path extracted from each maximal traversal.
+
+The connection between the two presentations lies in their respective correspondence with head-linear reduction: we have shown that imaginary traversals essentially implement the recursive application of the head-linear reduction. Berezun and Jones claim that a similar correspondence hold for their notion of traversal.
 
 \subsection{Rest of the paper}
 
-The next section introduces basic definitions from the traversal theory. Section~\ref{sec:imaginary_traversals} defines the notion of \emph{imaginary traversals} for the untyped lambda calculus. We present in Section~\ref{sec:normalizing_trav} the reduction procedure for untyped lambda terms, and walk through it on examples in Section~\ref{sec:examples}. In Section~\ref{sec:leftmostlinearred}, we present \emph{head linear} and \emph{leftmost linear reduction}. Finally, Section~\ref{sec:correctness_ulc_normalization} shows correctness of the normalization procedure.
+The next section introduces basic definitions from the traversal theory. Section~\ref{sec:imaginary_traversals} defines the notion of \emph{imaginary traversals} for the untyped lambda calculus. We present in Section~\ref{sec:normalizing_trav} the reduction procedure for untyped lambda terms, and walk through examples in Section~\ref{sec:examples}. In Section~\ref{sec:leftmostlinearred}, we present \emph{head linear} and \emph{leftmost linear reduction}. Finally, Section~\ref{sec:correctness_ulc_normalization} shows correctness of the normalization procedure.
 
 
 \section{Terms, trees and justified sequences}
@@ -1429,7 +1442,9 @@ We then conclude by applying the same argument as (i) for all $q<r$.
 %\end{proof}
 \endproofatend
 
-This weaving property suggests that traversing external variable rule by exceeding the arity threshold yields traversals that are not relevant for normalization since they essentially expand external ghost variable nodes into deeper external ghost variable nodes. This observation gives rise to a stricter version of traversals:
+This weaving property shows that exceeding the arity threshold when
+traversing an external variable, causes expansion of external ghost variable nodes into deeper ghost variable nodes which ultimately leads to traversals that are not relevant for normalization.
+This observation suggests a stricter version of traversals:
 \begin{definition}[Normalizing traversals]
 \label{def:normalizing_traversals}
 The set $\travsetnorm$ of \defname{normalizing traversals}, is the subset of branching traversals defined by the rules of Definition~\ref{dfn:branching_traversals} where the index $i$ in rule \rulenamet{IVar} is bounded by the arity threshold of the traversal.
@@ -2374,7 +2389,7 @@ Because $u_1$ is a spinal descent, the subterm rooted at $\lambda \overline\eta_
 Now suppose instead that the node following $x_1$ is a ghost node then by Property~\ref{prop:strand_spinaldescent}, $u_1$ is necessarily non-empty: we have $u_1 =
 @_1 \cdot\lambda\overline{\xi_1} \cdots @_q\cdot \lambda\overline{\xi_q}$ for some $q\geq 1$. The subterm at $@_r$,  represented on Figure~\ref{fig:strand_decomposition_proof_induction}, is of the form
 $$(\lambda\overline{\xi_r}. A_0) A_1 \ldots A_{k_{r}-1}\ (\lambda\overline{y_2}. \ldots)A_{k_{r}+1}\ \ldots A_{|@_r|} .$$
-By Proposition~\ref{prop:weaving}(iii), $x_1$ is followed by a \emph{pending parameter lookup} $v$ necessarily shorter than $u_1$ and terminated by a structural lambda node $\lambda\overline{y_2}$ justified by some application node $@_r$ in $u_1$ for some $1\leq r \leq q$:
+By the weaving property of Proposition~\ref{prop:weaving}(iii), $x_1$ is followed by a \emph{pending parameter lookup} $v$ necessarily shorter than $u_1$ and terminated by a structural lambda node $\lambda\overline{y_2}$ justified by some application node $@_r$ in $u_1$ for some $1\leq r \leq q$:
 \begin{align*}
  t &= \cdots \Pstr[10pt]{
 (l){\underline{\lambda\overline{\eta}}} \cdot
@@ -3197,29 +3212,16 @@ Otherwise, since $M$ has a beta-nf, by Theorem~\ref{thm:completeness_leftmostlin
 
 \section{Conclusion and further directions}
 
-We presented a novel method to evaluate untyped lambda terms by generalizing the theory of traversals, originally introduced in a typed setting, to the untyped lambda calculus. We introduced the leftmost linear reduction, a generalization of the non-standard \emph{head-linear reduction} strategy~\cite{danos-head}, and showed soundness of the evaluation procedure by showing that traversals implement leftmost linear reduction.
+We presented a novel method to evaluate lambda terms based on a generalization of the theory of traversals to the untyped lambda calculus. We introduced the leftmost linear reduction, a generalization of the non-standard \emph{head-linear reduction} strategy~\cite{danos-head}, and showed soundness of the evaluation procedure by showing that traversals implement leftmost linear reduction.
 
-\subsection*{Connection with Berezun-Jones traversals of ULC}
-
-Daniil Berezun and Neil Jones were first to introduce a notion of traversals for the untyped lambda calculus~\cite{JonesBerezunLLL-PEPM17}. Their presentation has notable differences with ours. Firstly, they require two types of pointers: binding pointers and control pointers, instead of a single justification pointer for imaginary traversals.
-The control pointers would be what Danos-Regnier call the ``price to pay for having no stacks or environments'' in their definition of the argument lookup transition of the Pointer Abstract Machine~\cite{danos-head}.
-
-In imaginary traversals, node occurrences have at most one justification pointer. They trade the notions of stacks and environments with the concept of ghost occurrences. They implement the ``gymnastics to find the argument of a subterm''~\cite{danos-head} with the `pending argument lookup' of Definition~\ref{def:spinaldescent_pendingarglookup}, which traverses ghost occurrences until a structural node materializes\footnote{The ghost materialization loop  implemented by
-rule \rulenamet{Lam^\ghostvar} and \rulenamet{Var} essentially calculates the quantity ``$|\alpha|+i-|m|$'' at each iteration, which is the exact same quantity ($r-a+l$) used in step 2. (b) of the PAM transition from \cite{danos-head}.}.
-
-Another difference is that Berezun-Jones define a single traversal for a given term, whereas our definition involves one traversal for every path in the resulting normal form. The `read-out' algorithm to reconstruct the normal form from the traversals (to be defined in a forthcoming paper by the same authors) involves recursively applying rewriting rules to the traversal. In contrast, our read-out algorithm reconstructs the tree representation of the normal from from tree-path extracted from each maximal traversal.
-
-The connection between the two presentations lies in their respective correspondence with head-linear reduction: we have shown that imaginary traversals essentially implement the recursive application of the head-linear reduction. Berezun and Jones established a similar correspondence in their forthcoming paper.
-
-\subsection*{Game semantics connection}
-
-In the typed setting, Danos \etal showed the connection between game models of typed lambda and \emph{head-linear reduction} and proposed \emph{Pointer Abstract Machine (PAM)} as an abstract machine implementation of this reduction~\cite{danosherbelinregnier1996}.
-
-The theory of traversals~\cite{OngLics2006} was shown to correspond to Game Semantics in a very concrete way for typed languages like the simply-typed lambda calculus, PCF and Idealized Algol~\cite{BlumPhd}: traversals are in one to one correspondence with the plays from the game denotation of a term where all internal moves are revealed (Theorem~\ref{thm:gamesem_correspondence_stlc}).
-We conjecture that a similar correspondence holds for the untyped lambda calculus. More specifically that there is an isomorphism between the set of cores of imaginary traversals from Table~\ref{tab:trav_rules} and the innocent \emph{effectively almost everywhere copycat (EAC)} game denotation of untyped lambda terms~\cite{KerThesis}; as well as an isomorphism between the imaginary traversals
- and the EAC game denotation where internal moves are not hidden during strategy composition. A proof might consist in a similar argument to the STLC case~\cite{BlumPhd} based on EAC strategies instead of innocent strategies. There might exist a connection between the ``on-the-fly'' eta-expansion of imaginary traversals and  the morphism $Fun : U \rightarrow (U \Rightarrow U)$ of Ker's game category where $U$ denotes the maximal game arena.
+Previous work~\cite{BlumPhd} showed that for typed languages such as the simply-typed lambda calculus, PCF or Idealized Algol, the theory of traversals~\cite{OngLics2006} correspond to Game Semantics in a very concrete way: traversals are in one to one correspondence with the plays from the game denotation of a term where all internal moves are revealed (Theorem~\ref{thm:gamesem_correspondence_stlc}). We conjecture a similar correspondence for the untyped lambda calculus: that there is an isomorphism between the cores of imaginary traversals from Table~\ref{tab:trav_rules} and the innocent \emph{effectively almost everywhere copycat (EAC)} game denotation of untyped lambda terms~\cite{KerThesis}; as well as an isomorphism between the imaginary traversals and the EAC game denotation where internal moves are not hidden during strategy composition. We suspect that a connection exists between the ``on-the-fly'' eta-expansion of imaginary traversals and the morphism $Fun : U \rightarrow (U \Rightarrow U)$ of Ker's game category, where $U$ denotes the maximal game arena of the EAC strategies.
 %%%%%%%%%%%%%%%%%
 
+\begin{todobox}
+Traversal theory for other reduction strategies? Call by value.
+\end{todobox}
+
+Danos \etal showed the connection between game models of simply-typed lambda terms and \emph{head-linear reduction} and proposed \emph{Pointer Abstract Machine (PAM)} as an abstract machine implementation of this reduction~\cite{danosherbelinregnier1996}.
 
 % \subsection*{Higher-order collapsible pushdown automata}
 
