@@ -234,7 +234,7 @@
 \ead{william.blum@microsoft.com}
 \address{Microsoft Research, One Microsoft Way, Redmond, WA, 98052, USA}
 
-\title{Reducing Lambda Terms with Traversals (preprint)
+\title{Evaluating Lambda Terms with Traversals (preprint)
 \\ \vspace*{1em}
 \today}
 % Traversing And Evaluating Untyped Lambda Terms(preprint)
@@ -305,7 +305,7 @@ A second eta-expansion, this time of the term itself to
 $\lambda z. (\lambda f y.f\, y)(\lambda x.x) z$,
 unblocks the traversal, until it reaches node $z$, at which point we have a maximal traversal per the STLC rules. The final traversal of the eta-expanded term is given by the sequence $\lambda z \cdot @ \cdot \lambda f y \cdot f \cdot \lambda x \cdot x \cdot \lambda \cdot y \cdot \lambda \cdot z$, where `@` represents the application node in the AST, and the dummy lambda `$\lambda$' is syntactic sugar which can be ignored for now.
 
-Generalizing this idea, the traversal rules of STLC induce the implicit `eta-expansion strategy' implemented by the traversals of ULC: at any given point where a traversal get stuck, among all possible subterms to eta-expand, there is only one that exhibits the additional nodes necessary for the corresponding STLC traversal to resume.
+Generalizing this idea, the traversal rules of STLC induce the implicit `eta-expansion strategy' implemented by the imaginary traversals of ULC: at any given point where a traversal get stuck, among all possible subterms to eta-expand, there is only one that exhibits the additional nodes necessary for the corresponding STLC traversal to resume.
 In the above example, the first expansion considered is that of $f$ because at that point, the rules of STLC only lets us
 visit an immediate argument of $f$. If instead we were to eta-expand the term itself, it would yield $\lambda z. (\lambda f .f)(\lambda x.x) z$
 which an STLC traversal cannot traverse since $f$ does not have an immediate argument. More intuitively: at $x$ the traversal has figured out that the subterm $\lambda x.x$ should be substituted for variable $f$, therefore to determine what $x$ should be substituted for, it needs to look for the first argument of $f$. Since $f$ has no direct argument, it must be eta-expanded. In this simple example, the jump into the realm of fictitious nodes is indefinite: nodes subsequently traversed are all absent from the original term. There are situations, however, where it eventually leads to traversing an actual node from the original term tree. Example \ref{ex:missingoperand} illustrates this phenomenon on term $(\lambda u . u(y_1\, u)) (\lambda v . v\, y_2)$.
@@ -325,22 +325,6 @@ The read-out phase of the algorithm appeals to a path-correspondence property of
 
 \subsection{Related work}
 
-\subsubsection{Lambda term evaluation}
-
-\begin{todobox}
-This paper is about reducing lambda terms, so I was surprised that the related work section only discussed a very narrow line leading to the results of the paper.
-As mentioned above, environment machines and other evaluation methods could be at least mentioned (and saying why this is different).
-
--	But there are other topics that are much closer: geometry of interaction for example shares some of issues that are discussed here, but in that approach a token traverses the structure of terms (both typed and untyped) and eta-expansion of the term is not needed.
-
--	There is some interesting comparison to be done here I believe, but was a little surprised that nothing was mentioned.
-\end{todobox}
-
-The normalization procedure presented in this paper contrasts with term rewriting approaches that gradually transform and refine some representation of the term until reaching a normal form. In particular, it does not involve the ``capture-avoiding'' substitution used in the standard definition of beta reduction to avoid variable capture when reducing redexes. Other reduction methods exist in the literature with the same property such as combinators, Lamping's graphs, or their variant based on the geometry of interaction~\cite{Lamping:1989:AOL:96709.96711, Gonthier:1992:GOL:143165.143172, curry_combinatorylogic, Barendregt84, the-implementation-of-functional-programming-languages}.
-Just like those methods, variable names are not essential to the reduction procedure: traversals have explicit justification pointers from which variable bindings are entirely recoverable; variable names in Lamping's graphs are recoverable from their corresponding binding lambda; and combinators removes variables altogether through \emph{abstraction elimination}.
-Just like graph-based reduction, the traversal reduction procedure involves a final ``read-back'' phase to reconstruct the resulting normal form: all the explored tree branches are assembled together to form the tree representation of the normal form. Those other reduction methods, on the other hand, require transforming the term into some intermediate structure, such as a combinator expression or an interaction net, whereas traversals operate directly on the abstract syntax tree of the term. On the other hand, unlike Lamping's graphs, traversal-based reduction is not optimal in Levy's sense~\cite{optimal-reduction-levy}.
-
-
 \subsubsection{Theory of Traversals}
 
 The original paper on the theory of traversals concerns higher-order recursion schemes and therefore does not deal with free variables of higher-order rank~\cite{OngLics2006}. In~\cite{BlumPhd} we extended the theory to the simply-typed lambda calculus and added traversal rule to model free variables. Both settings assume that the term or grammar is in eta-long form to guarantee that the operand of an application always exists.
@@ -349,28 +333,22 @@ The present paper achieves this by eta-expanding subterms `on-the-fly' when ther
 % and the traversal rules handle those fictitious nodes created in these ad-hoc eta-expansions.
 When restricted to simply-typed terms, the two notions of traversal conveniently coincide (Proposition~\ref{prop:ulc_and_stlc_trav_coincide}).
 
-STLC traversals were shown to correspond to the \emph{interaction game semantic denotation} of a term, where all internal moves from strategy composition are revealed; while the `\emph{projection with respect to the tree root}' operation, yields a correspondence with the standard Game Semantics~\cite{BlumPhd}.
-This induces a method to evaluate simply-typed lambda-terms~\cite{BlumPhd,BlumGalop2008,Blum-HogTool,Ong-NormByTrav2015}, previously implemented in~\cite{Blum-HogTool}, which we state in Algorithm~\ref{algo:ulc_normalization_by_traversals}. This paper generalizes the evaluation procedure to the untyped lambda calculus,
-based on an extended notion of `projection with respect to the root'
-that involves relabelling lambda nodes. A notable improvement is that it produces the traditional beta-normal form rather than the beta-\emph{eta-long} normal form. Another difference is that we prove soundness of the procedure through a connection with \emph{head-linear reduction} rather than appealing to Game Semantics.
+In the STLC, traversals were shown to correspond to the \emph{interaction game semantic denotation}, where all internal moves from strategy composition are revealed; while the standard game denotation was shown to correspond to the set of traversals `\emph{projected with respect to the tree root}'. Such a correspondence induces an evaluation method for simply-typed lambda-terms in eta-long form~\cite{BlumPhd,BlumGalop2008,Blum-HogTool,Ong-NormByTrav2015} that was implemented in~\cite{Blum-HogTool}, and which we state in Algorithm~\ref{algo:ulc_normalization_by_traversals}. This paper generalizes this procedure to the untyped lambda calculus, based on a variant of `projection with respect to the root' that involves relabelling of lambda nodes. A notable improvement is that it produces the traditional beta-normal form rather than the beta-\emph{eta-long} normal form. Another difference is that we prove soundness of the procedure through a connection with \emph{head-linear reduction} rather than appealing to Game Semantics.
 
 \subsubsection{Head linear reduction}
+Danos \etal established the first connection between Game Semantics and the concept of \emph{head linear reduction} for simply-typed lambda terms in eta-long form~\cite{danosherbelinregnier1996}. It was was further studied in the context of untyped lambda terms in \cite{danos-head}. The \emph{pointer abstract machine} (PAM) provides a virtual machine implementation of head linear reduction that yields the ``\emph{quasi-head normal form (qhn)}'' of the term. To obtain the normal form itself, the resulting term further needs to be reduced to head normal form (via head reduction), and then normalized using standard normal reduction.
 
-\begin{todobox}
-Danos \etal showed the connection between game models of simply-typed lambda terms and \emph{head-linear reduction} for eta-long form
-%and proposed \emph{Pointer Abstract Machine (PAM)} as an abstract machine implementation of this reduction~\cite{danosherbelinregnier1996}.
-\end{todobox}
-Danos \etal established the first connection between Game Semantics and the concept of \emph{head linear reduction} for simply-typed lambda terms in eta-long form~\cite{danosherbelinregnier1996}. It was was further studied in the context of untyped lambda terms in \cite{danos-head}. Despite this connection, their work does not explicitly describe how to use head linear reduction to fully evaluate an untyped lambda term. The \emph{pointer abstract machine} (PAM) introduced in the same papers, for instance, yields the ``\emph{quasi-head normal form (qhn)}'' of the term, not the normal form itself. The resulting \emph{qhn} still needs to be first reduced to head normal form (using head reduction) and then normalized using standard normal reduction, which must terminate by the $\lambda$-calculus theory.
-
-Traversals are essentially a recursive implementation of the head linear reduction strategy on lambda terms. A traversal starts, in a call-by-name-like fashion, with a depth-first search for \emph{head occurrence} of the \emph{hoc redex} as defined by Danos-Regnier, and implements linear substitution by ``jumping'' to the node in the tree representing the sub-term to be substituted for that head occurrence. It then continues its descent to look for the next head occurrence, as if that first head occurrence had been replaced by the redex argument. A property of head-linear reduction is that all the terms appearing in the reduction sequence consist of sub-terms of the original term. This property means that there is no need for the traditional notions of environments or closures to reduce beta-redexes. Traversals implement such a reduction using a system of pointers that reference subterms of the original term.
-
-Imaginary traversals effectively implement the \emph{leftmost linear reduction} strategy, a notion formalized in the present paper, that recursively applies head linear reduction to find the normal form; just like how the \emph{normal reduction} of the lambda calculus proceeds by recursively applying head reduction. In particular, they implement what Danos \etal call ``the gymnastics to find the argument of a subterm''~\cite{danos-head} via the mechanism of `weaving' (Proposition~\ref{prop:weaving}),
+Like the PAM, the imaginary traversals implement head-linear reduction, but in a recursive fashion so as to fully evaluate the term to its final normal form.
+A notion that we formalize as the \emph{leftmost linear reduction} strategy, that recursively applies head linear reduction; just like how the \emph{normal reduction} of the lambda calculus proceeds by recursively applying head reduction.
+A traversal starts, in a call-by-name-like fashion, with a depth-first search for \emph{head occurrence} of the `\emph{hoc redex}' as defined by Danos-Regnier. It performs linear substitution by ``jumping'' to the node in the tree representing the sub-term to be substituted for that head occurrence.
+To find that node, traversals implement what Danos \etal call ``the gymnastics to find the argument of a subterm''~\cite{danos-head} via the mechanism of `weaving' (Proposition~\ref{prop:weaving}),
 where a traversal repeatedly traverses ghost lambda and variable nodes until the node representing the argument to be fetched materializes.
 The link label `$|\alpha|+i-|m|$' from the definition
 of the lambda rule in Table~\ref{tab:normalizing_trav_rules} effectively calculates the quantity $r-a+l$ that appear in step 2.(b) of the PAM transition from \cite{danos-head}.
+After performing such a jump, a traversal continues its descent to look for the next head occurrence, as if that first head occurrence had been replaced by the redex argument; until it finds the variable that will become the head variable in the normal form. At this point, a PAM would stop, whereas a traversal forks  non-deterministically and recursively traverses every possible argument of the head variable.
 
-%The closest related reduction device would be the Pointer Abstract Machine of Danos \etal~\cite{danos-head,danosherbelinregnier1996}
-
+A property of head-linear reduction is that all the terms appearing in the reduction sequence consist of sub-terms of the original term.
+Both the PAM and traversals exploit this property via systems of pointers to avoid the traditional notions of environments or closures when (linearly) reducing a term.
 
 \subsubsection{Berezun-Jones traversals}
 
@@ -387,6 +365,15 @@ Another notable difference is that the normalization algorithm of Berezun-Jones 
 Their `read-out' procedure to reconstruct the normal form from the traversals, shared by Berezun and Jones in a private correspondence, involves recursively applying rewriting rules to the traversal. In contrast, our read-out algorithm reconstructs the tree representation of the normal from from tree-path extracted from each maximal traversal.
 
 The connection between the two presentations lies in their respective correspondence with head-linear reduction: we have shown that imaginary traversals essentially implement the recursive application of the head-linear reduction. Berezun and Jones claim that a similar correspondence hold for their notion of traversal.
+
+\subsubsection{Lambda term evaluation}
+The normalization procedure presented in this paper contrasts with term rewriting approaches that gradually transform and refine some representation of the term until reaching a normal form. In particular, it does not involve the ``capture-avoiding'' substitution used in the standard definition of beta reduction to avoid variable capture when reducing redexes. Other reduction methods exist in the literature with the same property such as combinators, Lamping's graphs, or their variant based on the geometry of interaction~\cite{Lamping:1989:AOL:96709.96711, Gonthier:1992:GOL:143165.143172, curry_combinatorylogic, Barendregt84, the-implementation-of-functional-programming-languages}.
+Just like those methods, variable names are not essential to the reduction procedure: traversals have explicit justification pointers from which variable bindings are entirely recoverable; variable names in Lamping's graphs are recoverable from their corresponding binding lambda;
+Krivine and PAM machines encode names with De Bruijn indices
+and combinators removes variables altogether through \emph{abstraction elimination}.
+Just like graph-based reduction, the traversal reduction procedure involves a final ``read-back'' phase to reconstruct the resulting normal form: all the explored tree branches are assembled together to form the tree representation of the normal form. Those other reduction methods do not typically rely on eta-expansion, on the other hand they require transforming the term into some intermediate structure, such as a combinator expression or an interaction net, whereas traversals operate directly on the abstract syntax tree of the term. Unlike Lamping's graphs, traversal-based reduction is not optimal in Levy's sense~\cite{optimal-reduction-levy}.
+
+The relationship of traversals with proof-nets and the Geometry of Interaction (GoI) can perhaps be seen through the lenses of head-linear reduction, which they implement, or their correspondence with game semantics. In particular, the linear substitution performed by traversals corresponds to firing of an exponential branch of a proof-net\cite{MASCARI1994111}. We can also point to the work of Danos and Regnier who established the connection with abstract machines and GoI\cite{danosherbelinregnier1996}.
 
 \subsection{Rest of the paper}
 
