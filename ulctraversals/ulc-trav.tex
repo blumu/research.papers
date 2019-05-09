@@ -39,6 +39,9 @@
 \usetikzlibrary{arrows,automata}
 
 
+\newif\ifshortversion
+\shortversiontrue
+
 %%%%%%%% Inline/deferred proof macros
 % Define this macro to defer complex proofs to the end of the document?
 % or comment out to keep default behaviour (inline proof)
@@ -114,6 +117,15 @@
 \makeatother
 %%%%% END OF Inline/deferred proof macros
 
+
+
+% Markers used for proof only included in the short version of the paper
+\ifshortversion
+\def\shortproof{\begin{proof}}
+\def\endshortproof{\end{proof}}
+\else
+\long\def\shortproof#1\endshortproof{}
+\fi
 
 \theoremstyle{plain}
 \newtheorem{theorem}{Theorem}[section]
@@ -257,7 +269,7 @@
 \begin{abstract}
     We introduce a method to evaluate untyped lambda terms by combining the theory of traversals, a term-tree traversing technique inspired from Game Semantics~\cite{OngLics2006,BlumPhd}, with judicious use of the eta-conversion rule of the lambda calculus.
 
-    The traversal theory of the simply-typed lambda calculus relies on the eta-long transform to ensure that when traversing an application, there exists a subterm representing every possible operator's argument~\cite{BlumPhd, OngLics2006}. In the untyped setting, we instead exhibit the missing operand via ad-hoc instantiation of the eta-expansion rule, which allows the traversal to proceed as if the operand existed in the original term. This gives rise to a more generic concept of traversals for lambda terms. A notable improvement, in addition to handling untyped terms, is that no preliminary transformation is required: the original unaltered lambda term is traversed.
+    The traversal theory of the simply-typed lambda calculus relies on the eta-long transform to ensure that when traversing an application, there exists a subterm representing every possible operator's argument~\cite{BlumPhd, OngLics2006}. In the untyped setting, we instead exhibit the missing operand via ad-hoc instantiation of the eta-expansion rule, which allows the traversal to proceed as if the operand existed in the original term. This gives rise to a more generic concept of traversals for lambda terms where no preliminary transformation is required: the original unaltered lambda term is traversed.
 
     %Blindly applying the rules of typed traversals on untyped terms, where eta-long transform is undefined, therefore fails when an operator  node lacks the required operand. To work around this limitation, we create missing operands on-the-fly and proceed as if it existed in the original term. We denote missing operands in the traversals using ``imaginary'' nodes representing nodes that would exist in the term-tree if the application subterm lacking the operand were to be eta-expanded. We call the resulting traversal an ``imaginary traversal''.
 
@@ -739,7 +751,7 @@ It is well-defined because sequences in $T$ correspond to actual paths in the tr
 \label{sec:imaginary_traversals}
 \subsection{Definition and properties}
 
-\begin{definition}[ULC traversals]
+\begin{definition}
 The set $\travulc(M)$ of \defname{traversals} of an untyped lambda term $M$, abbreviated $\travulc$ when the term is clear from context, is the set of justified sequences of nodes over the computation tree of $M$ extended with ghost nodes, recursively defined by the rules of Table~\ref{tab:trav_rules}.
 
 We will use interchangeably `\emph{ULC traversal}', `\emph{imaginary traversal}' or just `\emph{traversal}' when referring to a traversal of an untyped term.
@@ -758,14 +770,15 @@ We will use interchangeably `\emph{ULC traversal}', `\emph{imaginary traversal}'
         \item[\rulenamet{Lam^@}] If $n$ is an $@$-node then it has no justifier;
         \item[\rulenamet{Lam^{\sf var}}] If $n$ is a variable then it points to the only occurrence of its binder (or the tree root, if $n$ is a free variable) occurring in $\pview{t\cdot \alpha}$;
 
-        \item[\rulenamet{Lam^\ghostvar}] If $n$ is a ghost $\ghostvar$ (\ie,$\alpha = \ghostlmd$) and $t \cdot \alpha = \Pstr[0.5cm]{ u \cdot \beta \cdot
+        \item[\rulenamet{Lam^\ghostvar}] If $n$ is a ghost $\ghostvar$
+        (\ie,~$\alpha = \ghostlmd$) with $t \cdot \alpha = \Pstr[0.5cm]{ u \cdot \beta \cdot
         (m){m} \cdots (gl-m,40:i){\ghostlmd}}$ for some prefix $u$ and nodes
         $\beta \in \ImNodesLmd, m \in\ImNodesVar \Union \NodesApp$
         then $\Pstr[0.5cm]{ u \cdot(beta){\beta} \cdot
     (m){m} \cdot \ldots \cdot (gl-m,40:i){\ghostlmd}\cdot (al-beta,40:{|\beta| + i - |m|}){\ghostvar} \in\travulc}$.
     \end{compactitem}
 \end{itemize}
-\emph{\bf PROGRAM -- Copy-cat rules}
+\emph{\bf PROGRAM -- Copy-cat rule}
 \begin{itemize}[leftmargin=3em]
 \item[\rulenamet{Var}] If \Pstr[0.5cm]{t\cdot(m){m}\cdot(beta){\beta}
     \ldots (n-beta,50:i){n}\in\travulc} for $m \in\ImNodesVar \union \NodesApp$, internal nodes $\beta \in \ImNodesLmd$, $n \in \ImNodesVar$
@@ -776,7 +789,7 @@ We will use interchangeably `\emph{ULC traversal}', `\emph{imaginary traversal}'
     where $\alpha$ denotes the $i$th child of $m$.
 \end{itemize}
 
-\emph{\bf DATA -- Input-variable rules}
+\emph{\bf DATA -- Input-variable rule}
 \begin{itemize}[leftmargin=3em]
 \item[\rulenamet{IVar}] If $t \cdot n \in \travset$ with external node $n \in \ImNodesVar$ then
 $t \cdot n \cdot\alpha\in\travulc$
@@ -1263,74 +1276,111 @@ for some $k\geq 1$ where for $1 \leq j \leq k$, $\alpha_j$ is in $\ImNodesLmd$, 
 The \defname{arity threshold} of a traversal $t$ ending with strand
  $\underline{\alpha_k}\,n_k\,\alpha_{k-1}\,n_{k-1}\cdots \alpha_2\,n_2\, \alpha_1\,\underline{n_1}$ for $k>0$ where $\alpha_j \in \ImNodesLmd$, $n_j \in \ImNodesVar\union\NodesApp$ for all $1\leq j\leq k$ is
 $$
-\arth(t) = \max_{q=1..k-1} \left( |n_q| + \sum_{j=1..q-1} (|n_j|-|\alpha_j|) \right)\ .
+\arth(t) = \max_{q=1..k} \left( |n_q| + \sum_{j=1..q-1} (|n_j|-|\alpha_j|) \right)\ .
 $$
 Equivalently, by abbreviating $ \delta_j = |n_j|-|\alpha_j|$, we have
-$\arth(t) = \max_{q=1..k-1} \left( |n_q| + \sum_{j=1..q-1} \delta_j \right)
-= \max_{q=1..k-1} \left( |\alpha_q| + \sum_{j=1..q} \delta_j\right)
+$\arth(t) = \max_{q=1..k} \left( |n_q| + \sum_{j=1..q-1} \delta_j \right)
+= \max_{q=1..k} \left( |\alpha_q| + \sum_{j=1..q} \delta_j\right)
 $.
 % \begin{align*}
-%     \arth(t) &= \max_{q=1..k-1} \left( |n_q| + \sum_{j=1..q-1} \delta_j \right)     = \max_{q=1..k-1} \left( |\alpha_q| + \sum_{j=1..q} \delta_j\right)
+%     \arth(t) &= \max_{q=1..k} \left( |n_q| + \sum_{j=1..q-1} \delta_j \right)     = \max_{q=1..k} \left( |\alpha_q| + \sum_{j=1..q} \delta_j\right)
 % \end{align*}
 \end{definition}
 
 
 \begin{remark} % [Calculating the arity threshold]
 The arity threshold is also given by
-$\max_{q=1..k-1} b_q$
+$\max_{q=1..k} b_q$
 where $b_q = |\alpha_q| + \sum_{j=1..q} \delta_j$,
 % = |n_1|-|\alpha_1| + |n_2|-|\alpha_2| + \cdots + |n_{q-1}|-|\alpha_{q-1}| + |n_q|$
-for $1\leq q\leq k-1$.
+for $1\leq q\leq k$.
 One can thus calculate the arity threshold with the induction
- $b_1 = |n_1|$, $b_{q+1} = b_q + |n_{q+1}|-|\alpha_q|$ for $1 \leq q \leq k-2$,
+ $b_1 = |n_1|$, $b_{q+1} = b_q + |n_{q+1}|-|\alpha_q|$ for $1 \leq q \leq k-1$,
 by reading the strand backwards from the last variable occurrence and alternatively adding and subtracting the node arities until reaching an external variable. The arity threshold is the maximal value observed throughout that summation.
 \end{remark}
 
 Even when restricted to branching traversals, the rule $\rulename{IVar_\branching}$ leaves infinitely many choices of value for the link label. The following property shows that if that value exceeds the arity threshold then only ghost nodes can be traversed from that point on, without ever materializing a structural node.
 \begin{proposition}[Weaving]
 \label{prop:weaving}
-Let $t$ ending with strand
-$\underline{\alpha_k}\,n_k\,\alpha_{k-1}\, n_{k-1}\cdots\alpha_2\,n_2\, \alpha_1\,\underline{n_1}$ for some $k\geq1$ be a traversal of $\travsetbr$, and $t_{\max}$ be a maximal extension of $t$ in $\travsetbr$. By rule $\rulename{IVar_\branching}$, $t$ is immediately followed in $t_{\max}$ by an external $\lambda$-node justified by $t^\omega$ with label $i\geq 1$.
+Let $t$ be a branching traversal of $\travsetbr$ ending with a strand
+$\underline{\alpha_k}\,n_k\,\alpha_{k-1}\, n_{k-1}\cdots\alpha_2\,n_2\, \alpha_1\,\underline{n_1}$ for some $k\geq1$, and $t_{\max}$ be a maximal extension of $t$ in $\travsetbr$. By rule $\rulename{IVar_\branching}$, $t$ is immediately followed in $t_{\max}$ by an external $\lambda$-node justified by $t^\omega$ with label $i\geq 1$.
 
 %We defined the sequence of labels $(i_j)_{j\geq1}$ as follows:
 %$$ i_{q+1} = i_1 + \sum_{j=1..q} (|\alpha_j| - |n_j|) $$
 
+We consider the following sequence of indices for $0\leq q\leq k$:
+$$i_{q+1} = i + \sum_{j=1..q} (|\alpha_j| - |n_j|) = i - \sum_{j=1..q} \delta_j.
+$$
 \begin{enumerate}[label=(\roman*)]
-\item If $i>\arth(t)$ then $t$ is followed in $t_{\max}$ by a strand of length $2k$ consisting of ghost nodes only:
-\begin{eqnarray*}
-t_{\max} &=& \Pstr[0.3cm]{ \cdots
- (alpha){\underline{\alpha_k}} \ (nk){n_k} \
- (alphakm1){\alpha_{k-1}} \
- \cdots\
- (a2){\alpha_2}\ (n2){n_2}\ (a1){\alpha_1}\ (n1){\underline{t^\omega}}\
- (l1-n1,30:i_1){\underline{\ghostlmd}}\
- (t1-a1,40:i_2){\ghostvar} \ (l2-n2,41:i_2){\ghostlmd}\
-  (t2-a2,45:i_3){\ghostvar} \cdots
-(tkm1-alphakm1,40:i_{k}){\ghostvar} \ (lkm1-nk,43:i_{k}){\ghostlmd}\
- (tk-alpha,45:i_{k+1}){\underline{\ghostvar}} \cdots }\\
-i_{q+1} &=& i + \sum_{j=1..q} (|\alpha_j| - |n_j|) = i - \sum_{j=1..q} \delta_j, \quad \mbox{ for $0\leq q\leq k$}
-\end{eqnarray*}
+\item If $i>\arth(t)$ then $t$ is followed in $t_{\max}$ by a strand of length $2k$ consisting of ghost nodes only with justification labels
+$i_1$, $i_2$, $i_2$, $i_3$, $i_3$, $\cdots$, $i_{k}$, $i_{k}$, $i_{k+1}$:
+$$
+t_{\max} = \Pstr[0.3cm]{ \cdots
+ (alpha){\underline{\alpha_k}}
+ \,(nk){n_k}
+ \,(alphakm1){\alpha_{k-1}}
+ \,\cdots
+ \,(a2){\alpha_2}
+ \,(n2){n_2}
+ \,(a1){\alpha_1}
+ \,(n1){\underline{t^\omega}}
+ \,(l1-n1,30:i_1){\underline{\ghostlmd}}
+ \,(t1-a1,47:i_2){\ghostvar}
+ \,(l2-n2,48:i_2){\ghostlmd}
+ \,(t2-a2,49:i_3){\ghostvar}
+ \cdots (tkm1-alphakm1,42:i_{k}){\ghostvar}
+ \,(lkm1-nk,43:i_{k}){\ghostlmd}
+ \, (tk-alpha,45:i_{k+1}){\underline{\ghostvar}} \cdots }
+$$
 
 \item If $i>\arth(t)$ then all the nodes following $t$ in $t_{\max}$ are ghost occurrences.
 
-\item If $i\leq\arth(t)$ then for some $0 \leq r <k$ and link labels $i_q$, $0\leq q \leq r$ defined as in (i), we have:
-\begin{eqnarray*}
-t_{\max} &=& \Pstr[0.3cm]{
-    \underline{\alpha_k}\ n_k \
-    \cdots
-    (alphar){\alpha_r} \ (nr){n_r} \
-    (alpharm1){\alpha_{r-1}} \
- \cdots\
- (a2){\alpha_2}\ (n2){n_2}\ (a1){\alpha_1}\ (n1){\underline{t^\omega}}\
- (l1-n1,30:i_1){\underline{\ghostlmd}}\
- (t1-a1,40:i_2){\ghostvar} \ (l2-n2,41:i_2){\ghostlmd}\
-  (t2-a2,45:i_3){\ghostvar} \cdots
-(tkm1-alpharm1,40:i_{r}){\ghostvar} \ (lkm1-nr,43:i_{r}){\lambda\overline{x}}\
-\cdots }
-\end{eqnarray*}
-for some structural internal lambda node $\lambda\overline{x}$, and consequently $i_r \leq |n_r|$.
+\item If $i\leq\arth(t)$ then $t$ is followed in $t_{\max}$
+ by $2r$ occurrences of ghost nodes, for some $0 \leq r <k$, and
+ a structural internal lambda node $\lambda\overline{x}$ with respective link labels $i_1$, $i_2$, $i_2$,$\cdots$, $i_r$, $i_r$, $i_{r+1}$:
+$$
+t_{\max} = \Pstr[0.3cm]{
+    \underline{\alpha_k}
+    \, n_k
+    \, \cdots (alphar){\alpha_r}
+    \, (nr){n_r}
+    \, (alpharm1){\alpha_{r-1}}
+    \, \cdots
+    \, (a2){\alpha_2}
+    \, (n2){n_2}\ (a1){\alpha_1}
+    \, (n1){\underline{t^\omega}}
+    \, (l1-n1,30:i_1){\underline{\ghostlmd}}
+    \, (t1-a1,47:i_2){\ghostvar}
+    \, (l2-n2,48:i_2){\ghostlmd}
+    \, (t2-a2,49:i_3){\ghostvar}
+    \cdots(tkm1-alpharm1,43:i_{r}){\ghostvar}
+    \, (lkm1-nr,43:i_{r+1}){\lambda\overline{x}} \cdots }
+$$
+and since $\lambda\overline{x}$ is structural, we have $i_{r+1} \leq |n_{r+1}|$.
 \end{enumerate}
 \end{proposition}
+\shortproof
+By finite induction on $q\in\{1..k\}$. Base case $q=1$ is taken care of by rule \rulenamet{IVar_\branching} followed by
+\rulenamet{Lam^\ghostvar_\branching}.
+For $1<q\leq k$, the induction hypothesis shows that $t_{max}$ has the desired until the pair $\ghostlmd \cdot \ghostvar$ respectively justified by
+$n_{q-1}$ with label $i_{q-1}$, and $\alpha_{q-1}$ with labels $i_q$.
+
+By the induction hypothesis we have  $i_{q} = i - \sum_{j=1..q-1} \delta_j = i - \left( |n_q| + \sum_{j=1..q-1} \delta_j\right) - |n_q|
+> i - \max_{r=1..k} \left( |n_r| + \sum_{j=1..r-1} \delta_j \right) - |n_q|
+= i - \arth(t) + |n_q|$.
+Since by assumption $i>\arth(t)$ this implies that $i_{q} > |n_q|$.
+We can therefore use rule \rulenamet{Var_\branching}
+to traverse a ghost lambda justified by  $n_{q}$ and labelled by $i_q$
+(since by the strand definition, $\alpha_{q-1}$ is an internal node).
+We then use rule \rulenamet{Lam^\ghostvar_\branching} to traverse the next ghost variable justified by $\alpha_q$ and labelled by $i_{q+1} = i_q + |\alpha_{q}| -|n_{q}|$.
+
+(ii) By repeatedly applying (i), observing that since ghost nodes have arity $0$, the arity threshold at $t$ must be $0$. Hence, any link label $j>0$ chosen to extend the traversal at that point will be strictly greater than the arity threshold.
+
+(iii) By assumption we have
+$i \leq \arth(t) = \max_{q=1..k} \left( |n_q| + \sum_{j=1..q-1} \delta_j \right)
+$
+and since $k\geq 1$, the set $\{1..k\}$ is not empty so there is at least one $q$ such that $i - \sum_{j=1..q-1} \delta_j \leq |n_q|$, or equivalently, $i_q \leq |n_q|$ by definition of $i_{q}$. We conclude by taking $r+1$ to be the smallest such $q$, and applying the same argument as (i) for all $q<r$.
+\endshortproof
 \proofatend
 %\begin{proof}
 (i) By the alternation property of traversals, the last strand of $t$ consists of a succession of lambda nodes $\alpha_q$ and variable or $@$-nodes $n_q$, with indices in $\{1..k\}$.
@@ -1350,7 +1400,7 @@ We show by finite induction on $q\in\{1..k\}$ that the first $2k$ nodes after $t
 
 $$ t_{\max} = \Pstr[0.3cm]{ \cdots (alpha){\alpha_1}\ (m){t^\omega}\ (l-m,30:i){\ghostlmd}\ (t-alpha,45:i_2){\ghostvar} \cdots} $$
 
-\item Let $1<q< k$, applying the induction hypothesis on $q$ gives:
+\item Let $1<q\leq k$, applying the induction hypothesis on $q$ gives:
 $$
 t_{\max} = \Pstr[0.3cm]{
    \cdots
@@ -1372,7 +1422,7 @@ i_{q} &= i - \sum_{j=1..q-1} \delta_j
 &\qquad\hbox{(by induction hypothesis)}\\
     &> \arth(t) - \sum_{j=1..q-1} \delta_j
 &\qquad\hbox{(assumption $i> \arth(t)$)} \\
-        &= \max_{r=1..k-1} \left( |n_r| + \sum_{j=1..r-1} \delta_j \right)
+        &= \max_{r=1..k} \left( |n_r| + \sum_{j=1..r-1} \delta_j \right)
         - \sum_{j=1..q-1} \delta_j
 & \qquad\hbox{(definition of $\arth$)} \\
     &\geq |n_q| + \sum_{j=1..q-1} \delta_j - \sum_{j=1..q-1} \delta_j
@@ -1388,17 +1438,12 @@ Since $i_q > |n_q|$, by rule \rulenamet{Var_\branching} the next node is necessa
 (ii) By (i) the next strand following $t$ consists solely of ghost nodes and ends with a ghost variable $\ghostvar$ hereditarily justified by the root. Since ghost nodes have arity $0$, the arity threshold at that point is $0$. Hence, any label value $j$ chosen to extend the traversal at that point will be strictly greater than the arity threshold: thus by (i) the next strand consists solely of ghost nodes.
 Applying the argument repeatedly shows that all the occurrences following $t$ are necessarily ghost nodes.
 
-(iii) Take $r$ to be the smallest $q\geq 1$ such that $i_q\leq |n_q|$, it exists because:
-\begin{align*}
-i \leq \arth(t)
-        &\iff i \leq \max_{q=1..k-1} \left( |n_q| + \sum_{j=1..q-1} \delta_j \right)\quad\hbox{(Definition of $\arth(t)$)} \\
-        &\implies i \leq |n_r| + \sum_{j=1..r-1} \delta_j \quad \mbox{for some $1 \leq r \leq k-1$} \\
-        &\iff i - \sum_{j=1..r-1} \delta_j \leq |n_r| \quad \mbox{for some $1 \leq r \leq k-1$} \\
-        &\iff i_r \leq |n_r| \quad \mbox{for some $1 \leq r \leq k-1$} \quad \mbox{(Definition of $i_r$).}
-\end{align*}
-We then conclude by applying the same argument as (i) for all $q<r$.
-%\end{proof}
+(iii) By definition of $\arth(t)$ we have
+$i \leq \arth(t) = \max_{q=1..k} \left( |n_q| + \sum_{j=1..q-1} \delta_j \right)
+$
+and since $k\geq 1$, the set $\{1..k\}$ is not empty so there is at least one $q$ such that $i - \sum_{j=1..q-1} \delta_j \leq |n_q|$, or equivalently, $i_q \leq |n_q|$ by definition of $i_{q}$. We conclude by taking $r+1$ to be the smallest such $q$, and applying the same argument as (i) for all $q<r$.
 \endproofatend
+
 
 This weaving property shows that exceeding the arity threshold when
 traversing an external variable, causes expansion of external ghost variable nodes into deeper ghost variable nodes which ultimately leads to traversals that are not relevant for normalization.
@@ -1435,7 +1480,7 @@ $t = \Pstr[0.5cm]{(l){\lambda x} \cdot (x-l){x} \cdot (gl-x){\ghostlmd} \cdot (g
 for instance, which verifies $\pview{\core{t}} = t$, is not equivalent to $\pview{\core{u}}$ for any $u$ in $\travsetnorm = \{ \epsilon, \lambda x, \lambda x \cdot x \}$.
 %%%%%%%%%
 
-\begin{table}[h]
+\begin{table}[htbp]
     \begin{ruletablebox}{}%{Normalizing imaginary traversals of $\lambda$-calculus}
     \noindent {\bf PROGRAM - Structural rules}
 
@@ -1475,7 +1520,7 @@ for instance, which verifies $\pview{\core{t}} = t$, is not equivalent to $\pvie
             \andalso(\beta\in\ImNodesLmd, m \in\ImNodesVar\union\NodesApp)
         }
 
-    \emph{\bf PROGRAM - Copy-cat rules}
+    \emph{\bf PROGRAM - Copy-cat rule}
 
     \infrule[$\rulefont{Var}_\normalizing$]
         {
@@ -1493,7 +1538,7 @@ for instance, which verifies $\pview{\core{t}} = t$, is not equivalent to $\pvie
             \andalso (m \in \ImNodesVar\union\NodesApp, \alpha\in\ImNodesLmd,\beta\in\ImNodesLmd)
         }
 
-    \emph{\bf DATA - Input-variable rules}
+    \emph{\bf DATA - Input-variable rule}
     \infrule[$\rulefont{IVar_\normalizing}$]
          {\istraversal t \cdot n
           \andalso n \in \ImNodesVar\inter\ExtNodes
@@ -1553,7 +1598,7 @@ Let us walk through the ULC normalization algorithm~\ref{algo:ulc_normalization_
 %\begin{itemize}[nosep]
 %\item
 Starting at the root and traversing the tree until hitting the first non-deterministic choice produces
-$t_\epsilon = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda x y s z}\ (n3-n2){x}\ (n4-n1){\lambda s z}\ (n5-n4,30){s}\ (n6-n3){\lambda }\ (n7-n2,32){s}\ (n8-n1,32){\ghostlmd^3}\ (n9-n0,32){\ghostvar^2} }$.
+$t_\epsilon = \Pstr[0.7cm]{(n0){\lambda }\,(n1){@}\,(n2-n1){\lambda x y s z}\,(n3-n2){x}\,(n4-n1,32){\lambda s z}\,(n5-n4,30){s}\,(n6-n3,33){\lambda }\,(n7-n2,37){s}\,(n8-n1,32){\ghostlmd^3}\,(n9-n0,32){\ghostvar^2} }$.
 Its core projection is
 $\core{t_\epsilon} = \Pstr[0.7cm]{(n0){\lambda} \cdot (n9-n0){{\ghostvar^2}} }$
 and therefore $\pview{\core{t_\epsilon}} = \lambda\cdot \ghostvar^2$ is a path in the normal form of $M$.
