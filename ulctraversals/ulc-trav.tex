@@ -810,17 +810,24 @@ for every $i$th child $\alpha$ of any node $m \in \ExtendedNodesVar$ occurring i
 \begin{example}
 \label{ex:ulctrav_sample}
 An example of traversal of the term $(\lambda u . u(y_1\,u)) (\lambda v . v\,y_2)$, whose computation tree is represented in Example~\ref{ex:missingoperand}, is
-$\Pstr[0.7cm]{(n0){\lambda }\,(n1){@}\,(n2-n1){\lambda u}\,(n3-n2){u}\,(n4-n1){\lambda v}\,(n5-n4){v}\,(n6-n3){\lambda }
-\,(n7-n0,35){y_1}\,(n8-n7){\lambda}
-\,(n9-n2,27){u}
-\,(n10-n1,27){\lambda v}
+$\Pstr[0.7cm]{(n0){\lambda}
+\,(n1){@}
+\,(n2-n1){\lambda u}
+\,(n3-n2){u}
+\,(n4-n1){\lambda v}
+\,(n5-n4,28){v}
+\,(n6-n3){\lambda }
+\,(n7-n0,34){y_1}
+\,(n8-n7){\lambda}
+\,(n9-n2,33){u}
+\,(n10-n1,30){\lambda v}
 \,(n11-n10){v}
-\,(n12-n9,29:1){{\ghostlmd}}
-\,(n13-n8,32:1){{\ghostvar}}
-\,(n14-n13,29:1){{\ghostlmd}}
-\,(n15-n12,34:1){{\ghostvar}}
-\,(n16-n11,32){\lambda }
-\,(n17-n0,25){y_2}} \in \travset$.
+\,(n12-n9,30:1){{\ghostlmd}}
+\,(n13-n8,35:1){{\ghostvar}}
+\,(n14-n13,28:1){{\ghostlmd}}
+\,(n15-n12,37:1){{\ghostvar}}
+\,(n16-n11,42){\lambda }
+\,(n17-n0,28){y_2}} \in \travset$.
 \end{example}
 
 \begin{proposition}
@@ -828,7 +835,7 @@ $\Pstr[0.7cm]{(n0){\lambda }\,(n1){@}\,(n2-n1){\lambda u}\,(n3-n2){u}\,(n4-n1){\
 The traversal rules are well defined, in particular for any sequence of nodes with pointers $t\in \travset$ we have:
 \begin{compactitem}
 \item[(i)] The sequence $t$ is a valid justified sequence, with respect to
-the enabling relation $\enables$ on extended nodes $\ExtendedNodes$, and $t$ verifies the alternation condition;
+the enabling relation $\enables$ on extended nodes $\ExtendedNodes$, and verifies the alternation condition;
 %(ii) and if the last node in $t$ is external then so are all the nodes in $\oview{t}$. % By induction on \oview{t}
 \item[(ii)] For all occurrences $\Pstr[0.5cm]{(m){m} \cdots (n-m,30:i){n}}$, $n$ is a ghost node if and only if $i > |m|$;
 \item[(iii)] $\pview{t}$ is a (justified) path in the extensional computation tree $\exttree(M)$;
@@ -1249,7 +1256,12 @@ and by Proposition~\ref{prop:branching_traversal_simcomplete} its is also given 
 
 \subsection{Arity threshold and normalizing traversals}
 
-We showed in the previous section that for eta-long forms, there is a finite number of branching traversals, which in turn implies termination of the normalization procedure of Algorithm~\ref{algo:stlc_normalization_by_traversals}. For untyped terms, however, branching traversals can be infinite because of \emph{on-the-fly eta-expansion} in rule $\rulename{IVar}$: the justification label $i>0$ in the traversal rule is unbounded. In this section, we show that, for the purpose of term evaluation, $i$ can be bounded by a quantity called the \emph{arity threshold} computable from the traversal, effectively limitting  limits the number of times eta-expansion can be performed by rule \rulenamet{IVar} for the sake of discovering the set of paths of the beta-normal form. In section \ref{sec:correctness_ulc_normalization} we show that this suffice to  sufficient to characterize the normal form of a lambda term when it exists.
+We showed in the previous section that for eta-long forms, there is a finite
+number of branching traversals, which in turn implies termination of the
+normalization procedure of Algorithm~\ref{algo:stlc_normalization_by_traversals}.
+For untyped terms, however, branching traversals can be infinite because of \emph{on-the-fly eta-expansion} in rule $\rulename{IVar}$: the justification label $i>0$ in the traversal rule is unbounded. In this section, we show that,
+for the purpose of term evaluation, $i$ can be bounded by a quantity called the \emph{arity threshold} computable from the traversal,
+effectively limiting the number of times eta-expansion can be performed by rule \rulenamet{IVar} for the sake of discovering the set of paths of the beta-normal form. In section \ref{sec:correctness_ulc_normalization} we show that this suffice to  sufficient to characterize the normal form of a lambda term when it exists.
 
 The imaginary traversal rules allows for infinitely many eta-expansions, which may provide some satisfaction from the semantics standpoint: each eta-expansion represents how the term will interact with its arguments if more arguments were to be applied to it. In the spirit of finding a normal form, however, eta-expanding subterms ad-infinitum is pointless: traversing ghost nodes only helps if it eventually leads to some structural node of the final normal term tree that we set out to evaluate.
 
@@ -1268,31 +1280,27 @@ for some $k\geq 1$ where for $1 \leq j \leq k$, $\alpha_j$ is in $\ExtendedNodes
 
 \begin{definition} %[Traversal arity threshold]
 \label{dfn:arity-threshold}
-The \defname{arity threshold} of a traversal $t$ ending with strand
- $\underline{\alpha_k}\,n_k\,\alpha_{k-1}\,n_{k-1}\cdots \alpha_2\,n_2\, \alpha_1\,\underline{n_1}$ for $k>0$ where $\alpha_j \in \ExtendedNodesLmd$, $n_j \in \ExtendedNodesVar\union\NodesApp$ for all $1\leq j\leq k$ is
+The \defname{arity threshold} of a traversal $t$ ending with a strand
+ of length $2k$ for $k>0$ of the shape $\underline{\alpha_k}\,n_k\,\alpha_{k-1}\,n_{k-1}\cdots \alpha_2\,n_2\, \alpha_1\,\underline{n_1}$ where $\alpha_j \in \ExtendedNodesLmd$, $n_j \in \ExtendedNodesVar\union\NodesApp$ for all $1\leq j\leq k$ is
 $$
-\arth(t) = \max_{q=1..k} \left( |n_q| + \sum_{j=1..q-1} (|n_j|-|\alpha_j|) \right)\ .
+\arth(t)
+  = \max_{q=1..k} \left( |n_q| + \sum_{j=1..q-1} (|n_j|-|\alpha_j|) \right) \ .
 $$
-Equivalently, by abbreviating $ \delta_j = |n_j|-|\alpha_j|$, we have
-$\arth(t) = \max_{q=1..k} \left( |n_q| + \sum_{j=1..q-1} \delta_j \right)
-= \max_{q=1..k} \left( |\alpha_q| + \sum_{j=1..q} \delta_j\right)
-$.
 % \begin{align*}
 %     \arth(t) &= \max_{q=1..k} \left( |n_q| + \sum_{j=1..q-1} \delta_j \right)     = \max_{q=1..k} \left( |\alpha_q| + \sum_{j=1..q} \delta_j\right)
 % \end{align*}
 \end{definition}
 
-
-\begin{remark} % [Calculating the arity threshold]
-The arity threshold is also given by
-$\max_{q=1..k} b_q$
-where $b_q = |\alpha_q| + \sum_{j=1..q} \delta_j$,
+We introduce the abbreviations $\delta_j = |n_j|-|\alpha_j|$
+and $\Delta_q = \sum_{j=1..q} \delta_j$ so that
+$\arth(t)
+   = \max_{q=1..k} \left( |n_q| + \Delta_{q-1} \right)
+   = \max_{q=1..k} \left( |\alpha_q| + \Delta_{q} \right)
+$.
 % = |n_1|-|\alpha_1| + |n_2|-|\alpha_2| + \cdots + |n_{q-1}|-|\alpha_{q-1}| + |n_q|$
-for $1\leq q\leq k$.
-One can thus calculate the arity threshold with the induction
- $b_1 = |n_1|$, $b_{q+1} = b_q + |n_{q+1}|-|\alpha_q|$ for $1 \leq q \leq k-1$,
-by reading the strand backwards from the last variable occurrence and alternatively adding and subtracting the node arities until reaching an external variable. The arity threshold is the maximal value observed throughout that summation.
-\end{remark}
+Or equivalently, it is the maximal value in the sequence $b_1 = |n_1|$, $b_{q+1} = b_q + |n_{q+1}|-|\alpha_q|$ for $1 \leq q \leq k-1$.
+We can thus calculate it by reading the strand backwards from the last variable occurrence and alternatively adding and subtracting the node arities until reaching an external variable. The maximal value observed throughout that summation is the arity threshold.
+
 
 Even when restricted to branching traversals, the rule $\rulename{IVar_\branching}$ leaves infinitely many choices of value for the link label. The following property shows that if that value exceeds the arity threshold then only ghost nodes can be traversed from that point on, without ever materializing a structural node.
 \begin{proposition}[Weaving]
@@ -1305,6 +1313,7 @@ $\underline{\alpha_k}\,n_k\,\alpha_{k-1}\, n_{k-1}\cdots\alpha_2\,n_2\, \alpha_1
 
 We consider the following sequence of indices for $0\leq q\leq k$:
 $$i_{q+1} = i + \sum_{j=1..q} (|\alpha_j| - |n_j|) = i - \sum_{j=1..q} \delta_j.
+= i - \Delta_q
 $$
 \begin{enumerate}[label=(\roman*)]
 \item If $i>\arth(t)$ then $t$ is followed in $t_{\max}$ by a strand of length $2k$ consisting of ghost nodes only with justification labels
@@ -1355,14 +1364,14 @@ and since $\lambda\overline{x}$ is structural, we have $i_{r+1} \leq |n_{r+1}|$.
 \end{enumerate}
 \end{proposition}
 \shortproof
-By finite induction on $q\in\{1..k\}$. Base case $q=1$ is taken care of by rule \rulenamet{IVar_\branching} followed by
+(i) By finite induction on $q\in\{1..k\}$. Base case $q=1$ is taken care of by rule \rulenamet{IVar_\branching} followed by
 \rulenamet{Lam^\ghostvar_\branching}.
 For $1<q\leq k$, the induction hypothesis shows that $t_{max}$ has the desired until the pair $\ghostlmd \cdot \ghostvar$ respectively justified by
 $n_{q-1}$ with label $i_{q-1}$, and $\alpha_{q-1}$ with labels $i_q$.
 
-By the induction hypothesis we have  $i_{q} = i - \sum_{j=1..q-1} \delta_j = i - \left( |n_q| + \sum_{j=1..q-1} \delta_j\right) - |n_q|
-> i - \max_{r=1..k} \left( |n_r| + \sum_{j=1..r-1} \delta_j \right) - |n_q|
-= i - \arth(t) + |n_q|$.
+The induction hypothesis gives
+$i_{q} = i - \Delta_{q-1} = i + |n_q| - (|n_q| + \Delta_{q-1} )$, which is greater or equal than $i + |n_q| - \max_{r=1..k} ( |n_r| + \Delta_{r-1})
+= i + |n_q| - \arth(t) $.
 Since by assumption $i>\arth(t)$ this implies that $i_{q} > |n_q|$.
 We can therefore use rule \rulenamet{Var_\branching}
 to traverse a ghost lambda justified by  $n_{q}$ and labelled by $i_q$
@@ -1372,9 +1381,9 @@ We then use rule \rulenamet{Lam^\ghostvar_\branching} to traverse the next ghost
 (ii) By repeatedly applying (i), observing that since ghost nodes have arity $0$, the arity threshold at $t$ must be $0$. Hence, any link label $j>0$ chosen to extend the traversal at that point will be strictly greater than the arity threshold.
 
 (iii) By assumption we have
-$i \leq \arth(t) = \max_{q=1..k} \left( |n_q| + \sum_{j=1..q-1} \delta_j \right)
+$i \leq \arth(t) = \max_{q=1..k} \left( |n_q| + \Delta_{q-1} \right)
 $
-and since $k\geq 1$, the set $\{1..k\}$ is not empty so there is at least one $q$ such that $i - \sum_{j=1..q-1} \delta_j \leq |n_q|$, or equivalently, $i_q \leq |n_q|$ by definition of $i_{q}$. We conclude by taking $r+1$ to be the smallest such $q$, and applying the same argument as (i) for all $q<r$.
+and since $k\geq 1$, the set $\{1..k\}$ is not empty so there is at least one $q$ such that $i - \Delta_{q-1} \leq |n_q|$, or equivalently, $i_q \leq |n_q|$ by definition of $i_{q}$. We conclude by taking $r+1$ to be the smallest such $q$, and applying the same argument as (i) for all $q<r$.
 \endshortproof
 \proofatend
 %\begin{proof}
