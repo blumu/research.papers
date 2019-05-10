@@ -199,8 +199,12 @@
 \def\coresymbol{\pi} % function returning the core of a traversal
 \newcommand{\core}[1]{\coresymbol(#1)} % core of a traversal
 
+\DeclareMathSymbol{\Tau}{\mathalpha}{operators}{"54}
+
 \newcommand{\enables}{\vdash} %enabling relation
-\newcommand{\ctree}{CT} %computation tree
+\newcommand{\ctree}{\Tau} %computation tree
+\newcommand{\extctree}{\tilde{\Tau}} %extended computation tree
+
 
 % Set of external nodes = nodes hereditarily justified by the root
 \newcommand{\ExtNodes}{\Nodes^{\sf ext}}
@@ -550,15 +554,16 @@ such that
 $\ghostvar$ is the unique child of $\ghostlmd$, itself defined as the $k$th-child of $n$;
 and we extend the enabling relation with $n \enables_k \ghostlmd$
 and $\alpha \enables_{|\alpha|+ k} \ghostvar$; where by convention ghost nodes have arity $0$, and the arity of structural nodes remains unchanged (\ie, given by their arity in the computation tree without ghost nodes).
-The implicit binding relationship between ghost variables and their (possibly ghost) lambda-node binder allows us to forgo the notion of variables names altogether in ghost nodes. We will thus
+This enabling relation induces a binding relationship, between ghost variables and their (possibly ghost) lambda-node binder, which permits us to forgo the notion of variables names in ghost nodes: we will thus
 use respectively $\ghostlmd$ and $\ghostvar$ as a unique label for all ghost lambda and variable nodes. We also omit ghost nodes when illustrating computation trees.
 
-We write $\ExtendedNodes$ for the extended set of nodes $\Nodes + \ghostvar + \ghostlmd$, and use the shorthands $\ImNodesLmd$ for $\NodesLmd + \ghostlmd$ and $\ImNodesVar$ for $\NodesVar + \ghostvar$, where $+$ denotes disjoint union on sets.
+We call the tree hereby defined the \defname{extended computation tree} of $M$,
+denoted $\extctree(M)$ over the extended set of nodes $\ExtendedNodes = \Nodes + \ghostvar + \ghostlmd$, where $+$ denotes disjoint union on sets. We use the shorthands $\ImNodesLmd$ for $\NodesLmd + \ghostlmd$ and $\ImNodesVar$ for $\NodesVar + \ghostvar$.
 
 \subsection{Justified sequence of nodes}
 \label{sec:justseq}
 
-A \defname{justified sequence} is defined a sequence of nodes in $\ExtendedNodes$ from the extended computation tree where every occurrence $n$ in the sequence, except the first one, has an associated link called ``justification pointer'' pointing to some previous node occurrence $j$ in the sequence, called its ``justifier'', with an associated ``link label'' $l\geq0$; with the constraint that the justifier node $\enables$-enables the source node with the corresponding label; that is $j \enables_l n$ must hold. We represent a justified sequence as a sequence of labelled node occurrences with back-pointing arrows representing justification pointers, \eg, $\Pstr[10pt]{ s = \cdots (j){j} \ldots (n-j,25:l){n} }$ and we say that $n$ `points to' or `is justified by' $n$.
+A \defname{justified sequence} is defined a sequence of nodes in $\ExtendedNodes$ where every occurrence $n$ in the sequence, except the first one, has an associated link called ``justification pointer'' pointing to some previous node occurrence $j$ in the sequence, called its ``justifier'', with an associated ``link label'' $l\geq0$; with the constraint that the justifier node $\enables$-enables the source node with the corresponding label; that is $j \enables_l n$ must hold. We represent a justified sequence as a sequence of labelled node occurrences with back-pointing arrows representing justification pointers, \eg, $\Pstr[10pt]{ s = \cdots (j){j} \ldots (n-j,25:l){n} }$ and we say that $n$ `points to' or `is justified by' $n$.
 For readability, we sometimes indicate instead the link label in exponent of the justified occurrence, or even omit the justification pointers altogether.
 Note that the enabling relation is \emph{statically} induced by the structure of the tree whereas justification is defined on node \emph{occurrences} within a specific justified sequence. The set $\justseqset(M)$ of justified sequences over $M$ consists of all justified sequences over the extended set of nodes $\ExtendedNodes$.
 
@@ -822,11 +827,12 @@ $\Pstr[0.7cm]{(n0){\lambda }\,(n1){@}\,(n2-n1){\lambda u}\,(n3-n2){u}\,(n4-n1){\
 \label{prop:ulctrav_welldefined_pathview}
 The traversal rules are well defined, in particular for any sequence of nodes with pointers $t\in \travset$ we have:
 \begin{compactitem}
-\item[(i)] The sequence $t$ is a valid justified sequence, with respect to enabling relation $\enables$ extended to ghost nodes, and $t$ verifies the alternation condition;
+\item[(i)] The sequence $t$ is a valid justified sequence, with respect to
+the enabling relation $\enables$ on extended nodes $\ExtendedNodes$, and $t$ verifies the alternation condition;
 %(ii) and if the last node in $t$ is external then so are all the nodes in $\oview{t}$. % By induction on \oview{t}
 \item[(ii)] For all occurrences $\Pstr[0.5cm]{(m){m} \cdots (n-m,30:i){n}}$, $n$ is a ghost node if and only if $i > |m|$;
-\item[(iii)] $\pview{t}$ is a (justified) path in the computation tree of $M$ extended with ghost nodes;
-In particular, if $t$ does not contain ghost nodes then $\pview{t}$ is a structural path in the computation tree.
+\item[(iii)] $\pview{t}$ is a (justified) path in the extended computation tree $\extctree(M)$;
+In particular, if $t$ does not contain ghost nodes then $\pview{t}$ is also structural path in $\ctree(M)$.
 \end{compactitem}
 \end{proposition}
 \shortproof
@@ -839,7 +845,7 @@ Finally (iii) holds because the node preceding $\ghostvar$ in the P-view is prec
 Other rules are straightforward.
 \endshortproof
 
-The last property generalizes a result from the theory of traversals for higher-order grammars~\cite{OngLics2006} and simply-typed lambda terms~\cite[Proposition 4.29]{BlumPhd} to the untyped setting: The game-semantic concept of P-views from Definition~\ref{def:views} corresponds to paths in the computations tree
+The last property generalizes a result from the theory of traversals for higher-order grammars~\cite{OngLics2006} and simply-typed lambda terms~\cite[Proposition 4.29]{BlumPhd} to the untyped setting: The game-semantic concept of P-views from Definition~\ref{def:views} corresponds to paths in the computations tree.
 
 % For any $t\in \travset$, the sequences $t\filter\ExtNodes$ is a valid justified sequences verifying the alternation condition.
 
@@ -936,7 +942,7 @@ $x_1 \ldots x_n y_1 \ldots y_n$, the stack obtained after pushing the variables 
 \begin{definition}[Core projection]
 \label{def:coreprojection}
 Let $\overline{y} \in \VarSet^*$ denote a stack of variable names.
-We define the partial function $\coresymbol_{\overline{y}}\colon \justseqset(M) \longrightarrow \justseqset(M)$ by induction: $\coresymbol_{\overline{y}}(\epsilon) = \epsilon$, and for any justified sequence $s \cdot n\in\justseqset(M)$ with prefix subsequence $s$ and last occurrence $n$:
+We define the partial function $\coresymbol_{\overline{y}}\colon \justseqset(M) \longrightarrow \justseqset(M)$ by induction: $\coresymbol_{\overline{y}}(\epsilon) = \epsilon$, and for any justified sequence $s \cdot n\in\justseqset(M)$ with prefix subsequence $s$ and node $n$:
 \begin{equation*}
 \coresymbol_{\overline{y}}(s\cdot n) =
 \begin{cases}
@@ -960,7 +966,7 @@ the \defname{core} of $s$ as $\core{s} = \coresymbol_\epsilon(s)$,
 and the \defname{core P-view} of $s$ as $\pview{\core{s}}$, the P-view of its core.
 \end{definition}
 
-In the above definition, the subscript parameter $\overline{y}$ is called \defname{stack of pending lambdas}. As the sequence is read backwards, it accumulates variable names which then get prepended to the last external lambda nodes in the sequence. The \emph{core projection} is the sub-sequence obtained by removing internal nodes and prepending to each external lambda node's label, the stack of \emph{pending lambdas} between that point to the next external node.
+In the above definition, the subscript parameter $\overline{y}$ is called \defname{stack of pending lambdas}. As the sequence is read backwards, it accumulates variable names which then get prepended to the last external lambda nodes in the sequence. Hence the \emph{core projection} is the sub-sequence obtained by removing internal nodes and prepending to each external lambda node's label, the stack of \emph{pending lambdas} between that point to the next external node.
 
 Since the core of a justified sequence only contains external nodes it follows that $\coresymbol$ is idempotent.
 
@@ -1012,7 +1018,7 @@ are the justified sequences obtained by applying on its
 \emph{eta-long form} the system of rules
 of Table~\ref{tab:trav_rules}
 with the exclusion of rule \rulenamet{Lam^\ghostvar} and
-where rules \rulenamet{Var} and \rulenamet{IVar} are restricted to their concrete sub-case--that is justification label $i$ must be strictly smaller than the arity $|m|$ of variable $m$.
+where rules \rulenamet{Var} and \rulenamet{IVar} are restricted to their concrete sub-case--that is justification label $i$ must be no greater than the arity $|m|$ of variable $m$.
 \end{definition}
 
 This definition matches STLC traversal rules as originally defined~\cite{BlumPhd}, though in practice, imaginary and STLC traversals coincide on eta-long forms in a slightly more general way:
@@ -1023,7 +1029,7 @@ Let $\Gamma \entail M : T$ be a simply-typed term in context.
  justified sequences obtained by applying on its
  eta-long normal form the system of rules
 of Table~\ref{tab:trav_rules}
-where \rulenamet{IVar} is restricted to its concrete subcase (enforcing the condition $i<|m|$).
+where \rulenamet{IVar} is restricted to the concrete subcase with the condition $i\leq|m|$.
 \end{proposition}
 \begin{proof}
 Because the term is eta-long, the condition $i>|m|$ in rule \rulenamet{Var} never holds while traversing the term. This is shown by induction on the rules, observing that the arity of an $@$ node is necessarily equal to the arity of its $0$th child lambda node, and the arity of a variable node with binding index $i$ is necessarily equal to the arity of the $i$th child of its binder's parent.
@@ -1034,10 +1040,9 @@ Since the eta-expanded sub-case of \rulenamet{IVar} is excluded, no ghost node c
 \section{Normalizing Traversals}
 \label{sec:normalizing_trav}
 
-In this section we show how to evaluate lambda terms with traversals and find their normal form when it exists. The crux of the algorithm lies in the \emph{Path Characterization} (Proposition~\ref{prop:path_charact_stlc} and Theorem~\ref{thm:path_charact_ulc}) which states that the set of traversals \emph{core P-views} captures what is strictly required from traversals to reconstruct the normal form.
-For STLC, the characterization result was previously shown using the Game Semantics correspondence; we prove its untyped counterpart using instead a term-rewriting argument.
-
-The Path Characterization suggests a normalization method based on enumerating all the maximal traversals. The challenge is that there are
+In this section we show how to evaluate lambda terms with traversals and find their normal form when it exists. The crux of the algorithm lies in the \emph{Path Characterization} (Theorem~\ref{thm:path_charact_ulc}) which states that the set of traversals \emph{core P-views} captures what is strictly required from traversals to reconstruct the normal form.
+For STLC, the characterization result was previously shown using the Game Semantics correspondence (Proposition~\ref{prop:path_charact_stlc}); we prove its untyped counterpart using instead a term-rewriting argument.
+Such characterization of paths by traversals suggests a normalization method based on enumerating all the maximal traversals. The challenge is that there are
  arbitrarily long traversals due to the generous non-determinism of the free variable rule \rulenamet{IVar} from Table~\ref{tab:trav_rules}, which dictates how to extend a traversal ending with a free variable node. Therefore the set of traversals may be infinite, even for terms with a beta-normal form! Fortunately, not all traversals need to be enumerated. It is sufficient to enumerate a subset covering every possible core P-view. In that regard, some traversals are redundant if there exist shorter ones with identical core P-view.
 We capture this notion by considering equivalence classes on traversals: two traversals are in the same class just if they have the same core P-view. It then suffices to exhibit a traversal subset that is \emph{complete} for the equivalence classes, in the sense that it contains at least one traversal from each equivalence class. Further, if such a subset is effectively computable and finite then it yields a normalization procedure. We show how this can be done for both STLC and ULC.
 
