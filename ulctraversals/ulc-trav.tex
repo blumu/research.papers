@@ -523,7 +523,7 @@ Figure~\ref{fig:comptree_examples} illustrates examples of computation trees.
         };
     \end{tikzpicture}
     \end{tabular}
-\caption{Examples of computation trees of untyped lambda terms}
+\caption{Examples of computation trees of untyped lambda terms. Ghost nodes are omitted.}
 \label{fig:comptree_examples}
 \centering
 \end{figure}
@@ -820,9 +820,9 @@ $\Pstr[0.7cm]{(n0){\lambda }\,(n1){@}\,(n2-n1){\lambda u}\,(n3-n2){u}\,(n4-n1){\
 
 \begin{proposition}
 \label{prop:ulctrav_welldefined_pathview}
-The traversal rules are well defined, in particular for any sequence of nodes with pointers $t\in \travset$:
+The traversal rules are well defined, in particular for any sequence of nodes with pointers $t\in \travset$ we have:
 \begin{compactitem}
-\item[(i)] $t$ is a valid justified sequence, with respect to enabling relation $\enables$ extended to ghost nodes, and $t$ verifies the alternation condition;
+\item[(i)] The sequence $t$ is a valid justified sequence, with respect to enabling relation $\enables$ extended to ghost nodes, and $t$ verifies the alternation condition;
 %(ii) and if the last node in $t$ is external then so are all the nodes in $\oview{t}$. % By induction on \oview{t}
 \item[(ii)] For all occurrences $\Pstr[0.5cm]{(m){m} \cdots (n-m,30:i){n}}$, $n$ is a ghost node if and only if $i > |m|$;
 \item[(iii)] $\pview{t}$ is a (justified) path in the computation tree of $M$ extended with ghost nodes;
@@ -830,8 +830,8 @@ In particular, if $t$ does not contain ghost nodes then $\pview{t}$ is a structu
 \end{compactitem}
 \end{proposition}
 \shortproof
-Proved simultaneously by induction on the traversal rules.
-Rule \rulenamet{Lam^{\sf var}}: By induction hypothesis (iii) the P-view is a path in the tree $M$ extended with ghost nodes. But the last node of $t$ is a structural node therefore, this path is necessarily a structural tree path that does not contain any ghost node. Consequently, if the last node is a bound variable node, its enabler is its binding lambda node which necessarily occurs exactly once in the P-view. If the variable is free then the enabler is the root itself: (i) holds. By definition, the justification pointer honors the enabling relation so (ii) holds. The node $n$ is by definition the unique child of $\alpha$ thus (iii) holds.
+Proven simultaneously by induction on the traversal rules.
+Rule \rulenamet{Lam^{\sf var}}: By induction hypothesis (iii) the P-view is a path in the tree $M$ extended with ghost nodes. But the last node of $t$ is a structural node therefore, this path is necessarily a structural path with no ghost node. Consequently, if the last node is a bound variable node, its enabler is precisely its binding lambda node which necessarily occurs exactly once in the path to the root. If the variable is free then the enabler is the root itself: (i) holds. By definition, the justification pointer honors the enabling relation so (ii) holds. The node $n$ is by definition the unique child of $\alpha$ thus (iii) holds.
 
 Rule \rulenamet{Lam^\ghostvar}, the induction hypothesis (ii) shows that $i>|m|$, which guarantees that $|\beta|+i-|m|>0$ is a valid justification label (i) and that (ii) holds for the traversed node $\ghostvar$.
 Finally (iii) holds because the node preceding $\ghostvar$ in the P-view is precisely $\beta$, its parent node.
@@ -868,18 +868,14 @@ We call \defname{ghost materialization} any instantiation of a traversal rule wh
 The underlying successive eta-expansions of $M$ can be reconstructed from the traversal itself:
 \begin{definition}
 \label{def:onthefly_etaexpansion}
-Let $M$ be an untyped term. If $n\in \Nodes$ is the root node of some subterm $N$ of $M$ then ${\sf ETA}(M, n)$ denote the term obtained by substituting in-place the subterm $N$ with $\lambda\theta. N \theta$ for some fresh variable $\theta$.
+Let $M$ be an untyped term. If $n\in \Nodes$ is the root node of some subterm $N$ of $M$ then
+for $k \leq 0$ we define ${\sf ETA}(M, n, k) = M$; and for $k> 0$ we define ${\sf ETA}(M, n, k)$ as the term obtained by substituting in-place the subterm $N$ with $\lambda\theta_1 \cdots \theta_k. N \theta_1 \cdots \theta_k$ for some variables $\theta_1, \cdots, \theta_k$ fresh in $N$.
 
-Let $t$ be a \emph{finite} traversal of $M$. The \defname{eta-expansion of $M$ with respect to $t$}, written $M^t$, is defined inductively as just $M$ if $t$ is empty; and if $t = u \cdot n$ by case analysis on the rule used to traverse $n$, where $m$ denotes $n$'s justifier in $u$, if it exists, and $i$ its justifier's label:
-$$
-\begin{array}{rlcrll}
-    \rulename{Root}          & M^{u}  &\qquad & \rulename{Var}  & M^{u} \hfill &\mbox{if $i \leq |m|$; } \\
-    \rulename{App}           & M^{u}  &       &                 & {\sf ETA}(M^{u}, m) \hfill  &\mbox{if $i > |m|$. } \\
-    \rulename{Lam}           & M^{u}  &       & \rulename{IVar} & M^{u} \hfill &\mbox{if $i \leq |m|$; } \\
-    \rulename{Lam^\ghostvar} & M^{u}  &       &                 & {\sf ETA}(M^{u}, m)  \hfill &\mbox{if $i > |m|$.}
-\end{array}
-$$
+The \defname{eta-expansion of $M$ with respect to a finite traversal $t$}, written $M^t$, is defined inductively by $M^\epsilon = M$,
+$M^{u \cdot n} = M$ if $n$ has no justifier, and if $m$ denotes $n$'s justifier in $u$ with link label $i$ then $M^{u \cdot n} = {\sf ETA}(M^{u}, m, i-|m|)$.
 \end{definition}
+As mentioned earlier, the condition  $i-|m|>0$ only holds for the eta-expanded case of rules \rulenamet{Var} and \rulenamet{IVar}.
+
 It follows from the definition that $M$ is a sub-tree of $M^t$ therefore paths in the tree of $M$ are also paths in the tree of $M^t$.
 
 \begin{example}
@@ -895,6 +891,7 @@ There exists a one-to-one function $\eta_t : \ExtendedNodes(M) \longrightarrow \
 such that its implicit \emph{element-wise pointer-preserving} extension $\eta_t : \mathcal{J}(M) \longrightarrow \mathcal{J}(M^t)$ verifies the properties:
 \begin{enumerate}[label=(\roman*),nosep]
     \item For any $u \in \travulc(M)$, $\eta_t(u)$ is a traversal of $M^t$.
+    And thus $\pview{\eta_t(u)}$ is a \emph{structural} path in the computation tree $\ctree(M^t)$.
 
     \item If $v$ traverses
     $M^t$ then there exists a traversal $u$ of $M$ (with possibly ghost nodes) such that $v = \eta_t(u)$.
@@ -1622,12 +1619,13 @@ $\pview{\core{t_1}} = \lambda \cdot \ghostvar^2 \cdot\ghostlmd^1
 therefore the normal form is of the shape $\lambda y s \ldots \cdot s (y R_1 \ldots R_{q_2}) N_2 \ldots N_q$ for some terms $R_1$, \ldots $R_{q_2}$, and $q,q_2\geq 0$.
 
 %\item
-How many more values of $k$ shall we look at? Intuitively, we should not eta-expand the node beyond the point where further traversals are guaranteed to visit ghost occurrences only. That upper-bound for $k$ is precisely given by the \emph{arity threshold} of $t_\epsilon$:
-    \begin{align*}
+How many more values of $k$ shall we look at? Intuitively, we should not eta-expand the node beyond the point where further traversals are guaranteed to visit ghost occurrences only. That upper-bound for $k$ is precisely given by the \emph{arity threshold} of $t_\epsilon$. The traversal is itself a strand and the node occurrence arities are in order $0,1,4,2,2,1,0,0,0,0$ therefore:
+     %\max \{ 0, 1,\, (1)-2+2,\, (1-2+2)-4+1 \} =
+     \begin{align*}
      \arth(t_\epsilon)
-     &= \max \{ |s^2| , %\\
-                |s^1| + (|s^2| - |\lambda|) , %\\
-                |x| +  (|s^1| - |\lambda s z|) + (|s^2| - |\lambda|)
+     &= \max \{ |s^2|,\ %\\
+                |s^1| + (|s^2| - |\lambda|),\  %\\
+                |x| +  (|s^1| - |\lambda s z|) + (|s^2| - |\lambda|)\
                %& |@| + (|x|- |\lambda x y s z |) + (|s^1| - |\lambda s z|) + (|s^2| -|\lambda|) \
                \} \\
     & = \max \{   0 , 1 + (0 - 0) ,  2 + (1 - 2) + (0 - 0)
@@ -1655,10 +1653,10 @@ $t_{11} = \Pstr[0.7cm]{
 (n15-n4)z
 (n16-n3){\lambda^2}
 (n17-n2)y
-(n18-n1){\ghostlmd^2}
-(n19-n0){\ghostvar^1}
-(n20-n19){\ghostlmd^1}
-(n21-n18){\underline{\ghostvar^1}}
+(n18-n1,42){\ghostlmd^2}
+(n19-n0,42){\ghostvar^1}
+(n20-n19,25){\ghostlmd^1}
+(n21-n18,25){\underline{\ghostvar^1}}
 (n22-n17,50:1)\lambda % points to non-ghost node
 (n23-n2,45:3) s
 (n24-n1,44:3) {\ghostlmd^3}
@@ -1667,12 +1665,12 @@ $t_{11} = \Pstr[0.7cm]{
 
 We have $\pview{\core{t_{11}}} =
 \Pstr[0.7cm]{
-(n0){\lambda }\
- (n9-n0){\ghostvar^2}
- (n10-n9){\ghostlmd^1}
+(n0){\lambda}
+(n9-n0){\ghostvar^2}
+(n10-n9){\ghostlmd^1}
 (n19-n0){\ghostvar^1}
 (n20-n19){\ghostlmd^1}
-(n25-n0,48:2){\ghostvar^2}
+(n25-n0,40:2){\ghostvar^2}
 }$ therefore $\betanf{M}$ is of the form $\lambda y s \ldots \cdot s\ (y\ s\ R_2)$.
 
 %\item
@@ -1695,8 +1693,8 @@ $t_{12} = \Pstr[0.7cm]{
 (n15-n4)z
 (n16-n3){\lambda^2}
 (n17-n2)y
-(n18-n1){\ghostlmd^2}
-(n19-n0){\underline{\ghostvar^1}}
+(n18-n1,42){\ghostlmd^2}
+(n19-n0,42){\underline{\ghostvar^1}}
 (n20-n19){\ghostlmd^2} %%%%%%%%
 (n21-n18){\ghostvar^2}
 (n22-n17,50:2)\lambda % points to non-ghost node
@@ -1712,7 +1710,7 @@ Thus $\pview{\core{t_{12}}} =
  (n10-n9){\ghostlmd^1}
 (n19-n0){\ghostvar^1}
 (n20-n19){\ghostlmd^2}
-(n25-n0,48:3) {\ghostvar^3}
+(n25-n0,45:3) {\ghostvar^3}
 }$.
 %\end{itemize}
 Assembling the two maximal tree paths together yields $M$'s beta normal form $\lambda y s z . s(y\, s\, z)$.
@@ -1747,16 +1745,27 @@ child {node{$@$}
         }
     };
 \node (t1) at (7cm,-3ex) {
-        $t_1 = \Pstr[4ex]{(n0){\lambda }\,(n1){@}\,(n2-n1){\lambda u}\,(n3-n2){u}\,(n4-n1){\lambda v}\,(n5-n4){v}\,(n6-n3){\lambda }\,(n7-n0){y_1}\,(n8-n7){\lambda }\,(n9-n2){u}\,(n10-n1){\lambda v}\,(n11-n10){v}\,(n12-n9){{\ghostlmd^{1}}}\,(n13-n8){{\ghostvar^{1}}}\,(n14-n13){{\ghostlmd^{1}}}\,(n15-n12){{\ghostvar^{1}}}\,(n16-n11){\lambda }\,(n17-n0,35){y_2}\,}$
+        $t_1 = \Pstr[4ex]{(n0){\lambda }\,(n1){@}\,(n2-n1){\lambda u}\,(n3-n2){u}\,(n4-n1){\lambda v}\,(n5-n4){v}\,(n6-n3){\lambda }\,(n7-n0,35){y_1}\,(n8-n7){\lambda }\,(n9-n2){u}\,(n10-n1){\lambda v}\,(n11-n10){v}\,(n12-n9){{\ghostlmd^{1}}}\,(n13-n8){{\ghostvar^{1}}}\,(n14-n13){{\ghostlmd^{1}}}\,(n15-n12){{\ghostvar^{1}}}\,(n16-n11){\lambda }\,(n17-n0,35){y_2}\,}$
 };
 \node (t2) at (7cm,-15ex) {
-    $t_2 = \Pstr[4ex]{(n0){\lambda }\,(n1){@}\,(n2-n1){\lambda u}\,(n3-n2){u}\,(n4-n1){\lambda v}\,(n5-n4){v}\,(n6-n3){\lambda }\,(n7-n0,30){y_1}\,(n8-n7){{\ghostlmd^{2}}}\,(n9-n6){{\ghostvar^{1}}}\,(n10-n5){\lambda }\,(n11-n0,30){y_2}\,}$
+    $t_2 = \Pstr[4ex]{(n0){\lambda }
+    \,(n1){@}
+    \,(n2-n1){\lambda u}
+    \,(n3-n2){u}
+    \,(n4-n1){\lambda v}
+    \,(n5-n4){v}
+    \,(n6-n3){\lambda }
+    \,(n7-n0,35){y_1}
+    \,(n8-n7){{\ghostlmd^{2}}}
+    \,(n9-n6,30){{\ghostvar^{1}}}
+    \,(n10-n5,36){\lambda }
+    \,(n11-n0,33){y_2}}$
 };
 \end{tikzpicture}
 
 Traversing $M$ with the STLC rules lets you follow $t_1$ until the second occurrence of $v$ in $t_1$, where the traversal gets stuck due to the bottom node $u$ lacking an operand. Whereas the imaginary traversal instantiates that missing operand on-the-fly, via the ghost child lambda node $\ghostlmd^1$ of $u$.
 
-Traversal $t_2$ illustrates a different situation where, instead of being stuck, the STLC traversals misses a valid path from the beta normal form: variable $y_1$ does have one argument in $M$, which gets traversed by STLC traversals. But the ULC traversal $t_2$ pushes the exploration further by traversing an imaginary second argument to $y_1$, represented by $\ghostlmd^2$, which eventually materializes into a real node $y_2$ from $M$, which ends up being the second argument of $y_1$ in the normal form.
+Traversal $t_2$ illustrates a different situation where, instead of being stuck, the STLC traversals misses a valid path from the beta normal form: variable $y_1$ does have one argument in $M$, which gets traversed by STLC traversals. But the ULC traversal $t_2$ pushes the exploration further by traversing the imaginary second argument to $y_1$, represented by $\ghostlmd^2$, eventually materializing node $y_2$, which ends up being the second argument of $y_1$ in the normal form.
 
 The core P-views
 $\pview{\core{t_1}} = \lambda \ y_1\ \lambda \ \ghostvar^{1}
@@ -1848,9 +1857,9 @@ $varity \alphaequiv \lambda t.t (\lambda n a x . n (\lambda s z . a s (x s z))) 
 The initial traversal $t_\epsilon$ up to the first non-deterministic choice is:
 
 \resizebox{1\hsize}{!}{$
-t_\epsilon = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda t}\ (n3-n2){t}\ (n4-n1){\lambda s_2 z_2}\ (n5-n4){s_2}\ (n6-n3){\lambda n a x}\ (n7-n6){n}\ (n8-n5){\lambda }\ (n9-n4){s_2}\ (n10-n3){\lambda n a x}\ (n11-n10){n}\ (n12-n9){\lambda }\ (n13-n4){z_2}\ (n14-n3){\lambda a}\ (n15-n14){a}\ (n16-n13){{\ghostlmd^{1}}}\ (n17-n12){{\ghostvar^{1}}}\ (n18-n11){\lambda s z}\ (n19-n10){a}\ (n20-n9){{\ghostlmd^{2}}}\ (n21-n8){{\ghostvar^{1}}}\ (n22-n7){\lambda s z}\ (n23-n6){a}\ (n24-n5){{\ghostlmd^{2}}}\ (n25-n4){{\ghostvar^{3}}}\
-(n26-n3){\lambda z_0}\ (n27-n26){z_0}\ (n28-n25){{\ghostlmd^{1}}}\ (n29-n24){{\ghostvar^{1}}}\
-(n30-n23){\lambda }\ (n31-n22){s}\ (n32-n21){{\ghostlmd^{1}}}\ (n33-n20){{\ghostvar^{1}}}\ (n34-n19){\lambda }\ (n35-n18){s}\ (n36-n17){{\ghostlmd^{1}}}\ (n37-n16){{\ghostvar^{1}}}\ (n38-n15){{\ghostlmd^{1}}}\ (n39-n14){{\ghostvar^{2}}}\ (n40-n13){{\ghostlmd^{2}}}\ (n41-n12){{\ghostvar^{2}}}\ (n42-n11){{\ghostlmd^{2}}}\ (n43-n10){{\ghostvar^{4}}}\ (n44-n9){{\ghostlmd^{4}}}\ (n45-n8){{\ghostvar^{3}}}\ (n46-n7){{\ghostlmd^{3}}}\ (n47-n6){{\ghostvar^{5}}}\ (n48-n5){{\ghostlmd^{5}}}\ (n49-n4){{\ghostvar^{6}}}\ (n50-n3){{\ghostlmd^{6}}}\ (n51-n2){{\ghostvar^{4}}}\ (n52-n1){{\ghostlmd^{4}}}\ (n53-n0){{\ghostvar^{3}}}}$}
+\Pstr[0.7cm]{(n0){\lambda }\,(n1){@}\,(n2-n1){\lambda t}\,(n3-n2){t}\,(n4-n1){\lambda s_2 z_2}\,(n5-n4){s_2}\,(n6-n3){\lambda n a x}\,(n7-n6){n}\,(n8-n5){\lambda }\,(n9-n4){s_2}\,(n10-n3){\lambda n a x}\,(n11-n10){n}\,(n12-n9){\lambda }\,(n13-n4){z_2}\,(n14-n3){\lambda a}\,(n15-n14){a}\,(n16-n13){{\ghostlmd^{1}}}\,(n17-n12){{\ghostvar^{1}}}\,(n18-n11){\lambda s z}\,(n19-n10){a}\,(n20-n9){{\ghostlmd^{2}}}\,(n21-n8){{\ghostvar^{1}}}\,(n22-n7){\lambda s z}\,(n23-n6){a}\,(n24-n5){{\ghostlmd^{2}}}\,(n25-n4){{\ghostvar^{3}}}\
+(n26-n3){\lambda z_0}\,(n27-n26){z_0}\,(n28-n25){{\ghostlmd^{1}}}\,(n29-n24){{\ghostvar^{1}}}\
+(n30-n23){\lambda }\,(n31-n22){s}\,(n32-n21){{\ghostlmd^{1}}}\,(n33-n20){{\ghostvar^{1}}}\,(n34-n19){\lambda }\,(n35-n18){s}\,(n36-n17){{\ghostlmd^{1}}}\,(n37-n16){{\ghostvar^{1}}}\,(n38-n15){{\ghostlmd^{1}}}\,(n39-n14){{\ghostvar^{2}}}\,(n40-n13){{\ghostlmd^{2}}}\,(n41-n12){{\ghostvar^{2}}}\,(n42-n11){{\ghostlmd^{2}}}\,(n43-n10){{\ghostvar^{4}}}\,(n44-n9){{\ghostlmd^{4}}}\,(n45-n8){{\ghostvar^{3}}}\,(n46-n7){{\ghostlmd^{3}}}\,(n47-n6){{\ghostvar^{5}}}\,(n48-n5){{\ghostlmd^{5}}}\,(n49-n4){{\ghostvar^{6}}}\,(n50-n3){{\ghostlmd^{6}}}\,(n51-n2){{\ghostvar^{4}}}\,(n52-n1){{\ghostlmd^{4}}}\,(n53-n0){{\ghostvar^{3}}}}$}
 
 Enumerating normalizing traversals yields the set $\{t_\epsilon, t_{11}, t_{12}, t_{121}, t_{122} \}$. Table~\ref{tab:varity2_trav} in appendix represents the maximal traversals $\{ t_{11}, t_{121}, t_{122} \}$. The set of maximal paths in the beta-normal form is thus given by the core P-views
 $\pview{\core{t_{11}}} =
@@ -2295,7 +2304,7 @@ The proof proceeds instead by showing that $\sim$-equivalence classes are preser
     \label{def:spinaldescent_pendingarglookup}
 A subsequence of a traversal is a
 \begin{enumerate*}[nosep,label=(\roman*)]
-\item \defname{spinal descent} if it is a path in the computation tree consisting solely of lambda and $@$-nodes, and where each lambda node (except the first occurrence if it is a lambda node) is the $0$th child of the preceding $@$-node.
+\item \defname{spinal descent} if it is a path in the computation tree consisting solely of structural lambda and $@$-nodes, and where each lambda node (except the first occurrence if it is a lambda node) is the $0$th child of the preceding $@$-node.
 \item \defname{pending argument lookup} if it consists of an alternation of ghost lambda nodes and ghost variables nodes, starting with an external ghost lambda node and terminated by a structural internal lambda node in $\NodesLmd$.
 \item \defname{branching descent} if it consists of an alternation of external structural lambda nodes and external structural variable nodes.
 \end{enumerate*}
@@ -3203,9 +3212,9 @@ Otherwise, since $M$ has a beta-nf, by Theorem~\ref{thm:completeness_leftmostlin
 % where $\travulc^k(M)$ denotes the set of traversals of length $k$ at most and $\pathset(BT(M))$ denotes the set of \emph{possibly infinite} maximal paths in the B\"oem tree $BT(M)$ of $M$ (the infinitary computation tree of the term obtained by reducing beta-redexes ad-infinitum~\cite{barendregt2013lambda}).\footnote{See also~\cite{Blum17-HomogNotRestriction, OngLics2006} for a formal definition of infinitary computation trees.}
 % \end{remark}
 
-\section{Conclusion and further directions}
+\section{Further directions}
 
-As we have seen, the traversal theory of the untyped lambda calculus implements leftmost linear reduction, a non-strict (``hyper-lazy''~\cite{danosherbelinregnier1996}) reduction strategy that substitutes variables one at a time. This bring the question of whether alternative notions of traversals are definable by considering other evaluation strategies such as call-by-name and call-by-value~\cite{plotkin-75}. A call-by-name version of head-linear reduction, that does not reduce inside the body of an unapplied abstraction, would easily be accommodated in the traversal setting. A strict evaluation strategy like call-by-value, on the other hand, might require substantial changes. What about traditional reduction strategies, such as the normal order of lambda calculus? Implementing simultaneous substitution with traversals is not immediately obvious since by their nature, they traverse the term tree one node at a time. But perhaps this can be modeled by non-deterministically spawning new traversals for every free occurrence of the variable to be substituted.
+As we have seen, the traversal theory of the untyped lambda calculus implements leftmost linear reduction, a non-strict (``hyper-lazy''~\cite{danosherbelinregnier1996}) reduction strategy that substitutes variables one at a time. This bring the question of whether alternative notions of traversals are definable by considering other evaluation strategies such as call-by-name and call-by-value~\cite{plotkin-75}. A call-by-name version of head-linear reduction, that does not reduce inside the body of an unapplied abstraction, would easily be accommodated in the traversal setting. A strict evaluation strategy like call-by-value, on the other hand, might require substantial changes. As for traditional reduction strategies, such as the normal order of lambda calculus, it is not immediately obvious how to implement simultaneous substitution with traversals since, by nature, they traverse the term tree one node at a time. Perhaps this can be modeled by non-deterministically spawning new traversals for every free occurrence of the variable to be substituted.
 
 
 \begin{todobox}
