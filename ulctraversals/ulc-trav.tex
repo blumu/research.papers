@@ -165,17 +165,17 @@
 \newcommand\NodesLmd{\Nodes_\lambda}% set of lambda nodes
 \newcommand\NodesApp{\Nodes_@}% set of application nodes
 
-% set of extended nodes of the tree (both structural and ghost)
-\newcommand\ExtendedNodes{\tilde{\Nodes}}
-
-
 \newcommand{\ghostlmd}{{\lambda\!\!\lambda}}
 \newcommand{\ghostvar}{\theta}
 
-% set of imaginary variable nodes = structural + ghost variable nodes
-\newcommand\ImNodesVar{\NodesVar^\ghostvar}
-% set of imaginary variable nodes = structural + ghost lambda nodes
-\newcommand\ImNodesLmd{\NodesLmd^\ghostlmd}
+% set of extended nodes of the extensional computation tree
+% (= structural + ghost nodes)
+\newcommand\ExtendedNodes{\tilde{\Nodes}}
+% set of extended variable nodes = structural + ghost variable nodes
+\newcommand\ExtendedNodesVar{\NodesVar^\ghostvar}
+% set of extended lambda nodes = structural + ghost lambda nodes
+\newcommand\ExtendedNodesLmd{\NodesLmd^\ghostlmd}
+
 
 \newcommand{\affine}{{\sf aff}}
 \newcommand{\normalizing}{{\sf norm}}
@@ -203,8 +203,7 @@
 
 \newcommand{\enables}{\vdash} %enabling relation
 \newcommand{\ctree}{\Tau} %computation tree
-\newcommand{\extctree}{\tilde{\Tau}} %extended computation tree
-
+\newcommand{\exttree}{\tilde{\Tau}} % extensional computation tree with ghost nodes
 
 % Set of external nodes = nodes hereditarily justified by the root
 \newcommand{\ExternalNodes}{\Nodes^{\sf ext}}
@@ -527,7 +526,7 @@ Figure~\ref{fig:comptree_examples} illustrates examples of computation trees.
         };
     \end{tikzpicture}
     \end{tabular}
-\caption{Examples of computation trees of untyped lambda terms. Ghost nodes are omitted.}
+\caption{Examples of computation trees of untyped lambda terms.}
 \label{fig:comptree_examples}
 \centering
 \end{figure}
@@ -541,7 +540,7 @@ A tree node is \defname{external} if it is hereditarily enabled by the root, oth
 The \defname{arity} of a node $n$, written $|n|$,
 is defined for a variable node as the number of immediate arguments (\ie, children in the computation tree); for an application node, as the number of operands (\ie, number of children of the $@$-node minus 1); for a lambda node $\lambda x_1 \cdots x_k$, $k\geq 0$, as the number of bound variables $k$.
 
-\subsection{Computation tree with ghost nodes}
+\subsection{Extensional computation tree}
 We extend the notion of computation tree by augmenting the
  \defname{structural nodes} $\Nodes$, representing tokens in the syntax representation of the lambda term,
 with two countable sets of \defname{ghost nodes} representing fictitious tokens: The \emph{ghost lambda nodes}
@@ -557,21 +556,22 @@ and $\alpha \enables_{|\alpha|+ k} \ghostvar$; where by convention ghost nodes h
 This enabling relation induces a binding relationship, between ghost variables and their (possibly ghost) lambda-node binder, which permits us to forgo the notion of variables names in ghost nodes: we will thus
 use respectively $\ghostlmd$ and $\ghostvar$ as a unique label for all ghost lambda and variable nodes. We also omit ghost nodes when illustrating computation trees.
 
-We call the tree hereby defined the \defname{extended computation tree} of $M$,
-denoted $\extctree(M)$ over the extended set of nodes $\ExtendedNodes = \Nodes + \ghostvar + \ghostlmd$, where $+$ denotes disjoint union on sets. We use the shorthands $\ImNodesLmd$ for $\NodesLmd + \ghostlmd$ and $\ImNodesVar$ for $\NodesVar + \ghostvar$.
+We call the tree hereby defined the \defname{extensional computation tree} of $M$,
+denoted $\exttree(M)$ over the \defname{extended nodes} $\ExtendedNodes = \Nodes + \ghostvar + \ghostlmd$, where $+$ denotes disjoint union on sets. We use the shorthands $\ExtendedNodesLmd$ for $\NodesLmd + \ghostlmd$ and $\ExtendedNodesVar$ for $\NodesVar + \ghostvar$.
 
 \subsection{Justified sequence of nodes}
 \label{sec:justseq}
 
-A \defname{justified sequence} is defined a sequence of nodes in $\ExtendedNodes$ where every occurrence $n$ in the sequence, except the first one, has an associated link called ``justification pointer'' pointing to some previous node occurrence $j$ in the sequence, called its ``justifier'', with an associated ``link label'' $l\geq0$; with the constraint that the justifier node $\enables$-enables the source node with the corresponding label; that is $j \enables_l n$ must hold. We represent a justified sequence as a sequence of labelled node occurrences with back-pointing arrows representing justification pointers, \eg, $\Pstr[10pt]{ s = \cdots (j){j} \ldots (n-j,25:l){n} }$ and we say that $n$ `points to' or `is justified by' $n$.
-For readability, we sometimes indicate instead the link label in exponent of the justified occurrence, or even omit the justification pointers altogether.
-Note that the enabling relation is \emph{statically} induced by the structure of the tree whereas justification is defined on node \emph{occurrences} within a specific justified sequence. The set $\justseqset(M)$ of justified sequences over $M$ consists of all justified sequences over the extended set of nodes $\ExtendedNodes$.
+A \defname{justified sequence} is defined a sequence of nodes in $\ExtendedNodes$ where every occurrence $n$ in the sequence may have an associated link called `justification pointer' pointing to some previous node occurrence $j$ in the sequence, called its `justifier', with an associated `link label' $l\geq0$; with the constraint that the justifier node $\enables$-enables the source node with the corresponding label; that is $j \enables_l n$ must hold. We represent a justified sequence as a sequence of labelled node occurrences with back-pointing arrows representing justification pointers, for example: $\Pstr[10pt]{ s = \cdots (j){j} \ldots (n-j,25:l){n} }$ which we read `$n$ points to $j$', or `$n$ is justified by $j$' with link label $l$.
+For readability, we sometimes indicate the link label in exponent of the justified occurrence instead of above the pointer, or even omit the justification pointers altogether.
+Note that the enabling relation is \emph{statically} induced by the tree structure whereas the concept of justification is defined on node \emph{occurrences}, that is within a specific justified sequence. The set $\justseqset(M)$ of justified sequences over $M$ consists of all justified sequences over the extended nodes $\ExtendedNodes$.
+
 
 The (name-free) \defname{structure} of a justified sequence refers to the sequence obtained by discarding node labels while preserving node types. It is encoded as a sequence of triples $\{\lambda, {\sf Var}, @ \}\times\nat\times\nat$ where the first component indicates the type of each occurrence (lambda bunch, variable, application), the second component indicates the link distance, and the third component is the link label ($0$ for no pointer).
 Two sequences $s$ and $u$ over possibly two distinct terms are \defname{equivalent}, written $s \equiv u$ just if they have the same structure: the types of the underlying nodes in the two sequences match pairwise (either both variable/@ nodes or both lambda nodes) and have the same justification pointers. Two equivalent sequences are not necessarily equal since they may have different variable names.
 We say that two subsets $J_1\subseteq \justseqset(M_1)$ and $J_2\subseteq\justseqset(M_2)$ are isomorphic, written $J_1\cong J_2$, if  there exists a structure-preserving bijection between $J_1$ and $J_2$. That is there exists a bijection $\phi :J_1\longrightarrow J_2$ such that for any $j\in J$, $j\equiv\phi(j)$.
 
-The \defname{quadruplet encoding} of a justified sequence of nodes with variables in $\VarSet$ is a sequence of quadruplets in $O_4 = \nat^*\times \mathcal{V}^* \times\nat\times\nat$ defined occurrence-wise where each quadruplets $(n,p,j,i) \in O_4$ is such that the \emph{Node path} $n$ encodes the path to the node in the (extended) computation tree uniquely defining the type and label of the occurrence;
+The \defname{quadruplet encoding} of a justified sequence of nodes with variables in $\VarSet$ is a sequence of quadruplets in $O_4 = \nat^*\times \mathcal{V}^* \times\nat\times\nat$ defined occurrence-wise where each quadruplets $(n,p,j,i) \in O_4$ is such that the \emph{Node path} $n$ encodes the path to the node in the extensional computation tree, which uniquely defines the type and label of the occurrence;
 the \emph{Pending lambdas} $p$ is the empty list $\epsilon$;
 the \emph{Link distance} $j$ is the number of occurrences separating the occurrence from its justifier plus $1$, or $0$ for no justifier;
 the \emph{Link label} $i$ is the label of the justification pointer.
@@ -759,7 +759,7 @@ It is well-defined because sequences in $T$ correspond to actual paths in the tr
 \subsection{Definition and properties}
 
 \begin{definition}
-The set $\travulc(M)$ of \defname{traversals} of an untyped lambda term $M$, abbreviated $\travulc$ when the term is clear from context, is the set of justified sequences of nodes over the computation tree of $M$ extended with ghost nodes, recursively defined by the rules of Table~\ref{tab:trav_rules}.
+The set $\travulc(M)$ of \defname{traversals} of an untyped lambda term $M$, abbreviated $\travulc$ when the term is clear from context, is the set of justified sequences of nodes over the extensional computation tree of $M$, recursively defined by the rules of Table~\ref{tab:trav_rules}.
 
 We will use interchangeably `\emph{ULC traversal}', `\emph{imaginary traversal}' or just `\emph{traversal}' when referring to a traversal of an untyped term.
 \end{definition}
@@ -780,7 +780,7 @@ We will use interchangeably `\emph{ULC traversal}', `\emph{imaginary traversal}'
         \item[\rulenamet{Lam^\ghostvar}] If $n$ is a ghost $\ghostvar$
         (\ie,~$\alpha = \ghostlmd$) with $t \cdot \alpha = \Pstr[0.5cm]{ u \cdot \beta \cdot
         (m){m} \cdots (gl-m,40:i){\ghostlmd}}$ for some prefix $u$ and nodes
-        $\beta \in \ImNodesLmd, m \in\ImNodesVar \Union \NodesApp$
+        $\beta \in \ExtendedNodesLmd, m \in\ExtendedNodesVar \Union \NodesApp$
         then $\Pstr[0.5cm]{ u \cdot(beta){\beta} \cdot
     (m){m} \cdot \ldots \cdot (gl-m,40:i){\ghostlmd}\cdot (al-beta,40:{|\beta| + i - |m|}){\ghostvar} \in\travulc}$.
     \end{compactitem}
@@ -788,7 +788,7 @@ We will use interchangeably `\emph{ULC traversal}', `\emph{imaginary traversal}'
 \emph{\bf PROGRAM -- Copy-cat rule}
 \begin{itemize}[leftmargin=3em]
 \item[\rulenamet{Var}] If \Pstr[0.5cm]{t\cdot(m){m}\cdot(beta){\beta}
-    \ldots (n-beta,50:i){n}\in\travulc} for $m \in\ImNodesVar \union \NodesApp$, internal nodes $\beta \in \ImNodesLmd$, $n \in \ImNodesVar$
+    \ldots (n-beta,50:i){n}\in\travulc} for $m \in\ExtendedNodesVar \union \NodesApp$, internal nodes $\beta \in \ExtendedNodesLmd$, $n \in \ExtendedNodesVar$
     and $i>0$ then we have
   $\Pstr[0.3cm]{ t  \cdot
 (m){m} \cdot (lx){\beta}  \ldots (x-lx,30:i){n}
@@ -798,9 +798,9 @@ We will use interchangeably `\emph{ULC traversal}', `\emph{imaginary traversal}'
 
 \emph{\bf DATA -- Input-variable rule}
 \begin{itemize}[leftmargin=3em]
-\item[\rulenamet{IVar}] If $t \cdot n \in \travset$ with external node $n \in \ImNodesVar$ then
+\item[\rulenamet{IVar}] If $t \cdot n \in \travset$ with external node $n \in \ExtendedNodesVar$ then
 $t \cdot n \cdot\alpha\in\travulc$
-for every $i$th child $\alpha$ of any node $m \in \ImNodesVar$ occurring in $\oview{t\cdot n}$, $i\geq1$, where $\alpha$ points to $m$ with label $i$.
+for every $i$th child $\alpha$ of any node $m \in \ExtendedNodesVar$ occurring in $\oview{t\cdot n}$, $i\geq1$, where $\alpha$ points to $m$ with label $i$.
 \end{itemize}
 \caption{Imaginary traversals $\travulc$ of the untyped $\lambda$-calculus.}
  \label{tab:trav_rules}
@@ -831,13 +831,13 @@ The traversal rules are well defined, in particular for any sequence of nodes wi
 the enabling relation $\enables$ on extended nodes $\ExtendedNodes$, and $t$ verifies the alternation condition;
 %(ii) and if the last node in $t$ is external then so are all the nodes in $\oview{t}$. % By induction on \oview{t}
 \item[(ii)] For all occurrences $\Pstr[0.5cm]{(m){m} \cdots (n-m,30:i){n}}$, $n$ is a ghost node if and only if $i > |m|$;
-\item[(iii)] $\pview{t}$ is a (justified) path in the extended computation tree $\extctree(M)$;
+\item[(iii)] $\pview{t}$ is a (justified) path in the extensional computation tree $\exttree(M)$;
 In particular, if $t$ does not contain ghost nodes then $\pview{t}$ is also structural path in $\ctree(M)$.
 \end{compactitem}
 \end{proposition}
 \shortproof
 Proven simultaneously by induction on the traversal rules.
-Rule \rulenamet{Lam^{\sf var}}: By induction hypothesis (iii) the P-view is a path in the tree $M$ extended with ghost nodes. But the last node of $t$ is a structural node therefore, this path is necessarily a structural path with no ghost node. Consequently, if the last node is a bound variable node, its enabler is precisely its binding lambda node which necessarily occurs exactly once in the path to the root. If the variable is free then the enabler is the root itself: (i) holds. By definition, the justification pointer honors the enabling relation so (ii) holds. The node $n$ is by definition the unique child of $\alpha$ thus (iii) holds.
+Rule \rulenamet{Lam^{\sf var}}: By induction hypothesis (iii) the P-view is a path in the extensional computation tree of $M$. But the last node of $t$ is a structural node therefore, this path is necessarily a structural path with no ghost node. Consequently, if the last node is a bound variable node, its enabler is precisely its binding lambda node which necessarily occurs exactly once in the path to the root. If the variable is free then the enabler is the root itself: (i) holds. By definition, the justification pointer honors the enabling relation so (ii) holds. The node $n$ is by definition the unique child of $\alpha$ thus (iii) holds.
 
 Rule \rulenamet{Lam^\ghostvar}, the induction hypothesis (ii) shows that $i>|m|$, which guarantees that $|\beta|+i-|m|>0$ is a valid justification label (i) and that (ii) holds for the traversed node $\ghostvar$.
 Finally (iii) holds because the node preceding $\ghostvar$ in the P-view is precisely $\beta$, its parent node.
@@ -947,9 +947,9 @@ We define the partial function $\coresymbol_{\overline{y}}\colon \justseqset(M) 
 \coresymbol_{\overline{y}}(s\cdot n) =
 \begin{cases}
 \coresymbol_{\epsilon}(s) \cdot n
-    & \mbox{if } n\in\ImNodesVar\inter\ExternalNodes, \\
+    & \mbox{if } n\in\ExtendedNodesVar\inter\ExternalNodes, \\
 \coresymbol_{pop_{|n|}(\overline{y})}(s)
-    & \mbox{if } n\in(\ImNodesVar\inter\InternalNodes)\union\NodesApp, \\
+    & \mbox{if } n\in(\ExtendedNodesVar\inter\InternalNodes)\union\NodesApp, \\
 \coresymbol_{\epsilon}(s) \cdot \lambda \overline{x}\overline{y}
     & \mbox{if } n\in\NodesLmd\inter\ExternalNodes, n \mbox{ labelled } \lambda\overline{x},\\
 \coresymbol_{\overline{x} \overline{y}}(s)
@@ -1264,12 +1264,12 @@ A \defname{strand} of a traversal $t$, is a sub-sequence of consecutive nodes of
 
 From the parity property of traversals, a strand must consist of alternations of lambda nodes and variable/application nodes. We will highlight a strand within a traversal by underlining its first and last occurrence as follows:
 $$ t = \cdots \underline{\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ \underline{n_1} \cdots $$
-for some $k\geq 1$ where for $1 \leq j \leq k$, $\alpha_j$ is in $\ImNodesLmd$, $n_j$ is in $\ImNodesVar\union\NodesApp$, and the $2k-2$ nodes occurring between $\alpha_k$ and $n_1$ are internal nodes.
+for some $k\geq 1$ where for $1 \leq j \leq k$, $\alpha_j$ is in $\ExtendedNodesLmd$, $n_j$ is in $\ExtendedNodesVar\union\NodesApp$, and the $2k-2$ nodes occurring between $\alpha_k$ and $n_1$ are internal nodes.
 
 \begin{definition} %[Traversal arity threshold]
 \label{dfn:arity-threshold}
 The \defname{arity threshold} of a traversal $t$ ending with strand
- $\underline{\alpha_k}\,n_k\,\alpha_{k-1}\,n_{k-1}\cdots \alpha_2\,n_2\, \alpha_1\,\underline{n_1}$ for $k>0$ where $\alpha_j \in \ImNodesLmd$, $n_j \in \ImNodesVar\union\NodesApp$ for all $1\leq j\leq k$ is
+ $\underline{\alpha_k}\,n_k\,\alpha_{k-1}\,n_{k-1}\cdots \alpha_2\,n_2\, \alpha_1\,\underline{n_1}$ for $k>0$ where $\alpha_j \in \ExtendedNodesLmd$, $n_j \in \ExtendedNodesVar\union\NodesApp$ for all $1\leq j\leq k$ is
 $$
 \arth(t) = \max_{q=1..k} \left( |n_q| + \sum_{j=1..q-1} (|n_j|-|\alpha_j|) \right)\ .
 $$
@@ -1448,7 +1448,7 @@ This observation suggests a stricter version of traversals:
 The set $\travsetnorm$ of \defname{normalizing traversals}, is the subset of branching traversals defined by the rules of Definition~\ref{dfn:branching_traversals} where the index $i$ in rule \rulenamet{IVar} is bounded by the arity threshold of the traversal.
 % \infrule[$\rulefont{IVar_\normalizing}$]
 %      { t \cdot n \in\travsetnorm
-%      \andalso n \in\ExternalNodes\inter\ImNodesVar
+%      \andalso n \in\ExternalNodes\inter\ExtendedNodesVar
 %      \andalso n \enables_i \alpha
 %      \andalso 1 \leq i \leq\arth(t)}
 %      {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:i){\alpha}}\in\travsetnorm}
@@ -1512,7 +1512,7 @@ for instance, which verifies $\pview{\core{t}} = t$, is not equivalent to $\pvie
              \ldots
             (gl-m,40:i){\ghostlmd}\cdot (al-beta,40:{|\beta| + i - |m|}){\ghostvar}
                }
-            \andalso(\beta\in\ImNodesLmd, m \in\ImNodesVar\union\NodesApp)
+            \andalso(\beta\in\ExtendedNodesLmd, m \in\ExtendedNodesVar\union\NodesApp)
         }
 
     \emph{\bf PROGRAM - Copy-cat rule}
@@ -1521,7 +1521,7 @@ for instance, which verifies $\pview{\core{t}} = t$, is not equivalent to $\pvie
         {
             \istraversal \Pstr[0.5cm]{t \cdot m \cdot (beta){\beta}
             \ldots (n-beta,50:i){n}}
-            \andalso n \in \ImNodesVar \setminus \ExternalNodes
+            \andalso n \in \ExtendedNodesVar \setminus \ExternalNodes
             \andalso m \enables_i \alpha
             \andalso i>0
         }
@@ -1530,13 +1530,13 @@ for instance, which verifies $\pview{\core{t}} = t$, is not equivalent to $\pvie
             (m){m} \cdot (a){\beta}  \ldots (n-a,30:i){n}
                 \cdot (letai-m,36:i){\alpha}
                 }
-            \andalso (m \in \ImNodesVar\union\NodesApp, \alpha\in\ImNodesLmd,\beta\in\ImNodesLmd)
+            \andalso (m \in \ExtendedNodesVar\union\NodesApp, \alpha\in\ExtendedNodesLmd,\beta\in\ExtendedNodesLmd)
         }
 
     \emph{\bf DATA - Input-variable rule}
     \infrule[$\rulefont{IVar_\normalizing}$]
          {\istraversal t \cdot n
-          \andalso n \in \ImNodesVar\inter\ExternalNodes
+          \andalso n \in \ExtendedNodesVar\inter\ExternalNodes
           \andalso n \enables_i \alpha
           \andalso 1\leq i \leq\arth(t)
          }
