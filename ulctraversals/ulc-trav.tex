@@ -285,21 +285,21 @@
 \subsection{Background and related work}
 
 The theory of traversals was originally introduced in the context of higher-order recursion schemes~\cite{OngLics2006} as tree generators, and was
-then extended to simply-typed languages with higher-order free variables, such as the simply-typed lambda calculus (STLC)~\cite{BlumPhd}. A traversal consists of a sequence of nodes taken from a tree-representation of the term, where every node occurrence may have an associated labelled link, or ``justification pointer'', referring to some previous occurrence in the sequence. It always starts from the root of the tree and successively visits other nodes by either descending deeper into the tree structure, or jumping to other tree branches. A small set of rules formally defines how to extend a traversal--what node to visit next with which justification pointer. This yields a prefix-closed set of justified sequences of nodes defining the set of traversals of the term.
+then extended to simply-typed languages with higher-order free variables, such as the simply-typed lambda calculus (STLC)~\cite{BlumPhd}. A traversal consists of a sequence of nodes taken from a tree-representation of the term, where every node occurrence may have an associated labelled link, or ``justification pointer'', referring to some previous occurrence in the sequence. It always starts from the root of the tree and successively visits other nodes by either descending deeper into the tree structure, or jumping to other tree branches. A small set of rules formally defines how to extend a given traversal--what node to visit next with which justification pointer. This yields a prefix-closed set of justified sequences of nodes defining the set of traversals of the term.
 
 In the typed setting, the traversal theory bears a strong connection with Game Semantics~\cite{BlumPhd}: The game denotation of a term is in bijection with the set of \emph{core projections} of its traversals (Theorem~\ref{thm:gamesem_correspondence_stlc}), where the core projection of a traversal is the subsequence obtained by keeping only occurrences that are
 transitively justified by the initial node.
 The set of traversals itself, on the other hand, corresponds to the game semantic denotation of a term where all the internal moves are revealed, also called ``interaction game semantics''~\cite{BlumPhd}.
 
 This correspondence gives rise to a method for finding the normal form of a simply-typed lambda term~\cite{BlumPhd,BlumGalop2008,Blum-LocalBeta2008}
-where traversals explore a branches in the tree representation of the normal form. The underlying sequences of nodes and pointers encode the unfolding of the normalization procedure over branches of the normal form. There are two kinds of nodes: the \emph{internal} nodes record intermediate steps of the reduction procedure, while \emph{external} nodes represent actual nodes from the tree representation of the normal form. The core projection of a traversal effectively removes all its internal nodes, which yields a path in the abstract syntax tree of the normal form.
+where traversals explore a branches in the tree representation of the normal form. The underlying sequences of nodes and pointers encode the unfolding of the normalization procedure over branches of the normal form. There are two kinds of nodes: the \emph{internal} nodes record intermediate steps of the reduction procedure, while \emph{external} nodes represent actual nodes from the tree representation of the normal form. The core projection acts as a `garbage collector' that removes all the internal nodes from the traversals,  yielding a path in the abstract syntax tree of the normal form.
 
 
 %%%%%%%%%%%%%%%
 \subsection{Overview}
-In this paper we: (i) Generalize the notion of traversals to the untyped lambda calculus (ULC), which we call \emph{imaginery travserals}; (ii) Introduce a method to evaluate untyped lambda terms based on enumeration of their traversals; (iii) Formalize the connection between traversals and the notion of \emph{head linear reduction}.
+In this paper we: (i) Generalize the notion of traversals to the untyped lambda calculus (ULC), which we call \emph{imaginery travserals}; (ii) Introduce a method to evaluate untyped lambda terms based on enumerating traversals; (iii) Formalize the connection between traversals and the notion of \emph{head linear reduction}.
 
-The key idea behind imaginary traversals lies in a judicious use of eta-expansion. Attempting to traverse an untyped lambda term using the original traversal rules can cause the traversal to get stuck when the operator sub-term of an application has insufficiently many operands. In such a situation, there is no operand node in the term tree to traverse. Take the untyped term $(\lambda f.f)(\lambda x.x)$ for example. Traversing it using the rules of STLC gives the sequence of nodes $\lambda f \cdot f \cdot \lambda x \cdot x$ (where pointers are omitted), at which point the traversal is stuck: the variable rule cannot be used since there is no subterm representing the first argument of the variable occurrence $f$.
+The key idea behind imaginary traversals lies in an ad-hoc use of eta-expansion. Attempting to traverse an untyped lambda term using the original traversal rules causes the traversal to get stuck when the operator sub-term of an application has insufficiently many operands. In such a situation, there is no operand node in the term tree to traverse. Take the untyped term $(\lambda f.f)(\lambda x.x)$ for example. Traversing it using the rules of STLC gives the sequence of nodes $\lambda f \cdot f \cdot \lambda x \cdot x$ (where pointers are omitted), at which point the traversal is stuck because there is no subterm representing the first argument of the variable occurrence $f$.
 To take an analogy with abstract machine evaluators, this would be like a broken implementation of a Krivine machine~\cite{Krivine2007} attempting to lookup a variable from an empty environment, or a SECD machine~\cite{landin-secd} attempting to pop an argument from an empty stack when evaluating the application operator.
 
 This situation never occurs in the typed setting since STLC traversal rules conveniently assume that the lambda term is fully eta-expanded with respect to its type, yielding well-defined rules. In ULC, where types are absent, eta-long expansion is not feasible as it would yield an infinite term. So instead, we eta-expand ``on-demand''. To continue with the same example, an imaginary traversal may jump to a fictitious fresh node $y$ that would exist if $f$ were eta-expanded
@@ -337,7 +337,7 @@ The present paper achieves this by eta-expanding subterms `on-the-fly' when ther
 % and the traversal rules handle those fictitious nodes created in these ad-hoc eta-expansions.
 When restricted to simply-typed terms, the two notions of traversal conveniently coincide (Proposition~\ref{prop:ulc_and_stlc_trav_coincide}).
 
-In the STLC, traversals were shown to correspond to the \emph{interaction game semantic denotation}, where all internal moves from strategy composition are revealed; while the standard game denotation was shown to correspond to the set of traversals `\emph{projected with respect to the tree root}'. Such a correspondence induces an evaluation method for simply-typed lambda-terms in eta-long form~\cite{BlumPhd,BlumGalop2008,Ong-NormByTrav2015} that was implemented in~\cite{Blum-HogTool}, and which we state in Algorithm~\ref{algo:ulc_normalization_by_traversals}. This paper generalizes this procedure to the untyped lambda calculus, based on a variant of `projection with respect to the root' that involves relabelling of lambda nodes. A notable improvement is that it produces the traditional beta-normal form rather than the beta-\emph{eta-long} normal form. Another difference is that we prove soundness of the procedure through a connection with \emph{head-linear reduction} rather than appealing to Game Semantics.
+In the STLC, traversals were shown to correspond to the \emph{interaction game semantic denotation}, where all internal moves from strategy composition are revealed; while the standard game denotation was shown to correspond to the set of traversals `\emph{projected with respect to the tree root}', or also called `traversal cores'. Such a correspondence induces an evaluation method for simply-typed lambda-terms in eta-long form~\cite{BlumPhd,BlumGalop2008,Ong-NormByTrav2015} that was implemented in~\cite{Blum-HogTool}, and which we state in Algorithm~\ref{algo:ulc_normalization_by_traversals}. This paper generalizes this procedure to the untyped lambda calculus, based on a variant of the traversal core operation involving relabelling of lambda nodes. A notable improvement is that it produces the traditional beta-normal form rather than the beta-\emph{eta-long} normal form. Another difference is that we prove soundness of the procedure through a connection with \emph{head-linear reduction} rather than appealing to Game Semantics.
 
 \subsubsection{Head linear reduction}
 Danos \etal established the first connection between Game Semantics and the concept of \emph{head linear reduction} for simply-typed lambda terms in eta-long form~\cite{danosherbelinregnier1996}. It was was further studied in the context of untyped lambda terms in~\cite{danos-head}. The \emph{pointer abstract machine} (PAM) provides a virtual machine implementation of head linear reduction that yields the ``\emph{quasi-head normal form (qhn)}'' of the term. To obtain the normal form itself, the resulting term further needs to be reduced to head normal form (via head reduction), and then normalized using standard normal reduction.
@@ -395,11 +395,11 @@ The next section introduces basic definitions from the traversal theory. Section
 \subsection{Lambda calculus background and notations}
 \label{sec:lambdacalculus_basics}
 
-We consider the set of terms $\Lambda$ of the untyped lambda calculus constructed from the grammar $\Lambda := x\ |\ (\Lambda\ \Lambda)\ |\ \lambda x. \Lambda $
+We consider the set of terms $\Lambda$ of the untyped lambda calculus (ULC) constructed from the grammar $\Lambda := x\ |\ (\Lambda\ \Lambda)\ |\ \lambda x. \Lambda $
 where $x$ ranges over a countable set of variable names $\VarSet$.
-For conciseness we abbreviate consecutive lambda abstractions when writing lambda terms, so that $\lambda x_1 \ldots \lambda x_n . U$ for some $n\geq 0$ and term $U$ will be written $\lambda x_1 \ldots x_n . U$; or just
-$\lambda \overline{x} . U$ if $\overline{x} = x_1 \ldots x_n$.
-We will also drop brackets, and assume left-associative application so that $U~V~W$ means $(U~V)~W$. We write $M \alphaequiv N$ to denote that $M$ and $N$ are equal up to variable renaming.
+For conciseness we abbreviate consecutive lambda abstractions when writing lambda terms, so that $\lambda x_1 \ldots \lambda x_n . M$ for some $n\geq 0$ and term $M$ will be written $\lambda x_1 \ldots x_n . M$; or just
+$\lambda \overline{x} . M$ if $\overline{x} = x_1 \ldots x_n$.
+We will also drop brackets, and assume left-associative application so that $U\,V\,W$ means $(U\,V)\,W$. We write $M \alphaequiv N$ to denote that $M$ and $N$ are equal up to variable renaming.
 In the rest of the paper, we use uppercase letters $M, N, T, U, V$ for lambda terms and lowercase $x,y,z$ to denote variables. Terms will all have variable names ranging in some fixed set $\VarSet$ of identifiers.
 
 We recall standard results of the lambda calculus.
@@ -434,8 +434,10 @@ defined inductively by:
 
 Note that any lambda term can indeed be written in one of the two forms above. In particular, applicative terms are handled by the case $n=0$ of the form $\lambda . N$ for some term $N$ where `$\lambda$' is referred to as a ``dummy lambda''.
 
-The computation tree is just a more compact version of the traditional notion of term tree from the lambda calculus. One advantage is that application nodes indicate the presence of beta-redexes in the term. Computation trees without @-nodes are isomorphic to the notion of B\"ohm tree~\cite{Barendregt84}, with the implicit generalization of computation trees to infinitary terms.
-Another property of this representation is the alternation between lambda nodes and variable/application nodes at odd and even levels.
+The computation tree is just a more compact version of the traditional notion of term tree from the lambda calculus. One advantage is that application nodes indicate the presence of beta-redexes in the term.
+With the implicit generalization of the above definition to infinitary terms,
+computation trees without @-nodes are isomorphic to B\"ohm tree~\cite{Barendregt84}.
+Another property of this representation is the \defname{alternation} between lambda nodes and variable/application nodes at odd and even levels.
 
 We write $\Nodes(M)$ to denote the set of nodes of $\ctree(M)$, or just $\Nodes$ if the term is clear from context; $\NodesVar$ for the set of variable nodes; $\NodesLmd$ for lambda nodes, and $\NodesApp$ for  application nodes. For any lambda node $\alpha\in\NodesLmd$ we write $\child(\alpha)$ to denote its unique child node (either a variable node or $@$).
 \end{definition}
@@ -526,7 +528,7 @@ Figure~\ref{fig:comptree_examples} illustrates examples of computation trees.
 \centering
 \end{figure}
 
-We define the \defname{enabling relation} $\enables$ on tree nodes $\Nodes$ as the relation mapping (i) each lambda node to all the variable nodes that it binds; (ii) the root of the tree to all the free variable nodes; (iii) variable and application node to each one of their child node. We write $m \enables_k \alpha$ to indicate that a lambda node $\alpha$ is the $k$th child of a variable or application node $m$ for some $k\geq0$; and $\alpha \enables_k m$ to indicate that variable node $m$ is labelled by the $k$th variable bound by $\alpha$ for $k\geq1$.
+We define the \defname{enabling relation} $\enables$ on tree nodes $\Nodes$ as the relation mapping (i) each lambda node to all the variable nodes that it binds; (ii) the root of the tree to all the free variable nodes; (iii) variable and application node to each one of their child node. We write $n \enables_k \lambda\overline{x}$, for $k\geq0$, to indicate that a lambda node $\lambda\overline{x}$ is the $k$th child of a variable or application node $n$; $\lambda\overline{x} \enables_k n$, for $k\geq1$, to indicate that the label of a bound variable node $n$ is precisely the name of the $k$th variable bound by  $\lambda\overline{x}$ , that is $n=x_k$; and if $r$ denotes the root of the tree then we take the convention $r \enables_k z$ for any free variable node $z$, where $k$ denotes the free variable index of $z$ according to some predefined numbering of free variables.
 We say that node $m$ \defname{hereditarily enables} $n$ if they relate by the reflexive transitive closure of $\enables$.
 
 Because variable names and bindings are entirely recoverable from the enabling relation, the notion of computation tree could equivalently be defined as a name-free tree over three node labels $\{ \lambda, {\sf Var}, @ \}$ indicating the `type' of each node, together with the enabling relation.
@@ -549,7 +551,7 @@ $\ghostvar$ is the unique child of $\ghostlmd$, itself defined as the $k$th-chil
 and we extend the enabling relation with $n \enables_k \ghostlmd$
 and $\alpha \enables_{|\alpha|+ k} \ghostvar$; where by convention ghost nodes have arity $0$, and the arity of structural nodes remains unchanged (\ie, given by their arity in the computation tree without ghost nodes).
 The implicit binding relationship between ghost variables and their (possibly ghost) lambda-node binder allows us to forgo the notion of variables names altogether in ghost nodes. We will thus
-use respectively $\ghostlmd$ and $\ghostvar$ as a unique label for all ghost lambda and variable nodes.
+use respectively $\ghostlmd$ and $\ghostvar$ as a unique label for all ghost lambda and variable nodes. We also omit ghost nodes when illustrating computation trees.
 
 We write $\ExtendedNodes$ for the extended set of nodes $\Nodes + \ghostvar + \ghostlmd$, and use the shorthands $\ImNodesLmd$ for $\NodesLmd + \ghostlmd$ and $\ImNodesVar$ for $\NodesVar + \ghostvar$, where $+$ denotes disjoint union on sets.
 
@@ -768,7 +770,7 @@ We will use interchangeably `\emph{ULC traversal}', `\emph{imaginary traversal}'
     \item[\rulenamet{Lam}] If $t \cdot \alpha$ is a traversal for $\alpha\in\NodesLmd$, so is $t \cdot \alpha \cdot n$ where $n$ is the unique child of $\alpha$ and:
     \begin{compactitem}
         \item[\rulenamet{Lam^@}] If $n$ is an $@$-node then it has no justifier;
-        \item[\rulenamet{Lam^{\sf var}}] If $n$ is a variable then it points to the only occurrence of its binder (or the tree root, if $n$ is a free variable) occurring in $\pview{t\cdot \alpha}$;
+        \item[\rulenamet{Lam^{\sf var}}] If $n$ is a variable then it points to the only occurrence in $\pview{t\cdot \alpha}$ of a node $m$ verifying $m \enables_k n$ for some $k\geq 0$, and has link label $k$;
 
         \item[\rulenamet{Lam^\ghostvar}] If $n$ is a ghost $\ghostvar$
         (\ie,~$\alpha = \ghostlmd$) with $t \cdot \alpha = \Pstr[0.5cm]{ u \cdot \beta \cdot
@@ -816,15 +818,30 @@ $\Pstr[0.7cm]{(n0){\lambda }\,(n1){@}\,(n2-n1){\lambda u}\,(n3-n2){u}\,(n4-n1){\
 \,(n17-n0,25){y_2}} \in \travset$.
 \end{example}
 
-Some immediate properties follow, by induction on the traversal rules:
-\begin{property}
-\label{prop:trav_immediate}
-Let $t$ be a traversal. Then $t$ and $t\filter\ExtNodes$ are valid
-justified sequences
-%(with respect to enabling relation $\enables$)
-verifying the alternation condition;
-and if the last node in $t$ is external then so are all the nodes in $\oview{t}$. % By induction on \oview{t}
-\end{property}
+\begin{proposition}
+\label{prop:ulctrav_welldefined_pathview}
+The traversal rules are well defined, in particular for any sequence of nodes with pointers $t\in \travset$:
+\begin{compactitem}
+\item[(i)] $t$ is a valid justified sequence, with respect to enabling relation $\enables$ extended to ghost nodes, and $t$ verifies the alternation condition;
+%(ii) and if the last node in $t$ is external then so are all the nodes in $\oview{t}$. % By induction on \oview{t}
+\item[(ii)] For all occurrences $\Pstr[0.5cm]{(m){m} \cdots (n-m,30:i){n}}$, $n$ is a ghost node if and only if $i > |m|$;
+\item[(iii)] $\pview{t}$ is a (justified) path in the computation tree of $M$ extended with ghost nodes;
+In particular, if $t$ does not contain ghost nodes then $\pview{t}$ is a structural path in the computation tree.
+\end{compactitem}
+\end{proposition}
+\shortproof
+Proved simultaneously by induction on the traversal rules.
+Rule \rulenamet{Lam^{\sf var}}: By induction hypothesis (iii) the P-view is a path in the tree $M$ extended with ghost nodes. But the last node of $t$ is a structural node therefore, this path is necessarily a structural tree path that does not contain any ghost node. Consequently, if the last node is a bound variable node, its enabler is its binding lambda node which necessarily occurs exactly once in the P-view. If the variable is free then the enabler is the root itself: (i) holds. By definition, the justification pointer honors the enabling relation so (ii) holds. The node $n$ is by definition the unique child of $\alpha$ thus (iii) holds.
+
+Rule \rulenamet{Lam^\ghostvar}, the induction hypothesis (ii) shows that $i>|m|$, which guarantees that $|\beta|+i-|m|>0$ is a valid justification label (i) and that (ii) holds for the traversed node $\ghostvar$.
+Finally (iii) holds because the node preceding $\ghostvar$ in the P-view is precisely $\beta$, its parent node.
+
+Other rules are straightforward.
+\endshortproof
+
+The last property generalizes a result from the theory of traversals for higher-order grammars~\cite{OngLics2006} and simply-typed lambda terms~\cite[Proposition 4.29]{BlumPhd} to the untyped setting: The game-semantic concept of P-views from Definition~\ref{def:views} corresponds to paths in the computations tree
+
+% For any $t\in \travset$, the sequences $t\filter\ExtNodes$ is a valid justified sequences verifying the alternation condition.
 
 
 \paragraph{On-the-fly eta-expansion}
@@ -836,11 +853,8 @@ Observe that we necessarily have $i>|n|$ since the $i$th child of $n$ is a ghost
 
 %%% analogy
 An analogy may help understand the intuition behind ghost nodes:
-just like the imaginary number $i$ in mathematics was invented from the impossibility of calculating the square root of $-1$, ghost nodes are introduced from the impossibility of resolving the argument of a variable when traversing a lambda term, due to an insufficient number of operands. Ghost nodes start to appear when the arity of a variable is too low to structurally traverse it:
-\begin{property}
-\label{prop:ghost_justifier_arity}
-For all occurrences $\Pstr[0.5cm]{(m){m} \cdots (n-m,30:i){n}}$ in a traversal, $n$ is a ghost node if and only if $i > |m|$.
-\end{property}
+just like the imaginary number $i$ in mathematics was invented from the impossibility of calculating the square root of $-1$, ghost nodes are introduced from the impossibility of resolving the argument of a variable when traversing a lambda term, due to an insufficient number of operands. Ghost nodes start to appear when the arity of a variable is too low to structurally traverse it.
+
 
 %%%%
 Continuing with the analogy, complex numbers are sometimes used as an intermediate concept to perform some calculation, without necessarily appearing in the final result. For instance, the De Moivre's Theorem, which involves complex numbers, is often used to prove trigonometry identities on real numbers. Similarly, we use ghost nodes to evaluate lambda terms but they eventually materialize as regular nodes in the final normal form.
@@ -872,27 +886,6 @@ It follows from the definition that $M$ is a sub-tree of $M^t$ therefore paths i
 The eta-expansion of $(\lambda u . u(y_1\,u)) (\lambda v . v\,y_2)$, with computation tree shown in Example~\ref{ex:missingoperand}, with respect to traversal $t$ from Example~\ref{ex:ulctrav_sample} is
 $(\lambda u . u(y_1 (\lambda \alpha. u (\lambda \beta.\alpha\,\beta))) (\lambda v . v\,y_2)$.
 \end{example}
-
-We state a generalization of a result from the theory of traversals for higher-order grammars~\cite{OngLics2006} and simply-typed lambda terms~\cite[Proposition 4.29]{BlumPhd} to the untyped setting: The game-semantic concept of P-views from Definition~\ref{def:views} and paths in the computations tree correspond in the following sense:
-
-\begin{proposition}[ULC Path-View correspondence]
-\label{prop:pathview_ulc}
-Let $t$ be a \emph{finite} traversal of an untyped term $M$ then
- $\pview{t}$ is a (justified) path in the computation tree of the eta-expansion of $M$ with respect to $t$. Thus, if $t$ does not contain ghost nodes then $\pview{t}$ is a structural path in the computation tree of $M$.
-\end{proposition}
-\begin{proof}
-By induction on the traversal rules of $t$.
-\end{proof}
-
-\begin{property}
-The traversal rules are well-defined.
-\end{property}
-\begin{proof}
-(i) Rule \rulenamet{Lam}: By Proposition~\ref{prop:pathview_ulc}, the P-view is a path in the tree of the eta-expansion of $M$ with respect to $t$. But the last node of $t$ is a structural node therefore, since the eta-expanded tree contains the tree of $M$, this path is necessarily also the path to $t^\omega$ in the tree of $M$ (and thus $\pview{t}$ does not contain any ghost node, even though $t$ itself may contain ghost nodes).
- Consequently, if the last node is a variable node, its enabler necessarily occurs exactly once in the P-view.
-
-(ii) Rule \rulenamet{Var}: In the concrete sub-case, $m$ is necessarily itself a structural node since $|m|\geq i>0$, and its $i$th child exists in $\Nodes$ since $m$ as arity greater than $i$.
-\end{proof}
 
 
 \begin{proposition}
@@ -1239,7 +1232,7 @@ we have $\travstlc(\Gamma \entail M : T)/{\sim}\ = \pathset(\etabetalnf{M})$
 where $\etabetalnf{M}$ denotes the eta-long form of the beta-normal form of $M$.
 \end{proposition}
 \begin{proof}
- By soundness of Game Semantics, beta-eta equivalent terms have the same game denotation, therefore by Theorem~\ref{thm:gamesem_correspondence_stlc}, the set of traversals of the eta-long beta-normal form of $M$ is also given by the set of cores of traversals of the eta-long form of $M$. The Path-View correspondence (Proposition~\ref{prop:pathview_ulc}) and Proposition~\ref{prop:ulc_and_stlc_trav_coincide} then show that the P-views of traversal cores of the eta-long form of $M$ give the tree paths of the eta-long beta normal form.
+ By soundness of Game Semantics, beta-eta equivalent terms have the same game denotation, therefore by Theorem~\ref{thm:gamesem_correspondence_stlc}, the set of traversals of the eta-long beta-normal form of $M$ is also given by the set of cores of traversals of the eta-long form of $M$. The Path-View correspondence (Proposition~\ref{prop:ulctrav_welldefined_pathview}) and Proposition~\ref{prop:ulc_and_stlc_trav_coincide} then show that the P-views of traversal cores of the eta-long form of $M$ give the tree paths of the eta-long beta normal form.
 \end{proof}
 
 
@@ -2432,7 +2425,7 @@ $\ghostvar_{k_i}$ and ghost lambda $\ghostlmd_{k_i}$ point respectively to $\lam
   \sum_{i< j\leq q} (|\lambda\overline{\xi}_j| - |@_j|)
 \end{align*}
 
-Since all the nodes in $v$ are ghost nodes, by Property~\ref{prop:ghost_justifier_arity} their justification label is greater than the justifier's arity; the opposite holds for $\lambda\overline{y_2}$ which is a structural node. Therefore:
+Since all the nodes in $v$ are ghost nodes, by Proposition~\ref{prop:ulctrav_welldefined_pathview} their justification label is greater than the justifier's arity; the opposite holds for $\lambda\overline{y_2}$ which is a structural node. Therefore:
 \begin{align}
 k > |x| \label{eqn:k_greater_than_x} \\
 k_i > |@_i| & \quad\mbox{for all $r+1\leq i \leq q$ } \label{eqn:qnfdecomp_kj}\\
