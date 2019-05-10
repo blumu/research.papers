@@ -207,10 +207,10 @@
 
 
 % Set of external nodes = nodes hereditarily justified by the root
-\newcommand{\ExtNodes}{\Nodes^{\sf ext}}
+\newcommand{\ExternalNodes}{\Nodes^{\sf ext}}
 
 % Set of internal nodes = nodes hereditarily justified by @-nodes
-\newcommand{\IntNodes}{\Nodes^{\sf int}}
+\newcommand{\InternalNodes}{\Nodes^{\sf int}}
 
 \newcommand\pathset{{\mathcal{P}aths}} % set of paths in the comp tree
 \newcommand\arth{\textsf{arth}} % arity threshold
@@ -537,7 +537,7 @@ We say that node $m$ \defname{hereditarily enables} $n$ if they relate by the re
 
 Because variable names and bindings are entirely recoverable from the enabling relation, the notion of computation tree could equivalently be defined as a name-free tree over three node labels $\{ \lambda, {\sf Var}, @ \}$ indicating the `type' of each node, together with the enabling relation.
 
-A tree node is \defname{external} if it is hereditarily enabled by the root, otherwise it is \defname{internal}. We write $\ExtNodes$ for the set of external nodes, that is the image of the tree root by the reflexive transitive closure of the enabling relation. Internal nodes are therefore precisely the nodes hereditarily justified by application nodes $@$. We write $\IntNodes$ to denote the set of internal nodes.
+A tree node is \defname{external} if it is hereditarily enabled by the root, otherwise it is \defname{internal}. We write $\ExternalNodes$ for the set of external nodes, that is the image of the tree root by the reflexive transitive closure of the enabling relation. Internal nodes are therefore precisely the nodes hereditarily justified by application nodes $@$. We write $\InternalNodes$ to denote the set of internal nodes.
 The \defname{arity} of a node $n$, written $|n|$,
 is defined for a variable node as the number of immediate arguments (\ie, children in the computation tree); for an application node, as the number of operands (\ie, number of children of the $@$-node minus 1); for a lambda node $\lambda x_1 \cdots x_k$, $k\geq 0$, as the number of bound variables $k$.
 
@@ -648,7 +648,7 @@ We borrow some standard operations on justified sequences from Game Semantics~\c
 \begin{definition}[Projections]
 Let $n$ be some occurrence of a justified sequence $s$. The \defname{projection} $s\filter n$ of $s$ with respect to $n$ is the subsequence obtained by keeping only occurrences hereditarily justified by $n$ in $s$. For a subset $A$ of nodes in $\Nodes$ we write $s \filter A$ to denote the subsequence of $s$ consisting of occurrences of nodes in $A$ only.
 
-We will consider the subsequence $s\filter\ExtNodes$ consisting of external nodes of $s$, which is equivalently given by $s\filter r_1 \filter \ldots \filter r_n$ where $r_1, \ldots r_n$, $n\geq 1$ are the occurrences of the root in $s$.
+We will consider the subsequence $s\filter\ExternalNodes$ consisting of external nodes of $s$, which is equivalently given by $s\filter r_1 \filter \ldots \filter r_n$ where $r_1, \ldots r_n$, $n\geq 1$ are the occurrences of the root in $s$.
 \end{definition}
 
 The P-view is the sub-sequence obtained by reading a justified sequence backwards and following the justification pointer every other node: if the last node is a variable node then follow its justification pointer (\ie, skip all the occurrences lying underneath); if it is a lambda node then move to the preceding node. Formally:
@@ -847,7 +847,7 @@ Other rules are straightforward.
 
 The last property generalizes a result from the theory of traversals for higher-order grammars~\cite{OngLics2006} and simply-typed lambda terms~\cite[Proposition 4.29]{BlumPhd} to the untyped setting: The game-semantic concept of P-views from Definition~\ref{def:views} corresponds to paths in the computations tree.
 
-% For any $t\in \travset$, the sequences $t\filter\ExtNodes$ is a valid justified sequences verifying the alternation condition.
+% For any $t\in \travset$, the sequences $t\filter\ExternalNodes$ is a valid justified sequences verifying the alternation condition.
 
 
 \paragraph{On-the-fly eta-expansion}
@@ -947,17 +947,17 @@ We define the partial function $\coresymbol_{\overline{y}}\colon \justseqset(M) 
 \coresymbol_{\overline{y}}(s\cdot n) =
 \begin{cases}
 \coresymbol_{\epsilon}(s) \cdot n
-    & \mbox{if } n\in\ImNodesVar\inter\ExtNodes, \\
+    & \mbox{if } n\in\ImNodesVar\inter\ExternalNodes, \\
 \coresymbol_{pop_{|n|}(\overline{y})}(s)
-    & \mbox{if } n\in(\ImNodesVar\inter\IntNodes)\union\NodesApp, \\
+    & \mbox{if } n\in(\ImNodesVar\inter\InternalNodes)\union\NodesApp, \\
 \coresymbol_{\epsilon}(s) \cdot \lambda \overline{x}\overline{y}
-    & \mbox{if } n\in\NodesLmd\inter\ExtNodes, n \mbox{ labelled } \lambda\overline{x},\\
+    & \mbox{if } n\in\NodesLmd\inter\ExternalNodes, n \mbox{ labelled } \lambda\overline{x},\\
 \coresymbol_{\overline{x} \overline{y}}(s)
-    & \mbox{if } n\in\NodesLmd\inter\IntNodes, n \mbox{ labelled } \lambda\overline{x}, \\
+    & \mbox{if } n\in\NodesLmd\inter\InternalNodes, n \mbox{ labelled } \lambda\overline{x}, \\
 \coresymbol_{\epsilon}(s) \cdot\lambda\overline{y}
-    & \mbox{if } n\in\ghostlmd\inter\ExtNodes, \\
+    & \mbox{if } n\in\ghostlmd\inter\ExternalNodes, \\
 \coresymbol_{\overline{y}}(s)
-    & \mbox{if } n\in\ghostlmd\inter\IntNodes.
+    & \mbox{if } n\in\ghostlmd\inter\InternalNodes.
 %%%%%
 \end{cases}
 \end{equation*}
@@ -1092,7 +1092,7 @@ We will use the subscript `${}_\branching$' to refer to this system of rules.
 % The input variable rule can thus be stated by the following derivation rule:
 % \infrule[$\rulefont{IVar_\branching}$]
 %      {t \cdot n \in\travsetbr
-%       \andalso n \in\ExtNodes\inter\NodesVar
+%       \andalso n \in\ExternalNodes\inter\NodesVar
 %       \andalso n \enables_i\alpha
 %       \andalso i \geq 1
 %      }
@@ -1103,7 +1103,7 @@ Continuing with the intuition from Game semantics: Lambda nodes correspond to op
 
 \begin{property}
 \label{prop:core_truncation_at_externallambda}
-Let $t\in\travulc$ be a traversal which does not contain any ghost occurrence, and $m$ be an occurrence in $t$ of an external $\lambda$-node (\ie, $m \in \NodesLmd\inter\ExtNodes$). Then $\core{t_{<m}} = \core{t}_{<m}$.
+Let $t\in\travulc$ be a traversal which does not contain any ghost occurrence, and $m$ be an occurrence in $t$ of an external $\lambda$-node (\ie, $m \in \NodesLmd\inter\ExternalNodes$). Then $\core{t_{<m}} = \core{t}_{<m}$.
 \end{property}
 \begin{proof}
 By an easy induction on $t$ using the fact that in the recursive calculation of $\coresymbol(t)$, external lambda nodes reset the stack of pending lambdas.
@@ -1119,18 +1119,18 @@ Let $t\in\travulc$ and let's first assume that $t$ does not contain any ghost oc
 $\pview{\core{t}} \equiv \pview{\core{u}}$.
 We do a case analysis on the last node $t^\omega$ of $t$.
 \begin{itemize}
-\item $t^\omega\in \ExtNodes$: Suppose $t^\omega$ is a variable or an $@$ node then we can conclude immediately from the induction hypothesis on $t_{<t^\omega}$ and using the rules \rulenamet{Lmd} of $\travsetnorm$.
+\item $t^\omega\in \ExternalNodes$: Suppose $t^\omega$ is a variable or an $@$ node then we can conclude immediately from the induction hypothesis on $t_{<t^\omega}$ and using the rules \rulenamet{Lmd} of $\travsetnorm$.
 
 Suppose $t^\omega$ is a lambda node. If it has no justifier then it is the root in which case we conclude by taking  $u=t=t^\omega$. Otherwise let $m$ denote $t^\omega$'s justifier in $t$. By the I.H.~on $t_{\leq m}$ there is $u' \in \travsetnorm$ such that $\core{u'} = \core{t_{\leq m}}$. Take $u = u' \cdot t^\omega$ where $t^\omega$ points to its immediate predecessor $m$. Then $u$ is clearly a $\travsetnorm$-traversal by rule \rulenamet{IVar} and:
 \begin{align*}
 \pview{\core{u}} &= \pview{\core{u'}} \cdot t^\omega & \mbox{Def.~of $\coresymbol$}\\
  &= \pview{\core{t_{\leq m}} \cdot t^\omega} & \mbox{By I.H.~on $t_{\leq m}$}\\
- &= \pview{\core{t}_{\leq m} \cdot t^\omega} & \parbox[t]{8cm}{By Prop.~\ref{prop:core_truncation_at_externallambda} since $m$ is necessarily followed in $t$ by a $\lambda$-node in $\ExtNodes$.}
+ &= \pview{\core{t}_{\leq m} \cdot t^\omega} & \parbox[t]{8cm}{By Prop.~\ref{prop:core_truncation_at_externallambda} since $m$ is necessarily followed in $t$ by a $\lambda$-node in $\ExternalNodes$.}
 \end{align*}
 Now because $m$ justifies $t^\omega$, by Def.~of P-view, \emph{up to renaming of lambda variables} the sequences $\pview{\core{t}_{\leq m} \cdot t^\omega}$ and $\pview{\core{t}}$ are equal: $\pview{\core{t}_{\leq m} \cdot t^\omega} \equiv \pview{\core{t}}$.
  But because $m$ is a variable node, its label is kept untouched by the transformation $\coresymbol$ and therefore the equality holds.
 
-\item $t^\omega\not\in \ExtNodes$: Let $n$ be the last occurrence in $t$ that is in $\ExtNodes$, and let $m_1 \ldots m_q$, $q>0$ be the occurrences of internal nodes following $n$ in $t$ (so that $m_q = t^\omega$). By definition of the traversal rules, a variable in $\ExtNodes$ is necessarily followed by a lambda node in $\ExtNodes$, therefore $n$ is necessarily a lambda node. By definition of $\coresymbol$, $n$ is therefore also the last occurrence in $\core{t}$ therefore $\core{t} = \core{t}_{\leq n}$.
+\item $t^\omega\not\in \ExternalNodes$: Let $n$ be the last occurrence in $t$ that is in $\ExternalNodes$, and let $m_1 \ldots m_q$, $q>0$ be the occurrences of internal nodes following $n$ in $t$ (so that $m_q = t^\omega$). By definition of the traversal rules, a variable in $\ExternalNodes$ is necessarily followed by a lambda node in $\ExternalNodes$, therefore $n$ is necessarily a lambda node. By definition of $\coresymbol$, $n$ is therefore also the last occurrence in $\core{t}$ therefore $\core{t} = \core{t}_{\leq n}$.
 But \emph{up to relabelling}, $\core{t}_{\leq n} = \core{t_{\leq n}}$; more precisely, $\core{t}_{\leq n}$ is obtained from $\core{t_{\leq n}}$
 by pre-pending to $n$'s label the stack of pending lambdas of $t_{>m}$ (the internal nodes following $n$ in $t$). Applying the induction hypothesis on $t_{\leq n}$ gives $\core{t_{\leq n}} = \core{u'}$ for some $u' \in \travsetnorm$.
 To conclude it therefore suffices that to show that $u = u' \cdot m_1 \ldots m_q$ is also a traversal of $\travsetnorm$.
@@ -1448,7 +1448,7 @@ This observation suggests a stricter version of traversals:
 The set $\travsetnorm$ of \defname{normalizing traversals}, is the subset of branching traversals defined by the rules of Definition~\ref{dfn:branching_traversals} where the index $i$ in rule \rulenamet{IVar} is bounded by the arity threshold of the traversal.
 % \infrule[$\rulefont{IVar_\normalizing}$]
 %      { t \cdot n \in\travsetnorm
-%      \andalso n \in\ExtNodes\inter\ImNodesVar
+%      \andalso n \in\ExternalNodes\inter\ImNodesVar
 %      \andalso n \enables_i \alpha
 %      \andalso 1 \leq i \leq\arth(t)}
 %      {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:i){\alpha}}\in\travsetnorm}
@@ -1521,7 +1521,7 @@ for instance, which verifies $\pview{\core{t}} = t$, is not equivalent to $\pvie
         {
             \istraversal \Pstr[0.5cm]{t \cdot m \cdot (beta){\beta}
             \ldots (n-beta,50:i){n}}
-            \andalso n \in \ImNodesVar \setminus \ExtNodes
+            \andalso n \in \ImNodesVar \setminus \ExternalNodes
             \andalso m \enables_i \alpha
             \andalso i>0
         }
@@ -1536,7 +1536,7 @@ for instance, which verifies $\pview{\core{t}} = t$, is not equivalent to $\pvie
     \emph{\bf DATA - Input-variable rule}
     \infrule[$\rulefont{IVar_\normalizing}$]
          {\istraversal t \cdot n
-          \andalso n \in \ImNodesVar\inter\ExtNodes
+          \andalso n \in \ImNodesVar\inter\ExternalNodes
           \andalso n \enables_i \alpha
           \andalso 1\leq i \leq\arth(t)
          }
@@ -1848,7 +1848,7 @@ The beta-normal form of $M$ is thus $y_1 (\lambda  z.z\ y_2) y_2$.
     $.
     Without ghost nodes, $\Omega$'s traversal semantics can thus be summarized as
     $
-        t_\Omega \filter (\NodesVar\inter\ExtNodes) =  x_1 \cdot y_1
+        t_\Omega \filter (\NodesVar\inter\ExternalNodes) =  x_1 \cdot y_1
         \cdot  \sum_{i\geq 1} x_2 \cdot y_1 \cdot {y_2}^i \ .
     $
 \end{example}
