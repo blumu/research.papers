@@ -1599,24 +1599,32 @@ Let us walk through the ULC normalization algorithm~\ref{algo:ulc_normalization_
 
 \begin{example}[Church increment] Let $k\geq0$ refer to the Church numerals $\lambda s z . s^k z$ and consider a term $M$ implementing the increment function so that $M k$ reduces to $k+1$ for all $k$. Such a term can be defined as $M \alphaequiv {\sf add}\ 1$ where ${\sf add} \alphaequiv \lambda x y s z. x\, s (y\, s\, z)$. Figure~\ref{fig:comptree_examples} represents the computation tree of $M$. Let us go through the enumeration of its traversals.
 
-%\begin{itemize}[nosep]
-%\item
 Starting at the root and traversing the tree until hitting the first non-deterministic choice produces
-$t_\epsilon = \Pstr[0.7cm]{(n0){\lambda }\,(n1){@}\,(n2-n1){\lambda x y s z}\,(n3-n2){x}\,(n4-n1,32){\lambda s z}\,(n5-n4,30){s}\,(n6-n3,33){\lambda }\,(n7-n2,37){s}\,(n8-n1,32){\ghostlmd^3}\,(n9-n0,32){\ghostvar^2} }$.
+$t_\epsilon = \Pstr[0.7cm]{(n0){\underline\lambda }\,(n1){@}\,(n2-n1){\lambda x y s z}\,(n3-n2){x}\,(n4-n1,32){\lambda s z}\,(n5-n4,30){s}\,(n6-n3,33){\lambda }\,(n7-n2,37){s}\,(n8-n1,32){\ghostlmd^3}\,(n9-n0,32){\underline{\ghostvar}^2} }$. Throughout this example we underline external nodes to highlight node occurrences at the boundaries of strands.
 Its core projection is
 $\core{t_\epsilon} = \Pstr[0.7cm]{(n0){\lambda} \cdot (n9-n0){{\ghostvar^2}} }$
 and therefore $\pview{\core{t_\epsilon}} = \lambda\cdot \ghostvar^2$ is a path in the normal form of $M$.
-The normal form must therefore have the shape $\lambda y s \ldots \cdot y N_1 \ldots N_q$ for some fresh variable $y$ and $s$ and $q\geq0$.
+The normal form must therefore have the shape $\lambda y s \ldots \cdot s N_1 \ldots N_q$ for some fresh variable $y$ and $s$ and $q\geq0$.
 
 %\item
-To determine the $N_k$ arguments from the normal form, we enumerate all the possible instantiation of rule $\rulename{IVar}$ for all non-deterministic choices of value $k\geq 1$, and then recursively extend each traversal until the next non-deterministic choice.
+To determine the $N_k$ arguments from the normal form, we enumerate all the possible instantiation of rule $\rulename{IVar}$ for all non-deterministic choices of value $k\geq 1$, and then recursively extend each traversal until the next non-deterministic choice. But how many values of $k$ shall we consider? Intuitively, we should not eta-expand the node beyond the point where further traversals are guaranteed to visit ghost occurrences only. That upper-bound for $k$ is precisely given by the \emph{arity threshold} of $t_\epsilon$.
+We lookup the node arities from the computation tree represented in Figure~\ref{fig:comptree_examples}. The arities of the traversal strand are
+ $0,1,4,2,2,1,0,0,0,0$ so the arity threshold is given by the maximum of the intermediate values generated from the summation $(((((0) + -0+0) -0 +1) -2 + 2) -4 +1)$, hence $\arth(t_\epsilon) = \max \{ 0,0,1,1,-2 \} = 1$.
+ We thus do not have to consider the cases $k>1$ which means that the normal form has in fact the shape $\lambda y s \ldots \cdot s N_1$.
 
-For $k=1$ this gives
-$t_1 = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda x y s z}\ (n3-n2){x}\ (n4-n1){\lambda s z}\
-(n5-n4){s}\ (n6-n3){\lambda }\
-(n7-n2){s}\ (n8-n1){\ghostlmd^3}\
-(n9-n0){\ghostvar^2}
-(n10-n9){\ghostlmd^1}
+Extending traversal $t_\epsilon$ with rule $\rulename{IVar}$ for $k=1$ gives traversal
+
+$t_1 = \Pstr[0.7cm]{(n0){\underline\lambda }
+\,(n1){@}
+\,(n2-n1){\lambda x y s z}
+\,(n3-n2){x}
+\,(n4-n1){\lambda s z}
+\,(n5-n4){s}
+\,(n6-n3){\lambda }
+\,(n7-n2){s}
+\,(n8-n1){\ghostlmd^3}
+\,(n9-n0){\underline{\ghostvar^2}}
+(n10-n9){\underline{\ghostlmd^1}}
 (n11-n8){\ghostvar^1}
 (n12-n7){\ghostlmd^1}
 (n13-n6){\ghostvar^1}
@@ -1625,41 +1633,29 @@ $t_1 = \Pstr[0.7cm]{(n0){\lambda }\ (n1){@}\ (n2-n1){\lambda x y s z}\ (n3-n2){x
 (n16-n3){\lambda^2}
 (n17-n2)y
 (n18-n1){\ghostlmd^2}
-(n19-n0){\ghostvar^1}
-}$.
-Its core P-view is
+(n19-n0){\underline\ghostvar^1}
+}$
+whose core P-view is given by
 $\pview{\core{t_1}} = \lambda \cdot \ghostvar^2 \cdot\ghostlmd^1
 \cdot \ghostvar^1$
-therefore the normal form is of the shape $\lambda y s \ldots \cdot s (y R_1 \ldots R_{q_2}) N_2 \ldots N_q$ for some terms $R_1$, \ldots $R_{q_2}$, and $q,q_2\geq 0$.
+therefore the normal form is of the shape $\lambda y s \ldots \cdot s (y R_1 \ldots R_{q_2})$ for some terms $R_1$, \ldots $R_{q_2}$, and $q_2\geq 0$.
 
-%\item
-How many more values of $k$ shall we look at? Intuitively, we should not eta-expand the node beyond the point where further traversals are guaranteed to visit ghost occurrences only. That upper-bound for $k$ is precisely given by the \emph{arity threshold} of $t_\epsilon$. The traversal is itself a strand and the node occurrence arities are in order $0,1,4,2,2,1,0,0,0,0$ therefore:
-     %\max \{ 0, 1,\, (1)-2+2,\, (1-2+2)-4+1 \} =
-     \begin{align*}
-     \arth(t_\epsilon)
-     &= \max \{ |s^2|,\ %\\
-                |s^1| + (|s^2| - |\lambda|),\  %\\
-                |x| +  (|s^1| - |\lambda s z|) + (|s^2| - |\lambda|)\
-               %& |@| + (|x|- |\lambda x y s z |) + (|s^1| - |\lambda s z|) + (|s^2| -|\lambda|) \
-               \} \\
-    & = \max \{   0 , 1 + (0 - 0) ,  2 + (1 - 2) + (0 - 0)
-                %& 2 + (2 - 4) + (1 - 2) + (0 - 0)
-            \} = 1.
-     \end{align*}
-We thus do not have to consider the cases $k>1$ which means that the normal form has shape $\lambda y s \ldots \cdot s (y R_1 \ldots R_{q_2})$.
-
-%\item
-
-The arity threshold of $t_1$ is $\arth(t_1) = |z| + |y| - |\lambda^2| = 0+2-0 = 2$ hence  $\betanf{M}$ is of the form $\lambda y s \ldots \cdot s (y R_1 R_2)$.
-We thus apply rule \rulenamet{IVar} for child index $k_2$ ranging from $1$ to $ 2$. For the case $k_2 = 1$, we obtain the following traversal, where we underlined the last occurrence of its prefix $t_1$:
+The arity threshold of $t_1$ is $\arth(t_1) = \max \{ 0, 2,2,2,2,0 \} = 2$
+(where the $2$ comes from the arity of variable node $y$) hence the normal form is of the shape $\lambda y s \ldots \cdot s (y R_1 R_2)$.
+We thus apply rule \rulenamet{IVar} for child index $k_2$ ranging from $1$ to $ 2$. For the case $k_2 = 1$:
 
 $t_{11} = \Pstr[0.7cm]{
-(n0){\lambda }\,
-(n1){@}\, (n2-n1){\lambda x y s z}\,
-(n3-n2){x}\,
-(n4-n1){\lambda s z}\, (n5-n4){s}\, (n6-n3){\lambda }\,
-(n7-n2){s}\, (n8-n1){\ghostlmd^3}\, (n9-n0){\ghostvar^2}
-(n10-n9){\ghostlmd^1}
+(n0){\underline\lambda }
+\, (n1){@}
+\, (n2-n1){\lambda x y s z}
+\,(n3-n2){x}
+\,(n4-n1){\lambda s z}
+\, (n5-n4){s}
+\, (n6-n3){\lambda }
+\, (n7-n2){s}
+\, (n8-n1){\ghostlmd^3}
+\, (n9-n0){\underline{\ghostvar^2}}
+(n10-n9){\underline{\ghostlmd^1}}
 (n11-n8){\ghostvar^1}
 (n12-n7){\ghostlmd^1}
 (n13-n6){\ghostvar^1}
@@ -1668,13 +1664,13 @@ $t_{11} = \Pstr[0.7cm]{
 (n16-n3){\lambda^2}
 (n17-n2)y
 (n18-n1,42){\ghostlmd^2}
-(n19-n0,42){\ghostvar^1}
-(n20-n19,25){\ghostlmd^1}
-(n21-n18,25){\underline{\ghostvar^1}}
+(n19-n0,42){\underline{\ghostvar^1}}
+(n20-n19,25){\underline{\ghostlmd^1}}
+(n21-n18,25){\ghostvar^1}
 (n22-n17,50:1)\lambda % points to non-ghost node
 (n23-n2,45:3) s
 (n24-n1,44:3) {\ghostlmd^3}
-(n25-n0,45:2) {\ghostvar^2}
+(n25-n0,45:2) {\underline{\ghostvar^2}}
 }$
 
 We have $\pview{\core{t_{11}}} =
@@ -1691,15 +1687,17 @@ We have $\pview{\core{t_{11}}} =
 Now with $k_2 = 2$, \rulenamet{IVar} extends $t_1$ to:
 
 $t_{12} = \Pstr[0.7cm]{
-(n0){\lambda }\,
-(n1){@}\, (n2-n1){\lambda x y s z}\,
-(n3-n2){x}\, (n4-n1){\lambda s z}\,
-(n5-n4){s}\,
-(n6-n3){\lambda }\,
-(n7-n2){s}\,
-(n8-n1){\ghostlmd^3}\,
-(n9-n0) {\ghostvar^2}
-(n10-n9) {\ghostlmd^1}
+(n0){\underline\lambda}
+\,(n1){@}
+\,(n2-n1){\lambda x y s z}
+\,(n3-n2){x}
+\,(n4-n1){\lambda s z}
+\,(n5-n4){s}
+\,(n6-n3){\lambda }
+\,(n7-n2){s}
+\,(n8-n1){\ghostlmd^3}
+\,(n9-n0){\underline{\ghostvar^2}}
+(n10-n9){\underline{\ghostlmd^1}}
 (n11-n8){\ghostvar^1}
 (n12-n7){\ghostlmd^1}
 (n13-n6){\ghostvar^1}
@@ -1709,15 +1707,15 @@ $t_{12} = \Pstr[0.7cm]{
 (n17-n2)y
 (n18-n1,42){\ghostlmd^2}
 (n19-n0,42){\underline{\ghostvar^1}}
-(n20-n19){\ghostlmd^2} %%%%%%%%
+(n20-n19){\underline{\ghostlmd^2}} %%%%%%%%
 (n21-n18){\ghostvar^2}
 (n22-n17,50:2)\lambda % points to non-ghost node
 (n23-n2,45:4) z
 (n24-n1,44:4) {\ghostlmd^4}
-(n25-n0,45:3) {\ghostvar^3}
+(n25-n0,45:3) {\underline{\ghostvar^3}}
 }$
 
-Thus $\pview{\core{t_{12}}} =
+We have $\pview{\core{t_{12}}} =
 \Pstr[0.7cm]{
 (n0){\lambda }\
  (n9-n0){{\ghostvar^2}}
@@ -1725,9 +1723,7 @@ Thus $\pview{\core{t_{12}}} =
 (n19-n0){\ghostvar^1}
 (n20-n19){\ghostlmd^2}
 (n25-n0,45:3) {\ghostvar^3}
-}$.
-%\end{itemize}
-Assembling the two maximal tree paths together yields $M$'s beta normal form $\lambda y s z . s(y\, s\, z)$.
+}$, thus assembling the two maximal tree paths together yields $M$'s beta normal form $\lambda y s z . s(y\, s\, z)$.
 \end{example}
 
 \begin{example}[``Missing operand'' example from Neil Jones]
