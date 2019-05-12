@@ -208,7 +208,6 @@
 % set of traversals of ULC
 % (this is not ambiguous since ULC and STLC are shown to coincide in this paper)
 \newcommand{\travulc}{\travset}
-\newcommand{\travstlc}{{\travset_{\sf STLC}}}
 
 
 \newcommand{\child}{{\small \sf Ch}} % unique child of a node
@@ -1038,29 +1037,29 @@ $$t = \Pstr[0.5cm]{
 
 
 
-\subsection{Traversals of the Simply-Typed Lambda Calculus}
+\subsection{Eta-long traversals of simply-typed terms}
 Traversals for simply-typed languages, such as STLC and PCF, were previously studied in~\cite{BlumPhd}.
 A notable limitation is that the tree traversed is built from the \emph{ eta-long form} of the term, a conversion that involves eta-expanding some subterms so as to ensure that every strict subterm that is not of atomic type has necessarily another term applied to it. We omit the formal definition~\cite{huet75-unification, BlumPhd, OngLics2006} which is not essential.
- Effectively, this means that the STLC computation tree is obtained by eta-expanding all variable and application nodes according to the type of the corresponding subterm: if it is $\tau_1 \rightarrow \ldots (\tau_m \rightarrow o)$ and the node has $n< m$ children then the subterm is eta-expanded $m-n$ times.
-
- In STLC computation trees, the lambda nodes labels consist of typed-annotated variable names, but those annotations are not used in any way by the  traversals rules. We can thus apply the rules of Table~\ref{tab:trav_rules} on a typed-term by just erasing all its types.
-With this assumption, the definition of STLC traversal from \cite{BlumPhd} coincides with the following definition. Without loss of generality we can consider a closed term $M^\tau$ of simple type $\tau$. We write $\etalf{M^\tau}$ to denote its \emph{eta-long form}.
+ Effectively, this means that the computation tree is obtained by eta-expanding all variable and application nodes according to the type of the corresponding subterm: if it is $\tau_1 \rightarrow \ldots (\tau_m \rightarrow o)$ and the node has $n< m$ children then the subterm is eta-expanded $m-n$ times.
+Variable names in the lambda nodes labels are \emph{typed-annotated}, but those annotations are not used in any way by the  traversals rules. We can thus apply the rules of Table~\ref{tab:trav_rules} on a typed-term by just erasing all its types.
+With this assumption, the definition of traversals from the typed settings \cite{BlumPhd} coincides with the following definition. Without loss of generality we can consider a closed term $M^\tau$ of simple type $\tau$. We write $\etalf{M^\tau}$ to denote its \emph{eta-long form}.
 
 \begin{definition}
     \label{def:concrete_traversals}
-The set $\travset_\concrete$ of \defname{concrete} traversals is defined by the rules of Table~\ref{tab:trav_rules} without \rulenamet{Lam^\ghostvar} and such that \rulenamet{Var} and \rulenamet{IVar} are restricted to their concrete sub-case, that is the next node traversed must be structural (\ie, $i\leq|m|$).
-\end{definition}
-Concrete traversals are precisely the imaginary traversals that have no ghost occurrence.
+The set $\travset_\concrete$ of \defname{concrete} traversals
+are precisely the imaginary traversals that contain no ghost occurrence.
+They are defined by the rules of Table~\ref{tab:trav_rules} without \rulenamet{Lam^\ghostvar} and such that \rulenamet{Var} and \rulenamet{IVar} are restricted to their concrete sub-case, that is the next node traversed must be structural (\ie, $i\leq|m|$).
 
-\begin{definition}[STLC traversals]
-The set of traversals $\travstlc(M^\tau)$ of a simply-typed term $M^\tau$ is defined
- as $\travset_{\concrete}(\etalf{M^\tau})$.
 \end{definition}
 
-Imaginary and STLC traversals still coincide with a slightly relaxed restriction:
+\begin{definition}[Reformulation of~\cite{BlumPhd}]
+The \defname{eta-long traversals} of a simply-typed term $M^\tau$ is defined as $\travset_{\concrete}(\etalf{M^\tau})$, the concrete traversals of its eta-long form.
+\end{definition}
+
 \begin{proposition}
 \label{prop:ulc_and_stlc_trav_coincide}
-$\travstlc(M^\tau)$ is obtained by applying on $\etalf{M^\tau}$ the system of rules of Table~\ref{tab:trav_rules} where only \rulenamet{IVar} is restricted to its concrete subcase.
+The eta-long traversals of $M^\tau$ are also obtained from
+$\etalf{M^\tau}$ by restricting only the imaginary traversal rule \rulenamet{IVar} to its concrete subcase.
 \end{proposition}
 \begin{proof}
 Because the term is eta-long, the condition $i>|m|$ in rule \rulenamet{Var} never holds while traversing the term. This is shown by induction on the rules, observing that the arity of an $@$-node is necessarily equal to the arity of its $0$th child lambda node, and the arity of a variable node with binding index $i$ is necessarily equal to the arity of the $i$th child of its binder's parent.
@@ -1205,10 +1204,10 @@ Hence $\pview{\core{t}}=\pview{\core{\eta_t(t)}}=
 \subsection{Normalization procedure for eta-long forms (STLC)}
 
 For typed languages such as the STLC, PCF or Idealized Algol, the theory of traversals~\cite{OngLics2006} concretely relates to Game Semantics: they are in one to one correspondence with the plays of the game denotation in which all internal moves are revealed; and \emph{traversal cores} give the actual plays~\cite{BlumPhd}.
-\begin{theorem}[STLC Game Semantics Correspondence -- Theorem 4.96 in~\cite{BlumPhd}]
+\begin{theorem}[Eta-Long Game Semantics Correspondence -- Theorem 4.96 in~\cite{BlumPhd}]
 \label{thm:gamesem_correspondence_stlc}
 For any (closed) simply-typed term $M^\tau$,
- $\travstlc(M^\tau)$ is in bijection with the \emph{revealed game denotation} $\revsem{M^\tau}$; and its image by $\coresymbol$--the traversal cores--is in bijection with the innocent game denotation $\sem{M^\tau}$.
+ $\travsetcon(\etalf{M^\tau})$ is in bijection with the \emph{revealed game denotation} $\revsem{M^\tau}$; and its image by $\coresymbol$--the traversal cores--is in bijection with the innocent game denotation $\sem{M^\tau}$.
 \end{theorem}
 
 
@@ -1224,11 +1223,11 @@ For any (closed) simply-typed term $M^\tau$,
 
 Consequently, traversals characterize
 the paths in the tree representation of the beta-normal form of a simply-typed term in eta-long form:
-\begin{proposition}[Normalized Paths Characterization for STLC]
+\begin{proposition}[Eta-Long Normalized Paths Characterization]
 \label{prop:path_charact_stlc}
 Let $M^\tau$ be a closed simply typed term
-with eta-long beta-normal form $N^\tau$
-we have $\travstlc(M^\tau)/{\sim} = \pathset(N^\tau)$.
+in eta-long form with eta-long beta-normal form $N^\tau$
+we have $\travsetcon(M^\tau)/{\sim} = \pathset(N^\tau)$.
 \end{proposition}
 \begin{proof}
  By soundness of Game Semantics, beta-eta equivalent terms have the same game denotation, therefore by Theorem~\ref{thm:gamesem_correspondence_stlc}, the traversals of the beta-normal form are the traversals cores of the term. The Path-View correspondence (Proposition~\ref{prop:ulctrav_welldefined_pathview}) and Proposition~\ref{prop:ulc_and_stlc_trav_coincide} then show that the P-views of traversal cores of $M^\tau$ give the tree paths of the eta-long form of the beta normal form of $M^\tau$.
@@ -1237,7 +1236,7 @@ we have $\travstlc(M^\tau)/{\sim} = \pathset(N^\tau)$.
 This yields the normalization procedure for the simply-typed lambda calculus from Algorithm~\ref{algo:stlc_normalization_by_traversals}, originally implemented in~\cite{BlumGalop2008, Blum-HogTool}.
 
 \begin{algorithm}[!ht]
-\caption{Eta-long normalization by traversals for STLC}
+\caption{Normalization by traversals for typed terms in eta-long form}
 \label{algo:stlc_normalization_by_traversals}
 \begin{algorithmic}
 \REQUIRE{A closed simply typed term $M^\tau$ of type $\tau$.}
