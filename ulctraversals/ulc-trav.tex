@@ -1628,12 +1628,12 @@ Let us walk through the ULC evaluation algorithm~\ref{algo:ulc_normalization_by_
 
 \begin{example}[Church increment]
 \label{examp:churchincrement}
-Let $k\geq0$ refer to the Church numerals $\lambda s z . s^k z$
-and consider a term $M$ implementing the increment function so that $M k$ reduces to $k+1$ for all $k$. Such a term can be defined as $M \alphaequiv {\sf add}\ 1$ where ${\sf add} \alphaequiv \lambda x y s z. x\, s (y\, s\, z)$. Figure~\ref{fig:comptree_examples} represents the computation tree of $M$. Let us go through the enumeration of its traversals.
-
-Starting at the root and traversing the tree until hitting the first non-deterministic choice produces
-$t_\epsilon = \Pstr[0.7cm]{(n0){\underline\lambda }\,(n1){@}\,(n2-n1){\lambda x y s z}\,(n3-n2){x}\,(n4-n1,32){\lambda s z}\,(n5-n4,30){s}\,(n6-n3,33){\lambda }\,(n7-n2,37){s}\,(n8-n1,32){\ghostlmd^3}\,(n9-n0,32){\underline{\ghostvar}^2} }$. Throughout this example we underline external nodes to highlight node occurrences at the boundaries of strands.
-Its core projection is
+Let every $k\geq0$ refer to the Church numerals $\lambda s z . s^k z$
+where $s^k z$ denotes $k$ repeated (right-associative) applications of $s$ to $z$.
+Take $M \alphaequiv {\sf add}\, 1$ representing the increment function such that $M k$ reduces to $k+1$ for all $k$, where ${\sf add} \alphaequiv \lambda x y s z. x\, s (y\, s\, z)$.
+Let us traverse the computation tree of $m$ represented in Figure~\ref{fig:comptree_examples}. Throughout this example we underline external nodes to highlight node occurrences at the boundaries of strands.
+We start at the root and traverse the tree until hitting the first non-deterministic choice which produces
+$t_\epsilon = \Pstr[0.7cm]{(n0){\underline\lambda }\,(n1){@}\,(n2-n1){\lambda x y s z}\,(n3-n2){x}\,(n4-n1,32){\lambda s z}\,(n5-n4,30){s}\,(n6-n3,33){\lambda }\,(n7-n2,37){s}\,(n8-n1,32){\ghostlmd^3}\,(n9-n0,32){\underline{\ghostvar}^2} }$. Its core projection is
 $\core{t_\epsilon} = \Pstr[0.7cm]{(n0){\lambda} \cdot (n9-n0){{\ghostvar^2}} }$
 and therefore $\pview{\core{t_\epsilon}} = \lambda\cdot \ghostvar^2$ is a path in the normal form of $M$.
 The normal form must therefore have the shape $\lambda y s \ldots \cdot s N_1 \ldots N_q$ for some fresh variable $y$ and $s$ and $q\geq0$.
@@ -1760,7 +1760,7 @@ We have $\pview{\core{t_{12}}} =
 
 \begin{example}[``Missing operand'' example from Neil Jones]
 \label{ex:missingoperand}
-This example illustrates how on-the-fly eta-expansion helps resolve the ``missing argument'' problem faced when using the concrete traversal rules of STLC. Take $M = (\lambda u . u\ (y_1\ u)) (\lambda v . v\ y_2)$ whose computation tree  and two maximal normalizing traversals are:
+This example illustrates how on-the-fly eta-expansion helps resolve the ``missing argument'' problem faced when using the concrete traversal rules of STLC. Take $M = (\lambda u . u (y_1\,u)) (\lambda v . v\, y_2)$ whose computation tree  and two maximal normalizing traversals are:
 
 \begin{tikzpicture}[baseline=(root.north),level distance=3ex,inner ysep=0.5mm,sibling distance=10mm]
 \node (root)
@@ -1815,7 +1815,7 @@ $\pview{\core{t_1}} = \lambda \ y_1\ \lambda \ \ghostvar^{1}
 %%%% With pointers:
 %$\pview{\core{t_1}} = \Pstr[0.7cm]{(n0){\lambda }\ (n1-n0){y_1}\ (n2-n1){\lambda }\ (n3-n2){{\ghostvar^{1}}}\ (n4-n3){{\ghostlmd^{1}}}\ (n5-n0){y2}\ }$ and  $\pview{\core{t_2}} = \Pstr[0.7cm]{(n0){\lambda }\ (n1-n0){y_1}\ (n2-n1){{\ghostlmd^{2}}}\ (n3-n0){y_2}\ }$
 %%%%%%
-The beta-normal form of $M$ is thus $y_1 (\lambda  z.z\ y_2) y_2$.
+The beta-normal form of $M$ is thus $y_1 (\lambda z.z\,y_2) y_2$.
 \end{example}
 
 \begin{example}
