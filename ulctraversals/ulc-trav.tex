@@ -889,7 +889,7 @@ The last property generalizes a result from the theory of traversals for higher-
 
 
 \paragraph{On-the-fly eta-expansion}
-It is the variable rules \rulenamet{Var} and \rulenamet{IVar} that perform `on-the-fly expansion'. When the variable arity is high enough, the tree statically dictates the structural node to traverse next: we have $i \leq |m|$ and $\alpha$ is a structural lambda node in $\NodesLmd$; we call this the \emph{concrete sub-case}. Otherwise, the variable arity is too low to statically determine the operand of an application: $i > |m|$ and $\alpha$ is a ghost lambda node $\ghostlmd$; we call this the \emph{eta-expanded sub-case}.
+It is the variable rules \rulenamet{Var} and \rulenamet{IVar} that perform `on-the-fly expansion'. When the variable arity is high enough, the tree statically dictates the structural node to traverse next: we have $i \leq |m|$ and $\alpha$ is a structural lambda node in $\NodesLmd$; we call this the \emph{concrete sub-case}. Otherwise, the variable arity is too low to statically determine the operand of an application: $i > |m|$ and $\alpha$ is a ghost lambda node $\ghostlmd$; we call this the \emph{imaginary sub-case}.
 
 Rule \rulenamet{Lam} traverses a lambda node by just visiting its unique child  in the tree, which is necessarily a structural node. Its counterpart \rulenamet{Lam^\ghostvar} traverses a ghost lambda by visiting the imaginary ghost variable that would be created if we were to eta-expand the sub-term under that lambda: the ghost placeholder $\ghostvar$ represents an occurrence of the $j$th variable bound by lambda node $\beta$ if the sub-term at node $\beta$ were eta-expanded $i-|n|$ times; hence $j = |\beta| + i - |m|$.
 Observe that we necessarily have $i>|n|$ since the $i$th child of $n$ is a ghost variable node.
@@ -942,11 +942,15 @@ such that its implicit \emph{element-wise pointer-preserving} extension $\eta_t 
     \item The restriction of $\eta_t$ to $\travset(M)$ defines a strong bijection with $\travset(M^t)$ (\ie, a bijection preserving the traversal structure, but not necessarily labels).
 \end{enumerate}
 \end{proposition}
+\shortproof
+The tree $\ctree(M)$ being by definition a subtree of $\ctree(M^t)$, induces a one-to-one mapping $\eta_t$ from $\Nodes(M)$ to $\Nodes(M^t)$ which we extend pointwise to justified sequences. We show (i) by induction on $u$ observing that in the imaginary sub-case, the rules \rulenamet{Var} and \rulenamet{IVar} increase the arity of the justifier node $m$, which guarantees that the corresponding structural node exists in $\ctree(M^t)$. (ii) is shown similarly by induction on $v$.
+(iii) follows from (i) and (ii).
+\endshortproof
 \proofatend
 The tree $\ctree(M)$ being by definition a subtree of $\ctree(M^t)$, induces a one-to-one mapping from $\Nodes(M)$ to $\Nodes(M^t)$.
-We extend it to ghost nodes by mapping ghost occurrences in $t$ to the corresponding node resulting from the eta-expansions of subterms of $M$ in $M^t$, and all other ghost nodes not occurring in $t$ to the corresponding ghost nodes in $\ctree(M^t)$. Formally, we define $\eta_t$ by induction on the traversal $t$, observing that the eta-expansion performed in rules \rulenamet{Var} and \rulenamet{IVar} in Definition~\ref{def:onthefly_etaexpansion} increments the arity of the justifier node $m$, which guarantees that the corresponding structural node exists in $\ctree(M^t)$.
+We extend it to ghost nodes by mapping ghost occurrences in $t$ to the corresponding node resulting from the eta-expansions of subterms of $M$ in $M^t$, and all other ghost nodes not occurring in $t$ to the corresponding ghost nodes in $\ctree(M^t)$. Formally, we define $\eta_t$ by induction on the traversal $t$, observing that the eta-expansion performed in rules \rulenamet{Var} and \rulenamet{IVar} in Definition~\ref{def:onthefly_etaexpansion} increases the arity of the justifier node $m$, which guarantees that the corresponding structural node exists in $\ctree(M^t)$.
 
-(i) By induction on $u$. Reusing the rule used to traverse $u$ to traverse $\eta_t(u)$. For the case \rulenamet{Var} and \rulenamet{IVar}, when the \emph{eta-expanded} subcase of the rule is used to traverse a ghost variable that also appeared in $t$, we use instead the \emph{concrete} sub-case used to traverse $\eta_t(u)$.
+(i) By induction on $u$. Reusing the rule used to traverse $u$ to traverse $\eta_t(u)$. For \rulenamet{Var} and \rulenamet{IVar}, in the \emph{imaginary} sub-case, if the ghost variable traversed also appears in $t$ then we use instead the \emph{concrete} sub-case of the corresponding rule to traverse $\eta_t(u)$.
 
 (ii) By induction on $v$, applying to $u$ each rule that is applied to $v$. For the case \rulenamet{Var} and \rulenamet{IVar}, if the index $i$ is greater than the arity of the node $m$ in $M$ then the lambda node from $v$ gets replaced by a ghost lambda node in $u$.
 
@@ -1063,11 +1067,11 @@ The \defname{eta-long traversals} of a simply-typed term $M^\tau$ is defined as 
 \begin{proposition}
 \label{prop:ulc_and_stlc_trav_coincide}
 The eta-long traversals of $M^\tau$ are also obtained from
-$\etalf{M^\tau}$ by restricting only the imaginary traversal rule \rulenamet{IVar} to its concrete subcase.
+$\etalf{M^\tau}$ by restricting only the imaginary traversal rule \rulenamet{IVar} to its concrete sub-case.
 \end{proposition}
 \begin{proof}
 Because the term is eta-long, the condition $i>|m|$ in rule \rulenamet{Var} never holds while traversing the term. This is shown by induction on the rules, observing that the arity of an $@$-node is necessarily equal to the arity of its $0$th child lambda node, and the arity of a variable node with binding index $i$ is necessarily equal to the arity of the $i$th child of its binder's parent.
-Since we explicitly exclude the eta-expanded sub-case of \rulenamet{IVar}, the rules match with those of $\travset_\concrete$.
+Since we explicitly exclude the imaginary sub-case of \rulenamet{IVar}, the rules match with those of $\travset_\concrete$.
 \end{proof}
 
 
@@ -1615,7 +1619,7 @@ shows correctness of the algorithm, in particular that the set of justified path
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Examples of Normalization by Traversals}
 \label{sec:examples}
-Let us walk through the ULC evaluation algorithm~\ref{algo:ulc_normalization_by_traversals} and traversal enumeration of Table~\ref{tab:normalizing_trav_rules} on examples of lambda terms. We write $t_\epsilon$  for the initial traversal up to the first non-deterministic choice; and for every $s \in \nat^*$, we write $t_{s \cdot k}$ for the maximal traversal obtained after extending $t_s$ using a single application of the eta-expanded subcase of rule \rulenamet{IVar} with link-label $k \in \nat$. So that the subscript $s$ in $t_s$ records the non-deterministic choices made so far with rule \rulenamet{IVar}.
+Let us walk through the ULC evaluation algorithm~\ref{algo:ulc_normalization_by_traversals} and traversal enumeration of Table~\ref{tab:normalizing_trav_rules} on examples of lambda terms. We write $t_\epsilon$  for the initial traversal up to the first non-deterministic choice; and for every $s \in \nat^*$, we write $t_{s \cdot k}$ for the maximal traversal obtained after extending $t_s$ using a single application of the imaginary of  \rulenamet{IVar} with link-label $k \in \nat$. So that the subscript $s$ in $t_s$ records the non-deterministic choices made so far with rule \rulenamet{IVar}.
 
 
 \begin{example}[Baby example]
@@ -2348,7 +2352,7 @@ A subsequence of a traversal is a
 \begin{enumerate*}[nosep,label=(\roman*)]
 \item \defname{spinal descent} if it is a path in the computation tree consisting solely of structural lambda and $@$-nodes, and where each lambda node (except the first occurrence if it is a lambda node) is the $0$th child of the preceding $@$-node.
 \item \defname{pending argument lookup} if it consists of an alternation of ghost lambda nodes and ghost variables nodes, starting with an external ghost lambda node and terminated by a structural internal lambda node in $\NodesLmd$.
-\item \defname{branching descent} if it consists of an alternation of external structural lambda nodes and external structural variable nodes.
+%\item \defname{branching descent} if it consists of an alternation of external structural lambda nodes and external structural variable nodes.
 \end{enumerate*}
 \end{definition}
 
@@ -2395,29 +2399,37 @@ If $v$ is empty then the node following $u$ in $t$, if it exists, is necessarily
 
 \begin{proposition}[Quasi-normal forms strand decomposition]
 \label{prop:qnf_strand_decomposition}
-Any maximal traversal $t_{\max}$ of a \emph{qnf} $M$
-consists of a succession of $S$ and $G$ strands determined by the following transition system with states $\{ S, G \}$:
+A maximal traversal $t_{\max}$ of a term in \emph{qnf}
+consists of a strand of type $S$ followed by a succession of strands of type $S$ and $G$ according to the following transitions:
 \begin{center}
 \begin{tabular}{r|ll l}
-State (strand type) & Transition & Current strand & Next strand \\
+Strand type  & Strand shape & Transition & Next strand shape\\
 \hline \hline
-Initial state & $\rightarrow S$ & $\epsilon$ & $\underline{\lambda\overline{\eta_1}} \cdot u_1 \cdot \underline{x_1}$ \\
+\multirow{2}{*}{S}
+    & \multirow{2}{*}{$\underline{\lambda\overline{\eta_1}} \cdot u_1 \cdot \underline{x_1} $}
+    & $S \rightarrow G$
+    & $\underline{\lambda\overline{\eta_2}} \cdot u_2 \cdot \underline{x_2}$  \\
+    &
+    & $S \rightarrow S$
+    & $\underline{\ghostlmd} \cdot  v \cdot \lambda\overline{y_2} \cdot u_2 \cdot \underline{x_2}$
+    \\
 \hline
-\multirow{2}{*}{S} & $S \rightarrow G$ & \multirow{2}{*}{$\underline{\lambda\overline{\eta_1}} \cdot u_1 \cdot \underline{x_1} $}
-& $\underline{\lambda\overline{\eta_2}} \cdot u_2 \cdot \underline{x_2}$  \\
-& $S \rightarrow S$ & & $\underline{\ghostlmd} \cdot  v \cdot \lambda\overline{y_2} \cdot u_2 \cdot \underline{x_2}$ \\
-\hline
-\multirow{2}{*}{G} & $G \rightarrow S$ & \multirow{2}{*}{$\underline{\ghostlmd} \cdot  v \cdot \lambda\overline{y_1} \cdot u_1 \cdot \underline{x_1}$}
-& $\underline{\lambda\overline{\eta_2}} \cdot u_2 \cdot \underline{x_2}$
+\multirow{2}{*}{G}
+    & \multirow{2}{*}{$\underline{\ghostlmd} \cdot  v \cdot \lambda\overline{y_1} \cdot u_1 \cdot \underline{x_1}$}
+    & $G \rightarrow S$
+    & $\underline{\lambda\overline{\eta_2}} \cdot u_2 \cdot \underline{x_2}$
 \\
-  & $G \rightarrow G$ & & $\underline{\ghostlmd} \cdot v \cdot \lambda\overline{y_2} \cdot u_2 \cdot \underline{x_2}$
+    &
+    & $G \rightarrow G$
+    & $\underline{\ghostlmd} \cdot v \cdot \lambda\overline{y_2} \cdot u_2 \cdot \underline{x_2}$
 \end{tabular}
 \end{center}
-where $\lambda\overline{y_2}$ is justified by a $@$-node in $u_1$.
+where in the second and fourth transition, node $\lambda\overline{y_2}$ in the next strand is justified by a $@$-node occurring in $u_1$ in the current strand.
 \end{proposition}
 %\begin{proof}
 \proofatend
-By case analysis on the current state:
+By case analysis showing that for a \emph{qnf}, the rules of normalizing traversals unfold according to the state diagram of Figure~\ref{fig:qnf_strand_decomposition_statemachine} and therefore never traverses an internal variable. The three states represent the type of external nodes traversed (lambda, ghost lambda and variable). The bottom states represent the start of a new strand, the top state represent the end. The double arrows represent consecutive applications of deterministic traversal rules while regular arrows represent the two possible non-deterministic choices in rule \rulenamet{IVar}: one for structural child lambda nodes (left) and one for ghost children (right).
+
 \begin{enumerate}
 \item[(Init)] The first strand is obtained by applying the rule \rulenamet{Root} followed by repeated applications of \rulenamet{App} and \rulenamet{Lam}, which yields $u$, a path from the root $\lambda\overline{\eta}$ to some variable node $x$ in the tree of $M$, so that $u$ is a spinal descent consisting only of lambda nodes and application nodes.
 Suppose that $x$ is an internal variable then by definition it is
@@ -2435,18 +2447,19 @@ Now suppose instead that the node following $x_1$ is a ghost node then by Proper
 $$(\lambda\overline{\xi_r}. A_0) A_1 \ldots A_{k_{r}-1}\ (\lambda\overline{y_2}. \ldots)A_{k_{r}+1}\ \ldots A_{|@_r|} .$$
 By the weaving property of Proposition~\ref{prop:weaving}(iii), $x_1$ is followed by a \emph{pending parameter lookup} $v$ necessarily shorter than $u_1$ and terminated by a structural lambda node $\lambda\overline{y_2}$ justified by some application node $@_r$ in $u_1$ for some $1\leq r \leq q$:
 \begin{align*}
- t &= \cdots \Pstr[10pt]{
-(l){\underline{\lambda\overline{\eta}}} \cdot
+ t_{max} &= \cdots \Pstr[10pt]{
+(l){\underline{\lambda\overline{\eta_1}}} \cdot
 {@_1} \cdot \lambda\overline{\xi_1} \cdot
 \cdots
 (atr){@_r} \lambda\overline{\xi_r} \cdot
 \cdots
 {@_q} \cdot\lambda\overline{\xi_q} \cdot
-(x){\underline{x}}\cdot
+(x){\underline{x_1}}\cdot
 (gl-x,25:k){\underline\ghostlmd}
 \cdot v
 \cdot
 (ly-atr,25:k_r){\lambda\overline{y_2}}
+\cdots
  } \\
 v &= \ghostvar_{k_q} \cdot \ghostlmd_{k_q} \cdot
 \ghostvar_{k_{q-1}} \cdot \ghostlmd_{k_{q-1}} \cdot
@@ -2459,17 +2472,17 @@ $\ghostvar_{k_i}$ and ghost lambda $\ghostlmd_{k_i}$ point respectively to $\lam
 \begin{align*}
   k_i &= k - |x| + |\lambda\overline{\xi}_q| + \sum_{i\leq j < q} (|\lambda\overline{\xi}_{j}| - |@_{j+1}|)
 %\\
-%  k_j &= k + |\lambda\overline{\xi}_q| - |x| +
-%  \sum_{i=j..q-1} |\lambda\overline{\xi}_{i}|
-%  - \sum_{i=j..q-1} |@_{i+1}|
+%  k_i &= k + |\lambda\overline{\xi}_q| - |x| +
+%  \sum_{j=i..q-1} |\lambda\overline{\xi}_{j}|
+%  - \sum_{j=i..q-1} |@_{j+1}|
 %\\
-%  k_j &= k + |\lambda\overline{\xi}_q| - |x| +
-%  \sum_{i=j..q-1} |\lambda\overline{\xi}_{i}|
-%  - \sum_{i=j+1..q} |@_{i}|
+%  k_i &= k + |\lambda\overline{\xi}_q| - |x| +
+%  \sum_{j=i..q-1} |\lambda\overline{\xi}_{j}|
+%  - \sum_{j=i+1..q} |@_{j}|
 %\\
-%  k_j &= k + |\lambda\overline{\xi}_q| - |x| +
-%  |\lambda\overline{\xi}_{j}| +
-%  \sum_{i=j+1..q-1} (|\lambda\overline{\xi}_{i}| - |@_{i}|) - |@_{q}|
+%  k_i &= k + |\lambda\overline{\xi}_q| - |x| +
+%  |\lambda\overline{\xi}_{i}| +
+%  \sum_{j=i+1..q-1} (|\lambda\overline{\xi}_{j}| - |@_{j}|) - |@_{q}|
 \\
    &= k - |x| +
   |\lambda\overline{\xi}_{i}| +
@@ -2484,7 +2497,7 @@ k_r \leq |@_r|
 \end{align}
 
 
-To prove that $lloc(\lambda\overline{y_2}) =\bot$ we first show that for all $i$ ranging from $r+1$ to $q$ we have
+To prove that $lloc(\lambda\overline{y_2}) =\bot$ we first show that for all $i$ ranging from $r$ to $q$ we have
  $k_i>|\lambda_l(\lambda\overline{\xi_i})|$. We prove the result by a finite induction proceeding bottom-up from the lower tree node
  $\lambda\overline{\xi_q}$ up to $\lambda\overline{\xi_r}$.
 
@@ -2521,7 +2534,7 @@ the desired result $|\lambda_l(\lambda\overline{\xi_{i-1}})| < k_{i-1}$.
 \centering
 \begin{tikzpicture}[baseline=(root.base),level distance=6.5ex,inner ysep=0.5mm,sibling distance=15mm]
     \node (root){}
-    child[dashed] {node{$\lambda\overline\eta$}
+    child[dashed] {node{$\lambda\overline{\eta_1}$}
         child[solid] {node{$@_1$}
             child{node{$\ldots$}
                 child{node{$@_{r}$}
@@ -2564,7 +2577,7 @@ the desired result $|\lambda_l(\lambda\overline{\xi_{i-1}})| < k_{i-1}$.
 \end{figure}
 
 We now show that $lloc_M(\lambda\overline{y_2})=\bot$.
-By assumption we have that $lloc_M(\lambda\overline{\eta}) =\bot$ so since $@_r$ occurs in the spine of $M$, by definition of $lloc_M$ we must have $lloc_M(@_r) =\bot$, and thus also $lloc_M(\lambda\overline{\xi_r}) = \bot$. We have just shown that $|\lambda_l(\lambda\overline{\xi_r}| < k_r$, consequently, the sub-term $(\lambda\overline{\xi_r} . A_0) A_1 \ldots A_{k_r-1}$ has more operands than pending lambdas in the operator's lambda list. By definition of lambda list this implies that $\lambda_l((\lambda\overline{\xi_r} . A_0) A_1 \ldots A_{k_r-1})$ is empty. Hence, we necessarily have $lloc(\lambda\overline{y_2}) = \bot$, otherwise by definition of $lloc$ we would have
+By assumption we have that $lloc_M(\lambda\overline{\eta_1}) =\bot$ so since $@_r$ occurs in the spine of $M$, by definition of $lloc_M$ we must have $lloc_M(@_r) =\bot$, and thus also $lloc_M(\lambda\overline{\xi_r}) = \bot$. We have just shown that $|\lambda_l(\lambda\overline{\xi_r})| < k_r$, consequently, the sub-term $(\lambda\overline{\xi_r} . A_0) A_1 \ldots A_{k_r-1}$ has more operands than pending lambdas in the operator's lambda list. By definition of lambda list this implies that $\lambda_l((\lambda\overline{\xi_r} . A_0) A_1 \ldots A_{k_r-1})$ is empty. Hence, we necessarily have $lloc(\lambda\overline{y_2}) = \bot$, otherwise by definition of $lloc$ we would have
  $lloc((\lambda\overline{\xi_r} . A_0) A_1 \ldots A_{k_r-1} (\lambda\overline{y_2}. \ldots)) = lloc(\lambda\overline{y_2}) \ne \bot$, which subsequently implies $lloc(\lambda\overline{\eta_1})\ne\bot$, contradicting the assumption.
 The sequence $u_2$ is shown to be a spinal descent by the same argument used in the \emph{structural argument} case above, using the fact that $lloc_M(\lambda\overline{y_2})=\bot$. We have thus shown that the next strand is of type $G$.
 
@@ -2577,28 +2590,81 @@ $G$.
 \end{enumerate}
 \endproofatend
 %\end{proof}
+\shortproof
+Overview of the full proof~\cite{longversion-2018arXiv}: A case analysis shows that for a \emph{qnf}, the rules of normalizing traversals unfold according to the state diagram of Figure~\ref{fig:qnf_strand_decomposition_statemachine} where it never traverses an internal variable.
+It starts with a spinal descent to the linear head occurrence, whose $lloc_M$ must be $\bot$ since the term is a \emph{qnf} and so it is necessarily an external node. The initial strand is thus of type $S$. After a strand of type $S$, if the next node is a structural lambda then by Property~\ref{prop:qnf_longapply} its $lloc_M$ is necessarily $\bot$, another spinal descent follows which yields a strand of type $S$.
+We prove the third transition with the same argument.
+Let us consider the second transition (the fourth is proven similarly) where the node following the strand is a ghost lambda. The strand is of form $\underline{\lambda\overline{\eta_1}} \cdot u_1 \cdot \underline{x_1} $ where by Property~\ref{prop:strand_spinaldescent} $u_1$ is  non-empty: $u_1 =
+@_1 \cdot\lambda\overline{\xi_1} \cdots @_q\cdot \lambda\overline{\xi_q}$ for some $q\geq 1$. The subterm at $@_r$, is of the form
+$(\lambda\overline{\xi_r}. A_0) A_1 \ldots A_{k_{r}-1}\ (\lambda\overline{y_2}. \ldots)A_{k_{r}+1}\ \ldots A_{|@_r|}$.
 
-Figure~\ref{fig:qnf_strand_decomposition_statemachine} represents the more fine-grained state machine underpinning the stand decomposition result. It has three states representing each possible type of external node: lambda, ghost lambda or input variable. The bottom two states correspond to the start of a new strand in the traversal. The solid-arrows represent consecutive applications of deterministic traversal rules while dashed-arrows represent the two possible non-deterministic choices in rule \rulenamet{IVar}: one for structural child lambda nodes (left) and one for ghost children (right).
+The Weaving Proposition~\ref{prop:weaving} shows that $x_1$ is followed by a \emph{pending parameter lookup} $v$ shorter than $u_1$ and terminated by a structural lambda node $\lambda\overline{y_2}$ justified by some node $@_r$ in $u_1$ with label $k_r$ for some $1\leq r \leq q$:
+$
+   t_{max} = \cdots \Pstr[10pt]{
+   %(l)
+   {\underline{\lambda\overline{\eta_1}}}
+   \cdot {@_1}
+   \cdot \lambda\overline{\xi_1}
+   \cdots %(atr)
+        {@_r}
+   \cdot \lambda\overline{\xi_r}
+   \cdots {@_q}
+   \cdot\lambda\overline{\xi_q}
+   \cdot %(x)
+        {\underline{x_1}}
+   \cdot %(gl-x,25:k)
+        {\underline\ghostlmd}
+   \cdot v
+   \cdot %(ly-atr,25:k_r)
+        {\lambda\overline{y_2}}
+   \cdots }
+   $
+where
+$\ghostlmd$ points to $x_1$ with label $k$;
+$v$ consists of alternation of $2(q-r) +1$ ghost variable/lambda nodes, starting and ending with a ghost variable,
+where ghost variables point to $\lambda\overline{\xi_i}$ for
+$i \in \{ r..q \}$ with label $k_i\geq1$,
+ghost lambdas point to $@_i$ for $i \in \{ r-1..q \}$ with label $k_i\geq1$;
+where $k_q = k - |x| + |\lambda\overline{\xi}_q|$ and $ k_{i-1} = k_i + |\lambda\overline{\xi_{i-1}}| - |@_i|$, $k_i\geq1$.
+
+We show by a finite induction on $i \in \{r, q\}$ proceeding bottom-up from the lower tree node $\lambda\overline{\xi_q}$ up to $\lambda\overline{\xi_r}$
+that $k_i>|\lambda_l(\lambda\overline{\xi_i})|$. Base case follows from $k>|x|$ since $\lambda\overline{y_2}$ is structural.
+ %induction
+Suppose the result holds for $i\in\{r+1..q\}$.
+The lambda-list at $@_i$ is obtained by popping $|@_i|$ lambdas from the lambda-list at $\lambda\overline{\xi_i}$ and $\lambda_l(\lambda\overline{\xi_i})$ is by definition $\overline{\xi_i}$ concatenated with the lambda-list of $@_{i+1}$, hence $|\lambda_l(@_i)| = \max( 0, |\lambda_l(@_{i+1})| + |\lambda\overline{\xi_i}| - |@_i| )$.
+We thus have $|\lambda_l(\lambda\overline{\xi_{i-1}})| - k_{i-1}
+    = |\lambda\overline{\xi_{i-1}}| +|\lambda_l(@_i)| - k_{i-1}
+    = \max (  |@_i|- k_i, |\lambda_l(\lambda\overline{\xi_i})| - k_i )$.
+By the induction hypothesis we have $|\lambda_l(\lambda\overline{\xi_i})| < k_i$, and by since nodes in $v$ are all ghosts we have $|@_i|< k_i$ thus the `$\max$' is negative which shows $|\lambda_l(\lambda\overline{\xi_{i-1}})| < k_{i-1}$.
+Since in particular $|\lambda_l(\lambda\overline{\xi_r})| < k_r$, the application $(\lambda\overline{\xi_r} . A_0) A_1 \ldots A_{k_r-1}$ has more operands than pending lambdas in the operator, thus its lambda list is empty. By assumption the strand is of type $S$ thus $lloc(\lambda\overline{\eta_1})=\bot$ and since there is no lloc ``left of'' $\lambda\overline{y_2}$, there cannot possibly be a lloc under $\lambda\overline{y_2}$. Hence $lloc(\lambda\overline{y_2}) =\bot$.
+The same argument used in the \emph{structural argument} case shows that
+ $u_2$ is a spinal descent. Hence the next strand is of type $G$.
+\endshortproof
+
+
 \begin{figure}[htbp]
 \centering
-\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3cm,
-    semithick]
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3.5cm,
+    semithick,initial text=$\rulenamet{Root}$,font=\small]
 \tikzstyle{every state}=[fill=red,draw=none,text=white]
 
 \node[initial,state]
-    (L) {$\lambda$};
+    (L) {$\NodesLmd$};
 \node[state,fill=white,draw=black,text=black]
-    (V) [above right of=L, xshift=1cm] {$IVar$};
-\node[state,node distance=6cm]
-    (G) [right of=L] {$\ghostlmd$};
+    (V) [above right of=L] {$\ExtendedNodesVar$};
+\node[state] %,node distance=7cm
+    (G) [below right of=V] {$\ghostlmd$};
 
-\path (L) edge [bend right]          node[right,text width=3cm]{Descent to linear head-occurrence} (V)
-      (V) edge [bend right, dashed]  node[left,text width=3cm] {Picked structural argument ($k\leq|x|$)} (L)
-          edge [bend left, dashed]   node[text width=2cm] {Picked ghost argument ($k>|x|$)} (G)
-      (G) edge                       node {Look-up pending argument} (L)
+\path (L) edge [bend right,->>]      node[right,xshift=-2em,text width=4cm]{Spinal descent to \emph{lloc} \rulenamet{App},\rulenamet{Lmd^{\sf var}},\rulenamet{Lmd^@}} (V)
+      (V) edge [bend right]  node[left,text width=3cm] {Concrete argument \rulenamet{IVar}} (L)
+          edge [bend left]   node[right, text width=3cm] {Imaginary argument \rulenamet{IVar}} (G)
+      (G) edge [->>]                 node[below,text width=4cm] {Pending argument look-up \rulenamet{Lmd^\theta}, \rulenamet{IVar}} (L)
 ;
 \end{tikzpicture}
-\caption{State machine underpinning the \emph{qnf} strand decomposition.}
+\caption{Decomposition of the normalizing traversal of a \emph{qnf}.
+Bottom (lambda, ghost lambda) and top (variable) states
+represent the external nodes respectively delimiting the start and end of a strand. Double arrows represent multiple use of deterministic traversal rules; regular arrows represent a single rule instantiation.
+}
 \label{fig:qnf_strand_decomposition_statemachine}
 \end{figure}
 
