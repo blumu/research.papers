@@ -230,7 +230,7 @@
 \newcommand{\InternalNodes}{\Nodes^{\sf int}}
 
 \newcommand\pathset{{\mathcal{P}aths}} % set of paths in the comp tree
-\newcommand\arth{\textsf{arth}} % arity threshold
+\newcommand\dynar{\textsf{dynar}} % dynamic arity
 
 \renewcommand\ie{{\it i.e.\@\xspace}}
 \renewcommand\eg{{\it e.g.\@\xspace}}
@@ -349,7 +349,7 @@ This takes place when traversing a variable node, where a non-deterministic choi
 
 Evaluating an untyped term boils down to enumerating traversals.
  Although the set of imaginary traversals is infinite, we only need to consider an effectively computable subset with sufficiently enough traversals to characterize the normal form, when it exists.
-We achieve this by restricting the non-determinism when traversing a variable: we bound the argument index by a critical quantity called `arity threshold', calculated in linear time from the traversal itself. It defines the number of arguments beyond which eta-expansions becomes unnecessary for the sake of finding a path in the normal form. This restricts both the breadth and depth of the traversal enumeration: only a finite number of on-the-fly eta-expansions are applied on a given traversal; and a traversal cannot unfold infinitely, provided that the term has a beta-normal form.
+We achieve this by restricting the non-determinism when traversing a variable: we bound the argument index by a critical quantity called the `dynamic arity', calculated in linear time from the traversal itself. It defines the number of arguments beyond which eta-expansions becomes unnecessary for the sake of finding a path in the normal form. This restricts both the breadth and depth of the traversal enumeration: only a finite number of on-the-fly eta-expansions are applied on a given traversal; and a traversal cannot unfold infinitely, provided that the term has a beta-normal form.
 On the other hand, traversing a non-terminating term like $(\lambda x. x\,x)(\lambda x. x\,x)$ leads to infinitely long traversals, as one would expect.
 
 The read-out phase of the algorithm appeals to a correspondence property between the traversals and paths in the tree representation of the normal form. The term $M$, for instance, has a single traversal $t$, which via a suitable filtering, yields the path $\lambda z \cdot z$; its beta-normal form is thus $\lambda z. z$, up to variable renaming.
@@ -1226,7 +1226,7 @@ For any (closed) simply-typed term $M^\tau$,
 % \item Observe that if $M$ is beta-normal then its set of traversal cores P-views is precisely the set of paths in the tree representation of M
 % \item If $M$ reduces to $N$ using the leftmost linear reduction then the traversal cores P-views of $N$ are isomorphic to the traversals core P-views of $M$.
 % \item Reducing a trivial redex preserves (modulo some traversal prefix) the set of traversals.
-% The interesting part of the proof will be to show how the ghost nodes gradually ``materialize'' after each step of the linear reduction, and how the arity threshold gives the right bound for limiting eta-expansion.
+% The interesting part of the proof will be to show how the ghost nodes gradually ``materialize'' after each step of the linear reduction, and how the dynamic arity gives the right bound for limiting eta-expansion.
 % \end{itemize}
 
 Consequently, traversals characterize
@@ -1291,13 +1291,13 @@ Normalized Paths Characterization theorem holds for concrete traversals so we co
 are so restrictive (they eliminate all the ghost nodes!) that they prevent any such characterization.
 A more relaxed restriction is needed.
 We recall that, just like imaginary traversals, the set of essential traversals is infinite because in the \emph{on-the-fly eta-expansion} of rule $\rulename{IVar}$ the justification label $i>0$ is unbounded. In this section, we show that,
-for the purpose of term evaluation, $i$ can be bounded by a quantity called the \emph{arity threshold} computable from the traversal,
+for the purpose of term evaluation, $i$ can be bounded by a quantity called the \emph{dynamic arity} computable from the traversal,
 effectively limiting the number of times eta-expansion can be performed by rule \rulenamet{IVar} for the sake of discovering the set of paths of the beta-normal form. In section \ref{sec:correctness_ulc_normalization} we show that this suffice to  sufficient to characterize the normal form of a lambda term when it exists.
 
 The imaginary traversal rules allows for infinitely many eta-expansions, which may provide some satisfaction from the semantics standpoint: each eta-expansion represents how the term will interact with its arguments if more arguments were to be applied to it. In the spirit of finding a normal form, however, eta-expanding subterms ad-infinitum is pointless: traversing ghost nodes only helps if it eventually leads to some structural node of the final normal term tree that we set out to evaluate.
 
 Because the tree has a finite number of nodes, the nodes arities are bounded by some maximal value. Which means that beyond a certain value, the
-justification pointer $i$ in the variable rules \rulenamet{IVar} is guaranteed to be greater than the arity $|m|$ of the variable, and therefore the next node to visit is necessarily a ghost node. The intuition behind the arity threshold is that after a sufficiently large number of eta-expansions, we are also guaranteed to \emph{continuously} traverse ghost nodes that never materialize to structural nodes. In other words, any further extension will necessarily be constructed using repeated applications of \rulenamet{Lam^\ghostvar} and the eta-expanded variants of \rulenamet{Var}, and will thus consists only of ghost occurrences.
+justification pointer $i$ in the variable rules \rulenamet{IVar} is guaranteed to be greater than the arity $|m|$ of the variable, and therefore the next node to visit is necessarily a ghost node. The intuition supporting the dynamic arity is that after a sufficiently large number of eta-expansions, we are also guaranteed to \emph{continuously} traverse ghost nodes that never materialize to structural nodes. In other words, any further extension will necessarily be constructed using repeated applications of \rulenamet{Lam^\ghostvar} and the eta-expanded variants of \rulenamet{Var}, and will thus consists only of ghost occurrences.
 
 
 \begin{definition}
@@ -1309,30 +1309,30 @@ From the parity property of traversals, a strand must consist of alternations of
 $$ t = \cdots \underline{\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ \underline{n_1} \cdots $$
 for some $k\geq 1$ where for $1 \leq j \leq k$, $\alpha_j$ is in $\ExtendedNodesLmd$, $n_j$ is in $\ExtendedNodesVar\union\NodesApp$, and the $2k-2$ nodes occurring between $\alpha_k$ and $n_1$ are internal nodes.
 
-\begin{definition} %[Traversal arity threshold]
-\label{dfn:arity-threshold}
-The \defname{arity threshold} of a traversal $t$ ending with a strand
+\begin{definition} %[Traversal dynamic arity]
+\label{dfn:dynamic-arity}
+The \defname{dynamic arity} of a traversal $t$ ending with a strand
  of length $2k$ for $k>0$ of the shape $\underline{\alpha_k}\,n_k\,\alpha_{k-1}\,n_{k-1}\cdots \alpha_2\,n_2\, \alpha_1\,\underline{n_1}$ where $\alpha_j \in \ExtendedNodesLmd$, $n_j \in \ExtendedNodesVar\union\NodesApp$ for all $1\leq j\leq k$ is
 $$
-\arth(t)
+\dynar(t)
   = \max_{q=1..k} \left( |n_q| + \sum_{j=1..q-1} (|n_j|-|\alpha_j|) \right) \ .
 $$
 % \begin{align*}
-%     \arth(t) &= \max_{q=1..k} \left( |n_q| + \Delta_{q-1} \right)     = \max_{q=1..k} \left( |\alpha_q| + \Delta_{q}\right)
+%     \dynar(t) &= \max_{q=1..k} \left( |n_q| + \Delta_{q-1} \right)     = \max_{q=1..k} \left( |\alpha_q| + \Delta_{q}\right)
 % \end{align*}
 \end{definition}
 
 We use the abbreviation $\Delta_q = \sum_{j=1..q} (|n_j|-|\alpha_j|)$ so that
-$\arth(t)
+$\dynar(t)
    = \max_{q=1..k} \left( |n_q| + \Delta_{q-1} \right)
    = \max_{q=1..k} \left( |\alpha_q| + \Delta_{q} \right)
 $.
 % = |n_1|-|\alpha_1| + |n_2|-|\alpha_2| + \cdots + |n_{q-1}|-|\alpha_{q-1}| + |n_q|$
 Or equivalently, it is the maximal value in the sequence $b_1 = |n_1|$, $b_{q+1} = b_q + |n_{q+1}|-|\alpha_q|$ for $1 \leq q \leq k-1$.
-We can thus calculate it by reading the strand backwards from the last variable occurrence and alternatively adding and subtracting the node arities until reaching an external variable. The maximal value observed throughout that summation is the arity threshold.
+We can thus calculate it by reading the strand backwards from the last variable occurrence and alternatively adding and subtracting the node arities until reaching an external variable. The maximal value observed throughout that summation gives the dynamic arity.
 
 
-The rule $\rulename{IVar_\essential}$ leaves infinitely many choices of value for the link label. The following property shows that if that value exceeds the arity threshold then only ghost nodes can be traversed from that point on, without ever materializing a structural node.
+The rule $\rulename{IVar_\essential}$ leaves infinitely many choices of value for the link label. The following property shows that if that value exceeds the dynamic arity then only ghost nodes can be traversed from that point on, without ever materializing a structural node.
 \begin{proposition}[Weaving]
 \label{prop:weaving}
 Let $t$ be an essential traversal of $\travsetes$ ending with a strand of the form
@@ -1341,7 +1341,7 @@ We consider the indices
 $i_{q+1} = i - \Delta_q$ where $\Delta_q = \sum_{j=1..q} (|n_j| - |\alpha_j|)$
 for $0\leq q\leq k$.
 \begin{enumerate}[label=(\roman*)]
-\item If $i>\arth(t)$ then $t$ is followed in $t_{\max}$ by a strand of length $2k$ consisting of ghost nodes only with justification labels
+\item If $i>\dynar(t)$ then $t$ is followed in $t_{\max}$ by a strand of length $2k$ consisting of ghost nodes only with justification labels
 $i_1$, $i_2$, $i_2$, $i_3$, $i_3$, $\cdots$, $i_{k}$, $i_{k}$, $i_{k+1}$:
 $$
 t_{\max} = \Pstr[0.3cm]{ \cdots
@@ -1362,9 +1362,9 @@ t_{\max} = \Pstr[0.3cm]{ \cdots
  \, (tk-alpha,45:i_{k+1}){\underline{\ghostvar}} \cdots }
 $$
 
-\item If $i>\arth(t)$ then all the nodes following $t$ in $t_{\max}$ are ghost occurrences.
+\item If $i>\dynar(t)$ then all the nodes following $t$ in $t_{\max}$ are ghost occurrences.
 
-\item If $i\leq\arth(t)$ then $t$ is followed in $t_{\max}$
+\item If $i\leq\dynar(t)$ then $t$ is followed in $t_{\max}$
  by $2r$ occurrences of ghost nodes, for some $0 \leq r <k$, and
  a structural internal lambda node $\lambda\overline{x}$ with respective link labels $i_1$, $i_2$, $i_2$,$\cdots$, $i_r$, $i_r$, $i_{r+1}$:
 $$
@@ -1396,17 +1396,17 @@ $n_{q-1}$ with label $i_{q-1}$, and $\alpha_{q-1}$ with labels $i_q$.
 
 The induction hypothesis gives
 $i_{q} = i - \Delta_{q-1} = i + |n_q| - (|n_q| + \Delta_{q-1} )$, which is greater or equal than $i + |n_q| - \max_{r=1..k} ( |n_r| + \Delta_{r-1})
-= i + |n_q| - \arth(t) $.
-Since by assumption $i>\arth(t)$ this implies that $i_{q} > |n_q|$.
+= i + |n_q| - \dynar(t) $.
+Since by assumption $i>\dynar(t)$ this implies that $i_{q} > |n_q|$.
 We can therefore use rule \rulenamet{Var_\essential}
 to traverse a ghost lambda justified by  $n_{q}$ and labelled by $i_q$
 (since by the strand definition, $\alpha_{q-1}$ is an internal node).
 We then use rule \rulenamet{Lam^\ghostvar_\essential} to traverse the next ghost variable justified by $\alpha_q$ and labelled by $i_{q+1} = i_q + |\alpha_{q}| -|n_{q}|$.
 
-(ii) By repeatedly applying (i), observing that since ghost nodes have arity $0$, the arity threshold at $t$ must be $0$. Hence, any link label $j>0$ chosen to extend the traversal at that point will be strictly greater than the arity threshold.
+(ii) By repeatedly applying (i), observing that since ghost nodes have arity $0$, the dynamic arity at $t$ must be $0$. Hence, any link label $j>0$ chosen to extend the traversal at that point will be strictly greater than the dynamic arity.
 
 (iii) By assumption we have
-$i \leq \arth(t) = \max_{q=1..k} \left( |n_q| + \Delta_{q-1} \right)
+$i \leq \dynar(t) = \max_{q=1..k} \left( |n_q| + \Delta_{q-1} \right)
 $
 and since $k\geq 1$, the set $\{1..k\}$ is not empty so there is at least one $q$ such that $i - \Delta_{q-1} \leq |n_q|$, or equivalently, $i_q \leq |n_q|$ by definition of $i_{q}$. We conclude by taking $r+1$ to be the smallest such $q$, and applying the same argument as (i) for all $q<r$.
 \endshortproof
@@ -1449,11 +1449,11 @@ We then have $i_{q} > |n_q|$ since:
 \begin{align*}
 i_{q} &= i - \Delta_{q-1}
 &\qquad\hbox{(by induction hypothesis)}\\
-    &> \arth(t) - \Delta_{q-1}
-&\qquad\hbox{(assumption $i> \arth(t)$)} \\
+    &> \dynar(t) - \Delta_{q-1}
+&\qquad\hbox{(assumption $i> \dynar(t)$)} \\
         &= \max_{r=1..k} \left( |n_r| + \Delta_{r-1} \right)
         - \Delta_{q-1}
-& \qquad\hbox{(definition of $\arth$)} \\
+& \qquad\hbox{(definition of $\dynar$)} \\
     &\geq |n_q| + \Delta_{q-1} - \Delta_{q-1}
 &\qquad\hbox{(take $r=q$)} \\
     &= |n_q|
@@ -1464,26 +1464,26 @@ By definition of the strand, $\alpha_{q-1}$ is hereditarily justified by an $@$ 
 Since $i_q > |n_q|$, by rule \rulenamet{Var_\essential} the next node is necessarily a ghost lambda node justified by $n_q$ with label $i_q$. With rule \rulenamet{Lam^\ghostvar_\essential} the following node is a ghost variable node $\ghostvar$ justified by $\alpha_q$ and labelled by $i_{q+1} = i_q + |\alpha_{q}| -|n_{q}|$.
 \end{itemize}
 
-(ii) By (i) the next strand following $t$ consists solely of ghost nodes and ends with a ghost variable $\ghostvar$ hereditarily justified by the root. Since ghost nodes have arity $0$, the arity threshold at that point is $0$. Hence, any label value $j$ chosen to extend the traversal at that point will be strictly greater than the arity threshold: thus by (i) the next strand consists solely of ghost nodes.
+(ii) By (i) the next strand following $t$ consists solely of ghost nodes and ends with a ghost variable $\ghostvar$ hereditarily justified by the root. Since ghost nodes have arity $0$, the dynamic arity at that point is $0$. Hence, any label value $j$ chosen to extend the traversal at that point will be strictly greater than the dynamic arity: thus by (i) the next strand consists solely of ghost nodes.
 Applying the argument repeatedly shows that all the occurrences following $t$ are necessarily ghost nodes.
 
-(iii) By definition of $\arth(t)$ we have
-$i \leq \arth(t) = \max_{q=1..k} \left( |n_q| + \Delta_{q-1} \right)
+(iii) By definition of $\dynar(t)$ we have
+$i \leq \dynar(t) = \max_{q=1..k} \left( |n_q| + \Delta_{q-1} \right)
 $
 and since $k\geq 1$, the set $\{1..k\}$ is not empty so there is at least one $q$ such that $i - \Delta_{q-1} \leq |n_q|$, or equivalently, $i_q \leq |n_q|$ by definition of $i_{q}$. We conclude by taking $r+1$ to be the smallest such $q$, and applying the same argument as (i) for all $q<r$.
 \endproofatend
 
-This weaving property shows that exceeding the arity threshold when
+This weaving property shows that exceeding the dynamic arity when
 traversing an external variable, causes expansion of external ghost variable nodes into deeper ghost variable nodes which ultimately leads to traversals that are not relevant for normalization.
 This observation suggests a stricter version of traversals:
 \begin{definition}[Normalizing traversals]
 \label{def:normalizing_traversals}
-The set $\travsetnorm$ of \defname{normalizing traversals}, is the subset of essential traversals defined by the rules of Definition~\ref{dfn:essential_traversals} where the index $i$ in rule \rulenamet{IVar} is bounded by the arity threshold of the traversal.
+The set $\travsetnorm$ of \defname{normalizing traversals}, is the subset of essential traversals defined by the rules of Definition~\ref{dfn:essential_traversals} where the index $i$ in rule \rulenamet{IVar} is bounded by the dynamic arity of the traversal.
 % \infrule[$\rulefont{IVar_\normalizing}$]
 %      { t \cdot n \in\travsetnorm
 %      \andalso n \in\ExternalNodes\inter\ExtendedNodesVar
 %      \andalso n \enables_i \alpha
-%      \andalso 1 \leq i \leq\arth(t)}
+%      \andalso 1 \leq i \leq\dynar(t)}
 %      {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:i){\alpha}}\in\travsetnorm}
 % where $\alpha = \ghostlmd$ just if $i>|n|$.
 Table~\ref{tab:normalizing_trav_rules} recapitulates the rules thus obtained  using judgement derivations, where the judgement `$\istraversal t$' means that $t\in\travsetnorm$.
@@ -1571,7 +1571,7 @@ for instance, which verifies $\pview{\core{t}} = t$, is not equivalent to $\pvie
          {\istraversal t \cdot n
           \andalso n \in \ExtendedNodesVar\inter\ExternalNodes
           \andalso n \enables_i \alpha
-          \andalso 1\leq i \leq\arth(t)
+          \andalso 1\leq i \leq\dynar(t)
          }
          {\istraversal\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,30:i){\alpha}}
          \andalso(\alpha\in\NodesLmd)
@@ -1621,7 +1621,7 @@ Let us walk through the ULC evaluation algorithm~\ref{algo:ulc_normalization_by_
   Take the term $(\lambda x. x x) (\lambda y. y)$. Repeatedly applying the structural traversal rules until reaching a non-deterministic choice yields traversal
 
   $t_\epsilon = \Pstr[0.7cm]{(n0){\lambda}\,(n1){@}\,(n2-n1,20){\lambda x}\,(n3-n2,20){x}\,(n4-n1,20){\lambda y}\,(n5-n4,20){y}\,(n6-n3,20){\lambda}\,(n7-n2,20){x}\,(n8-n1,20){\lambda y}\,(n9-n8,20){y}\,(n10-n7,20){\ghostlmd^1}\,(n11-n6,20){\ghostvar^1}\,(n12-n5,20){\ghostlmd^{1}}\,(n13-n4,20){\ghostvar^2}\,(n14-n3,20){\ghostlmd^2}\,(n15-n2,20){\ghostvar^2}\,(n16-n1,20){\ghostlmd^2}\,(n17-n0,20){\ghostvar^1}}$. The last node is justified by the root thus it is an external variable. With \emph{imaginary} traversals,
-  rule $\rulename{IVar}$ would let us extend $t_\epsilon$. But here the arity threshold is $\arth(t) = 0$, therefore there is no more \emph{normalizing} traversal to explore: $t_\epsilon$ is maximal. The P-view core is $\pview{\core{t_\epsilon}} = \Pstr[0.7cm]{(n0){\lambda }\ (n17-n0){\ghostvar^1}}$ thus the beta-normal form of term is $\lambda y . y$ for some new variable name $y$.
+  rule $\rulename{IVar}$ would let us extend $t_\epsilon$. But here the dynamic arity is $\dynar(t) = 0$, therefore there is no more \emph{normalizing} traversal to explore: $t_\epsilon$ is maximal. The P-view core is $\pview{\core{t_\epsilon}} = \Pstr[0.7cm]{(n0){\lambda }\ (n17-n0){\ghostvar^1}}$ thus the beta-normal form of term is $\lambda y . y$ for some new variable name $y$.
 \end{example}
 
 \begin{example}[Church increment]
@@ -1637,9 +1637,9 @@ and therefore $\pview{\core{t_\epsilon}} = \lambda\cdot \ghostvar^2$ is a path i
 The normal form must therefore have the shape $\lambda y s \ldots \cdot s N_1 \ldots N_q$ for some fresh variable $y$ and $s$ and $q\geq0$.
 
 %\item
-To determine the $N_k$ arguments from the normal form, we enumerate all the possible instantiation of rule $\rulename{IVar}$ for all non-deterministic choices of value $k\geq 1$, and then recursively extend each traversal until the next non-deterministic choice. But how many values of $k$ shall we consider? Intuitively, we should not eta-expand the node beyond the point where further traversals are guaranteed to visit ghost occurrences only. That upper-bound for $k$ is precisely given by the \emph{arity threshold} of $t_\epsilon$.
+To determine the $N_k$ arguments from the normal form, we enumerate all the possible instantiation of rule $\rulename{IVar}$ for all non-deterministic choices of value $k\geq 1$, and then recursively extend each traversal until the next non-deterministic choice. But how many values of $k$ shall we consider? Intuitively, we should not eta-expand the node beyond the point where further traversals are guaranteed to visit ghost occurrences only. That upper-bound for $k$ is precisely given by the \emph{dynamic arity} of $t_\epsilon$.
 We lookup the node arities from the computation tree represented in Figure~\ref{fig:comptree_examples}. The arities of the traversal strand are
- $0,1,4,2,2,1,0,0,0,0$ so the arity threshold is given by the maximum of the intermediate values generated from the summation $(((((0) + -0+0) -0 +1) -2 + 2) -4 +1)$, hence $\arth(t_\epsilon) = \max \{ 0,0,1,1,-2 \} = 1$.
+ $0,1,4,2,2,1,0,0,0,0$ so the dynamic arity is given by the maximum of the intermediate values generated from the summation $(((((0) + -0+0) -0 +1) -2 + 2) -4 +1)$, hence $\dynar(t_\epsilon) = \max \{ 0,0,1,1,-2 \} = 1$.
  We thus do not have to consider the cases $k>1$ which means that the normal form has in fact the shape $\lambda y s \ldots \cdot s N_1$.
 
 Extending traversal $t_\epsilon$ with rule $\rulename{IVar}$ for $k=1$ gives traversal
@@ -1670,7 +1670,7 @@ $\pview{\core{t_1}} = \lambda \cdot \ghostvar^2 \cdot\ghostlmd^1
 \cdot \ghostvar^1$
 therefore the normal form is of the shape $\lambda y s \ldots \cdot s (y R_1 \ldots R_{q_2})$ for some terms $R_1$, \ldots $R_{q_2}$, and $q_2\geq 0$.
 
-The arity threshold of $t_1$ is $\arth(t_1) = \max \{ 0, 2,2,2,2,0 \} = 2$
+The dynamic arity of $t_1$ is $\dynar(t_1) = \max \{ 0, 2,2,2,2,0 \} = 2$
 (where the $2$ comes from the arity of variable node $y$) hence the normal form is of the shape $\lambda y s \ldots \cdot s (y R_1 R_2)$.
 We thus apply rule \rulenamet{IVar} for child index $k_2$ ranging from $1$ to $ 2$. For the case $k_2 = 1$:
 
@@ -1893,7 +1893,7 @@ The beta-normal form of $M$ is thus $y_1 (\lambda z.z\,y_2) y_2$.
 Take $varity\ two$ where
 $two \alphaequiv \lambda s_2 z_2 . s_2 (s_2\ z_2)$ and
 $varity \alphaequiv \lambda t.t (\lambda n a x . n (\lambda s z . a s (x s z))) (\lambda a. a) (\lambda z_0 . z_0)$.
-%To compute the set of normalizing traversals, we apply the traversal rules inductively until an input variable is reached, at which point we eta-expand with rule \rulenamet{IVar} for all possible values of $k$ ranging from $1$ to the arity threshold of the traversal.
+%To compute the set of normalizing traversals, we apply the traversal rules inductively until an input variable is reached, at which point we eta-expand with rule \rulenamet{IVar} for all possible values of $k$ ranging from $1$ to the dynamic arity of the traversal.
 The initial traversal $t_\epsilon$ up to the first non-deterministic choice is:
 
 \resizebox{1\hsize}{!}{$
@@ -2218,9 +2218,8 @@ $M$ and its normal form must have the same lambda list. We can then conclude usi
 \label{thm:completeness_leftmostlinearred}
 If $M$ has a beta-normal form then its left-most linear reduction terminates (and thus yields a quasi normal form).
 \end{theorem}
-The technical proof is in appendix.
 \begin{todobox}
-    include snippet of proof
+    include snippet of proof from appendix
 \end{todobox}
 \proofatend
 Suppose $M$ has a beta-normal form then by a standard result of lambda calculus its head-reduction terminates, therefore by Theorem~\ref{thm:danosregnier_headlinred} the $\hlred$-reduction of $M$ terminates and yields its quasi-\emph{head}-normal form. Since $\hlred$ coincides with $\llred$, for terms not in \emph{qhnf}, we can without loss of generality assume that $M$ is in \emph{qhnf}.
@@ -2366,7 +2365,7 @@ If $v$ is empty then the node following $u$ in $t$, if it exists, is necessarily
 \begin{proof}
  If $v$ is empty then the strand ending at $x$
  is just $\underline{\lambda \overline{x}} \cdot \underline{x}$ therefore
- $t$'s arity threshold is precisely $|x|$, in which case rule \rulenamet{IVar} can only visit a structural child of $x$.
+ $t$'s dynamic arity is precisely $|x|$, in which case rule \rulenamet{IVar} can only visit a structural child of $x$.
 \end{proof}
 
 \begin{definition}[Strand types]
@@ -3011,7 +3010,7 @@ Observe that the result holds trivially up until the traversal in $M$ reaches oc
         we can just take $u = u' \cdot @_x$ and conclude exactly like we did for case $\rulename{App}_\normalizing$ (B2).
     Otherwise, if $m\neq x$, we conclude like in case (B1).
 
-    \item $\rulename{IVar_\normalizing}$ $\Phi$ preserves node types, arity of variable nodes. It remains to show that it preserves \emph{arity threshold} of traversals: In an argument lookup, all occurrences are ghost with arity $0$ therefore they do not affect the arity threshold calculation. Hence $\arth(\phi(u))=\arth(\phi_1(u))$. Further $\Phi$ preserves arity and maps external and internal nodes to external and internal nodes respectively, thus $\arth(\phi_1(u))=\phi_1(\arth(u))$.
+    \item $\rulename{IVar_\normalizing}$ $\Phi$ preserves node types, arity of variable nodes. It remains to show that it preserves \emph{dynamic arity} of traversals: In an argument lookup, all occurrences are ghost with arity $0$ therefore they do not affect the dynamic arity calculation. Hence $\dynar(\phi(u))=\dynar(\phi_1(u))$. Further $\Phi$ preserves arity and maps external and internal nodes to external and internal nodes respectively, thus $\dynar(\phi_1(u))=\phi_1(\dynar(u))$.
     Hence the rule $\rulename{Var_\normalizing}$ used to extend $u$ can be used to extend $t$, and reciprocally.
 
 \end{itemize}
@@ -3021,7 +3020,7 @@ Observe that the result holds trivially up until the traversal in $M$ reaches oc
 The tree of the reduct $N$ is obtained from $\ctree(M)$
 by substituting $x$'s label with that of $r$ (modulo variable renaming to avoid capture if $r$ is a variable node) and prepending $r$'s children to existing $x$'s children. Other nodes, including $x$'s parent lambda node, remain untouched. Let $r'$ denote this updated node in the reduct $N$.
 This transformation yields an implicit mapping function $\Phi : \ExtendedNodes(N)\rightarrow \ExtendedNodes(N)$ such that $\Phi(r') = x$.
-Although $\Phi$ does not preserve the arity of $x$, it does not affect the arity threshold of traversals since $|r'| = |x| + |r|$.
+Although $\Phi$ does not preserve the arity of $x$, it does not affect the dynamic arity of traversals since $|r'| = |x| + |r|$.
 We can then extend $\Phi$ to a function $\phi$ on justified sequence and show by induction that it yields a bisimulation similarly to the previous case.
 
 %%%%%%% CASE 3
@@ -3029,7 +3028,7 @@ We can then extend $\Phi$ to a function $\phi$ on justified sequence and show by
 After reduction, node $x$ gets replaced by subterm $A$ and the label of $x$'s parent lambda node gets concatenated with the label of $A$'s root node:
 the parent lambda node $\lambda\overline{z}$ of $x$ in $M$ becomes $\lambda\overline{z}\overline{y}'$ in the reduct $N$.
 Like in the first case, we can define a function $\phi$ such that
- traversals of $M$ of the form $\ldots \lambda\overline{z}\cdot x \cdot v \cdot \lambda\overline{y} \cdot \ldots$, where $v$ is an argument lookup, are images of traversals in $N$ of the form $\ldots \cdot \lambda\overline{z}\overline{y}' \ldots$. Once again, although the arity of $x$ is not preserved, this does not affect the arity threshold because $|\lambda{\overline{z} \overline{y}'}| =
+ traversals of $M$ of the form $\ldots \lambda\overline{z}\cdot x \cdot v \cdot \lambda\overline{y} \cdot \ldots$, where $v$ is an argument lookup, are images of traversals in $N$ of the form $\ldots \cdot \lambda\overline{z}\overline{y}' \ldots$. Once again, although the arity of $x$ is not preserved, this does not affect the dynamic arity because $|\lambda{\overline{z} \overline{y}'}| =
  |\lambda{\overline{z}}| +  |\lambda{\overline{y}}|$.
 \end{description}
 
@@ -3114,7 +3113,7 @@ Let's consider the tree structure at the trivial redex on Figure~\ref{fig:reduci
     Firstly, $M$ and $N$ are in $\phi$-bisimulation. We omit the details, the key observations are:
     (i) Since $x_1$ does not occur in $T$, the term $A_1$ will never be traversed in $N$.
     (ii) Only nodes hereditarily justified by $\lambda x_1 \ldots x_n$ see their label (or link label) changed after applying $\Phi$. But since those are external nodes, they get filtered out by the core projection $\coresymbol$.
-    (iii) The arity of node $\lambda x_2 \ldots x_n$ increases by $1$ after applying $\Phi$, but it does not impact the arity threshold of traversals because the arity of the application node also increases by $1$.
+    (iii) The arity of node $\lambda x_2 \ldots x_n$ increases by $1$ after applying $\Phi$, but it does not impact the dynamic arity of traversals because the arity of the application node also increases by $1$.
 
     Secondly, since $\Phi$ is injective, so is its element-wise extension to justified sequences.
 
@@ -3300,7 +3299,7 @@ $$\travsetnorm(M)/{\sim} \ \cong\ \pathset(T) \ .$$
 \end{theorem}
 \begin{proof}
 Let's first assume that $M$ is in beta-normal form. Then its computation tree does not contain any $@$-node and all nodes must be external.
-Hence the arity threshold of a traversal ending with external variable $x$ is precisely $|x|$, the arity of $x$. A straightforward induction on the traversal
+Hence the dynamic arity of a traversal ending with external variable $x$ is precisely $|x|$, the arity of $x$. A straightforward induction on the traversal
 rules shows, that since the \rulenamet{Var} is never used, we necessarily have  $\travsetnorm(M) = \pathset(M)$. Further, since all nodes are externals, the projection $\coresymbol$ and $\pview{\_}$ functions both coincides with the identity function thus $\pview{\core{\travsetnorm(M)}} = \travsetnorm(M) = \pathset(M)$.
 
 Otherwise, since $M$ has a beta-nf, by Theorem~\ref{thm:completeness_leftmostlinearred} its \emph{leftmost linear reduction sequence} terminates and yields a \emph{qnf}. By Proposition~\ref{prop:ulctrav_impl_linear_reduction} the set of traversals is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of traversals of the \emph{qnf} is isomorphic to the set of traversals of $M$. Corollary~\ref{cor:qnf_and_nf_traveset_invariant} permits us to conclude.
