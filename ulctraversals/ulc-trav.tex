@@ -318,11 +318,8 @@
 \section{Introduction}
 
 \subsection{Background and related work}
-% The traversal theory of the simply-typed lambda calculus relies on the eta-long transform to ensure that when traversing an application, there exists a subterm representing every possible operator's argument~\cite{BlumPhd, OngLics2006}. In the untyped setting, we instead exhibit the missing operand via ad-hoc instantiation of the eta-expansion rule, which allows the traversal to proceed as if the operand existed in the original term. This gives rise to a more generic concept of traversals for lambda terms where no preliminary transformation is required: the original unaltered lambda term is traversed.
-
-
 The theory of traversals was originally introduced in the context of higher-order recursion schemes~\cite{OngLics2006} as tree generators, and was
-then extended to simply-typed languages with higher-order free variables, such as the simply-typed lambda calculus (STLC)~\cite{BlumPhd}. A traversal consists of a sequence of nodes taken from a tree-representation of the term, where every node occurrence may have an associated labelled link, or ``justification pointer'', referring to some previous occurrence in the sequence. It always starts from the root of the tree and successively visits other nodes by either descending deeper into the tree structure, or jumping to other tree branches. A small set of rules formally defines how to extend a given traversal--what node to visit next with which justification pointer. This yields a prefix-closed set of justified sequences of nodes defining the set of traversals of the term.
+then extended to simply-typed languages with higher-order free variables, such as the simply-typed lambda calculus (STLC)~\cite{BlumPhd}. A traversal consists of a sequence of nodes taken from a tree-representation of the \emph{eta-long expanded} term, where every node occurrence may have an associated labelled link, or ``justification pointer'', referring to some previous occurrence in the sequence. It always starts from the root of the tree and successively visits other nodes by either descending deeper into the tree structure, or jumping to other tree branches. A small set of rules formally defines how to extend a given traversal--what node to visit next with which justification pointer. This yields a prefix-closed set of justified sequences of nodes defining the set of traversals of the term.
 
 In the typed setting, the traversal theory bears a strong connection with Game Semantics~\cite{BlumPhd}: The game denotation of a term is in bijection with the set of \emph{core projections} of its traversals (Theorem~\ref{thm:gamesem_correspondence_stlc}), where the core projection of a traversal is the subsequence obtained by keeping only occurrences that are
 transitively justified by the initial node.
@@ -340,13 +337,18 @@ This paper
 (iii) Formalizes the relation between traversals and the notion of \emph{head linear reduction}.
 
 The key idea of imaginary traversals is the ad-hoc use of eta-expansion. Attempting to traverse an untyped lambda term causes the traversal to get stuck when the operator sub-term of an application has insufficiently many operands. In such a situation, there is no operand node in the term tree to traverse. Take the term $M = (\lambda f.f)(\lambda x.x)$ for example. A concrete traversal gives the sequence of nodes $\lambda f \cdot f \cdot \lambda x \cdot x$ (where pointers are omitted), at which point the traversal is stuck because there is no subterm representing the first argument of $f$.
-Similarly, a concrete traversal of $U = (\lambda x. x x)(\lambda y. y)$ gets you stuck at variable $y$ (See Example~\ref{examp:baby}). To take an analogy with abstract machine evaluators, this would be like a broken implementation of a Krivine machine~\cite{Krivine2007} attempting to lookup a variable from an empty environment, or a SECD machine~\cite{landin-secd} attempting to pop an argument from an empty stack when evaluating the application operator.
+Similarly, a concrete traversal of $U = (\lambda x. x x)(\lambda y. y)$ gets  stuck at variable $y$ (See Example~\ref{examp:baby}). To take an analogy with abstract machine evaluators, this would be like a broken implementation of a Krivine machine~\cite{Krivine2007} attempting to lookup a variable from an empty environment, or a SECD machine~\cite{landin-secd} attempting to pop an argument from an empty stack when evaluating the application operator.
 
 This situation never occurs in the typed setting where lambda terms are
-conveniently assumed to be \emph{eta-long expanded}, a transformation that recursively eta-expands the subterms with respect to their type. Untyped terms admitting a simple type, like $M$, can be traversed via eta-long expansion with respect to whichever type they inhabit.
-But this is not feasible in the general ULC case where untyped terms do not necessarily inhabit a simple type. In those cases, performing static eta-expansions sometimes help, for instance the term $U$, which has no simple type, can be traversed if we its variable occurrences are all eta-expanded. But this does not always work: for instance in the term
+conveniently assumed to be \emph{eta-long expanded}, a transformation that recursively eta-expands the subterms with respect to their type,
+which ensures that when traversing an application, there exists a subterm representing every possible operator's argument.
+
+Untyped terms admitting a simple type, like $M$, can be traversed via eta-long expansion with respect to whichever type they inhabit.
+But this is not feasible in the general ULC case where untyped terms do not necessarily inhabit a simple type. In those cases, performing static eta-expansions sometimes help, for instance the term $U$, which has no simple type, can be traversed if we first eta-expand all its variable occurrences. But this does not always work: for instance in the term
  $J = (\lambda u . u(y_1\, u)) (\lambda v . v\, y_2)$ from
- Example~\ref{ex:missingoperand}, nested eta-expansions are necessary to traverse it, \ie, some new variable resulting from an eta-expansion needs to be itself eta-expanded! Eta-expanding all variables infinitely often is not feasible, so the idea of imaginary traversal is to instead eta-expand ``on-demand'', dynamically, as we evaluate the term.
+ Example~\ref{ex:missingoperand}, nested eta-expansions are necessary to traverse it, \ie, the new variable resulting from the eta-expansion of $y_1\, u$ needs to be itself eta-expanded! Eta-expanding all variables infinitely often is not feasible, so instead imaginary traversals
+  exhibit the missing operand via ad-hoc dynamic eta-expansion, as they traverse the term.
+ This allows the traversal to proceed as if the operand existed in the original term; which leads to a more generic concept of traversals for lambda terms where no preliminary transformation is required: eta-expansions are performed fictitiously and the original unaltered lambda term is traversed.
 
 So for instance in $M$, an imaginary traversal traverses node $x$ by jumping to a fictitious fresh node $y$ that would exist if $f$ were eta-expanded
 as $\lambda y.f\, y$. This trick allows the traversal to proceed with the usual traversal rules; until reaching that fictitious node $y$.
@@ -354,7 +356,7 @@ A second eta-expansion, this time of the term itself to
 $\lambda z. (\lambda f y.f\, y)(\lambda x.x) z$,
 unblocks the traversal, until it reaches node $z$, at which point we have a maximal traversal per the concrete traversal rules. The final traversal of the eta-expanded term is given by the sequence $\lambda z \cdot @ \cdot \lambda f y \cdot f \cdot \lambda x \cdot x \cdot \lambda \cdot y \cdot \lambda \cdot z$, where `@` represents the application node in the AST, and the dummy lambda `$\lambda$' is syntactic sugar which can be ignored for now.
 
-Generalizing this idea, concrete traversals induce an implicit `eta-expansion strategy': at any given point where a traversal gets stuck, there is only one possible subterm expansion that exhibits nodes necessary for the traversal to resume. In the term $M$, the first expansion considered is that of $f$ because at that point, the concrete rules only lets us
+Generalizing this idea, we realize that concrete traversals induce an implicit `eta-expansion strategy': at any given point where a traversal gets stuck, there is only one possible subterm expansion that exhibits nodes necessary for the traversal to resume. In the term $M$, the first expansion considered is that of $f$ because at that point, the concrete rules only lets us
 traverse an immediate argument of $f$. If instead we were to eta-expand the term itself, it would yield $\lambda z. (\lambda f .f)(\lambda x.x) z$
 which a concrete traversal cannot traverse since $f$ does not have an immediate argument. More intuitively: at $x$ the traversal has figured out that the subterm $\lambda x.x$ should be substituted for variable $f$, therefore to determine what $x$ should be substituted for, it needs to look for the first argument of $f$. Since $f$ has no direct argument, we must eta-expand it. In this simple example, the jump into the realm of fictitious nodes is indefinite: nodes subsequently traversed are all absent from the original term. There are situations, however, such as in term $J$, where it eventually leads to traversing an actual node from the original term tree.
 
@@ -460,7 +462,7 @@ The \defname{head reduction}, denoted $\rightarrow_{h}$, fires the head redex of
 
 \paragraph{Types} Simple types are generated from the grammar $\tau := o\, | \tau \rightarrow \tau$ where $o$ ranges over a fixed set of atomic types. Typed-annotated lambda-terms are generated from the grammar $E := \VarSet\, |\, (E\, E)\, |\, \lambda \VarSet \colon\tau. E $.
 We write $M^\tau$ to denote a closed (\ie, no free variable)
-type-annotated lambda-term typable with the judgement rules of the simply-typed lambda calculus~\cite{Barendregt84} and $M$ to denote the untyped term obtained by erasing all the type annotations.
+type-annotated lambda-term of type $\tau$, typable with the judgement rules of the simply-typed lambda calculus~\cite{Barendregt84} and $M$ to denote the untyped term obtained by erasing its type annotations.
 
 \subsection{Computation tree and enabling relation}
 
