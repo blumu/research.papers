@@ -1198,7 +1198,7 @@ For any subset $U\subseteq T$ we say that $U$ is \defname{$T$-complete} if it co
   The essential traversals $\travsetes$ are $\travset$-complete.
 \end{proposition}
 \shortproof
-Full details in \cite{longversion-2018arXiv}.
+See full details in \cite{longversion-2018arXiv}.
 Proposition~\ref{prop:eta_expanded_trav} reduces the proof to the case of concrete traversals.
 We show by strong induction on $t\in\travset$
  that it has a subsequence $u\in\travsetcones$ such that $t \sim u$. If the last node of $t$ is external then it follows immediately from the induction hypothesis.
@@ -2159,13 +2159,25 @@ Let $M$ be a term in \emph{qnf}.
 % \item[(X)] If $x$ is a variable occurrence in $M$ involved in a generalized redex of $M$ then $x$ occurs in operand position in a subterm of the form:
 % $$(\lambda z .U) A_1 \ldots A_q (\ldots x \ldots) \qquad q\geq 0$$
 \item[(i)]
- If $M$ is not in beta-normal form then its \emph{leftmost spinal-innermost standard $\beta$-redex} $(\lambda x . N) A$ is trivial.
-(\ie, $x$ does not occur freely in $N$).
-
+ If $M$ is not in $\beta$-normal form then its \emph{leftmost spinal-innermost standard $\beta$-redex} is trivial.
 \item[(ii)] $M$ has a beta-normal form and the leftmost spinal-innermost strategy normalizes $M$.
 
 \end{itemize}
 \end{proposition}
+\shortproof
+Overview of~\cite{longversion-2018arXiv}.
+(i) Let $R = (\lambda x . N) A$
+ be the leftmost spinal-innermost standard $\beta$-redex of $M$. Since there is no other redex left of it, in the bottom-up calculation of $lloc_M(M)$ the last case (application $UV$ where $\lambda_l(U)$ is not empty) never occurs and $lloc_M(M)$  must be at least $lloc_M(R)$ (\ie, if the latter is non-empty then so is the former).
+Also, it is at least $lloc_R(R)$ since
+$lloc_R(R) \sqsubseteq lloc_M(R)$ by
+Property~\ref{prop:lloc_properties}(i).
+Now suppose that $x$ occurs freely in $N$ then it is involved in the generalized redex $(\lambda x, A)$, and on the left of $x$ in the term tree of $N$, there cannot be any subterm with a non-empty lambda-list (otherwise there would either be a beta-redex left of $x$ or $x$ itself would be the argument of a redex in $N$, which contradicts the assumption that
+ $N$ contains no beta-redex), hence by bottom-up evaluation of the $lloc$, $lloc_R(R)$ must be at least $x$: it is not $\bot$. So $lloc_M(M) \ne \bot$ which contradicts that $M$ is in \emph{qnf}.
+(ii) Each reduction is trivial by (i) and
+since trivial reductions preserve the $lloc$
+and do not introduce $\beta$-redexes,
+ each reduct is in \emph{qnf}, and the reduction sequence terminates and yields the $\beta$-normal form.
+ \endshortproof
 \proofatend
 \begin{compactitem}
 % \item[(X)] By induction on $M$. Suppose $M = v$ for some variable $v$ then the result trivially holds since $M$ has no generalized redex. Suppose $M = \lambda x . U$ then by Property~\ref{prop:lloc_properties}(iv) $U$ is in \emph{qnf} and we conclude by the induction hypothesis.
