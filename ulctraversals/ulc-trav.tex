@@ -1197,15 +1197,32 @@ For any subset $U\subseteq T$ we say that $U$ is \defname{$T$-complete} if it co
 \label{prop:essential_traversal_simcomplete}
   The essential traversals $\travsetes$ are $\travset$-complete.
 \end{proposition}
+\shortproof
+Full details in \cite{longversion-2018arXiv}.
+Proposition~\ref{prop:eta_expanded_trav} reduces the proof to the case of concrete traversals.
+We show by strong induction on $t\in\travset$
+ that it has a subsequence $u\in\travsetcones$ such that $t \sim u$. If the last node of $t$ is external then it follows immediately from the induction hypothesis.
+If it is an internal node, then
+let $n$ be the last external occurrence in $t$,
+which by the traversal rules is necessarily an external lambda node.
+By definition of $\coresymbol$, $n$ is also the last occurrence in $\core{t}$ therefore $\core{t} = \core{t}_{\leq n}$.
+But \emph{up to relabelling}, $\coresymbol$ commutes with prefixing: $\core{t}_{\leq n} = \core{t_{\leq n}}$. (More precisely, $\core{t}_{\leq n}$ is obtained from $\core{t_{\leq n}}$
+by pre-pending to $n$'s label the stack of pending lambdas from the internal lambda nodes occurring between $n$ and $t$.)
+Applying the I.H. on $t_{\leq n}$ gives $\pview{\core{t_{\leq n}}} = \pview{\core{u'}}$ for some $u' \in \travsetes$.
+It remains to show that $u = u' \cdot m_1 \ldots m_q\in\travsetes$
+where $m_1 \ldots m_q$, for $q>0$, $m_q = t^\omega$, are the internal occurrences following $n$ in $t$.
+A finite induction on $q$ shows that $u_{\leq m_q} \in\travsetes$ and $m_q$'s justifying node and label are the same in $u$ and $t$. The only non-trivial case is rule \rulenamet{Var}: by the Path-View correspondence, $\pview{u_{<m_q}}$ is a path in the tree from the root to $m_q$ therefore $m_q$'s binder necessarily occur in $u$, we can  conclude using the I.H.~on $u_{<m_q}$ and applying \rulenamet{Var} on $u_{<m_q}$ to get $u_{\leq m_q}$.
+
+\endshortproof
 \proofatend
 %\begin{proof}
 Let $t\in\travulc$ and let's first assume that $t$ does not contain any ghost occurrence. We show by strong induction on $t$ that there is a subsequence $u\in\travsetes$ of $t$ such that $\pview{\core{t}} = \pview{\core{u}}$, and so in particular
 $\pview{\core{t}} \equiv \pview{\core{u}}$.
 We do a case analysis on the last node $t^\omega$ of $t$.
 \begin{itemize}
-\item $t^\omega\in \ExternalNodes$: Suppose $t^\omega$ is a variable or an $@$ node then we can conclude immediately from the induction hypothesis on $t_{<t^\omega}$ and using the rules \rulenamet{Lmd} of $\travsetnorm$.
+\item $t^\omega\in \ExternalNodes$: Suppose $t^\omega$ is a variable then we can conclude immediately from the induction hypothesis on $t_{<t^\omega}$ and using the rules \rulenamet{Lmd} of $\travsetes$.
 
-Suppose $t^\omega$ is a lambda node. If it has no justifier then it is the root in which case we conclude by taking  $u=t=t^\omega$. Otherwise let $m$ denote $t^\omega$'s justifier in $t$. By the I.H.~on $t_{\leq m}$ there is $u' \in \travsetnorm$ such that $\core{u'} = \core{t_{\leq m}}$. Take $u = u' \cdot t^\omega$ where $t^\omega$ points to its immediate predecessor $m$. Then $u$ is clearly a $\travsetnorm$-traversal by rule \rulenamet{IVar} and:
+Suppose $t^\omega$ is a lambda node. If it has no justifier then it is the root in which case we conclude by taking  $u=t=t^\omega$. Otherwise let $m$ denote $t^\omega$'s justifier in $t$. By the I.H.~on $t_{\leq m}$ there is $u' \in \travsetes$ such that $\core{u'} = \core{t_{\leq m}}$. Take $u = u' \cdot t^\omega$ where $t^\omega$ points to its immediate predecessor $m$. Then $u$ is clearly a $\travsetes$-traversal by rule \rulenamet{IVar} and:
 \begin{align*}
 \pview{\core{u}} &= \pview{\core{u'}} \cdot t^\omega & \mbox{Def.~of $\coresymbol$}\\
  &= \pview{\core{t_{\leq m}} \cdot t^\omega} & \mbox{By I.H.~on $t_{\leq m}$}\\
@@ -1216,22 +1233,22 @@ Now because $m$ justifies $t^\omega$, by Def.~of P-view, \emph{up to renaming of
 
 \item $t^\omega\not\in \ExternalNodes$: Let $n$ be the last occurrence in $t$ that is in $\ExternalNodes$, and let $m_1 \ldots m_q$, $q>0$ be the occurrences of internal nodes following $n$ in $t$ (so that $m_q = t^\omega$). By definition of the traversal rules, a variable in $\ExternalNodes$ is necessarily followed by a lambda node in $\ExternalNodes$, therefore $n$ is necessarily a lambda node. By definition of $\coresymbol$, $n$ is therefore also the last occurrence in $\core{t}$ therefore $\core{t} = \core{t}_{\leq n}$.
 But \emph{up to relabelling}, $\core{t}_{\leq n} = \core{t_{\leq n}}$; more precisely, $\core{t}_{\leq n}$ is obtained from $\core{t_{\leq n}}$
-by pre-pending to $n$'s label the stack of pending lambdas of $t_{>m}$ (the internal nodes following $n$ in $t$). Applying the induction hypothesis on $t_{\leq n}$ gives $\core{t_{\leq n}} = \core{u'}$ for some $u' \in \travsetnorm$.
-To conclude it therefore suffices that to show that $u = u' \cdot m_1 \ldots m_q$ is also a traversal of $\travsetnorm$.
+by pre-pending to $n$'s label the stack of pending lambdas of $t_{>m}$ (the internal nodes following $n$ in $t$). Applying the induction hypothesis on $t_{\leq n}$ gives $\pview{\core{t_{\leq n}}} = \pview{\core{u'}}$ for some $u' \in \travsetes$.
+To conclude it therefore suffices that to show that $u = u' \cdot m_1 \ldots m_q$ is also a traversal of $\travsetes$.
 
-We prove by finite induction on $q$ that $u_{\leq m_q} \in\travsetnorm$ and $m_q$'s justifying node and label are same in $u$ and $t$. For $q=0$, we just apply rule \rulenamet{Lam} on $u'$.
+We prove by finite induction on $q$ that $u_{\leq m_q} \in\travsetes$ and $m_q$'s justifying node and label are the same in $u$ and $t$. For $q=0$, we just apply rule \rulenamet{Lam} on $u'$.
 For $q>0$: by case analysis on the rule used to visit $m_q$ in $t$.
 For structural rules \rulenamet{Root}, \rulenamet{App} and \rulenamet{Lam} it follows immediately by induction.
 Rule \rulenamet{Var}: If $m_q \in \NodesVar$ then by the Path-View correspondence, $\pview{u_{<m_q}}$ is a path in the tree from the root to $m_q$ therefore $m_q$'s binder necessarily occur in $u$, we can therefore conclude using the I.H.~on $u_{<m_q}$ and applying \rulenamet{Var} on $u_{<m_q}$ to get $u_{\leq m_q}$.
 \end{itemize}
 Suppose that $t$ contains ghost occurrences then we consider the term $M^t$.
-By Proposition~\ref{prop:eta_expanded_trav}(i), $\eta_t(t)$ is a traversal of $M^t$. Hence by the above, there exists $u'\in\travsetnorm(M^t)$ such that
+By Proposition~\ref{prop:eta_expanded_trav}(i), $\eta_t(t)$ is a traversal of $M^t$. Hence by the above, there exists $u'\in\travsetes(M^t)$ such that
 $\pview{\core{u'}}=\pview{\core{\eta_t(t)}}$.
 By Proposition~\ref{prop:eta_expanded_trav}(ii),
 there exists $u \in \travulc(M)$ such that
 $u' = \eta_t(u)$.
 % TODO: clarify
-Recall that the normalizing traversals is defined as the subset of traversals where external lambda nodes always point to their immediate predecessor. Therefore since $\eta_t$ is pointer-preserving $u$ must necessarily belong to $\travsetnorm(M)$.
+Recall that the normalizing traversals is defined as the subset of traversals where external lambda nodes always point to their immediate predecessor. Therefore since $\eta_t$ is pointer-preserving $u$ must necessarily belong to $\travsetes(M)$.
 
 By definition of $\coresymbol$ we have $\core{t} = \core{\eta_t(t)}$, and since $u$ is a subsequence of $t$ we also have $\core{u} = \core{\eta_t(u)}$.
 Hence $\pview{\core{t}}=\pview{\core{\eta_t(t)}}=
