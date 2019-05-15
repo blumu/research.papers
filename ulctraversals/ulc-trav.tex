@@ -152,12 +152,10 @@
 
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}[section]
-\newtheorem{conjecture}{Conjecture}[section]
 \newtheorem{example}{Example}[section]
-\newtheorem{observation}{Observation}[section]
 
-\theoremstyle{remark}
-\newtheorem{remark}{Remark}[section]
+%\theoremstyle{remark}
+%\newtheorem{remark}{Remark}[section]
 
 \fixstatement{theorem}
 \fixstatement{proposition}
@@ -345,9 +343,9 @@ which ensures that when traversing an application, there exists a subterm repres
 
 Untyped terms admitting a simple type, like $M$, can be traversed via eta-long expansion with respect to whichever type they inhabit.
 But this is not feasible in the general ULC case where untyped terms do not necessarily inhabit a simple type. In those cases, performing static eta-expansions sometimes help, for instance the term $U$, which has no simple type, can be traversed if we first eta-expand all its variable occurrences. But this does not always work: for instance in the term
- $J = (\lambda u . u(y_1\, u)) (\lambda v . v\, y_2)$ from
+ $J = (\lambda u . u(x\, u)) (\lambda v . v\, y)$ from
  Example~\ref{ex:missingoperand}, nested eta-expansions are necessary to traverse it:
- the fresh variable resulting from the eta-expansion of $y_1\, u$ needs to be itself eta-expanded! Eta-expanding all variables infinitely often is not feasible, so instead imaginary traversals
+ the fresh variable resulting from the eta-expansion of $x\, u$ needs to be itself eta-expanded! Eta-expanding all variables infinitely often is not feasible, so instead imaginary traversals
   exhibit the missing operand via ad-hoc dynamic eta-expansion, as they traverse the term.
  This allows the traversal to proceed as if the operand existed in the original term.
 
@@ -500,20 +498,18 @@ Figure~\ref{fig:comptree_examples} illustrates examples of computation trees.
 
 \begin{figure}[hbtp]
     \centering
-    \begin{tabular}{ccccccc}
+    \begin{tabular}{ccccc}
         $\lambda x. x$
-      & \qquad
-      & $(\lambda x y s z. x\, s (y\, s\, z)) (\lambda s z . s z)$
-      & \qquad
+      & $(\lambda x y s z. x s (y s z)) (\lambda s z . s z)$
       & $(\lambda x. x x) (\lambda y. y)$
-      & \qquad
-      & $\Omega = (\lambda x. x x) (\lambda x. x x)$
+      & $J = (\lambda u . u(x u)) (\lambda v . v y)$
+      & $\Omega = (\lambda x. x x) (\lambda y. y y)$
 \\[12pt]
     \begin{tikzpicture}[baseline=(root.base),level distance=5ex,inner ysep=0.5mm,sibling distance=10mm]
         \node (root) {$\lambda x$}child{node{$x$}};
     \end{tikzpicture}
-    & &
-    \begin{tikzpicture}[baseline=(root.base),level distance=5ex,inner ysep=0.5mm,sibling distance=10mm]
+    &
+    \begin{tikzpicture}[baseline=(root.base),level distance=5ex,inner ysep=0.5mm,sibling distance=9mm]
         \node (root)
         {$\lambda$}
         child {node{$@$}
@@ -540,8 +536,8 @@ Figure~\ref{fig:comptree_examples} illustrates examples of computation trees.
             }
         };
     \end{tikzpicture}
-    & &
-    \begin{tikzpicture}[baseline=(root.base),level distance=5ex,inner ysep=0.5mm,sibling distance=10mm]
+    &
+    \begin{tikzpicture}[baseline=(root.base),level distance=5ex,inner ysep=0.5mm,sibling distance=9mm]
         \node (root)
         {$\lambda$}
         child {node{$@$}
@@ -555,8 +551,34 @@ Figure~\ref{fig:comptree_examples} illustrates examples of computation trees.
             child{node{$\lambda y$} child{node{$y$}}}
         };
     \end{tikzpicture}
-    & &
-    \begin{tikzpicture}[baseline=(root.base),level distance=5ex,inner ysep=0.5mm,sibling distance=10mm]
+    &
+    \begin{tikzpicture}[baseline=(root.north),level distance=5ex,inner ysep=0.5mm,sibling distance=9mm]
+        \node (root)
+        {$\lambda$}
+        child {node{$@$}
+                child{node{$\lambda u $}
+                   child {node {$u$}
+                      child {node {$\lambda$}
+                          child {node {$x$}
+                              child {node {$\lambda$}
+                                  child {node {$u$}
+                                  }
+                              }
+                          }
+                      }
+                   }
+                }
+                child{node{$\lambda v$}
+                    child{node{$v$}
+                        child{node{$\lambda$}
+                            child{ node {$y$}}
+                        }
+                    }
+                }
+            };
+        \end{tikzpicture}
+    &
+    \begin{tikzpicture}[baseline=(root.base),level distance=5ex,inner ysep=0.5mm,sibling distance=9mm]
         \node (root)
         {$\lambda$}
         child {node{$@$}
@@ -567,10 +589,10 @@ Figure~\ref{fig:comptree_examples} illustrates examples of computation trees.
                     }
                 }
             }
-            child{node{$\lambda x$}
-                child { node{$x$}
+            child{node{$\lambda y$}
+                child { node{$y$}
                     child{node{$\lambda$}{
-                        child {node {$x$}}}
+                        child {node {$y$}}}
                     }
                 }
             }
@@ -860,25 +882,26 @@ for every $i$th child $\alpha$ of any node $m \in \ExtendedNodesVar$ occurring i
 
 \begin{example}
 \label{ex:ulctrav_sample}
-An example of traversal of the term $(\lambda u . u(y_1\,u)) (\lambda v . v\,y_2)$, whose computation tree is represented in Example~\ref{ex:missingoperand}, is
-$\Pstr[0.7cm]{(n0){\lambda}
-\,(n1){@}
-\,(n2-n1){\lambda u}
-\,(n3-n2){u}
-\,(n4-n1){\lambda v}
-\,(n5-n4,28){v}
-\,(n6-n3){\lambda }
-\,(n7-n0,34){y_1}
-\,(n8-n7){\lambda}
-\,(n9-n2,33){u}
-\,(n10-n1,30){\lambda v}
-\,(n11-n10){v}
-\,(n12-n9,30:1){{\ghostlmd}}
-\,(n13-n8,35:1){{\ghostvar}}
-\,(n14-n13,28:1){{\ghostlmd}}
-\,(n15-n12,37:1){{\ghostvar}}
-\,(n16-n11,42){\lambda }
-\,(n17-n0,28){y_2}} \in \travset$.
+Take the term $J = (\lambda u . u(x\,u)) (\lambda v . v\,y)$, whose computation tree is represented in Example~\ref{ex:missingoperand}. We have
+$\Pstr[0.7cm][1pt]{(n0){\lambda}
+(n1){@}
+(n2-n1){\lambda u^0}
+(n3-n2){u^1}
+(n4-n1){\lambda v^1}
+(n5-n4){v^1}
+(n6-n3){\lambda^1 }
+(n7-n0){x^1}
+(n8-n7){\lambda^1}
+(n9-n2){u^1}
+(n10-n1){\lambda v^1}
+(n11-n10){v^1}
+(n12-n9){{\ghostlmd^1}}
+(n13-n8){{\ghostvar^1}}
+(n14-n13){{\ghostlmd^1}}
+(n15-n12){{\ghostvar^1}}
+(n16-n11){\lambda^1 }
+(n17-n0,30){y^2}} \in \travset(J)$
+where each justification label is indicated in exponent of the corresponding justified occurrence.
 \end{example}
 
 \begin{proposition}
@@ -952,8 +975,8 @@ As mentioned earlier, the condition  $i-|m|>0$ only holds for the imaginary case
 It follows from the definition that $M$ is a sub-tree of $M^t$ therefore paths in the tree of $M$ are also paths in the tree of $M^t$.
 
 \begin{example}
-The eta-expansion of $(\lambda u . u(y_1\,u)) (\lambda v . v\,y_2)$, with computation tree shown in Example~\ref{ex:missingoperand}, with respect to traversal $t$ from Example~\ref{ex:ulctrav_sample} is
-$(\lambda u . u(y_1 (\lambda \alpha. u (\lambda \beta.\alpha\,\beta))) (\lambda v . v\,y_2)$.
+The eta-expansion of $(\lambda u . u(x\,u)) (\lambda v . v\,y)$, with computation tree shown in Example~\ref{ex:missingoperand}, with respect to traversal $t$ from Example~\ref{ex:ulctrav_sample} is
+$(\lambda u . u(x (\lambda \alpha. u (\lambda \beta.\alpha\,\beta))) (\lambda v . v\,y)$.
 \end{example}
 
 
@@ -988,17 +1011,26 @@ We extend it to ghost nodes by mapping ghost occurrences in $t$ to the correspon
 \endproofatend
 
 \begin{example}
-Continuing with the previous example: the following traversal obtained from $t$ is a valid traversal of $M^t$ where the occurrences corresponding to ghosts in $t$ are underlined:
-$$\Pstr[0.7cm]{(n0){\lambda}
-\,(n1){@}
-\,(n2-n1){\lambda u}
-\,(n3-n2){u}
-\,(n4-n1){\lambda v}
-\,(n5-n4){v}\,(n6-n3){\bf \lambda}\,(n7-n0){y_1}\,(n8-n7){\bf \lambda}
-\,(n9-n2){u}\,(n10-n1){\lambda v}\,(n11-n10){v}
-\,(n12-n9){\underline{\lambda\beta}}\,(n13-n8){\underline{\alpha}}
-\,(n14-n13){\underline{\lambda}}\,(n15-n12){\underline{\beta}}
-\,(n16-n11){\lambda}\,(n17-n0,35){y_2} }.$$
+Continuing with Example~\ref{ex:ulctrav_sample}: the following traversal is a valid traversal of $M^t$ where the occurrences corresponding to ghosts in $t$ are underlined:
+$$\Pstr[0.7cm]{
+ (n0){\lambda}
+ (n1){@}
+ (n2-n1){\lambda u}
+ (n3-n2){u}
+ (n4-n1){\lambda v}
+ (n5-n4){v}
+ (n6-n3){\bf \lambda}
+ (n7-n0){x}
+ (n8-n7){\bf \lambda}
+ (n9-n2){u}
+ (n10-n1){\lambda v}
+ (n11-n10){v}
+ (n12-n9){\underline{\lambda\beta}}
+ (n13-n8){\underline{\alpha}}
+ (n14-n13){\underline{\lambda}}
+ (n15-n12){\underline{\beta}}
+ (n16-n11){\lambda}
+ (n17-n0,35){y} }.$$
 \end{example}
 
 \paragraph{Traversal core}
@@ -1657,7 +1689,9 @@ Let us walk through the ULC evaluation Algorithm~\ref{algo:ulc_normalization_by_
   Take the term $(\lambda x. x x) (\lambda y. y)$. Repeatedly applying the structural traversal rules until reaching a non-deterministic choice yields traversal
 
   $t_\epsilon = \Pstr[0.7cm]{(n0){\lambda}\,(n1){@}\,(n2-n1,20){\lambda x}\,(n3-n2,20){x}\,(n4-n1,20){\lambda y}\,(n5-n4,20){y}\,(n6-n3,20){\lambda}\,(n7-n2,20){x}\,(n8-n1,20){\lambda y}\,(n9-n8,20){y}\,(n10-n7,20){\ghostlmd^1}\,(n11-n6,20){\ghostvar^1}\,(n12-n5,20){\ghostlmd^{1}}\,(n13-n4,20){\ghostvar^2}\,(n14-n3,20){\ghostlmd^2}\,(n15-n2,20){\ghostvar^2}\,(n16-n1,20){\ghostlmd^2}\,(n17-n0,20){\ghostvar^1}}$. The last node is justified by the root thus it is an external variable. With \emph{imaginary} traversals,
-  rule $\rulename{IVar}$ would let us extend $t_\epsilon$. But here the dynamic arity is $\dynar(t) = 0$, therefore there is no more \emph{normalizing} traversal to explore: $t_\epsilon$ is maximal. The P-view core is $\pview{\core{t_\epsilon}} = \Pstr[0.7cm]{(n0){\lambda }\ (n17-n0){\ghostvar^1}}$ thus the beta-normal form of term is $\lambda y . y$ for some new variable name $y$.
+  rule $\rulename{IVar}$ would let us extend $t_\epsilon$. But here the dynamic arity is $\dynar(t) = 0$, therefore there is no more \emph{normalizing} traversal to explore: $t_\epsilon$ is maximal.
+  The P-view core is $\pview{\core{t_\epsilon}} = \Pstr[0.7cm]{(n0){\lambda ^{[y]}}\,(n17-n0){\ghostvar^1}}$
+  thus the beta-normal form of term is $\lambda y . y$ for some new variable name $y$.
 \end{example}
 
 \begin{example}[Church increment]
@@ -1668,48 +1702,92 @@ Take $M \alphaequiv {\sf add}\, 1$ representing the increment function such that
 Let us traverse the computation tree of $m$ represented in Figure~\ref{fig:comptree_examples}. Throughout this example we underline external nodes to highlight node occurrences at the boundaries of strands.
 We start at the root and traverse the tree until hitting the first non-deterministic choice which produces
 $t_\epsilon = \Pstr[0.7cm]{(n0){\underline\lambda }\,(n1){@}\,(n2-n1){\lambda x y s z}\,(n3-n2){x}\,(n4-n1,32){\lambda s z}\,(n5-n4,30){s}\,(n6-n3,33){\lambda }\,(n7-n2,37){s}\,(n8-n1,32){\ghostlmd^3}\,(n9-n0,32){\underline{\ghostvar}^2} }$. Its core projection is
-$\core{t_\epsilon} = \Pstr[0.7cm]{(n0){\lambda} \cdot (n9-n0){{\ghostvar^2}} }$
-and therefore $\pview{\core{t_\epsilon}} = \lambda\cdot \ghostvar^2$ is a path in the normal form of $M$.
-The normal form must therefore have the shape $\lambda y s \ldots \cdot s N_1 \ldots N_q$ for some fresh variable $y$ and $s$ and $q\geq0$.
+$\core{t_\epsilon} = \Pstr[0.7cm]{(n0){\lambda^{[y\,s\,z]}} \cdot (n9-n0){{\ghostvar^2}} } \equiv
+\Pstr[0.7cm]{(n0){\lambda y s z} \cdot (n9-n0){s} }$
+and therefore $\pview{\core{t_\epsilon}} = \lambda y s z \cdot z$ is a path in the normal form of $M$.
+The normal form must therefore have the shape $\lambda y s z \ldots \cdot s N_1 \ldots N_q$ for and $q\geq0$.
 
 %\item
-To determine the $N_k$ arguments from the normal form, we enumerate all the possible instantiation of rule $\rulename{IVar}$ for all non-deterministic choices of value $k\geq 1$, and then recursively extend each traversal until the next non-deterministic choice. But how many values of $k$ shall we consider? Intuitively, we should not eta-expand the node beyond the point where further traversals are guaranteed to visit ghost occurrences only. That upper-bound for $k$ is precisely given by the \emph{dynamic arity} of $t_\epsilon$.
+To determine the $N_k$ arguments we enumerate all the possible instantiation of rule $\rulename{IVar}$ for every non-deterministic choice of $k\geq 1$, and then recursively unfold the strands of the  traversal. How many values of $k$ shall be considered? Intuitively, we should not eta-expand beyond the point where further extensions are guaranteed to visit only ghost occurrences. That upper-bound is precisely given by the \emph{dynamic arity} of $t_\epsilon$.
 We lookup the node arities from the computation tree represented in Figure~\ref{fig:comptree_examples}. The arities of the traversal strand are
  $0,1,4,2,2,1,0,0,0,0$ so the dynamic arity is given by the maximum of the intermediate values generated from the summation $(((((0) + -0+0) -0 +1) -2 + 2) -4 +1)$, hence $\dynar(t_\epsilon) = \max \{ 0,0,1,1,-2 \} = 1$.
- We thus do not have to consider the cases $k>1$ which means that the normal form has in fact the shape $\lambda y s \ldots \cdot s N_1$.
+ Hence this eliminates the cases $k>1$, which means that the normal form has in fact the shape $\lambda y s z \ldots \cdot s N_1$.
 
-Extending traversal $t_\epsilon$ with rule $\rulename{IVar}$ for $k=1$ gives traversal
-
+Extending traversal $t_\epsilon$ with rule $\rulename{IVar}$ for $k=1$ and unfolding the next strand gives traversal
 $t_1 = \Pstr[0.7cm]{(n0){\underline\lambda }
-\,(n1){@}
-\,(n2-n1){\lambda x y s z}
-\,(n3-n2){x}
-\,(n4-n1){\lambda s z}
-\,(n5-n4){s}
-\,(n6-n3){\lambda }
-\,(n7-n2){s}
-\,(n8-n1){\ghostlmd^3}
-\,(n9-n0){\underline{\ghostvar^2}}
-(n10-n9){\underline{\ghostlmd^1}}
-(n11-n8){\ghostvar^1}
-(n12-n7){\ghostlmd^1}
-(n13-n6){\ghostvar^1}
-(n14-n5){\lambda^1}
-(n15-n4)z
-(n16-n3){\lambda^2}
-(n17-n2)y
-(n18-n1){\ghostlmd^2}
-(n19-n0){\underline\ghostvar^1}
+    (n1){@}
+    (n2-n1){\lambda x y s z}
+    (n3-n2){x}
+    (n4-n1){\lambda s z}
+    (n5-n4){s}
+    (n6-n3){\lambda }
+    (n7-n2){s}
+    (n8-n1){\ghostlmd^3}
+    (n9-n0){\underline{\ghostvar^2}}
+    (n10-n9){\underline{\ghostlmd^1}}
+    (n11-n8){\ghostvar^1}
+    (n12-n7){\ghostlmd^1}
+    (n13-n6){\ghostvar^1}
+    (n14-n5){\lambda^1}
+    (n15-n4,38)z
+    (n16-n3){\lambda^2}
+    (n17-n2,40)y
+    (n18-n1){\ghostlmd^2}
+    (n19-n0){\underline\ghostvar^1}
 }$
 whose core P-view is given by
-$\pview{\core{t_1}} = \lambda \cdot \ghostvar^2 \cdot\ghostlmd^1
-\cdot \ghostvar^1$
-therefore the normal form is of the shape $\lambda y s \ldots \cdot s (y R_1 \ldots R_{q_2})$ for some terms $R_1$, \ldots $R_{q_2}$, and $q_2\geq 0$.
-
+$\pview{\core{t_1}} = \lambda^{[y s z]} \cdot \ghostvar^2 \cdot{\ghostlmd^1} \cdot\ghostvar^1
+\equiv
+ \lambda y s z \cdot s \cdot \lambda  \cdot y
+$
+therefore the normal form is of the shape $\lambda y s z \ldots \cdot s (y \cdots)$.
 The dynamic arity of $t_1$ is $\dynar(t_1) = \max \{ 0, 2,2,2,2,0 \} = 2$
-(where the $2$ comes from the arity of variable node $y$) hence the normal form is of the shape $\lambda y s \ldots \cdot s (y R_1 R_2)$.
-We thus apply rule \rulenamet{IVar} for child index $k_2$ ranging from $1$ to $ 2$. For the case $k_2 = 1$:
-
+(where the $2$ comes from the arity of variable node $y$) hence the normal form is of the shape $\lambda y s z \ldots \cdot s (y R_1 R_2)$
+for some terms $R_1$, $R_2$.
+We thus apply rule \rulenamet{IVar} with the child index ranging from $1$ to $2$ which gives the following two maximal traversals
+\ifshortversion
+(We omit some of the occurrences from the first two strands for clarity.):
+\begin{eqnarray*}
+t_{11} = \Pstr[0.7cm]{
+    (n0){\underline\lambda}
+    (n1){@}
+    \cdots
+    (n9-n0){\underline{\ghostvar^2}}
+    (n10-n9){\underline{\ghostlmd^1}}
+    \cdots
+    (n17-n2)y
+    (n18-n1,42){\ghostlmd^2}
+    (n19-n0,42){\underline{\ghostvar^1}}
+    (n20-n19,30){\underline{\ghostlmd^1}}
+    %%%%%%%%
+    (n21-n18,35){\ghostvar^1}
+    (n22-n17,43:1)\lambda % points to non-ghost node
+    (n23-n2,42) s
+    (n24-n1,40) {\ghostlmd^3}
+    (n25-n0,40) {\underline{\ghostvar^2}}
+}
+&
+t_{12} = \Pstr[0.7cm]{
+    (n0){\underline\lambda}
+    (n1){@}
+    \cdots
+    (n9-n0){\underline{\ghostvar^2}}
+    (n10-n9){\underline{\ghostlmd^1}}
+    \cdots
+    (n17-n2)y
+    (n18-n1,42){\ghostlmd^2}
+    (n19-n0,42){\underline{\ghostvar^1}}
+    (n20-n19){\underline{\ghostlmd^2}}
+    %%%%%%%%
+    (n21-n18){\ghostvar^2}
+    (n22-n17,46:2)\lambda % points to non-ghost node
+    (n23-n2,43) z
+    (n24-n1,40) {\ghostlmd^4}
+    (n25-n0,40) {\underline{\ghostvar^3}}
+}
+\end{eqnarray*}
+\else
+%%% longversion
 $t_{11} = \Pstr[0.7cm]{
 (n0){\underline\lambda }
 \, (n1){@}
@@ -1739,19 +1817,6 @@ $t_{11} = \Pstr[0.7cm]{
 (n25-n0,45:2) {\underline{\ghostvar^2}}
 }$
 
-We have $\pview{\core{t_{11}}} =
-\Pstr[0.7cm]{
-(n0){\lambda}
-(n9-n0){\ghostvar^2}
-(n10-n9){\ghostlmd^1}
-(n19-n0){\ghostvar^1}
-(n20-n19){\ghostlmd^1}
-(n25-n0,40:2){\ghostvar^2}
-}$ therefore $\betanf{M}$ is of the form $\lambda y s \ldots \cdot s\ (y\ s\ R_2)$.
-
-%\item
-Now with $k_2 = 2$, \rulenamet{IVar} extends $t_1$ to:
-
 $t_{12} = \Pstr[0.7cm]{
 (n0){\underline\lambda}
 \,(n1){@}
@@ -1780,110 +1845,96 @@ $t_{12} = \Pstr[0.7cm]{
 (n24-n1,44:4) {\ghostlmd^4}
 (n25-n0,45:3) {\underline{\ghostvar^3}}
 }$
+\fi
 
-We have $\pview{\core{t_{12}}} =
-\Pstr[0.7cm]{
-(n0){\lambda }\
- (n9-n0){{\ghostvar^2}}
- (n10-n9){\ghostlmd^1}
+Their core P-view is respectively $\Pstr[0.7cm]{
+    (n0){\lambda^{[y s z]}}
+    (n9-n0){\ghostvar^2}
+    (n10-n9){\ghostlmd^1}
+    (n19-n0){\ghostvar^1}
+    (n20-n19){\ghostlmd^1}
+    (n25-n0){\ghostvar^2}
+}$ and $\Pstr[0.7cm]{
+(n0){\lambda^{[y s z]} }
+(n9-n0){{\ghostvar^2}}
+(n10-n9){\ghostlmd^1}
 (n19-n0){\ghostvar^1}
 (n20-n19){\ghostlmd^2}
-(n25-n0,45:3) {\ghostvar^3}
-}$, thus assembling the two maximal tree paths together yields $M$'s beta normal form $\lambda y s z . s(y\, s\, z)$.
+(n25-n0) {\ghostvar^3}
+}$.
+The first one shows that $\betanf{M}$ must be of the form $\lambda y s z \ldots \cdot s (y\, s\, R_2)$, while the second one indicates that it must be of the form  $\lambda y s z \ldots \cdot s(y\, R_1\, z)$.
+Assembling those two maximal tree paths together yields the beta normal form $\lambda y s z . s(y\, s\, z)$.
 \end{example}
 
 \begin{example}[``Missing operand'' example from Neil Jones]
 \label{ex:missingoperand}
-This example illustrates how on-the-fly eta-expansion helps resolve the ``missing argument'' problem faced when using the concrete traversal rules of STLC. Take $M = (\lambda u . u (y_1\,u)) (\lambda v . v\, y_2)$ whose computation tree  and two maximal normalizing traversals are:
-
-\begin{tikzpicture}[baseline=(root.north),level distance=3ex,inner ysep=0.5mm,sibling distance=10mm]
-\node (root)
-{$\lambda$}
-child {node{$@$}
-        child{node{$\lambda u $}
-           child {node {$u$}
-              child {node {$\lambda$}
-                  child {node {$y_1$}
-                      child {node {$\lambda$}
-                          child {node {$u$}
-                          }
-                      }
-                  }
-              }
-           }
-        }
-        child{node{$\lambda v$}
-            child{node{$v$}
-                child{node{$\lambda$}
-                    child{ node {$y_2$}}
-                }
-            }
-        }
-    };
-\node (t1) at (7cm,-3ex) {
-        $t_1 = \Pstr[4ex]{(n0){\lambda }\,(n1){@}\,(n2-n1){\lambda u}\,(n3-n2){u}\,(n4-n1){\lambda v}\,(n5-n4){v}\,(n6-n3){\lambda }\,(n7-n0,35){y_1}\,(n8-n7){\lambda }\,(n9-n2){u}\,(n10-n1){\lambda v}\,(n11-n10){v}\,(n12-n9){{\ghostlmd^{1}}}\,(n13-n8){{\ghostvar^{1}}}\,(n14-n13){{\ghostlmd^{1}}}\,(n15-n12){{\ghostvar^{1}}}\,(n16-n11){\lambda }\,(n17-n0,35){y_2}\,}$
-};
-\node (t2) at (7cm,-15ex) {
-    $t_2 = \Pstr[4ex]{(n0){\lambda }
-    \,(n1){@}
-    \,(n2-n1){\lambda u}
-    \,(n3-n2){u}
-    \,(n4-n1){\lambda v}
-    \,(n5-n4){v}
-    \,(n6-n3){\lambda }
-    \,(n7-n0,35){y_1}
-    \,(n8-n7){{\ghostlmd^{2}}}
-    \,(n9-n6,30){{\ghostvar^{1}}}
-    \,(n10-n5,36){\lambda }
-    \,(n11-n0,33){y_2}}$
-};
-\end{tikzpicture}
-
-Traversing $M$ with concrete rules lets you follow $t_1$ until the second occurrence of $v$ in $t_1$, where the traversal gets stuck due to the bottom node $u$ lacking an operand. Whereas the imaginary traversal instantiates that missing operand on-the-fly, via the ghost child lambda node $\ghostlmd^1$ of $u$.
-
-Traversal $t_2$ illustrates a different situation where, instead of being stuck, the concrete traversals misses a valid path from the beta normal form: variable $y_1$ does have one argument in $M$, which gets traversed by concrete traversals. But the ULC traversal $t_2$ pushes the exploration further by traversing the imaginary second argument to $y_1$, represented by $\ghostlmd^2$, eventually materializing node $y_2$, which ends up being the second argument of $y_1$ in the normal form.
-
+This example illustrates how on-the-fly eta-expansion helps resolve the ``missing argument'' problem faced when using the concrete traversal rules of STLC. Take the term $J = (\lambda u . u (x\,u)) (\lambda v . v\, y)$ whose
+computation tree is represented in Figure~\ref{fig:comptree_examples},
+Its two maximal normalizing traversals are:
+\begin{eqnarray*}
+t_1 = \Pstr[4ex]{
+        (n0){\underline{\lambda} }
+        (n1){@}
+        (n2-n1){\lambda u}
+        (n3-n2){u}
+        (n4-n1){\lambda v}
+        (n5-n4){v}
+        (n6-n3){\lambda }
+        (n7-n0){\underline{x}}
+        (n8-n7){\underline{\lambda} }
+        (n9-n2){u}
+        (n10-n1){\lambda v}
+        (n11-n10){v}
+        (n12-n9){{\ghostlmd^{1}}}
+        (n13-n8){{\ghostvar^{1}}}
+        (n14-n13){{\ghostlmd^{1}}}
+        (n15-n12){{\ghostvar^{1}}}
+        (n16-n11){\lambda }
+        (n17-n0){\underline{y}}
+}
+&&
+t_2 = \Pstr[4ex]{
+    (n0){\underline{\lambda} }
+    (n1){@}
+    (n2-n1){\lambda u}
+    (n3-n2){u}
+    (n4-n1){\lambda v}
+    (n5-n4){v}
+    (n6-n3){\lambda }
+    (n7-n0){\underline{x}}
+    (n8-n7){\underline{\ghostlmd^{2}}}
+    (n9-n6){{\ghostvar^{1}}}
+    (n10-n5){\lambda }
+    (n11-n0){\underline{y}}
+}
+\end{eqnarray*}
+Traversing $J$ with concrete rules lets you follow $t_1$ until the second occurrence of $v$ in $t_1$, where the traversal gets stuck due to the bottom node $u$ lacking an operand. Whereas the imaginary traversal instantiates that missing operand on-the-fly, via the ghost child lambda node $\ghostlmd^1$ of $u$.
+Traversal $t_2$ illustrates a different situation where, instead of being stuck, the concrete traversals misses a valid path from the beta normal form: variable $x$ does have one argument in $J$, which gets traversed by concrete traversals, but the ULC traversal $t_2$ pushes the exploration further by traversing the imaginary second argument to $x$, represented by $\ghostlmd^2$, eventually materializing node $y$, which ends up being the second argument of $x$ in the normal form.
 The core P-views
-$\pview{\core{t_1}} = \lambda \ y_1\ \lambda \ \ghostvar^{1}
-\ \ghostlmd^{1}\ y2$ and  $\pview{\core{t_2}} = \lambda\ y_1\ \ghostlmd^{2}\ y_2$ are the two maximal paths in the beta-normal form.
-%%%% With pointers:
-%$\pview{\core{t_1}} = \Pstr[0.7cm]{(n0){\lambda }\ (n1-n0){y_1}\ (n2-n1){\lambda }\ (n3-n2){{\ghostvar^{1}}}\ (n4-n3){{\ghostlmd^{1}}}\ (n5-n0){y2}\ }$ and  $\pview{\core{t_2}} = \Pstr[0.7cm]{(n0){\lambda }\ (n1-n0){y_1}\ (n2-n1){{\ghostlmd^{2}}}\ (n3-n0){y_2}\ }$
-%%%%%%
-The beta-normal form of $M$ is thus $y_1 (\lambda z.z\,y_2) y_2$.
+%$\pview{\core{t_1}} = \lambda\, x\, \lambda^{[v]} \, \ghostvar^{1}\, \ghostlmd^{1}\, y$
+$\pview{\core{t_1}} = \Pstr[0.7cm]{(n0){\lambda}
+(n1-n0){x}
+(n2-n1){\lambda^{[v]}}
+(n3-n2){{\ghostvar^{1}}}
+(n4-n3){{\ghostlmd^{1}}}
+(n5-n0){y} }$
+and
+ $\pview{\core{t_2}} = \Pstr[0.7cm]{
+     (n0){\lambda }
+     (n1-n0){x}
+    (n2-n1){{\ghostlmd^{2}}}
+    (n3-n0){y}}$
+are the two maximal paths in the beta-normal form.
+The beta-normal form of $J$ is thus $x (\lambda v.v\,y) y$.
 \end{example}
 
 \begin{example}
-    Take the fixed-point combinator $\Omega = (\lambda x. x x) (\lambda y. y y)$.
+    Take the fixed-point combinator $\Omega$ whose computation tree is represented in Figure~\ref{fig:comptree_examples}. Let us add subscripts to the variable occurrences to distinguish individual occurrences of the same bound variable so that  $\Omega = (\lambda x. x_1 x_2) (\lambda y. y_1 y_2)$
+     where $x_1,x_2$, and $y_1,y_2$ refer to the same variable $x$ and $y$ respectively.
+    It is a well-known fact that $\Omega$ does not have a normal form. As expected, the term has a unique infinite normalizing traversal which starts with
+    $\Pstr[0.7cm]{{\lambda}\,(n1){@}\,(n2-n1){\lambda x}\,(n3-n2){x_1}\,(n4-n1){\lambda y}\,(n5-n4){y_1}\,(n6-n3){\lambda }\,(n7-n2){x_2}\,(n8-n1){\lambda y}\,(n9-n8){y_1}\ldots}$ and then follows a repeated pattern with an increasing number of ghost nodes between occurrences of $y_1$ and $y_2$:
 
-    \begin{tabular}{lp{12cm}}
-    \begin{tikzpicture}[baseline=(root.base),level distance=4ex,inner ysep=0.5mm,sibling distance=10mm]
-        \node (root)
-        {$\lambda$}
-        child {node{$@$}
-                child{node{$\lambda x $}
-                   child {node {$x_1$}
-                      child {node {$\lambda$}
-                          child {node {$x_2$}
-                          }
-                      }
-                   }
-                }
-                child{node{$\lambda y$}
-                    child{node{$y_1$}
-                        child{node{$\lambda$}
-                            child{ node {$y_2$}}
-                        }
-                    }
-                }
-            }
-        ;
-    \end{tikzpicture}
-    &
-    It's a well-known fact that $\Omega$ does not have a normal form. The term has a unique (infinite) traversal represented below, which starts with
-    $\Pstr[0.7cm]{{\lambda}\ (n1){@}\ (n2-n1){\lambda x}\ (n3-n2){x_1}\ (n4-n1){\lambda y}\ (n5-n4){y_1}\ (n6-n3){\lambda }\ (n7-n2){x_2}\ (n8-n1){\lambda y}\ (n9-n8){y_1}\ldots }$ and then follows a repeated pattern with an increasing number of ghost nodes between occurrences of $y_1$ and $y_2$:
-    \end{tabular}
-
-    \resizebox{1\hsize}{!}{
+    \noindent \resizebox{1\hsize}{!}{
     $$
     \Pstr[0.7cm]{{\lambda }\ (n1){@}\ (n2-n1){\lambda x}\ (n3-n2){x}\ (n4-n1){\lambda y}\ (n5-n4){y}\ (n6-n3){\lambda }\ (n7-n2){x}\ (n8-n1){\lambda y}\ (n9-n8){y}\ (n10-n7){{\ghostlmd^{1}}}\ (n11-n6){{\ghostvar^{1}}}\ (n12-n5){\lambda }\ (n13-n4){y}\ (n14-n3){\lambda }\ (n15-n2){x}\ (n16-n1){\lambda y}\ (n17-n16){y}\ (n18-n15){{\ghostlmd^{1}}}\ (n19-n14){{\ghostvar^{1}}}\ (n20-n13){{\ghostlmd^{1}}}\ (n21-n12){{\ghostvar^{1}}}\ (n22-n11){{\ghostlmd^{1}}}\ (n23-n10){{\ghostvar^{1}}}\ (n24-n9){\lambda }\ (n25-n8){y}\ (n26-n7){{\ghostlmd^{1}}}\ (n27-n6){{\ghostvar^{1}}}\ (n28-n5){\lambda }\ (n29-n4){y}\ (n30-n3){\lambda }\ (n31-n2){x}\ (n32-n1){\lambda y}\ (n33-n32){y}\ (n34-n31){{\ghostlmd^{1}}}\ (n35-n30){{\ghostvar^{1}}}\ (n36-n29){{\ghostlmd^{1}}}\ (n37-n28){{\ghostvar^{1}}}\ (n38-n27){{\ghostlmd^{1}}}\ (n39-n26){{\ghostvar^{1}}}\ (n40-n25){{\ghostlmd^{1}}}\ (n41-n24){{\ghostvar^{1}}}\ (n42-n23){{\ghostlmd^{1}}}\ (n43-n22){{\ghostvar^{1}}}\ (n44-n21){{\ghostlmd^{1}}}\ (n45-n20){{\ghostvar^{1}}}\ (n46-n19){{\ghostlmd^{1}}}\ (n47-n18){{\ghostvar^{1}}}\ (n48-n17){\lambda }\ (n49-n16){y}\ (n50-n15){{\ghostlmd^{1}}}\ (n51-n14){{\ghostvar^{1}}}\ (n52-n13){{\ghostlmd^{1}}}\ (n53-n12){{\ghostvar^{1}}}\ (n54-n11){{\ghostlmd^{1}}}\ (n55-n10){{\ghostvar^{1}}}\ (n56-n9){\lambda }\ (n57-n8){y}\ldots }
     $$
@@ -1926,28 +1977,83 @@ The beta-normal form of $M$ is thus $y_1 (\lambda z.z\,y_2) y_2$.
 
 \begin{example}[Neil Jones' varity example]
     \label{example:varity}
-Take $varity\ two$ where
-$two \alphaequiv \lambda s_2 z_2 . s_2 (s_2\ z_2)$ and
+Take the term $varity\, 2$ where
+$2 \alphaequiv \lambda s_2 z_2 . s_2 (s_2\ z_2)$ and
 $varity \alphaequiv \lambda t.t (\lambda n a x . n (\lambda s z . a s (x s z))) (\lambda a. a) (\lambda z_0 . z_0)$.
 %To compute the set of normalizing traversals, we apply the traversal rules inductively until an input variable is reached, at which point we eta-expand with rule \rulenamet{IVar} for all possible values of $k$ ranging from $1$ to the dynamic arity of the traversal.
-The initial traversal $t_\epsilon$ up to the first non-deterministic choice is:
+The initial traversal strand $t_\epsilon$ is
 
-\resizebox{1\hsize}{!}{$
-\Pstr[0.7cm]{(n0){\lambda }\,(n1){@}\,(n2-n1){\lambda t}\,(n3-n2){t}\,(n4-n1){\lambda s_2 z_2}\,(n5-n4){s_2}\,(n6-n3){\lambda n a x}\,(n7-n6){n}\,(n8-n5){\lambda }\,(n9-n4){s_2}\,(n10-n3){\lambda n a x}\,(n11-n10){n}\,(n12-n9){\lambda }\,(n13-n4){z_2}\,(n14-n3){\lambda a}\,(n15-n14){a}\,(n16-n13){{\ghostlmd^{1}}}\,(n17-n12){{\ghostvar^{1}}}\,(n18-n11){\lambda s z}\,(n19-n10){a}\,(n20-n9){{\ghostlmd^{2}}}\,(n21-n8){{\ghostvar^{1}}}\,(n22-n7){\lambda s z}\,(n23-n6){a}\,(n24-n5){{\ghostlmd^{2}}}\,(n25-n4){{\ghostvar^{3}}}\
-(n26-n3){\lambda z_0}\,(n27-n26){z_0}\,(n28-n25){{\ghostlmd^{1}}}\,(n29-n24){{\ghostvar^{1}}}\
-(n30-n23){\lambda }\,(n31-n22){s}\,(n32-n21){{\ghostlmd^{1}}}\,(n33-n20){{\ghostvar^{1}}}\,(n34-n19){\lambda }\,(n35-n18){s}\,(n36-n17){{\ghostlmd^{1}}}\,(n37-n16){{\ghostvar^{1}}}\,(n38-n15){{\ghostlmd^{1}}}\,(n39-n14){{\ghostvar^{2}}}\,(n40-n13){{\ghostlmd^{2}}}\,(n41-n12){{\ghostvar^{2}}}\,(n42-n11){{\ghostlmd^{2}}}\,(n43-n10){{\ghostvar^{4}}}\,(n44-n9){{\ghostlmd^{4}}}\,(n45-n8){{\ghostvar^{3}}}\,(n46-n7){{\ghostlmd^{3}}}\,(n47-n6){{\ghostvar^{5}}}\,(n48-n5){{\ghostlmd^{5}}}\,(n49-n4){{\ghostvar^{6}}}\,(n50-n3){{\ghostlmd^{6}}}\,(n51-n2){{\ghostvar^{4}}}\,(n52-n1){{\ghostlmd^{4}}}\,(n53-n0){{\ghostvar^{3}}}}$}
+\noindent\resizebox{1\hsize}{!}{$
+\Pstr[0.7cm]{
+  (n0){\underline{\lambda} }
+\,(n1){@}
+\,(n2-n1){\lambda t}
+\,(n3-n2){t}
+\,(n4-n1){\lambda s_2 z_2}
+\,(n5-n4){s_2}
+\,(n6-n3){\lambda n a x}
+\,(n7-n6){n}
+\,(n8-n5){\lambda }
+\,(n9-n4){s_2}
+\,(n10-n3){\lambda n a x}
+\,(n11-n10){n}
+\,(n12-n9){\lambda }
+\,(n13-n4){z_2}
+\,(n14-n3){\lambda a}
+\,(n15-n14){a}
+\,(n16-n13){{\ghostlmd^{1}}}
+\,(n17-n12){{\ghostvar^{1}}}
+\,(n18-n11){\lambda s z}
+\,(n19-n10){a}
+\,(n20-n9){{\ghostlmd^{2}}}
+\,(n21-n8){{\ghostvar^{1}}}
+\,(n22-n7){\lambda s z}
+\,(n23-n6){a}
+\,(n24-n5){{\ghostlmd^{2}}}
+\,(n25-n4){{\ghostvar^{3}}}
+\, (n26-n3){\lambda z_0}
+\,(n27-n26){z_0}
+\,(n28-n25){{\ghostlmd^{1}}}
+\,(n29-n24){{\ghostvar^{1}}}
+\, (n30-n23){\lambda }
+\,(n31-n22){s}
+\,(n32-n21){{\ghostlmd^{1}}}
+\,(n33-n20){{\ghostvar^{1}}}
+\,(n34-n19){\lambda }
+\,(n35-n18){s}
+\,(n36-n17){{\ghostlmd^{1}}}
+\,(n37-n16){{\ghostvar^{1}}}
+\,(n38-n15){{\ghostlmd^{1}}}
+\,(n39-n14){{\ghostvar^{2}}}
+\,(n40-n13){{\ghostlmd^{2}}}
+\,(n41-n12){{\ghostvar^{2}}}
+\,(n42-n11){{\ghostlmd^{2}}}
+\,(n43-n10){{\ghostvar^{4}}}
+\,(n44-n9){{\ghostlmd^{4}}}
+\,(n45-n8){{\ghostvar^{3}}}
+\,(n46-n7){{\ghostlmd^{3}}}
+\,(n47-n6){{\ghostvar^{5}}}
+\,(n48-n5){{\ghostlmd^{5}}}
+\,(n49-n4){{\ghostvar^{6}}}
+\,(n50-n3){{\ghostlmd^{6}}}
+\,(n51-n2){{\ghostvar^{4}}}
+\,(n52-n1){{\ghostlmd^{4}}}
+\,(n53-n0){\underline{\ghostvar^{3}}}}
+$}
 
-Enumerating normalizing traversals yields the set $\{t_\epsilon, t_{11}, t_{12}, t_{121}, t_{122} \}$. Table~\ref{tab:varity2_trav} represents the maximal traversals $\{ t_{11}, t_{121}, t_{122} \}$. The set of maximal paths in the beta-normal form is thus given by the core P-views
+Enumerating normalizing traversals yields the set $\{t_\epsilon, t_{11}, t_{12}, t_{121}, t_{122} \}$ with  maximal traversals $\{ t_{11}, t_{121}, t_{122} \}$ represented in Table~\ref{tab:varity2_trav}.
+The maximal paths in the beta-normal form are thus given by the core P-views
 $\pview{\core{t_{11}}} =
-        \lambda \ \ghostvar^{3}\ \ghostlmd^{1}\
-        \ghostvar^{1}\ \ghostlmd^{1}\ \ghostvar^{3}
+        \lambda^{[x' x s z]} \,\ghostvar^{3}\,\ghostlmd^{1}\
+        \ghostvar^{1}\,\ghostlmd^{1}\,\ghostvar^{3}
 $,
 $\pview{\core{t_{121}}} =
-        \lambda \ \ghostvar^{3}\ \ghostlmd^{1}\ \ghostvar^{1}\ \ghostlmd^{2}\ \ghostvar^{2}\ \ghostlmd^{1}\ \ghostvar^{3}$
+        \lambda^{[x' x s z]} \,\ghostvar^{3}\,\ghostlmd^{1}\,\ghostvar^{1}\,\ghostlmd^{2}\,\ghostvar^{2}\,\ghostlmd^{1}\,\ghostvar^{3}$
 and
 $\pview{\core{t_{122}}} =
-    \lambda \ \ghostvar^{3}\ \ghostlmd^{1}\ \ghostvar^{1}\ \ghostlmd^{2}\ \ghostvar^{2}\ \ghostlmd^{2}\ \ghostvar^{4}$.
-% with pointers:
+    \lambda^{[x' x s z]} \,\ghostvar^{3}\,\ghostlmd^{1}\,\ghostvar^{1}\,\ghostlmd^{2}\,\ghostvar^{2}\,\ghostlmd^{2}\,\ghostvar^{4}$,
+where the ghost variables all point to the first lambda node in each sequence.
+%%%% same with pointers:
 % \begin{align*}
 % \pview{\core{t_{11}}} &=
 %     \Pstr[0.7cm]{(n0){\lambda }\ (n1-n0){{\ghostvar^{3}}}\ (n2-n1){{\ghostlmd^{1}}}\ (n3-n0){{\ghostvar^{1}}}\ (n4-n3){{\ghostlmd^{1}}}\ (n5-n0){{\ghostvar^{3}}}}
@@ -1959,9 +2065,7 @@ $\pview{\core{t_{122}}} =
 % \Pstr[0.7cm]{(n0){\lambda }\ (n1-n0){{\ghostvar^{3}}}\ (n2-n1){{\ghostlmd^{1}}}\ (n3-n0){{\ghostvar^{1}}}\ (n4-n3){{\ghostlmd^{2}}}\ (n5-n0){{\ghostvar^{2}}}\ (n6-n5){{\ghostlmd^{2}}}\ (n7-n0){{\ghostvar^{4}}}}
 % \end{align*}
 %%%%%%%%%
-Therefore the beta-normal from of $varity\ 2$ is
-$\lambda x_1 x_2 x_3 x_4 . x_3 (x_1 x_3 (x_2 x_3 x_4))$,
-or after variable renaming $\lambda x y s z . s (x s (y s z))$.
+The beta-normal from of $varity\, 2$ is therefore $\lambda x x' s z . s (x s (x' s z))$.
 \end{example}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1975,9 +2079,11 @@ or after variable renaming $\lambda x y s z . s (x s (y s z))$.
 \subsection{Head-linear reduction}
 
 In the lambda calculus, a redex is necessarily formed by the outermost lambda in operator position of an application: if the operator consists of consecutive lambda abstractions (\eg, as in $(\lambda x \lambda y . M) A_1 A_2$) then the outermost lambda (\eg, $\lambda x$) is the one that will form the redex. The notion of redex can be generalized to allow evaluation of arguments in any order. In particular, one can allow any of the consecutive $\lambda$-abstractions to form a redex (\eg, the abstraction $\lambda y$ and corresponding argument $A_2$ would be a valid redex). This is formalized by the notion of \emph{generalized redex}--a generalization of the notion of \emph{prime redex} from Danos and Regnier~\cite{danos-head,REGNIER1994281}.
-\begin{definition}[Generalized redex]
+\begin{definition}
 \label{dfn:generalized_redex}
-The set of generalized redexes of a term $M$, written $gr(M)$, is a set of pairs $(\lambda x, A)$ where $\lambda x$ is some abstraction in $M$ and $A$ is a subterm called the argument of $\lambda x$. The head $\lambda$ list of $M$, written $\lambda_l(M)$ is a list of lambda abstractions of $M$. They are defined by induction:
+The set $gr(M)$ of \defname{generalized redexes} of a term $M$ is
+a set of pairs $(\lambda x, A)$ where $\lambda x$ is some abstraction in $M$ and $A$ is a subterm called the argument of $\lambda x$.
+The \defname{head $\lambda$-list} of $M$, written $\lambda_l(M)$ is a list of lambda abstractions of $M$. They are defined by induction:
 \begin{align*}
 gr(v) &= \emptyset & \lambda_l(v) &= \epsilon\\
 gr(\lambda x. U) &= gr(U) & \lambda_l(\lambda x. U) &= \lambda x \cdot \lambda_l(U) \\
@@ -3424,6 +3530,7 @@ This work got inspired by the slides of the Galop 2016 presentation by Daniil Be
 %\section{Tables}
 
 %%%%%%%%%%%%%% Maximal traversals from \ref{example:varity}
+\iflongversion
 \newgeometry{left=1cm,right=1cm, bottom=2cm, top=1cm}
 \begin{landscape}
 \thispagestyle{empty}
@@ -3446,6 +3553,359 @@ This work got inspired by the slides of the Galop 2016 presentation by Daniil Be
 \end{table}
 \end{landscape}
 \restoregeometry
+\else
+%%%%%%% short version
+\gdef\pstr@DefaultArrowAngle{10}
+\newgeometry{left=1cm,right=1cm, bottom=2cm, top=1cm}
+\begin{landscape}
+\thispagestyle{empty}
+\begin{table}
+\resizebox{1\hsize}{!}{
+$t_{1} = \Pstr[0.7cm]{
+    %%% first strand
+    (n0){\underline{\lambda}}
+    (n2-n1){\lambda t}
+    (n3-n2){t}
+    (n4-n1){\lambda s_2 z_2}
+    (n5-n4){s_2}
+    (n6-n3){\lambda n a x}
+    (s0){\cdots} %%% abbreviate first strand
+    (n23-n6){a}
+    (n24-n5){{\ghostlmd^{2}}}
+    (n25-n4){{\ghostvar^{3}}}
+    (n26-n3){\lambda z_0}
+    (n27-n26){z_0}
+    (n28-n25){{\ghostlmd^{1}}}
+    (n29-n24){{\ghostvar^{1}}}
+    (n30-n23){\lambda }
+    (n31){s}
+    (n32){{\ghostlmd^{1}}}
+    (n33){{\ghostvar^{1}}}
+    (n34){\lambda }
+    (n35){s}
+    (n36){{\ghostlmd^{1}}}
+    (n37){{\ghostvar^{1}}}
+    (n38){{\ghostlmd^{1}}}
+    (n39){{\ghostvar^{2}}}
+    (n40){{\ghostlmd^{2}}}
+    (n41){{\ghostvar^{2}}}
+    (n42){{\ghostlmd^{2}}}
+    (n43){{\ghostvar^{4}}}
+    (n44){{\ghostlmd^{4}}}
+    (n45){{\ghostvar^{3}}}
+    (n46){{\ghostlmd^{3}}}
+    (n47-n6){{\ghostvar^{5}}}
+    (n48-n5){{\ghostlmd^{5}}}
+    (n49-n4){{\ghostvar^{6}}}
+    (n50-n3){{\ghostlmd^{6}}}
+    (n51-n2){{\ghostvar^{4}}}
+    (n52-n1){{\ghostlmd^{4}}}
+    (n53-n0){\underline{\ghostvar^{3}}}
+    %%% second strand
+    (n54-n53){\underline{\ghostlmd^{1}}}
+    (n55-n52){{\ghostvar^{1}}}
+    (n56-n51){{\ghostlmd^{1}}}
+    (n57-n50){{\ghostvar^{1}}}
+    (n58-n49){{\ghostlmd^{1}}}
+    (n59-n48){{\ghostvar^{1}}}
+    (n60-n47){{\ghostlmd^{1}}}
+    (n61-n46){{\ghostvar^{1}}}
+    (n62-n45){{\ghostlmd^{1}}}
+    (n63-n44){{\ghostvar^{1}}}
+    (n64-n43){{\ghostlmd^{1}}}
+    (n65-n42){{\ghostvar^{1}}}
+    (n66-n41){{\ghostlmd^{1}}}
+    (n67-n40){{\ghostvar^{1}}}
+    (n68-n39){{\ghostlmd^{1}}}
+    (n69-n38){{\ghostvar^{1}}}
+    (n70-n37){{\ghostlmd^{1}}}
+    (n71-n36){{\ghostvar^{1}}}
+    (n72-n35){{\ghostlmd^{1}}}
+    (n73-n34){{\ghostvar^{1}}}
+    (n74-n33){{\ghostlmd^{1}}}
+    (n75-n32){{\ghostvar^{1}}}
+    (n76-n31){{\ghostlmd^{1}}}
+    (n77-n30){{\ghostvar^{1}}}
+    (n78-n29){{\ghostlmd^{1}}}
+    (n79-n28){{\ghostvar^{1}}}
+    (n80-n27){{\ghostlmd^{1}}}
+    (n81-n26){{\ghostvar^{2}}}
+    (n82-n25){{\ghostlmd^{2}}}
+    (n83-n24){{\ghostvar^{2}}}
+    (n84-n23){\lambda }
+    (n85-n6){x}
+    (n86-n5){{\ghostlmd^{3}}}
+    (n87-n4){{\ghostvar^{4}}}
+    (n88-n3){{\ghostlmd^{4}}}
+    (n89-n2){{\ghostvar^{2}}}
+    (n90-n1){{\ghostlmd^{2}}}
+    (n91-n0){\underline{\ghostvar^{1}}}
+}$
+}
+\resizebox{1\hsize}{!}{
+$t_{11} = \Pstr[0.7cm]{
+    %%% first strand
+    (n0){\underline{\lambda}}
+    (n1){@}
+    (n2-n1){\lambda t}
+    (n3-n2){t}
+    (n4-n1){\lambda s_2 z_2}
+    (n5-n4){s_2}
+    (n6-n3){\lambda n a x}
+    (n7-n6){n}
+    (n8-n5){\lambda }
+    (n9-n4){s_2}
+    (n10-n3){\lambda n a x}
+    (n11-n10){n}
+    (n12-n9){\lambda }
+    (n13-n4){z_2}
+    (n14-n3){\lambda a}
+    (n15-n14){a}
+    (n16-n13){{\ghostlmd^{1}}}
+    (n17-n12){{\ghostvar^{1}}}
+    (n18-n11){\lambda s z}
+    (n19-n10){a}
+    (n20-n9){{\ghostlmd^{2}}}
+    (n21-n8){{\ghostvar^{1}}}
+    (n22-n7){\lambda s z}
+    \cdots
+    (n53-n0){\underline{\ghostvar^{3}}}
+    %%% second strand
+    (n54-n53){\underline{\ghostlmd^{1}}}
+    \cdots
+    (n85-n6){x}
+    (n86-n5){{\ghostlmd^{3}}}
+    (n87-n4){{\ghostvar^{4}}}
+    (n88-n3){{\ghostlmd^{4}}}
+    (n89-n2){{\ghostvar^{2}}}
+    (n90-n1){{\ghostlmd^{2}}}
+    (n91-n0){\underline{\ghostvar^{1}}}
+    %%% third strand
+    (n92-n91){\underline{\ghostlmd^{1}}}
+    (n93-n90){{\ghostvar^{1}}}
+    (n94-n89){{\ghostlmd^{1}}}
+    (n95-n88){{\ghostvar^{1}}}
+    (n96-n87){{\ghostlmd^{1}}}
+    (n97-n86){{\ghostvar^{1}}}
+    (n98-n85){\lambda}
+    (n99-n22){s}
+    (n100-n21){{\ghostlmd^{1}}}
+    (n101-n20){{\ghostvar^{1}}}
+    (n102-n19){\lambda}
+    (n103-n18){s}
+    (n104-n17){{\ghostlmd^{1}}}
+    (n105-n16){{\ghostvar^{1}}}
+    (n106-n15){{\ghostlmd^{1}}}
+    (n107-n14){{\ghostvar^{2}}}
+    (n108-n13){{\ghostlmd^{2}}}
+    (n109-n12){{\ghostvar^{2}}}
+    (n110-n11){{\ghostlmd^{2}}}
+    (n111-n10){{\ghostvar^{4}}}
+    (n112-n9){{\ghostlmd^{4}}}
+    (n113-n8){{\ghostvar^{3}}}
+    (n114-n7){{\ghostlmd^{3}}}
+    (n115-n6){{\ghostvar^{5}}}
+    (n116-n5){{\ghostlmd^{5}}}
+    (n117-n4){{\ghostvar^{6}}}
+    (n118-n3){{\ghostlmd^{6}}}
+    (n119-n2){{\ghostvar^{4}}}
+    (n120-n1){{\ghostlmd^{4}}}
+    (n121-n0){\underline{\ghostvar^{3}}}}$
+}
+\resizebox{1\hsize}{!}{
+$t_{121} =
+\Pstr[0.7cm]{
+%%% first strand
+ (n0){\underline\lambda}
+ (n1){@}
+ (n2-n1){\lambda t}
+ (n3-n2){t}
+ (n4-n1){\lambda s_2 z_2}
+ (n5-n4){s_2}
+ (n6-n3){\lambda n a x}
+ (n7-n6){n}
+ (n8-n5){\lambda }
+ (n9-n4){s_2}
+ (n10-n3){\lambda n a x}
+ (n11-n10){n}
+ (n12-n9){\lambda }
+ (n13-n4){z_2}
+ (n14-n3){\lambda a}
+ (n15-n14){a}
+ (n16-n13){{\ghostlmd^{1}}}
+ (n17-n12){{\ghostvar^{1}}}
+ (n18-n11){\lambda s z}
+ (n19-n10){a}
+ (n20-n9){{\ghostlmd^{2}}}
+ (n21-n8){{\ghostvar^{1}}}
+ (n22-n7){\lambda s z}
+ \cdots % abbreviated
+ (n53-n0){\underline{\ghostvar^{3}}}
+%%% second strand
+ (n54-n53){\underline{\ghostlmd^{1}}}
+ \cdots % abbreviated
+ (n85-n6){x}
+ (n86-n5){{\ghostlmd^{3}}}
+ (n87-n4){{\ghostvar^{4}}}
+ (n88-n3){{\ghostlmd^{4}}}
+ (n89-n2){{\ghostvar^{2}}}
+ (n90-n1){{\ghostlmd^{2}}}
+ (n91-n0){\underline{\ghostvar^{1}}}
+%%% third strand
+ (n92-n91){\underline{\ghostlmd^{2}}}
+ (n93-n90){{\ghostvar^{2}}}
+ (n94-n89){{\ghostlmd^{2}}}
+ (n95-n88){{\ghostvar^{2}}}
+ (n96-n87){{\ghostlmd^{2}}}
+ (n97-n86){{\ghostvar^{2}}}
+ (n98-n85){\lambda }
+ (n99-n22){z}
+ (n100-n21){{\ghostlmd^{2}}}
+ (n101-n20){{\ghostvar^{2}}}
+ (n102-n19){\lambda }
+ (n103-n10){x}
+ (n104-n9){{\ghostlmd^{3}}}
+ (n105-n8){{\ghostvar^{2}}}
+ (n106-n7){{\ghostlmd^{2}}}
+ (n107-n6){{\ghostvar^{4}}}
+ (n108-n5){{\ghostlmd^{4}}}
+ (n109-n4){{\ghostvar^{5}}}
+ (n110-n3){{\ghostlmd^{5}}}
+ (n111-n2){{\ghostvar^{3}}}
+ (n112-n1){\underline{\ghostlmd^{3}}}
+%%% fourth strand
+ (n113-n0){\underline{\ghostvar^{2}}}
+ (n114-n113){{\ghostlmd^{1}}}
+ (n115-n112){{\ghostvar^{1}}}
+ (n116-n111){{\ghostlmd^{1}}}
+ (n117-n110){{\ghostvar^{1}}}
+ (n118-n109){{\ghostlmd^{1}}}
+ (n119-n108){{\ghostvar^{1}}}
+ (n120-n107){{\ghostlmd^{1}}}
+ (n121-n106){{\ghostvar^{1}}}
+ (n122-n105){{\ghostlmd^{1}}}
+ (n123-n104){{\ghostvar^{1}}}
+ (n124-n103){\lambda }
+ (n125-n18){s}
+ (n126-n17){{\ghostlmd^{1}}}
+ (n127-n16){{\ghostvar^{1}}}
+ (n128-n15){{\ghostlmd^{1}}}
+ (n129-n14){{\ghostvar^{2}}}
+ (n130-n13){{\ghostlmd^{2}}}
+ (n131-n12){{\ghostvar^{2}}}
+ (n132-n11){{\ghostlmd^{2}}}
+ (n133-n10){{\ghostvar^{4}}}
+ (n134-n9){{\ghostlmd^{4}}}
+ (n135-n8){{\ghostvar^{3}}}
+ (n136-n7){{\ghostlmd^{3}}}
+ (n137-n6){{\ghostvar^{5}}}
+ (n138-n5){{\ghostlmd^{5}}}
+ (n139-n4){{\ghostvar^{6}}}
+ (n140-n3){{\ghostlmd^{6}}}
+ (n141-n2){{\ghostvar^{4}}}
+ (n142-n1){{\ghostlmd^{4}}}
+ (n143-n0){\underline{\ghostvar^{3}}}}
+$}
+%
+\resizebox{1\hsize}{!}{$
+\Pstr[0.7cm]{
+t_{122} =
+    %%% first strand
+    (n0){\underline\lambda}
+    (n1){@}
+    (n2-n1){\lambda t}
+    (n3-n2){t}
+    (n4-n1){\lambda s_2 z_2}
+    (n5-n4){s_2}
+    (n6-n3){\lambda n a x}
+    (n7-n6){n}
+    (n8-n5){\lambda }
+    (n9-n4){s_2}
+    (n10-n3){\lambda n a x}
+    (n11-n10){n}
+    (n12-n9){\lambda }
+    (n13-n4){z_2}
+    (n14-n3){\lambda a}
+    (n15-n14){a}
+    (n16-n13){{\ghostlmd^{1}}}
+    (n17-n12){{\ghostvar^{1}}}
+    (n18-n11){\lambda s z}
+    (n19-n10){a}
+    (n20-n9){{\ghostlmd^{2}}}
+    (n21-n8){{\ghostvar^{1}}}
+    (n22-n7){\lambda s z}
+    \cdots %%% abbreviated first strand
+    (n53-n0){\underline{\ghostvar^{3}}}
+    %%% second strand
+    (n54-n53){\underline{\ghostlmd^{1}}}
+    \cdots %%% abbreviated 2nd strand
+    (n85-n6){x}
+    (n86-n5){{\ghostlmd^{3}}}
+    (n87-n4){{\ghostvar^{4}}}
+    (n88-n3){{\ghostlmd^{4}}}
+    (n89-n2){{\ghostvar^{2}}}
+    (n90-n1){{\ghostlmd^{2}}}
+    (n91-n0){\underline{\ghostvar^{1}}}
+    %%% third strand
+    (n92-n91){\underline{\ghostlmd^{2}}}
+    (n93-n90){{\ghostvar^{2}}}
+    (n94-n89){{\ghostlmd^{2}}}
+    (n95-n88){{\ghostvar^{2}}}
+    (n96-n87){{\ghostlmd^{2}}}
+    (n97-n86){{\ghostvar^{2}}}
+    (n98-n85){\lambda }
+    (n99-n22){z}
+    (n100-n21){{\ghostlmd^{2}}}
+    (n101-n20){{\ghostvar^{2}}}
+    (n102-n19){\lambda }
+    (n103-n10){x}
+    (n104-n9){{\ghostlmd^{3}}}
+    (n105-n8){{\ghostvar^{2}}}
+    (n106-n7){{\ghostlmd^{2}}}
+    (n107-n6){{\ghostvar^{4}}}
+    (n108-n5){{\ghostlmd^{4}}}
+    (n109-n4){{\ghostvar^{5}}}
+    (n110-n3){{\ghostlmd^{5}}}
+    (n111-n2){{\ghostvar^{3}}}
+    (n112-n1){{\ghostlmd^{3}}}
+    (n113-n0){{\ghostvar^{2}}}
+    %%% fourth strand
+    (n114-n113){{\ghostlmd^{2}}}
+    (n115-n112){{\ghostvar^{2}}}
+    (n116-n111){{\ghostlmd^{2}}}
+    (n117-n110){{\ghostvar^{2}}}
+    (n118-n109){{\ghostlmd^{2}}}
+    (n119-n108){{\ghostvar^{2}}}
+    (n120-n107){{\ghostlmd^{2}}}
+    (n121-n106){{\ghostvar^{2}}}
+    (n122-n105){{\ghostlmd^{2}}}
+    (n123-n104){{\ghostvar^{2}}}
+    (n124-n103){\lambda }
+    (n125-n18){z}
+    (n126-n17){{\ghostlmd^{2}}}
+    (n127-n16){{\ghostvar^{2}}}
+    (n128-n15){{\ghostlmd^{2}}}
+    (n129-n14){{\ghostvar^{3}}}
+    (n130-n13){{\ghostlmd^{3}}}
+    (n131-n12){{\ghostvar^{3}}}
+    (n132-n11){{\ghostlmd^{3}}}
+    (n133-n10){{\ghostvar^{5}}}
+    (n134-n9){{\ghostlmd^{5}}}
+    (n135-n8){{\ghostvar^{4}}}
+    (n136-n7){{\ghostlmd^{4}}}
+    (n137-n6){{\ghostvar^{6}}}
+    (n138-n5){{\ghostlmd^{6}}}
+    (n139-n4){{\ghostvar^{7}}}
+    (n140-n3){{\ghostlmd^{7}}}
+    (n141-n2){{\ghostvar^{5}}}
+    (n142-n1){{\ghostlmd^{5}}}
+    (n143-n0){\underline{\ghostvar^{4}}}}$}
+\caption{The maximal traversals $t_{11}$, $t_{121}$ and $t_{122}$ of $varity\,2$ from Example~\ref{example:varity} yield the three maximal paths of the normal form $\lambda x y s z . s (x\, s (y\, s\, z))$. Strands boundaries are underlined.}
+\label{tab:varity2_trav}
+\end{table}
+\end{landscape}
+\restoregeometry
+\fi
 
 %%%%%%%%%% Proofs at the end
 \iflongversion
