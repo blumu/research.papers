@@ -182,7 +182,7 @@
 \newcommand{\ghostlmd}{{\lambda\!\!\lambda}}
 \newcommand{\ghostvar}{\theta}
 
-% set of extended nodes of the extensional computation tree
+% set of extended nodes of the extensional tree
 % (= structural + ghost nodes)
 \newcommand\ExtendedNodes{\tilde{\Nodes}}
 % set of extended variable nodes = structural + ghost variable nodes
@@ -218,8 +218,8 @@
 \DeclareMathSymbol{\Tau}{\mathalpha}{operators}{"54}
 
 \newcommand{\enables}{\vdash} %enabling relation
-\newcommand{\ctree}{\Tau} %computation tree
-\newcommand{\exttree}{\tilde{\Tau}} % extensional computation tree with ghost nodes
+\newcommand{\ctree}{\Tau} % tree of a term
+\newcommand{\exttree}{\tilde{\Tau}} % extensional tree with ghost nodes
 
 % Set of external nodes = nodes hereditarily justified by the root
 \newcommand{\ExternalNodes}{\Nodes^{\sf ext}}
@@ -353,7 +353,7 @@ So for instance in $M$, an imaginary traversal traverses node $x$ by jumping to 
 as $\lambda y.f\, y$. This trick allows the traversal to proceed with the usual traversal rules; until reaching that fictitious node $y$.
 A second eta-expansion, this time of the term itself to
 $\lambda z. (\lambda f y.f\, y)(\lambda x.x) z$,
-unblocks the traversal, until it reaches node $z$, at which point we have a maximal traversal per the concrete traversal rules. The final traversal of the eta-expanded term is given by the sequence $\lambda z \cdot @ \cdot \lambda f y \cdot f \cdot \lambda x \cdot x \cdot \lambda \cdot y \cdot \lambda \cdot z$, where `@` represents the application node in the AST, and the dummy lambda `$\lambda$' is syntactic sugar which can be ignored for now.
+unblocks the traversal, until it reaches node $z$, at which point we have a maximal traversal per the concrete traversal rules. The final traversal of the eta-expanded term is given by the sequence $\lambda z \cdot @ \cdot \lambda f y \cdot f \cdot \lambda x \cdot x \cdot \lambda \cdot y \cdot \lambda \cdot z$, where `@` represents the application node in the abstract tree representation of the term, and the dummy lambda `$\lambda$' is syntactic sugar which can be ignored for now.
 
 Generalizing this idea, we realize that concrete traversals induce an implicit `eta-expansion strategy': at any given point where a traversal gets stuck, there is only one possible subterm expansion that exhibits nodes necessary for the traversal to resume. In the term $M$, the first expansion considered is that of $f$ because at that point, the concrete rules only lets us
 traverse an immediate argument of $f$. If instead we were to eta-expand the term itself, it would yield $\lambda z. (\lambda f .f)(\lambda x.x) z$
@@ -466,11 +466,10 @@ type-annotated lambda-term of type $\tau$, typable with the judgement rules of t
 
 \subsection{Computation tree and enabling relation}
 
-Given an untyped lambda term $M$ we define its \defname{computation tree} as an abstract syntax tree representation
-(AST) of the term where consecutive lambda abstractions are merged into a single `bulk' lambda-node and consecutive applications are represented by a single application node whose first child represents the operator, and subsequent children represents the operands.
-This definition is similar to that of STLC~\cite{OngLics2006, BlumPhd} with the notable difference that we do not eta-long expand the term prior to constructing the computation tree.
+We define a tree representation for untyped lambda terms where consecutive lambda abstractions are merged into a single `bulk' lambda-node and consecutive applications are represented by a single application node whose first child represents the operator, and subsequent children represents the operands.
+This definition is similar to that of \emph{computation tree} from \cite{OngLics2006, BlumPhd} with the notable difference that we do not eta-long expand the term prior to constructing the tree.
 \begin{definition}
-The \defname{computation tree} $\ctree(M)$ of an
+The \defname{tree} $\ctree(M)$ of an
  untyped lambda term $M$ is a $\mathcal{L}$-labelled tree
 with labels
 $\mathcal{L} = \{ @ \} \union \VarSet \union \{ \lambda x_1 \ldots x_n \ | \ x_1 ,\ldots, x_n \in
@@ -486,15 +485,15 @@ defined inductively by:
 
 Note that any lambda term can indeed be written in one of the two forms above. In particular, applicative terms are handled by the case $n=0$ of the form $\lambda . N$ for some term $N$ where `$\lambda$' is referred to as a ``dummy lambda''.
 
-The computation tree is just a more compact version of the traditional notion of term tree from the lambda calculus. One advantage is that application nodes indicate the presence of beta-redexes in the term.
+This notion of tree is just a more compact version of the traditional notion of term tree from the lambda calculus. One advantage is that application nodes indicate the presence of beta-redexes in the term.
 With the implicit generalization of the above definition to infinitary terms,
-computation trees without @-nodes are isomorphic to B\"ohm tree~\cite{Barendregt84}.
+the trees without @-nodes are isomorphic to B\"ohm tree~\cite{Barendregt84}.
 Another property of this representation is the \defname{alternation} between lambda nodes and variable/application nodes at odd and even levels.
 
 We write $\Nodes(M)$ to denote the set of nodes of $\ctree(M)$, or just $\Nodes$ if the term is clear from context; $\NodesVar$ for the set of variable nodes; $\NodesLmd$ for lambda nodes, and $\NodesApp$ for  application nodes. For any lambda node $\alpha\in\NodesLmd$ we write $\child(\alpha)$ to denote its unique child node (either a variable node or $@$).
 \end{definition}
 
-Figure~\ref{fig:comptree_examples} illustrates examples of computation trees.
+Figure~\ref{fig:comptree_examples} illustrates examples of term trees.
 
 \begin{figure}[hbtp]
     \centering
@@ -599,7 +598,7 @@ Figure~\ref{fig:comptree_examples} illustrates examples of computation trees.
         };
     \end{tikzpicture}
     \end{tabular}
-\caption{Examples of computation trees of untyped lambda terms.}
+\caption{Examples of trees of untyped lambda terms.}
 \label{fig:comptree_examples}
 \centering
 \end{figure}
@@ -607,14 +606,14 @@ Figure~\ref{fig:comptree_examples} illustrates examples of computation trees.
 We define the \defname{enabling relation} $\enables$ on tree nodes $\Nodes$ as the relation mapping (i) each lambda node to all the variable nodes that it binds; (ii) the root of the tree to all the free variable nodes; (iii) variable and application node to each one of their child node. We write $n \enables_k \lambda\overline{x}$, for $k\geq0$, to indicate that a lambda node $\lambda\overline{x}$ is the $k$th child of a variable or application node $n$; $\lambda\overline{x} \enables_k n$, for $k\geq1$, to indicate that the label of a bound variable node $n$ is precisely the name of the $k$th variable bound by  $\lambda\overline{x}$ , that is $n=x_k$; and if $r$ denotes the root of the tree then we take the convention $r \enables_k z$ for any free variable node $z$, where $k$ denotes the free variable index of $z$ according to some predefined numbering of free variables.
 We say that node $m$ \defname{hereditarily enables} $n$ if they relate by the reflexive transitive closure of $\enables$.
 
-Because variable names and bindings are entirely recoverable from the enabling relation, the notion of computation tree could equivalently be defined as a name-free tree over three node labels $\{ \lambda, {\sf Var}, @ \}$ indicating the `type' of each node, together with the enabling relation.
+Because variable names and bindings are entirely recoverable from the enabling relation, our notion of term tree could equivalently be defined as a name-free tree over three node labels $\{ \lambda, {\sf Var}, @ \}$ indicating the `type' of each node, together with the enabling relation.
 
 A tree node is \defname{external} if it is hereditarily enabled by the root, otherwise it is \defname{internal}. We write $\ExternalNodes$ for the set of external nodes, that is the image of the tree root by the reflexive transitive closure of the enabling relation. Internal nodes are therefore precisely the nodes hereditarily justified by application nodes $@$. We write $\InternalNodes$ to denote the set of internal nodes.
 The \defname{arity} of a node $n$, written $|n|$,
-is defined for a variable node as the number of immediate arguments (\ie, children in the computation tree); for an application node, as the number of operands (\ie, number of children of the $@$-node minus 1); for a lambda node $\lambda x_1 \cdots x_k$, $k\geq 0$, as the number of bound variables $k$.
+is defined for a variable node as the number of immediate arguments (\ie, children in the tree); for an application node, as the number of operands (\ie, number of children of the $@$-node minus 1); for a lambda node $\lambda x_1 \cdots x_k$, $k\geq 0$, as the number of bound variables $k$.
 
-\subsection{Extensional computation tree}
-We extend the notion of computation tree by augmenting the
+\subsection{Extensional tree}
+We extend the notion of tree by augmenting the
  \defname{structural nodes} $\Nodes$, representing tokens in the syntax representation of the lambda term,
 with two countable sets of \defname{ghost nodes} representing fictitious tokens: The \emph{ghost lambda nodes}
 represent fictitious lambda abstractions,
@@ -625,11 +624,11 @@ We simultaneously define ghost nodes and extend the enabling relation $\enables$
 such that
 $\ghostvar$ is the unique child of $\ghostlmd$, itself defined as the $k$th-child of $n$;
 and we extend the enabling relation with $n \enables_k \ghostlmd$
-and $\alpha \enables_{|\alpha|+ k} \ghostvar$; where by convention ghost nodes have arity $0$, and the arity of structural nodes remains unchanged (\ie, given by their arity in the computation tree without ghost nodes).
+and $\alpha \enables_{|\alpha|+ k} \ghostvar$; where by convention ghost nodes have arity $0$, and the arity of structural nodes remains unchanged (\ie, given by their arity in the tree without ghost nodes).
 This enabling relation induces a binding relationship, between ghost variables and their (possibly ghost) lambda-node binder, which permits us to forgo the notion of variables names in ghost nodes: we will thus
-use respectively $\ghostlmd$ and $\ghostvar$ as a unique label for all ghost lambda and variable nodes. We also omit ghost nodes when illustrating computation trees.
+use respectively $\ghostlmd$ and $\ghostvar$ as a unique label for all ghost lambda and variable nodes. We also omit ghost nodes when illustrating trees.
 
-We call the tree hereby defined the \defname{extensional computation tree} of $M$,
+We call the tree hereby defined the \defname{extensional tree} of $M$,
 denoted $\exttree(M)$ over the \defname{extended nodes} $\ExtendedNodes = \Nodes + \ghostvar + \ghostlmd$, where $+$ denotes disjoint union on sets. We use the shorthands $\ExtendedNodesLmd$ for $\NodesLmd + \ghostlmd$ and $\ExtendedNodesVar$ for $\NodesVar + \ghostvar$.
 
 \subsection{Justified sequence of nodes}
@@ -644,7 +643,7 @@ The (name-free) \defname{structure} of a justified sequence refers to the sequen
 Two sequences $s$ and $u$ over possibly two distinct terms are \defname{equivalent}, written $s \equiv u$ just if they have the same structure: the types of the underlying nodes in the two sequences match pairwise (either both variable/@ nodes or both lambda nodes) and have the same justification pointers. Two equivalent sequences are not necessarily equal since they may have different variable names.
 We say that two subsets $J_1\subseteq \justseqset(M_1)$ and $J_2\subseteq\justseqset(M_2)$ are isomorphic, written $J_1\cong J_2$, if  there exists a structure-preserving bijection between $J_1$ and $J_2$. That is there exists a bijection $\phi :J_1\longrightarrow J_2$ such that for any $j\in J$, $j\equiv\phi(j)$.
 
-The \defname{quadruplet encoding} of a justified sequence of nodes with variables in $\VarSet$ is a sequence of quadruplets in $O_4 = \nat^*\times \mathcal{V}^* \times\nat\times\nat$ defined occurrence-wise where each quadruplets $(n,p,j,i) \in O_4$ is such that the \emph{Node path} $n$ encodes the path to the node in the extensional computation tree, which uniquely defines the type and label of the occurrence;
+The \defname{quadruplet encoding} of a justified sequence of nodes with variables in $\VarSet$ is a sequence of quadruplets in $O_4 = \nat^*\times \mathcal{V}^* \times\nat\times\nat$ defined occurrence-wise where each quadruplets $(n,p,j,i) \in O_4$ is such that the \emph{Node path} $n$ encodes the path to the node in the extensional tree, which uniquely defines the type and label of the occurrence;
 the \emph{Pending lambdas} $p$ is the empty list $\epsilon$;
 the \emph{Link distance} $j$ is the number of occurrences separating the occurrence from its justifier plus $1$, or $0$ for no justifier;
 the \emph{Link label} $i$ is the label of the justification pointer.
@@ -664,7 +663,7 @@ We adopt the quadruplet encoding throughout the rest of the paper and thus assum
 
 \begin{example}
 \label{examp:ghost_materialization}
-    Let $M = \lambda x. (\lambda y z.z) u$. The structural paths of the computation tree of $M$ are $\Sigma = \{\epsilon, 0, 00,000, 01,010\}$. The justified sequence
+    Let $M = \lambda x. (\lambda y z.z) u$. The structural paths of the tree of $M$ are $\Sigma = \{\epsilon, 0, 00,000, 01,010\}$. The justified sequence
     $\Pstr[10pt]{
         (l){\lambda x} \cdot (a)@ \cdot (lyz-a,25:0){\lambda y z} \cdot (z-lyz,25:2)z \cdot (gl-a,30:2)\ghostlmd \cdot (gv-l,32:2)\ghostvar }
     $
@@ -832,7 +831,7 @@ It is well-defined because sequences in $T$ correspond to actual paths in the tr
 \subsection{Definition and properties}
 
 \begin{definition}
-The set $\travulc(M)$ of \defname{traversals} of an untyped lambda term $M$, abbreviated $\travulc$ when the term is clear from context, is the set of justified sequences of nodes over the extensional computation tree of $M$, recursively defined by the rules of Table~\ref{tab:trav_rules}.
+The set $\travulc(M)$ of \defname{traversals} of an untyped lambda term $M$, abbreviated $\travulc$ when the term is clear from context, is the set of justified sequences of nodes over the extensional tree of $M$, recursively defined by the rules of Table~\ref{tab:trav_rules}.
 
 We will use interchangeably `\emph{ULC traversal}', `\emph{imaginary traversal}' or just `\emph{traversal}' when referring to a traversal of an untyped term.
 \end{definition}
@@ -882,7 +881,7 @@ for every $i$th child $\alpha$ of any node $m \in \ExtendedNodesVar$ occurring i
 
 \begin{example}
 \label{ex:ulctrav_sample}
-Take the term $J = (\lambda u . u(x\,u)) (\lambda v . v\,y)$, whose computation tree is represented in Example~\ref{ex:missingoperand}. We have
+Take the term $J = (\lambda u . u(x\,u)) (\lambda v . v\,y)$, whose tree is represented in Example~\ref{ex:missingoperand}. We have
 $\Pstr[0.7cm][1pt]{(n0){\lambda}
 (n1){@}
 (n2-n1){\lambda u^0}
@@ -912,13 +911,13 @@ The traversal rules are well defined, in particular for any sequence of nodes wi
 the enabling relation $\enables$ on extended nodes $\ExtendedNodes$, and verifies the alternation condition;
 %(ii) and if the last node in $t$ is external then so are all the nodes in $\oview{t}$. % By induction on \oview{t}
 \item[(ii)] For all occurrences $\Pstr[0.5cm]{(m){m} \cdots (n-m,30:i){n}}$, $n$ is a ghost node if and only if $i > |m|$;
-\item[(iii)] $\pview{t}$ is a (justified) path in the extensional computation tree $\exttree(M)$;
+\item[(iii)] $\pview{t}$ is a (justified) path in the extensional tree $\exttree(M)$;
 In particular, if $t$ does not contain ghost nodes then $\pview{t}$ is also structural path in $\ctree(M)$.
 \end{compactitem}
 \end{proposition}
 \shortproof
 Proven simultaneously by induction on the traversal rules.
-Rule \rulenamet{Lam^{\sf var}}: By induction hypothesis (iii) the P-view is a path in the extensional computation tree of $M$. But the last node of $t$ is a structural node therefore, this path is necessarily a structural path with no ghost node. Consequently, if the last node is a bound variable node, its enabler is precisely its binding lambda node which necessarily occurs exactly once in the path to the root. If the variable is free then the enabler is the root itself: (i) holds. By definition, the justification pointer honors the enabling relation so (ii) holds. The node $n$ is by definition the unique child of $\alpha$ thus (iii) holds.
+Rule \rulenamet{Lam^{\sf var}}: By induction hypothesis (iii) the P-view is a path in the extensional tree of $M$. But the last node of $t$ is a structural node therefore, this path is necessarily a structural path with no ghost node. Consequently, if the last node is a bound variable node, its enabler is precisely its binding lambda node which necessarily occurs exactly once in the path to the root. If the variable is free then the enabler is the root itself: (i) holds. By definition, the justification pointer honors the enabling relation so (ii) holds. The node $n$ is by definition the unique child of $\alpha$ thus (iii) holds.
 
 Rule \rulenamet{Lam^\ghostvar}, the induction hypothesis (ii) shows that $i>|m|$, which guarantees that $|\beta|+i-|m|>0$ is a valid justification label (i) and that (ii) holds for the traversed node $\ghostvar$.
 Finally (iii) holds because the node preceding $\ghostvar$ in the P-view is precisely $\beta$, its parent node.
@@ -975,7 +974,7 @@ As mentioned earlier, the condition  $i-|m|>0$ only holds for the imaginary case
 It follows from the definition that $M$ is a sub-tree of $M^t$ therefore paths in the tree of $M$ are also paths in the tree of $M^t$.
 
 \begin{example}
-The eta-expansion of $(\lambda u . u(x\,u)) (\lambda v . v\,y)$, with computation tree shown in Example~\ref{ex:missingoperand}, with respect to traversal $t$ from Example~\ref{ex:ulctrav_sample} is
+The eta-expansion of $(\lambda u . u(x\,u)) (\lambda v . v\,y)$, with tree shown in Example~\ref{ex:missingoperand}, with respect to traversal $t$ from Example~\ref{ex:ulctrav_sample} is
 $(\lambda u . u(x (\lambda \alpha. u (\lambda \beta.\alpha\,\beta))) (\lambda v . v\,y)$.
 \end{example}
 
@@ -987,7 +986,7 @@ There exists a one-to-one function $\eta_t : \ExtendedNodes(M) \longrightarrow \
 such that its implicit \emph{element-wise pointer-preserving} extension $\eta_t : \mathcal{J}(M) \longrightarrow \mathcal{J}(M^t)$ verifies the properties:
 \begin{enumerate}[label=(\roman*),nosep]
     \item For any $u \in \travulc(M)$, $\eta_t(u)$ is a traversal of $M^t$.
-    And thus $\pview{\eta_t(u)}$ is a \emph{structural} path in the computation tree $\ctree(M^t)$.
+    And thus $\pview{\eta_t(u)}$ is a \emph{structural} path in the  tree $\ctree(M^t)$.
 
     \item If $v$ traverses
     $M^t$ then there exists a traversal $u$ of $M$ (with possibly ghost nodes) such that $v = \eta_t(u)$.
@@ -1111,7 +1110,7 @@ $$t = \Pstr[0.5cm]{
 Traversals for simply-typed languages, such as STLC and PCF, were previously studied in~\cite{BlumPhd}.
 A notable limitation is that the tree traversed is built from the
  \defname{eta-long form} of the term, a conversion that involves eta-expanding some subterms so as to ensure that every strict subterm that is not of atomic type has necessarily another term applied to it. We omit the formal definition~\cite{huet75-unification, BlumPhd, OngLics2006} which is not essential.
- Effectively, this means that the computation tree is obtained by eta-expanding all variable and application nodes according to the type of the corresponding subterm: if it is $\tau_1 \rightarrow \ldots (\tau_m \rightarrow o)$ and the node has $n$ children with $n< m$ then the subterm is eta-expanded $m-n$ times.
+ Effectively, this means that the tree is obtained by eta-expanding all variable and application nodes according to the type of the corresponding subterm: if it is $\tau_1 \rightarrow \ldots (\tau_m \rightarrow o)$ and the node has $n$ children with $n< m$ then the subterm is eta-expanded $m-n$ times.
 Variable names in the lambda nodes labels are \emph{typed-annotated}, but those annotations are not used in any way by the  traversals rules. We can thus apply the rules of Table~\ref{tab:trav_rules} on a typed-term by just erasing all its types.
 With this assumption, the definition of traversals from the typed settings \cite{BlumPhd} coincides with the following definition.
 We consider a typed-term $M^\tau$ of simple type $\tau$ and without loss of generality, and to simplify notations, we assume that it is closed (no free variable).
@@ -1196,7 +1195,7 @@ We write $\travsetcones$ to denote the set of
 
 As traversals unfolds, a depth-first exploration of the tree of the beta-normal form takes place, where rule \rulenamet{IVar} implements the non-deterministic `branching points'. Since lambda-terms are pure of side-effects,
 it is sufficient to explore each possible branch only once.
-\emph{Essential traversals} implement this idea by restricting the rule \rulenamet{IVar} so as to traverse only nodes leading to paths in the computation tree that the traversal as so far not explored: when picking the lambda node to visit next, it forces choice `(J)' to be the \emph{latest} variable node in the traversal. \emph{Concrete} essential traversals further restrict choice `(L)' to be a structural child lambda node of that variable node.
+\emph{Essential traversals} implement this idea by restricting the rule \rulenamet{IVar} so as to traverse only nodes leading to paths in the tree that the traversal has so far not explored: when picking the lambda node to visit next, it forces choice `(J)' to be the \emph{latest} variable node in the traversal. \emph{Concrete} essential traversals further restrict choice `(L)' to be a structural child lambda node of that variable node.
 
 Continuing with the game-semantics intuition: Lambda nodes correspond to opponent moves, and restricting the opponent moves limit the set of contexts in which a term can appear. The restriction imposed by essential traversals effectively excludes all contexts which apply a term $A$ to $M$ and such that $A$ evaluates any two of its higher-order arguments in a nested fashion. This excludes contexts involving $F_k$, $k\geq 2$, or the Kierstead's terms $\lambda f .f (\lambda x .f (\lambda y.y))$ and $\lambda f .f (\lambda x .f (\lambda y.x))$ where $f$ occurs more than once, but also $\lambda f. \lambda g . f (\lambda f .(\lambda x . g (\lambda y . x)))$ where the two arguments $f$ and $g$ occur in a nested expression.
 
@@ -1351,7 +1350,7 @@ This yields the normalization procedure for simply-typed terms in eta-long form 
     \end{property}
     \begin{proof}
     (i) It turns out that the rules of \emph{concrete and essential} traversals are precisely the ones used in \cite{OngLics2006} for recursion schemes (no free variables and term of ground type), where \rulenamet{IVar} is replaced by \rulenamet{Sig}. We can therefore appeal to the Spinal Decomposition
-    \cite[Lemma 8]{OngLics2006} which shows that if $t$ is infinite then there is an infinite sequence of prefixes of $t$ whose P-views (the \emph{spine} of $t$) is strictly increasing. By the P-view--Path correspondence there must be an infinite path in the structural computation tree which gives a contradiction. Hence $t$ is either finite or contains a ghost node.
+    \cite[Lemma 8]{OngLics2006} which shows that if $t$ is infinite then there is an infinite sequence of prefixes of $t$ whose P-views (the \emph{spine} of $t$) is strictly increasing. By the P-view--Path correspondence there must be an infinite path in the structural tree which gives a contradiction. Hence $t$ is either finite or contains a ghost node.
     (ii) Rules that do not involve ghost nodes all have bounded non-determinism therefore a concrete traversal only has a finite number of immediate extensions. Since the traversals are finite, this implies that the set of traversals is itself finite.
 \end{proof}
 
@@ -1698,7 +1697,7 @@ at the start of each strand.
 Let every $k\geq0$ refer to the Church numerals $\lambda s z . s^k z$
 where $s^k z$ denotes $k$ repeated (right-associative) applications of $s$ to $z$.
 Take $M \alphaequiv {\sf add}\, 1$ representing the increment function such that $M k$ reduces to $k+1$ for all $k$, where ${\sf add} \alphaequiv \lambda x y s z. x\, s (y\, s\, z)$.
-Let us traverse the computation tree of $m$ represented in Figure~\ref{fig:comptree_examples}. Throughout this example we underline external nodes to highlight node occurrences at the strands' boundaries.
+Let us traverse the tree of $M$ represented in Figure~\ref{fig:comptree_examples}. Throughout this example we underline external nodes to highlight node occurrences at the strands' boundaries.
 We start at the root and traverse the tree until hitting the first non-deterministic choice which produces
 $t_\epsilon = \Pstr[0.7cm]{(n0){\underline\lambda }\,(n1){@}\,(n2-n1){\lambda x y s z}\,(n3-n2){x}\,(n4-n1,32){\lambda s z}\,(n5-n4,30){s}\,(n6-n3,33){\lambda }\,(n7-n2,37){s}\,(n8-n1,32){\ghostlmd^3}\,(n9-n0,32){\underline{\ghostvar}^2} }$. Its core projection is
 $\core{t_\epsilon} = \Pstr[0.7cm]{(n0){\lambda^{[y\,s\,z]}} \cdot (n9-n0){{\ghostvar^2}} } \equiv
@@ -1708,7 +1707,7 @@ The normal form must therefore have the shape $\lambda y s z \ldots \cdot s N_1 
 
 %\item
 To determine the $N_k$ arguments we enumerate all the possible instantiation of rule $\rulename{IVar}$ for every non-deterministic choice of $k\geq 1$, and then recursively unfold the strands of the  traversal. How many values of $k$ shall be considered? Intuitively, we should not eta-expand beyond the point where further extensions are guaranteed to visit only ghost occurrences. That upper-bound is precisely given by the \emph{dynamic arity} of $t_\epsilon$.
-We lookup the node arities from the computation tree represented in Figure~\ref{fig:comptree_examples}. The arities of the traversal strand are
+We lookup the node arities from the tree represented in Figure~\ref{fig:comptree_examples}. The arities of the traversal strand are
  $0,1,4,2,2,1,0,0,0,0$ so the dynamic arity is given by the maximum of the intermediate values generated from the summation $(((((0) + -0+0) -0 +1) -2 + 2) -4 +1)$, hence $\dynar(t_\epsilon) = \max \{ 0,0,1,1,-2 \} = 1$.
  Hence this eliminates the cases $k>1$, which means that the normal form has in fact the shape $\lambda y s z \ldots \cdot s N_1$.
 
@@ -1868,7 +1867,7 @@ Assembling those two maximal tree paths together yields the beta normal form $\l
 \begin{example}[``Missing operand'' example from Neil Jones]
 \label{ex:missingoperand}
 This example illustrates how on-the-fly eta-expansion helps resolve the ``missing argument'' problem faced when using the concrete traversal rules of STLC. Take the term $J = (\lambda u . u (x\,u)) (\lambda v . v\, y)$ whose
-computation tree is represented in Figure~\ref{fig:comptree_examples},
+ tree is represented in Figure~\ref{fig:comptree_examples},
 Its two maximal normalizing traversals are:
 \begin{eqnarray*}
 t_1 = \Pstr[4ex]{
@@ -1928,7 +1927,7 @@ The beta-normal form of $J$ is thus $x (\lambda v.v\,y) y$.
 \end{example}
 
 \begin{example}
-    Take the fixed-point combinator $\Omega$ whose computation tree is represented in Figure~\ref{fig:comptree_examples}. Let us add subscripts to the variable occurrences to distinguish individual occurrences of the same bound variable so that  $\Omega = (\lambda x. x_1 x_2) (\lambda y. y_1 y_2)$
+    Take the fixed-point combinator $\Omega$ whose tree is represented in Figure~\ref{fig:comptree_examples}. Let us add subscripts to the variable occurrences to distinguish individual occurrences of the same bound variable so that  $\Omega = (\lambda x. x_1 x_2) (\lambda y. y_1 y_2)$
      where $x_1,x_2$, and $y_1,y_2$ refer to the same variable $x$ and $y$ respectively.
     It is a well-known fact that $\Omega$ does not have a normal form. As expected, the term has a unique infinite normalizing traversal which starts with
     $\Pstr[0.7cm]{{\lambda}\,(n1){@}\,(n2-n1){\lambda x}\,(n3-n2){x_1}\,(n4-n1){\lambda y}\,(n5-n4){y_1}\,(n6-n3){\lambda }\,(n7-n2){x_2}\,(n8-n1){\lambda y}\,(n9-n8){y_1}\ldots}$ and then follows a repeated pattern with an increasing number of ghost nodes between occurrences of $y_1$ and $y_2$:
@@ -2501,7 +2500,7 @@ The proof proceeds instead by showing that $\sim$-equivalence classes are preser
     \label{def:spinaldescent_pendingarglookup}
 A subsequence of a traversal is a
 \begin{enumerate*}[nosep,label=(\roman*)]
-\item \defname{spinal descent} if it is a path in the computation tree consisting solely of structural lambda and $@$-nodes, and where each lambda node (except the first occurrence if it is a lambda node) is the $0$th child of the preceding $@$-node.
+\item \defname{spinal descent} if it is a path in the term tree consisting solely of structural lambda and $@$-nodes, and where each lambda node (except the first occurrence if it is a lambda node) is the $0$th child of the preceding $@$-node.
 \item \defname{pending argument lookup} if it consists of an alternation of ghost lambda nodes and ghost variables nodes, starting with an external ghost lambda node and terminated by a structural internal lambda node in $\NodesLmd$.
 %\item \defname{branching descent} if it consists of an alternation of external structural lambda nodes and external structural variable nodes.
 \end{enumerate*}
@@ -2830,7 +2829,7 @@ Let $t \in \travsetnorm(M)$ for some \emph{quasi normal} term $M$. We have:
 \end{proposition}
 \begin{proof}
 (a) and (b) are direct consequences of Proposition~\ref{prop:qnf_strand_decomposition}.
-For (c), let's consider each case of the strand decomposition of Proposition~\ref{prop:qnf_strand_decomposition}. For transitions $\rightarrow S$ and $S \rightarrow S$, because $u_1$ and $u_2$ are spinal descents, the last node in the next strand ($x_1$ or $x_2$) must be a descendant (in the computation tree of $M$) of the first node ($\lambda\overline{\eta_1}$) from the previous strand.
+For (c), let's consider each case of the strand decomposition of Proposition~\ref{prop:qnf_strand_decomposition}. For transitions $\rightarrow S$ and $S \rightarrow S$, because $u_1$ and $u_2$ are spinal descents, the last node in the next strand ($x_1$ or $x_2$) must be a descendant (in the tree of $M$) of the first node ($\lambda\overline{\eta_1}$) from the previous strand.
 For transition $S\rightarrow G$, since both $u_1$ and $u_2$ are spinal descents, there are also paths in the tree, therefore since $\lambda\overline{y_2}$ points to $u_1$, $x_2$ must also be a descendant of $\lambda\overline{\eta_1}$. For transitions $G \rightarrow S$ and $G \rightarrow G$, since $u_1$ and $u_2$ are spinal descents, $x_2$ is a descendant of $\lambda\overline{y_2}$, itself a descendant of $\lambda\overline{y_1}$.
 Suppose $t$ is infinite then from the above strand decomposition we can construct an infinite path in the tree of $M$ which contradicts the fact that $M$ is a finitary term.
 \end{proof}
@@ -2925,7 +2924,7 @@ $$\Phi : \ExtendedNodes(N)  \rightarrow \ExtendedNodes(M) $$
 which maps nodes from the substituted subterm in $N$ to the corresponding nodes under argument $A$ in $M$;
 and every node in $N$ that is not involved in the substitution, to its counterpart in $M$.
 
-The substitution involved in the leftmost linear reduction affects the computation tree in three possible ways depending on the structure and number of $x$'s operands:
+The substitution involved in the leftmost linear reduction affects the tree in three possible ways depending on the structure and number of $x$'s operands:
 \begin{description}[itemindent=1em]
     \item[Case 1] $x$ has at least one operand ($|x|>0$) and $A$ is an abstraction;
     \item[Case 2] $x$ has at least one operand ($|x|>0$) and $A$ is not an abstraction;
@@ -3061,7 +3060,7 @@ Observe that $\Phi$ has the following properties:
 
 Let $\justseqset^P$ denote the subset $\justseqset$
 consisting of justified sequences verifying the P-view-path correspondence:
-the P-view at every occurrence of an internal node is precisely the path from the root to that node in the computation tree. By Property~\ref{prop:tree_path_charact} we have $\travset \subseteq \justseqset^P$.
+the P-view at every occurrence of an internal node is precisely the path from the root to that node in the term tree. By Property~\ref{prop:tree_path_charact} we have $\travset \subseteq \justseqset^P$.
 
 We define $\phi$ as an extension of $\Phi$ to justified sequences of $\justseqset^P$ of $N$ as follows:
 (i) maps all other occurrences to their image by $\Phi$;
@@ -3464,7 +3463,7 @@ Let $M$ be an untyped term with normal form $T$. Then
 $\travsetnorm(M)/{\sim} \ \cong\ \pathset(T)$.
 \end{theorem}
 \begin{proof}
-Let's first assume that $M$ is in beta-normal form. Then its computation tree does not contain any $@$-node and all nodes must be external.
+Let's first assume that $M$ is in beta-normal form. Then its tree does not contain any $@$-node and all nodes must be external.
 Hence the dynamic arity of a traversal ending with external variable $x$ is precisely $|x|$, the arity of $x$. A straightforward induction on the traversal
 rules shows, that since the \rulenamet{Var} is never used, we necessarily have  $\travsetnorm(M) = \pathset(M)$. Further, since all nodes are externals, the projection $\coresymbol$ and $\pview{\_}$ functions both coincides with the identity function thus $\pview{\core{\travsetnorm(M)}} = \travsetnorm(M) = \pathset(M)$.
 
@@ -3476,7 +3475,7 @@ Otherwise, since $M$ has a beta-nf, by Theorem~\ref{thm:completeness_leftmostlin
 % \begin{remark}
 % The infinitary counterpart of the characterization theorem for lambda terms with no normal form (not shown in this paper) can be stated as:
 % $$ \Union_{k\geq0} \left(\travulc^k(M)/{\sim}\right) = \pathset(BT(M))$$
-% where $\travulc^k(M)$ denotes the set of traversals of length $k$ at most and $\pathset(BT(M))$ denotes the set of \emph{possibly infinite} maximal paths in the B\"oem tree $BT(M)$ of $M$ (the infinitary computation tree of the term obtained by reducing beta-redexes ad-infinitum~\cite{barendregt2013lambda}).\footnote{See also~\cite{Blum17-HomogNotRestriction, OngLics2006} for a formal definition of infinitary computation trees.}
+% where $\travulc^k(M)$ denotes the set of traversals of length $k$ at most and $\pathset(BT(M))$ denotes the set of \emph{possibly infinite} maximal paths in the B\"oem tree $BT(M)$ of $M$ (the infinitary tree of the term obtained by reducing beta-redexes ad-infinitum~\cite{barendregt2013lambda}).\footnote{See also~\cite{Blum17-HomogNotRestriction, OngLics2006} for a formal definition of infinitary (computation) trees.}
 % \end{remark}
 
 \section{Further directions}
