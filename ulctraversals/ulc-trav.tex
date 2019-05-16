@@ -306,7 +306,7 @@
     notion of \emph{dynamic arity} which limits the number of arguments possibly applied to a variable within a given tree traversal.
     The resulting traversals can be finitely enumerated and are shown
     to characterize the paths in the tree representation of the beta-normal form, when it exists.
-    Correctness follows from the fact that traversals implement \emph{leftmost linear reduction}, a generalization of the \emph{head linear reduction} of Danos~\etal \cite{danos-head,danosherbelinregnier1996}.
+    Correctness follows from the fact that traversals implement \emph{leftmost linear reduction}, a generalization of the \emph{head linear reduction} of Danos-Regnier.
 \end{abstract}
 
 \maketitle
@@ -1148,15 +1148,16 @@ a correspondence with Game Semantics,
  and is recalled in Proposition~\ref{prop:path_charact_stlc};
  in Section~\ref{sec:correctness_ulc_normalization} we generalize it to all untyped terms with a normal form using instead a term-rewriting argument (Theorem~\ref{thm:path_charact_ulc}).
 This result suggests a normalization method consisting in simply enumerating all the maximal traversals.
-The challenge is that there are arbitrarily long traversals due to the generous non-determinism of the rule \rulenamet{IVar} that dictates how to traverse a free variable node.
+The challenge is that there are arbitrarily long traversals due to the generous non-determinism of the rule \rulenamet{IVar} that traverses free variables.
 Even worse: even for terms with a beta-normal form
 there may be infinitely many maximal imaginary traversals!
-Fortunately, not all of them are needed: a traversal shall be considered redundant if there exist a shorter one with identical core P-view.
-In that respect, it is sufficient to consider a subset covering every possible core P-view.
+Fortunately, not all of them are needed: a traversal shall be considered redundant if there exist a shorter one with identical core P-views.
+With such consideration, it suffice to look for a subset covering every possible core P-view.
 
-We first consider the subset of \emph{essential traversals} which is complete with respect to core P-views, and finitely enumerable for simply-typed terms in eta-long form.
+We first consider the subset of \emph{essential traversals} which is complete with respect to core P-views.
+Its concrete subset if finitely enumerable, which yields the normalization procedure for eta-long simply-typed terms.
 To address the general case of untyped terms,
-where \emph{essential traversals} can be infinite even for normal forms, we introduce a stricter kind of traversals, called \emph{normalizing traversals} that further limits the non-determinism of the \rulenamet{IVar} rule.
+we introduce \emph{normalizing traversals} which restrict the non-determinism of \rulenamet{IVar} in a more relaxed manner.
 
 \subsection{Essential traversals}
 
@@ -1291,11 +1292,11 @@ Hence $\pview{\core{t}}=\pview{\core{\eta_t(t)}}=
 
 \subsection{Normalization procedure for eta-long forms (STLC)}
 
-For typed languages such as the STLC, PCF or Idealized Algol, the theory of traversals~\cite{OngLics2006}, for eta-long forms, concretely relates to Game Semantics: they are in one to one correspondence with the plays of the game denotation in which all internal moves are revealed; and \emph{traversal cores} give the actual plays~\cite{BlumPhd}.
+For typed languages such as the STLC, PCF or Idealized Algol, the theory of eta-long traversals~\cite{OngLics2006} concretely relates to Game Semantics: they are in one to one correspondence with the plays of the game denotation in which all internal moves are revealed; and \emph{traversal cores} give the actual plays~\cite{BlumPhd}.
 \begin{theorem}[Eta-Long Game Semantics Correspondence--Theorem 4.96 in~\cite{BlumPhd}]
 \label{thm:gamesem_correspondence_stlc}
 For any (closed) simply-typed term $M^\tau$ in \emph{eta-long form},
- $\travsetcon(M^\tau)$ is in bijection with the \emph{revealed game denotation} $\revsem{M^\tau}$; and its image by $\coresymbol$--the traversal cores--is in bijection with the innocent game denotation $\sem{M^\tau}$.
+ $\travsetcon(M^\tau)$ is in bijection with the \emph{revealed game denotation} $\revsem{M^\tau}$; and its image by $\coresymbol$ is in bijection with the innocent game denotation $\sem{M^\tau}$.
 \end{theorem}
 
 
@@ -1365,14 +1366,12 @@ and by Proposition~\ref{prop:essential_traversal_simcomplete} its is also given 
 
 \subsection{Normalizing traversals}
 
-The imaginary traversal rules allows for infinitely many eta-expansions, which may provide some satisfaction from the semantics standpoint: each eta-expansion represents how the term will interact with its arguments if more arguments were to be applied to it. In the spirit of finding a normal form, however, eta-expanding subterms ad-infinitum is pointless: traversing ghost nodes only helps if it eventually leads to some structural node of the final normal term tree that we set out to evaluate.
+The imaginary traversal rules allows for infinitely many eta-expansions, which may provide some satisfaction from the semantics standpoint: each eta-expansion represents how the term would interact with its arguments if more arguments were to be applied to it. In the spirit of finding a normal form, however, eta-expanding subterms ad-infinitum is pointless: traversing ghost nodes only helps if it eventually leads to some structural node of the final normal term tree that we set out to evaluate.
 
 For simply-typed terms in eta-long forms, the
-Normalized Paths Characterization theorem holds for concrete traversals so we could  handle the infiniteness of traversals by restricting the enumeration to \emph{structural} ones. For untyped terms, however, the concrete restriction
-is so strong that it eliminates ghost nodes entirely, and thus prevents any such characterization. A more relaxed restriction is needed.
-Just like imaginary traversals, the set of essential traversals is infinite because in the \emph{on-the-fly eta-expansion} of rule $\rulename{IVar}$ the justification label $i>0$ is unbounded. In this section, we show that,
-for the purpose of term evaluation, $i$ can be bounded by a quantity called the \emph{dynamic arity} computable from the traversal,
-effectively limiting the number of times eta-expansion can be performed by rule \rulenamet{IVar} for the sake of discovering the set of paths of the beta-normal form. In section \ref{sec:correctness_ulc_normalization} we show that this suffice to  sufficient to characterize the normal form of a lambda term when it exists.
+Normalized Paths Characterization theorem holds for concrete traversals so we could  handle the infiniteness of traversals by restricting the enumeration to \emph{structural} ones. The concrete restriction
+is so strong that it eliminates ghost nodes entirely, and thus prevents any such characterization for untyped terms. A more relaxed restriction is needed.
+The set of essential traversals is infinite due to rule $\rulename{IVar}$ where the justification label $i>0$ is unbounded. In this section, we show that, for the purpose of term evaluation, $i$ can be bounded by a quantity called the \emph{dynamic arity}, effectively limiting the number of times eta-expansion performed by rule \rulenamet{IVar}. In section \ref{sec:correctness_ulc_normalization} we show that this suffice to characterize the normal form of a lambda term when it exists.
 
 
 Because the tree has a finite number of nodes, the nodes arities are bounded by some maximal value. Which means that beyond a certain value, the
@@ -1390,8 +1389,8 @@ for some $k\geq 1$ where for $1 \leq j \leq k$, $\alpha_j$ is in $\ExtendedNodes
 
 \begin{definition} %[Traversal dynamic arity]
 \label{dfn:dynamic-arity}
-The \defname{dynamic arity} of a traversal $t$ ending with a strand
- of length $2k$ for $k>0$ of the shape $\underline{\alpha_k}\,n_k\,\alpha_{k-1}\,n_{k-1}\cdots \alpha_2\,n_2\, \alpha_1\,\underline{n_1}$ where $\alpha_j \in \ExtendedNodesLmd$, $n_j \in \ExtendedNodesVar\union\NodesApp$ for all $1\leq j\leq k$ is
+The \defname{dynamic arity} of a traversal $t$ that ends with a strand
+ of the shape $\underline{\alpha_k} n_k \alpha_{k-1} n_{k-1}\cdots \alpha_2 n_2 \alpha_1 \underline{n_1}$ of length $2k$ for $k>0$ where $\alpha_j \in \ExtendedNodesLmd$, $n_j \in \ExtendedNodesVar\union\NodesApp$, $1\leq j\leq k$ is
 $$
 \dynar(t)
   = \max_{q=1..k} \left( |n_q| + \sum_{j=1..q-1} (|n_j|-|\alpha_j|) \right) \ .
@@ -1472,7 +1471,6 @@ and since $\lambda\overline{x}$ is structural, we have $i_{r+1} \leq |n_{r+1}|$.
 \rulenamet{Lam^\ghostvar_\essential}.
 For $1<q\leq k$, the induction hypothesis shows that $t_{max}$ has the desired until the pair $\ghostlmd \cdot \ghostvar$ respectively justified by
 $n_{q-1}$ with label $i_{q-1}$, and $\alpha_{q-1}$ with labels $i_q$.
-
 The induction hypothesis gives
 $i_{q} = i - \Delta_{q-1} = i + |n_q| - (|n_q| + \Delta_{q-1} )$, which is greater or equal than $i + |n_q| - \max_{r=1..k} ( |n_r| + \Delta_{r-1})
 = i + |n_q| - \dynar(t) $.
@@ -1647,7 +1645,7 @@ where $\pview{\core{t}} = t$, is not equivalent to $\pview{\core{u}}$ for any $u
 
     where $t, u, v$ range over (sub-sequences of) justified sequences of nodes.
 
-    \caption{Normalizing traversals $\travsetnorm$ of the untyped $\lambda$-calculus, presented using judgement rules. They are a strict subset of imaginary traversals $\travulc$ from Table \ref{tab:trav_rules}. The two systems only differ in rule  $\rulefont{IVar}$
+    \caption{Normalizing traversals $\travsetnorm(M)$ of an untyped $\lambda$-term $M$, presented using judgement rules. They are a strict subset of imaginary traversals $\travulc$ from Table \ref{tab:trav_rules}. The two systems only differ in rule  $\rulefont{IVar}$
     which here further restricts the choice of justifier and link label $i$.}
     \label{tab:normalizing_trav_rules}
     \end{ruletablebox}
@@ -1681,7 +1679,8 @@ shows correctness of the algorithm, in particular that the set of justified path
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Examples of Normalization by Traversals}
 \label{sec:examples}
-Let us walk through the ULC evaluation Algorithm~\ref{algo:ulc_normalization_by_traversals} via traversal enumeration of Table~\ref{tab:normalizing_trav_rules} on some examples of lambda terms. We write $t_\epsilon$  for the initial traversal up to the first non-deterministic choice; and for every $s \in \nat^*$, we write $t_{s \cdot k}$ for the maximal traversal obtained after extending $t_s$ using a single application of the imaginary sub-case of \rulenamet{IVar} with link-label $k \in \nat$. So that the subscript $s$ in $t_s$ records the non-deterministic choices made so far with rule \rulenamet{IVar}.
+Let us walk through the ULC evaluation Algorithm~\ref{algo:ulc_normalization_by_traversals} via traversal enumeration of Table~\ref{tab:normalizing_trav_rules} on some examples of lambda terms. We write $t_\epsilon$  for the initial traversal up to the first non-deterministic choice; and for every $s \in \nat^*$, we write $t_{s \cdot k}$ for the maximal traversal obtained after extending $t_s$ using a single application of the imaginary sub-case of \rulenamet{IVar} with link-label $k \in \nat$. So that the subscript $s$ in $t_s$ records the non-deterministic choices made so far in rule \rulenamet{IVar}
+at the start of each strand.
 
 
 \begin{example}[Baby example]
@@ -1699,7 +1698,7 @@ Let us walk through the ULC evaluation Algorithm~\ref{algo:ulc_normalization_by_
 Let every $k\geq0$ refer to the Church numerals $\lambda s z . s^k z$
 where $s^k z$ denotes $k$ repeated (right-associative) applications of $s$ to $z$.
 Take $M \alphaequiv {\sf add}\, 1$ representing the increment function such that $M k$ reduces to $k+1$ for all $k$, where ${\sf add} \alphaequiv \lambda x y s z. x\, s (y\, s\, z)$.
-Let us traverse the computation tree of $m$ represented in Figure~\ref{fig:comptree_examples}. Throughout this example we underline external nodes to highlight node occurrences at the boundaries of strands.
+Let us traverse the computation tree of $m$ represented in Figure~\ref{fig:comptree_examples}. Throughout this example we underline external nodes to highlight node occurrences at the strands' boundaries.
 We start at the root and traverse the tree until hitting the first non-deterministic choice which produces
 $t_\epsilon = \Pstr[0.7cm]{(n0){\underline\lambda }\,(n1){@}\,(n2-n1){\lambda x y s z}\,(n3-n2){x}\,(n4-n1,32){\lambda s z}\,(n5-n4,30){s}\,(n6-n3,33){\lambda }\,(n7-n2,37){s}\,(n8-n1,32){\ghostlmd^3}\,(n9-n0,32){\underline{\ghostvar}^2} }$. Its core projection is
 $\core{t_\epsilon} = \Pstr[0.7cm]{(n0){\lambda^{[y\,s\,z]}} \cdot (n9-n0){{\ghostvar^2}} } \equiv
@@ -1909,7 +1908,7 @@ t_2 = \Pstr[4ex]{
 }
 \end{eqnarray*}
 Traversing $J$ with concrete rules lets you follow $t_1$ until the second occurrence of $v$ in $t_1$, where the traversal gets stuck due to the bottom node $u$ lacking an operand. Whereas the imaginary traversal instantiates that missing operand on-the-fly, via the ghost child lambda node $\ghostlmd^1$ of $u$.
-Traversal $t_2$ illustrates a different situation where, instead of being stuck, the concrete traversals misses a valid path from the beta normal form: variable $x$ does have one argument in $J$, which gets traversed by concrete traversals, but the ULC traversal $t_2$ pushes the exploration further by traversing the imaginary second argument to $x$, represented by $\ghostlmd^2$, eventually materializing node $y$, which ends up being the second argument of $x$ in the normal form.
+Traversal $t_2$ illustrates a different situation where, instead of being stuck, the concrete traversals misses a valid path from the beta normal form: variable $x$ does have one argument in $J$, which gets traversed by concrete traversals, but the imaginary traversal $t_2$ pushes the exploration further by traversing the imaginary second argument to $x$, represented by $\ghostlmd^2$, eventually materializing node $y$, which ends up being the second argument of $x$ in the normal form.
 The core P-views
 %$\pview{\core{t_1}} = \lambda\, x\, \lambda^{[v]} \, \ghostvar^{1}\, \ghostlmd^{1}\, y$
 $\pview{\core{t_1}} = \Pstr[0.7cm]{(n0){\lambda}
@@ -1923,7 +1922,7 @@ and
      (n0){\lambda }
      (n1-n0){x}
     (n2-n1){{\ghostlmd^{2}}}
-    (n3-n0){y}}$
+    (n3-n0,40){y}}$
 are the two maximal paths in the beta-normal form.
 The beta-normal form of $J$ is thus $x (\lambda v.v\,y) y$.
 \end{example}
@@ -1940,7 +1939,7 @@ The beta-normal form of $J$ is thus $x (\lambda v.v\,y) y$.
     $$
     }
 
-    Consider each section of the traversal starting with $y_1$ and ending with $y_2$ with no other variable occurrence in-between, and define its length as the number of ghost nodes in-between. Then the lengths of successive such traversal sections have the following pattern: $2,6,14,30,62\ldots$
+    Consider each section of the traversal starting with $y_1$ and ending with $y_2$ with no other variable occurrence in-between, and define its length as the number of ghost nodes in-between. Then the length of the successive sections follow the pattern: $2,6,14,30,62\ldots$
     One can show that the length of the $i$th section is precisely given by $2\times(2^i-1)$, for $i\geq1$.
     So as the term is being evaluated, it takes exponentially longer to determine that $y_2$ is the argument of $y_1$.
     The resulting infinite traversal is expressed as follows (omitting justification pointers):
@@ -2041,7 +2040,7 @@ The initial traversal strand $t_\epsilon$ is
 \,(n53-n0){\underline{\ghostvar^{3}}}}
 $}
 
-Enumerating normalizing traversals yields the set $\{t_\epsilon, t_{11}, t_{12}, t_{121}, t_{122} \}$ with  maximal traversals $\{ t_{11}, t_{121}, t_{122} \}$ represented in Table~\ref{tab:varity2_trav}.
+Enumerating normalizing traversals yields the set $\{t_\epsilon, t_{11}, t_{12}, t_{121}, t_{122} \}$ with maximal traversals $\{ t_{11}, t_{121}, t_{122} \}$ represented in Table~\ref{tab:varity2_trav}.
 The maximal paths in the beta-normal form are thus given by the core P-views
 $\pview{\core{t_{11}}} =
         \lambda^{[x' x s z]} \,\ghostvar^{3}\,\ghostlmd^{1}\
@@ -2103,7 +2102,7 @@ To define head-linear reduction, one needs to consider specific \emph{occurrence
 
 We say that a variable occurrence is \defname{involved} in the generalized redex $(\lambda x, A)$ if the variable occurrence is bound by $\lambda x$. A variable occurrence can therefore be involved in at most one generalized redex. We define the \defname{linear substitution} of $x$ for $A$ as the term obtained by performing capture-avoiding substitution of that single occurrence of $x$ by $A$. (Compare this to the standard substitution that applies to \emph{every} occurrence of $x$ in $M$.) When performing such substitution we say that we \defname{linearly fire} the generalized redex $(\lambda x, A)$ for that occurrence of $x$.
 
-The \defname{head variable occurrence} (abbreviated \emph{hoc}) of a term is the left-most variable occurring in the term (\ie, the first variable found by depth-first traversal of the term tree.) If the head variable occurrence of a term is involved in a generalized redex then we call that redex the \defname{head-linear redex}.
+The \defname{head variable occurrence}, abbreviated \defname{hoc}, of a term is the left-most variable occurring in the term (\ie, the first variable found by depth-first traversal of the term tree.) If the head variable occurrence of a term is involved in a generalized redex then we call that redex the \defname{head-linear redex}.
 A term that does not have a head-linear redex is said to be in \defname{quasi head-normal form}.
 The \defname{head-linear reduction} $\hlred$ is defined as the reduction that linearly fires the head linear redex, if it exists. It can be shown that the reflexive transitive closure $\rightarrow^*_{hl}$ yields the quasi head-normal form~\cite{danos-head,danosherbelinregnier1996}.
 
@@ -2875,7 +2874,9 @@ rules \rulenamet{Var} and \rulenamet{Lmd} yields a traversal ending with an exte
 
 \begin{definition}[Traversal bisimulation]
 \label{def:bisimilar_terms}
-Let $M$ and $N$ be two terms with variables in $\mathcal{V}$. Let $\phi\colon \justseqset(N) \rightarrow\justseqset(M)$ be a function from the justified sequences of $N$ to justified sequences of $M$. We define the state transition system $(X, R_\phi, \rightarrow_X)$ as:
+Let $M$ and $N$ be two terms with variables in $\mathcal{V}$. Let $\phi\colon \justseqset(N) \rightarrow\justseqset(M)$ be a function from the justified sequences of $N$ to justified sequences of $M$.
+
+\noindent We define the state transition system $(X, R_\phi, \rightarrow_X)$ as:
 \begin{itemize}[nosep]
     \item \emph{States}: $X$ is the disjoint union $\travset^\dagger(M) + \travset^\dagger(N)$.
 
@@ -2885,7 +2886,7 @@ Let $M$ and $N$ be two terms with variables in $\mathcal{V}$. Let $\phi\colon \j
     \item \emph{Transitions} For all $t, t' \in \travset^\dagger(M)$ we write $t \rightarrow_M t'$ just if $t'$ is a minimal extension of $t$ that remains in $\travset^\dagger(M)$ (\ie, $t'$ extends $t$ using rules of Table~\ref{tab:normalizing_trav_rules} and any occurrence strictly between the last occurrence in $t$ and $t'$ is an either internal ghost variable or a ghost lambda node.) We define $\rightarrow_N$  identically and write $t \rightarrow_X t'$ if either $t \rightarrow_M t'$ or $t \rightarrow_N t'$ holds for $t, t' \in X$.
 \end{itemize}
 
-$M$ and $N$ are \defname{$\phi$-bisimilar} if $R_\phi$ defines a bisimulation over $X$ with respect to $\rightarrow_X$, that is:
+\noindent The terms $M$ and $N$ are \defname{$\phi$-bisimilar} if $R_\phi$ is a bisimulation over $X$ with respect to $\rightarrow_X$, that is:
 \begin{itemize}[nosep]
     \item (B1) for all $t_1, t_2 \in \travset^\dagger(M)$, $u_1 \in \travset^\dagger(N)$ with $t_1~R_\phi~u_1$ and $t_1 \rightarrow_M t_2$ there is $u_2 \in \travset^\dagger(N)$ such that $u_1 \rightarrow_N u_2$ and $t_2~R_\phi~u_2$.
     \item (B2) for all $t_1 \in \travset^\dagger(M)$, $u_1, u_2 \in \travset^\dagger(N)$ with $t_1~R_\phi~u_1$ and $u_1 \rightarrow_N u_2$ there is $t_2 \in \travset^\dagger(M)$ such that $t_1 \rightarrow_M t_2$ and $t_2~R_\phi~u_2$.
@@ -3459,8 +3460,8 @@ By Proposition~\ref{prop:ulc_travnorm_finite} there is a finite number of traver
 
 \begin{theorem}[ULC Normalized Paths Characterization]
 \label{thm:path_charact_ulc}
-Let $M$ be an untyped term with normal form $T$.
-$$\travsetnorm(M)/{\sim} \ \cong\ \pathset(T) \ .$$
+Let $M$ be an untyped term with normal form $T$. Then
+$\travsetnorm(M)/{\sim} \ \cong\ \pathset(T)$.
 \end{theorem}
 \begin{proof}
 Let's first assume that $M$ is in beta-normal form. Then its computation tree does not contain any $@$-node and all nodes must be external.
