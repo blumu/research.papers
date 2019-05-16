@@ -438,7 +438,7 @@ The next section introduces basic definitions from the traversal theory. Section
 \label{sec:basic_def}
 \subsection{Notations}
 \emph{Sequences:} For any alphabet $\Sigma$ we write $\Sigma^*$ to denote the set of (possibly infinite) sequences over elements of $\Sigma$.
- We use the abbreviation $\overline{x}$ for the sequence of elements $x_1 \ldots x_n$ for some $n\geq0$.
+ We use the abbreviation $\overline{x}$ for the sequence of elements $x_1 \ldots x_n$ for some $n\geq0$, $\epsilon$ for the empty sequence, and for any two sequences $\overline{x}, \overline{y}$ of length $n,m\geq 0$, we write $\overline{x} \cdot \overline{y}$ for the concatenation $x_1 \ldots x_n y_1 \ldots y_m$.
 
  \emph{Labelled trees:} Given a set of labels $\mathcal{L}$, the expression `$l\langle t_1, \ldots, t_m \rangle$' for $m \geq 0$ denotes a $\mathcal{L}$-labelled tree with root labelled $l\in \mathcal{L}$. The case $m=0$ represents a leaf, and otherwise a node labelled $l$ with $m$ ordered children trees $t_1$, \ldots, $t_m$. We will sometimes use the formal definition of a labelled-tree as a partial function $\nat^* \rightarrow \mathcal{L}$ mapping directed tree-paths to labels in $\mathcal{L}$, where a directed path is the sequence of child indices to follow from the tree root to a given node or leaf.
 
@@ -447,6 +447,7 @@ The next section introduces basic definitions from the traversal theory. Section
 
 We consider the set of terms $\Lambda$ of the untyped lambda calculus (ULC) constructed from the grammar $\Lambda := x\ |\ (\Lambda\, \Lambda)\ |\ \lambda x. \Lambda $
 where $x$ ranges over a countable set of variable names $\VarSet$.
+% countable is important so that we can pick as many fresh variables as needed
 For conciseness we abbreviate consecutive lambda abstractions when writing lambda terms, so that $\lambda x_1 \ldots \lambda x_n . M$ for some $n\geq 0$ and term $M$ will be written $\lambda x_1 \ldots x_n . M$; or just
 $\lambda \overline{x} . M$ if $\overline{x} = x_1 \ldots x_n$.
 We will also drop brackets, and assume left-associative application so that $U\,V\,W$ means $(U\,V)\,W$. We write $M \alphaequiv N$ to denote that $M$ and $N$ are equal up to variable renaming.
@@ -464,7 +465,7 @@ The \defname{head reduction}, denoted $\rightarrow_{h}$, fires the head redex of
 We write $M^\tau$ to denote a closed (\ie, no free variable)
 type-annotated lambda-term of type $\tau$, typable with the judgement rules of the simply-typed lambda calculus~\cite{Barendregt84} and $M$ to denote the untyped term obtained by erasing its type annotations.
 
-\subsection{Computation tree and enabling relation}
+\subsection{Term tree and enabling relation}
 
 We define a tree representation for untyped lambda terms where consecutive lambda abstractions are merged into a single `bulk' lambda-node and consecutive applications are represented by a single application node whose first child represents the operator, and subsequent children represents the operands.
 This definition is similar to that of \emph{computation tree} from \cite{OngLics2006, BlumPhd} with the notable difference that we do not eta-long expand the term prior to constructing the tree.
@@ -485,6 +486,7 @@ defined inductively by:
 
 Note that any lambda term can indeed be written in one of the two forms above. In particular, applicative terms are handled by the case $n=0$ of the form $\lambda . N$ for some term $N$ where `$\lambda$' is referred to as a ``dummy lambda''.
 
+Figure~\ref{fig:comptree_examples} illustrates the definition with some examples of trees of lambda terms.
 This notion of tree is just a more compact version of the traditional notion of term tree from the lambda calculus. One advantage is that application nodes indicate the presence of beta-redexes in the term.
 With the implicit generalization of the above definition to infinitary terms,
 the trees without @-nodes are isomorphic to B\"ohm tree~\cite{Barendregt84}.
@@ -492,8 +494,6 @@ Another property of this representation is the \defname{alternation} between lam
 
 We write $\Nodes(M)$ to denote the set of nodes of $\ctree(M)$, or just $\Nodes$ if the term is clear from context; $\NodesVar$ for the set of variable nodes; $\NodesLmd$ for lambda nodes, and $\NodesApp$ for  application nodes. For any lambda node $\alpha\in\NodesLmd$ we write $\child(\alpha)$ to denote its unique child node (either a variable node or $@$).
 \end{definition}
-
-Figure~\ref{fig:comptree_examples} illustrates examples of term trees.
 
 \begin{figure}[hbtp]
     \centering
@@ -606,7 +606,7 @@ Figure~\ref{fig:comptree_examples} illustrates examples of term trees.
 We define the \defname{enabling relation} $\enables$ on tree nodes $\Nodes$ as the relation mapping (i) each lambda node to all the variable nodes that it binds; (ii) the root of the tree to all the free variable nodes; (iii) variable and application node to each one of their child node. We write $n \enables_k \lambda\overline{x}$, for $k\geq0$, to indicate that a lambda node $\lambda\overline{x}$ is the $k$th child of a variable or application node $n$; $\lambda\overline{x} \enables_k n$, for $k\geq1$, to indicate that the label of a bound variable node $n$ is precisely the name of the $k$th variable bound by  $\lambda\overline{x}$ , that is $n=x_k$; and if $r$ denotes the root of the tree then we take the convention $r \enables_k z$ for any free variable node $z$, where $k$ denotes the free variable index of $z$ according to some predefined numbering of free variables.
 We say that node $m$ \defname{hereditarily enables} $n$ if they relate by the reflexive transitive closure of $\enables$.
 
-Because variable names and bindings are entirely recoverable from the enabling relation, our notion of term tree could equivalently be defined as a name-free tree over three node labels $\{ \lambda, {\sf Var}, @ \}$ indicating the `type' of each node, together with the enabling relation.
+Because variable names and bindings are entirely recoverable from the enabling relation, our notion of term tree could equivalently be defined as a name-free tree over three node labels $\{ \lambda, {\sf Var}, @ \}$ indicating the type of each node, together with the enabling relation.
 
 A tree node is \defname{external} if it is hereditarily enabled by the root, otherwise it is \defname{internal}. We write $\ExternalNodes$ for the set of external nodes, that is the image of the tree root by the reflexive transitive closure of the enabling relation. Internal nodes are therefore precisely the nodes hereditarily justified by application nodes $@$. We write $\InternalNodes$ to denote the set of internal nodes.
 The \defname{arity} of a node $n$, written $|n|$,
@@ -663,17 +663,17 @@ We adopt the quadruplet encoding throughout the rest of the paper and thus assum
 
 \begin{example}
 \label{examp:ghost_materialization}
-    Take the term $M = \lambda x. (\lambda y z.z) u$. The structural paths of the tree  $\ctree{M}$ are $\Sigma = \{\epsilon, 0, 00,000, 01,010\}$. The justified sequence
-    $\Pstr[10pt]{
-        (l){\lambda x} \cdot (a)@ \cdot (lyz-a,25:0){\lambda y z} \cdot (z-lyz,25:2)z \cdot (gl-a,30:2)\ghostlmd \cdot (gv-l,32:2)\ghostvar }
+    Take the term $M = \lambda x. (\lambda y z.z) u$. The structural paths of the tree  $\ctree(M)$ are $\Sigma = \{\epsilon, 0, 00,000, 01,010\}$. The justified sequence
+    $t = \Pstr[10pt]{
+        (l){\lambda x} \, (a)@ \, (lyz-a,25:0){\lambda y z} \, (z-lyz,25:2)z \, (gl-a,35:2)\ghostlmd \, (gv-l,39:2)\ghostvar }
     $
     has quadruplet encoding
-    $(\epsilon, \epsilon ,0,0), (0,\epsilon,0,0), (00, \epsilon, 1,0), (000,\epsilon, 1,2), (02,\epsilon,3,2), (020,\epsilon,5,2) $ whereas the quadruplets $ (\epsilon, g ,0,0), (0,\epsilon,0,0), (00, h~k, 1,0), (000,\epsilon, 1,2), (02,\epsilon,3,2), (020,\epsilon,5,2) $ encode the justified sequence
+    $(\epsilon, \epsilon ,0,0), (0,\epsilon,0,0), (00, \epsilon, 1,0), (000,\epsilon, 1,2), (02,\epsilon,3,2), (020,\epsilon,5,2) $ whereas the quadruplet sequence $ (\epsilon, g ,0,0), (0,\epsilon,0,0), (00, h~k, 1,0), (000,\epsilon, 1,2), (02,\epsilon,3,2), (020,\epsilon,5,2)$ encodes the justified sequence
     $\Pstr[10pt]{
-        (l){\lambda x^{[g]}} \cdot (a)@ \cdot (lyz-a,25:0){\lambda y z^{[h k]}} \cdot (z-lyz,25:2)z \cdot (gl-a,30:2)\ghostlmd \cdot (gv-l,31:2)\ghostvar }
+        (l){\lambda x^{[g]}}  (a)@  (lyz-a,25:0){\lambda y z^{[h k]}}  (z-lyz,30:2)z \, (gl-a,40:2)\ghostlmd \, (gv-l,38:2)\ghostvar }
     $ which is equivalent to
     $\Pstr[10pt]{
-        (l){\lambda xg} \cdot (a)@ \cdot (lyz-a,25:0){\lambda y z h k} \cdot (z-lyz,25:2)z \cdot (gl-a,30:2)\lambda \cdot (gv-l,31:2)g }
+        (l){\lambda xg} (a)@ (lyz-a,25:0){\lambda y z h k} \, (z-lyz,25:2)z \, (gl-a,35:2)\lambda \, (gv-l,40:2)g }
     $.
 \end{example}
 
@@ -698,7 +698,7 @@ The reflexive closure of $Eq_{M,N}^*$ defines an equivalence relation on
 
  Pending lambdas provide a convenient way to interpret justified sequences over two distinct terms (\eg, before and after firing a redex).
  \begin{example}
-    Alpha-conversion does not alter the structure of a sequence, so for instance we have $\Pstr[10pt]{ (l){\lambda x y} \cdot (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda z y} \cdot (n-l,25){z}}$. The number of variable bindings in a lambda node may also change without impacting its structure, as long as justification link labels are unaffected, so we also have $\Pstr[10pt]{ (l){\lambda x y z w t} \cdot (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda x} \cdot (n-l,25){x}}$ since the structure of both sequences is $(\lambda,0)\cdot({\sf Var},1)$.
+    Alpha-conversion does not alter the structure of a sequence, so for instance we have $\Pstr[10pt]{ (l){\lambda x y} \, (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda z y} \, (n-l,25){z}}$. The number of variable bindings in a lambda node may also change without impacting its structure, as long as justification link labels are unaffected, so we also have $\Pstr[10pt]{ (l){\lambda x y z w t} \, (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda x} \, (n-l,25){x}}$ since the structure of both sequences is $(\lambda,0)\,({\sf Var},1)$.
 \end{example}
 
 We will use non-canonical encodings to implement a form of $\beta$-reduction on  justified sequences, where the \emph{pending lambdas} component will provide a mechanism to combine two distinct lambda nodes in a single one, a process by which an anonymous ghost variable may materialize into a structural node with a variable name.
@@ -736,7 +736,7 @@ $$\begin{array}{rcll}
     & \mbox{if $n$ is a variable or $@$ node;}
     \\
  \pview{\Pstr[10pt]{ s \cdot (m){m} \cdots (lmd-m,25){n}}} &=&
-        \Pstr{ \pview{s} \cdot (m2){m} \cdot (lmd2-m2,30){n} }
+        \Pstr{ \pview{s} \cdot (m2){m} \, (lmd2-m2,30){n} }
     & \mbox{if $n$ is a lambda node;}
     \\
  \pview{s \cdot n }  &=&  n & \mbox{if $n$ is a lambda node with no pointer.}
@@ -745,7 +745,7 @@ $$\begin{array}{rcll}
 We define the dual notion $\oview{s}$ of O-view by
 $\oview{\epsilon} = \epsilon$;
 $\oview{s \cdot n }  =  \oview{s} \cdot n$ for $\lambda$-node $n$;
-$\oview{\Pstr[10pt]{s \cdot (m){m} \cdots (x-m,30){x}}}= \Pstr{ \oview{s} \cdot (m2){m} \cdot (n2-m2,45){x} }$ for variable node $x$; and $\oview{s \cdot @ } = @$.
+$\oview{\Pstr[10pt]{s \cdot (m){m} \cdots (x-m,30){x}}}= \Pstr{ \oview{s} \cdot (m2){m} \, (n2-m2,45){x} }$ for variable node $x$; and $\oview{s \cdot @ } = @$.
 
 % Expanded version of the O-View definition:
 % The dual notion of O-view, denoted $\oview{s}$, is defined by:
@@ -775,7 +775,7 @@ For any term $M$ we define the \defname{set of justified paths} $\pathset(M)$ as
 or (ii) the \emph{structure} of the maximal justified paths in $\pathset(M)$, up to $\alpha$-conversion.
 \end{property}
 \begin{proof}
-(i) Computation trees are in one-to-one correspondence with the standard tree representation of a lambda term. By definition, $\pathset(M)$ is prefix-closed and thus uniquely determined by its maximal elements. (ii) Variables names are uniquely determined by the justification pointers and their associated label index.
+(i) Term trees are in one-to-one correspondence with the standard tree representation of lambda terms in the lambda calculus. By definition, $\pathset(M)$ is prefix-closed and thus uniquely determined by its maximal elements. (ii) Variables names are uniquely determined by the justification pointers and their associated label index.
 \end{proof}
 
 \begin{example}
@@ -804,7 +804,7 @@ It is well-defined because sequences in $T$ correspond to actual paths in the tr
 \caption{Reconstructing a term tree from justified paths.}
 \label{algo:termtree_readout_from_justitied_paths}
 \REQUIRE{Set $T$ of justified sequences of a term $M$ verifying $T \equiv \pathset(N)$ for some term $N$.}
-\ENSURE{Computation tree of $N$, modulo variable renaming.}
+\ENSURE{Tree of $N$, modulo variable renaming.}
 \STATE Let $(P, L)$ be the labelled-tree induced by $T$.
 \FORALL{node $n \in P$ (by depth-first enumeration)}
     \STATE Let $(l,b,i) = L(n)$
@@ -845,7 +845,7 @@ We will use interchangeably `\emph{ULC traversal}', `\emph{imaginary traversal}'
 \begin{itemize}[leftmargin=3em]
     \item[\rulenamet{Root}] The singleton sequence $r$ is in $\travulc$ where $r$ is the root of the term tree.
 
-    \item[\rulenamet{App}] If $t \cdot @$ is a traversal, so is \Pstr[0.4cm]{t \cdot (at) @  \cdot (a-at,40:0) \alpha} where $\alpha\in\NodesLmd$ is the $0$th child $\lambda$-node of $@$.
+    \item[\rulenamet{App}] If $t \cdot @$ is a traversal, so is \Pstr[0.4cm]{t \cdot (at) @  \, (a-at,40:0) \alpha} where $\alpha\in\NodesLmd$ is the $0$th child $\lambda$-node of $@$.
 
     \item[\rulenamet{Lam}] If $t \cdot \alpha$ is a traversal for $\alpha\in\NodesLmd$, so is $t \cdot \alpha \cdot n$ where $n$ is the unique child of $\alpha$ and:
     \begin{compactitem}
@@ -856,8 +856,8 @@ We will use interchangeably `\emph{ULC traversal}', `\emph{imaginary traversal}'
         (\ie,~$\alpha = \ghostlmd$) with $t \cdot \alpha = \Pstr[0.5cm]{ u \cdot \beta \cdot
         (m){m} \cdots (gl-m,40:i){\ghostlmd}}$ for some prefix $u$ and nodes
         $\beta \in \ExtendedNodesLmd, m \in\ExtendedNodesVar \Union \NodesApp$
-        then $\Pstr[0.5cm]{ u \cdot(beta){\beta} \cdot
-    (m){m} \cdot \ldots \cdot (gl-m,40:i){\ghostlmd}\cdot (al-beta,40:{|\beta| + i - |m|}){\ghostvar} \in\travulc}$.
+        then $\Pstr[0.5cm]{ u \cdot(beta){\beta} \,
+    (m){m} \cdot \ldots \cdot (gl-m,30:i){\ghostlmd}\, (al-beta,40:{|\beta| + i - |m|}){\ghostvar} \in\travulc}$.
     \end{compactitem}
 \end{itemize}
 \emph{\bf PROGRAM -- Copy-cat rule}
@@ -866,8 +866,8 @@ We will use interchangeably `\emph{ULC traversal}', `\emph{imaginary traversal}'
     \ldots (n-beta,50:i){n}\in\travulc} for $m \in\ExtendedNodesVar \union \NodesApp$, internal nodes $\beta \in \ExtendedNodesLmd$, $n \in \ExtendedNodesVar$
     and $i>0$ then we have
   $\Pstr[0.3cm]{ t  \cdot
-(m){m} \cdot (lx){\beta}  \ldots (x-lx,30:i){n}
-    \cdot (letai-m,40:i){\alpha} \in\travulc}$
+(m){m} \, (lx){\beta}  \ldots (x-lx,30:i){n}
+    \, (letai-m,45:i){\alpha} \in\travulc}$
     where $\alpha$ denotes the $i$th child of $m$.
 \end{itemize}
 
@@ -954,8 +954,8 @@ We call \defname{ghost materialization} any instantiation of a traversal rule wh
 Observe that only the variable rule can materialize a structural node from a
 traversal ending with a ghost node. Once a traversal starts to visit ghost nodes, the only way for it to `return'  to structural nodes is via a ghost variable using an instantiation of \rulenamet{Var} producing a traversal of the form
 $
-\Pstr[0.5cm]{ t  \cdot (y){y} \cdot (l){\alpha}  \ldots (t-l,30:i){\ghostvar}
-    \cdot (lx-y,40:i){\lambda \overline{x}}}
+\Pstr[0.5cm]{ t \cdot (y){y} \, (l){\alpha}  \ldots (t-l,30:i){\ghostvar}
+    \, (lx-y,40:i){\lambda \overline{x}}}
 $
 where
  $\lambda \overline{x} \in \NodesLmd$ is the $i$th child lambda node of variable node $y \in \NodesVar$,
@@ -977,7 +977,7 @@ As mentioned earlier, the condition  $i-|m|>0$ only holds for the imaginary case
 It follows from the definition that $M$ is a sub-tree of $M^t$ therefore paths in the tree of $M$ are also paths in the tree of $M^t$.
 
 \begin{example}
-The eta-expansion of $J = (\lambda u . u(x\,u)) (\lambda v . v\,y)$, with tree shown in Figure~\ref{fig:comptree_examples}, with respect to traversal $t$ from Example~\ref{ex:ulctrav_sample} is
+The eta-expansion of $J = (\lambda u . u(x\,u)) (\lambda v . v\,y)$ with respect to traversal $t$ from Example~\ref{ex:ulctrav_sample} is
 $J^t = (\lambda u . u(x (\lambda \alpha. u (\lambda \beta.\alpha\,\beta))) (\lambda v . v\,y)$
 for some fresh variable names $\alpha, \beta$.
 \end{example}
@@ -1015,28 +1015,28 @@ We extend it to ghost nodes by mapping ghost occurrences in $t$ to the correspon
 
 \begin{example}
 Continuing with Example~\ref{ex:ulctrav_sample},
-the traversal $t$ of $J$ correspond to the
+the traversal $t$ of $\ctree(J)$ corresponds to the
 traversal
 $\Pstr[0.7cm]{
  (n0){\lambda}
- (n1){@}
- (n2-n1){\lambda u}
- (n3-n2){u}
- (n4-n1){\lambda v}
- (n5-n4){v}
- (n6-n3){\bf \lambda}
- (n7-n0){x}
- (n8-n7){\bf \lambda}
- (n9-n2){u}
- (n10-n1){\lambda v}
- (n11-n10){v}
- (n12-n9){\underline{\lambda\beta}}
- (n13-n8){\underline{\alpha}}
- (n14-n13){\underline{\lambda}}
- (n15-n12){\underline{\beta}}
- (n16-n11){\lambda}
- (n17-n0,35){y} }$
- of $J^t$.
+ \, (n1){@}
+ \, (n2-n1){\lambda u}
+ \, (n3-n2){u}
+ \, (n4-n1){\lambda v}
+ \, (n5-n4){v}
+ \, (n6-n3){\bf \lambda}
+ \, (n7-n0){x}
+ \, (n8-n7){\bf \lambda}
+ \, (n9-n2){u}
+ \, (n10-n1){\lambda v}
+ \, (n11-n10){v}
+ \, (n12-n9){\underline{\lambda\beta}}
+ \, (n13-n8){\underline{\alpha}}
+ \, (n14-n13){\underline{\lambda}}
+ \, (n15-n12){\underline{\beta}}
+ \, (n16-n11){\lambda}
+ \, (n17-n0,30){y} }$
+ of $\ctree(J^t)$.
 \end{example}
 
 \paragraph{Traversal core}
@@ -1060,13 +1060,14 @@ We define the partial function $\coresymbol_{\overline{y}}\colon \justseqset(M) 
 \coresymbol_{pop_{|n|}(\overline{y})}(s)
     & \mbox{if } n\in(\ExtendedNodesVar\inter\InternalNodes)\union\NodesApp, \\
 \coresymbol_{\epsilon}(s) \cdot \lambda \overline{x}\overline{y}
-    & \mbox{if } n\in\NodesLmd\inter\ExternalNodes, n \mbox{ labelled } \lambda\overline{x},\\
+    & \mbox{if } n\in\ExtendedNodesLmd\inter\ExternalNodes, n \mbox{ labelled } \lambda\overline{x},\\
 \coresymbol_{\overline{x} \otimes \overline{y}}(s)
-    & \mbox{if } n\in\NodesLmd\inter\InternalNodes, n \mbox{ labelled } \lambda\overline{x}, \\
-\coresymbol_{\epsilon}(s) \cdot\lambda\overline{y}
-    & \mbox{if } n\in\ghostlmd\inter\ExternalNodes, \\
-\coresymbol_{\overline{y}}(s)
-    & \mbox{if } n\in\ghostlmd\inter\InternalNodes.
+    & \mbox{if } n\in\ExtendedNodesLmd\inter\InternalNodes, n \mbox{ labelled } \lambda\overline{x} .
+%%%% Uncomment if want to make ghost lambda case explicit
+% \coresymbol_{\epsilon}(s) \cdot\lambda\overline{y}
+%     & \mbox{if } n\in\ghostlmd\inter\ExternalNodes, \\
+% \coresymbol_{\overline{y}}(s)
+%     & \mbox{if } n\in\ghostlmd\inter\InternalNodes.
 %%%%%
 \end{cases}
 \end{equation*}
@@ -1074,15 +1075,15 @@ The above equalities are assumed pointer-preserving, and are well-defined since 
 the \defname{core} of $s$ as $\core{s} = \coresymbol_\epsilon(s)$,
 and the \defname{core P-view} of $s$ as $\pview{\core{s}}$, the P-view of its core.
 
-(To keep the definition simple we do not bother renaming the variable occurrences when a variable get renamed via $\otimes$, this is because the name of variable occurrences can always be recovered from its justifier and justification label.)
+(To keep the definition simple, (i) ghost lambda is identified with the dummy lambda, so that ghost lambda case is handle by the last two equalities; (ii) we do not bother renaming the variable occurrences when a variable get renamed via $\otimes$, this is because the name of variable occurrences can always be recovered from its justifier and justification label.)
 \end{definition}
 
-In the above definition, the subscript parameter $\overline{y}$ is called \defname{stack of pending lambdas}. As the sequence is read backwards, it accumulates variable names which then get prepended to the last external lambda nodes in the sequence. Hence the \emph{core projection} is the sub-sequence obtained by removing internal nodes and prepending to each external lambda node's label, the stack of \emph{pending lambdas} between that point to the next external node.
+In the above definition, the subscript parameter $\overline{y}$ is called \defname{stack of pending lambdas}. As the sequence is read backwards, it accumulates variable names which then get discharched onto the next external lambda node read from the sequence. Hence the \emph{core projection} is the sub-sequence obtained by removing internal nodes and prepending to each external lambda node's label, the stack of \emph{pending lambdas} between that point to the next external node.
 
 Since the core of a justified sequence only contains external nodes it follows that $\coresymbol$ is idempotent.
 
-\begin{example}Take the term $\lambda w . (\lambda x y .x) z$ and consider traversal $t = \lambda w\cdot @ \cdot \lambda x y\cdot x\cdot\lambda \cdot z$.
-    Then $\coresymbol(t) = \lambda wy \cdot z$.
+\begin{example}Take the term $\lambda w . (\lambda x y .x) z$ with traversal $t = \lambda w ~ @ ~ \lambda x y ~ x ~ \lambda ~ z$.
+    Then $\coresymbol(t) = \lambda w^{[y]} ~ z$.
 \end{example}
 
 
@@ -1186,7 +1187,7 @@ The traversals $t_k$, $k\geq 0$, correspond to plays
 \begin{definition}
 \label{dfn:essential_traversals}
 The set of \defname{essential traversals} $\travsetes$ is the subset of $\travulc$ defined by induction with the rules of Table~\ref{tab:trav_rules} where the justifier node in the
-input-variable rule \rulenamet{IVar} is restricted to be necessarily the last node in the traversal: \ie, $m=n$ and the traversal obtained is $\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:i){\alpha}} \in \travsetes$.
+input-variable rule \rulenamet{IVar} is restricted to be necessarily the last node in the traversal: $m=n$ and the produced traversal is $\Pstr[0.5cm]{t \cdot (n){n} \, (l-n,25:i){\alpha}} \in \travsetes$.
 We will use the subscript `${}_\essential$' to refer to this system of rules.
 % The input variable rule can thus be stated by the following derivation rule:
 % \infrule[$\rulefont{IVar_\essential}$]
@@ -1592,13 +1593,13 @@ where $\pview{\core{t}} = t$, is not equivalent to $\pview{\core{u}}$ for any $u
 
     \infrule[$\rulefont{App}_\normalizing$]
         {\istraversal t \cdot @ \andalso @ \enables_0 \alpha }
-        {\istraversal \Pstr[0.4cm]{t \cdot (at) @  \cdot (a-at,40:0) \alpha} \andalso (\alpha\in\NodesLmd)}
+        {\istraversal \Pstr[0.4cm]{t \, (at) @  \, (a-at,40:0) \alpha} \andalso (\alpha\in\NodesLmd)}
 
     \infrule[$\rulefont{Lam}^@_\normalizing$]
          {\istraversal t \cdot \alpha
          \andalso \alpha\in\NodesLmd
          \andalso \child(\alpha) \in \NodesApp }
-         {\istraversal t \cdot \alpha \cdot \child(\alpha)\andalso \mbox{$\child(\alpha)$ has no pointer}}
+         {\istraversal t \cdot \alpha ~ \child(\alpha)\andalso \mbox{$\child(\alpha)$ has no pointer}}
 
     \infrule[$\rulefont{Lam}^{\sf var}_\normalizing$]
          {\istraversal u \cdot \beta \cdot v \cdot \alpha
@@ -1606,7 +1607,7 @@ where $\pview{\core{t}} = t$, is not equivalent to $\pview{\core{u}}$ for any $u
          \quad \child(\alpha) \in \NodesVar
          \quad \beta \enables_i \child(\alpha), i \geq 1
          \quad \beta \mbox{ visible at } \alpha }
-         {\istraversal \Pstr[0.5cm]{u \cdot (beta)\beta \cdot v \cdot \alpha \cdot (n-beta,30:i){\child(\alpha)
+         {\istraversal \Pstr[0.5cm]{u \cdot (beta)\beta \cdot v \cdot \alpha \, (n-beta,30:i){\child(\alpha)
          }}}
 
     \infrule[$\rulefont{Lam^\ghostvar_\normalizing}$]
@@ -1614,10 +1615,10 @@ where $\pview{\core{t}} = t$, is not equivalent to $\pview{\core{u}}$ for any $u
             \istraversal \Pstr[0.5cm]{ t \cdot(beta){\beta} \cdot (m){m} \ldots (gl-m,40:i){\ghostlmd}}
         }
         {
-            \Pstr[0.5cm]{ \istraversal t \cdot(beta){\beta} \cdot
+            \Pstr[0.5cm]{ \istraversal t \cdot(beta){\beta} \,
             (m){m}
              \ldots
-            (gl-m,40:i){\ghostlmd}\cdot (al-beta,40:{|\beta| + i - |m|}){\ghostvar}
+            (gl-m,40:i){\ghostlmd}\, (al-beta,45:{|\beta| + i - |m|}){\ghostvar}
                }
             \andalso(\beta\in\ExtendedNodesLmd, m \in\ExtendedNodesVar\union\NodesApp)
         }
@@ -1626,16 +1627,17 @@ where $\pview{\core{t}} = t$, is not equivalent to $\pview{\core{u}}$ for any $u
 
     \infrule[$\rulefont{Var}_\normalizing$]
         {
-            \istraversal \Pstr[0.5cm]{t \cdot m \cdot (beta){\beta}
+            \istraversal \Pstr[0.5cm]{t \cdot m \, (beta){\beta}
             \ldots (n-beta,50:i){n}}
             \andalso n \in \ExtendedNodesVar \setminus \ExternalNodes
             \andalso m \enables_i \alpha
             \andalso i>0
         }
         {
-            \istraversal \Pstr[0.5cm]{ t \cdot
-            (m){m} \cdot (a){\beta}  \ldots (n-a,30:i){n}
-                \cdot (letai-m,36:i){\alpha}
+            \istraversal \Pstr[0.5cm]{
+            t \cdot
+                (m){m} \, (a){\beta}  \ldots
+                (n-a,30:i){n} \, (letai-m,47:i){\alpha}
                 }
             \andalso (m \in \ExtendedNodesVar\union\NodesApp, \alpha\in\ExtendedNodesLmd,\beta\in\ExtendedNodesLmd)
         }
@@ -1647,7 +1649,7 @@ where $\pview{\core{t}} = t$, is not equivalent to $\pview{\core{u}}$ for any $u
           \andalso n \enables_i \alpha
           \andalso 1\leq i \leq\dynar(t)
          }
-         {\istraversal\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,30:i){\alpha}}
+         {\istraversal\Pstr[0.5cm]{t \cdot (n){n} \, (l-n,30:i){\alpha}}
          \andalso(\alpha\in\NodesLmd)
          }
 
@@ -1673,7 +1675,7 @@ shows correctness of the algorithm, in particular that the set of justified path
 \caption{Normalization by traversals for the Untyped Lambda Calculus}
 \label{algo:ulc_normalization_by_traversals}
 \REQUIRE{Untyped term $M$ having a beta-normal form}
-\ENSURE{Computation tree of the beta-normal form of $M$ modulo $\alpha$-conversion}
+\ENSURE{Tree of the beta-normal form of $M$ modulo $\alpha$-conversion}
 \begin{enumerate}[nosep]
   \item Calculate $T \leftarrow \{ \pview{\core{t}} \ | \ t \in \travsetnorm \}$ as follows:
   \begin{itemize}[leftmargin=0.5em,nosep]
@@ -1711,9 +1713,9 @@ Take $M \alphaequiv {\sf add}\, 1$ representing the increment function such that
 Let us traverse the tree of $M$ represented in Figure~\ref{fig:comptree_examples}. Throughout this example we underline external nodes to highlight node occurrences at the strands' boundaries.
 We start at the root and traverse the tree until hitting the first non-deterministic choice which produces
 $t_\epsilon = \Pstr[0.7cm]{(n0){\underline\lambda }\,(n1){@}\,(n2-n1){\lambda x y s z}\,(n3-n2){x}\,(n4-n1,32){\lambda s z}\,(n5-n4,30){s}\,(n6-n3,33){\lambda }\,(n7-n2,37){s}\,(n8-n1,32){\ghostlmd^3}\,(n9-n0,32){\underline{\ghostvar}^2} }$. Its core projection is
-$\core{t_\epsilon} = \Pstr[0.7cm]{(n0){\lambda^{[y\,s\,z]}} \cdot (n9-n0){{\ghostvar^2}} } \equiv
-\Pstr[0.7cm]{(n0){\lambda y s z} \cdot (n9-n0){s} }$
-and therefore $\pview{\core{t_\epsilon}} = \lambda y s z \cdot z$ is a path in the normal form of $M$.
+$\core{t_\epsilon} = \Pstr[0.7cm]{(n0){\lambda^{[y\,s\,z]}} \, (n9-n0){{\ghostvar^2}} } \equiv
+\Pstr[0.7cm]{(n0){\lambda y s z} \, (n9-n0){s} }$
+and therefore $\pview{\core{t_\epsilon}} = \lambda y s z \, z$ is a path in the normal form of $M$.
 The normal form must therefore have the shape $\lambda y s z \ldots \cdot s N_1 \ldots N_q$ for and $q\geq0$.
 
 %\item
@@ -1721,28 +1723,29 @@ To determine the $N_k$ arguments we enumerate all the possible instantiation of 
 We lookup the node arities from the tree represented in Figure~\ref{fig:comptree_examples}. The arities of the traversal strand are
  $0,1,4,2,2,1,0,0,0,0$ so the dynamic arity is given by the maximum of the intermediate values generated from the summation $(((((0) + -0+0) -0 +1) -2 + 2) -4 +1)$, hence $\dynar(t_\epsilon) = \max \{ 0,0,1,1,-2 \} = 1$.
  Hence this eliminates the cases $k>1$, which means that the normal form has in fact the shape $\lambda y s z \ldots \cdot s N_1$.
-
-Extending traversal $t_\epsilon$ with rule $\rulename{IVar}$ for $k=1$ and unfolding the next strand gives traversal
+%
+ Extending traversal $t_\epsilon$ with rule $\rulename{IVar}$ for $k=1$ and unfolding the next strand gives traversal
 $t_1 = \Pstr[0.7cm]{(n0){\underline\lambda }
     (n1){@}
-    (n2-n1){\lambda x y s z}
-    (n3-n2){x}
-    (n4-n1){\lambda s z}
-    (n5-n4){s}
-    (n6-n3){\lambda }
-    (n7-n2){s}
-    (n8-n1){\ghostlmd^3}
-    (n9-n0){\underline{\ghostvar^2}}
-    (n10-n9){\underline{\ghostlmd^1}}
-    (n11-n8){\ghostvar^1}
-    (n12-n7){\ghostlmd^1}
-    (n13-n6){\ghostvar^1}
-    (n14-n5){\lambda^1}
-    (n15-n4,38)z
-    (n16-n3){\lambda^2}
-    (n17-n2,40)y
-    (n18-n1){\ghostlmd^2}
-    (n19-n0){\underline\ghostvar^1}
+    \,(n2-n1){\lambda x y s z}
+    \,(n3-n2){x}
+    \,(n4-n1){\lambda s z}
+    \,(n5-n4){s}
+    \,(n6-n3){\lambda }
+    \,(n7-n2){s}
+    \,(n8-n1){\ghostlmd^3}
+    \,(n9-n0){\underline{\ghostvar^2}}
+    %%%% second strand
+    \,(n10-n9,35:1){\underline{\ghostlmd^1}}
+    \,(n11-n8){\ghostvar^1}
+    \,(n12-n7){\ghostlmd^1}
+    \,(n13-n6){\ghostvar^1}
+    \,(n14-n5){\lambda^1}
+    \,(n15-n4,38)z
+    \,(n16-n3){\lambda^2}
+    \,(n17-n2,40)y
+    \,(n18-n1){\ghostlmd^2}
+    \,(n19-n0){\underline\ghostvar^1}
 }$
 whose core P-view is given by
 $\pview{\core{t_1}} = \lambda^{[y s z]} \cdot \ghostvar^2 \cdot{\ghostlmd^1} \cdot\ghostvar^1
@@ -1762,15 +1765,16 @@ t_{11} = \Pstr[0.7cm]{
     (n1){@}
     \cdots
     (n9-n0){\underline{\ghostvar^2}}
-    (n10-n9){\underline{\ghostlmd^1}}
+    %%%%%%%% second strand
+    (n10-n9,35:1){\underline{\ghostlmd^1}}
     \cdots
-    (n17-n2)y
+    (n17-n2,45)y
     (n18-n1,42){\ghostlmd^2}
     (n19-n0,42){\underline{\ghostvar^1}}
-    (n20-n19,30){\underline{\ghostlmd^1}}
-    %%%%%%%%
+    %%%%%%%% third strand
+    (n20-n19,30:1){\underline{\ghostlmd^1}}
     (n21-n18,35){\ghostvar^1}
-    (n22-n17,43:1)\lambda % points to non-ghost node
+    (n22-n17,43)\lambda % points to non-ghost node
     (n23-n2,42) s
     (n24-n1,40) {\ghostlmd^3}
     (n25-n0,40) {\underline{\ghostvar^2}}
@@ -1781,15 +1785,16 @@ t_{12} = \Pstr[0.7cm]{
     (n1){@}
     \cdots
     (n9-n0){\underline{\ghostvar^2}}
-    (n10-n9){\underline{\ghostlmd^1}}
+    %%%%%%%% second strand
+    (n10-n9,35:1){\underline{\ghostlmd^1}}
     \cdots
-    (n17-n2)y
+    (n17-n2,45)y
     (n18-n1,42){\ghostlmd^2}
     (n19-n0,42){\underline{\ghostvar^1}}
-    (n20-n19){\underline{\ghostlmd^2}}
-    %%%%%%%%
-    (n21-n18){\ghostvar^2}
-    (n22-n17,46:2)\lambda % points to non-ghost node
+    %%%%%%%% third strand
+    (n20-n19,35:2){\underline{\ghostlmd^2}}
+    (n21-n18,35){\ghostvar^2}
+    (n22-n17,46)\lambda % points to non-ghost node
     (n23-n2,43) z
     (n24-n1,40) {\ghostlmd^4}
     (n25-n0,40) {\underline{\ghostvar^3}}
@@ -1882,26 +1887,27 @@ This example illustrates how on-the-fly eta-expansion helps resolve the ``missin
 Its two maximal normalizing traversals are:
 \begin{eqnarray*}
 t_1 = \Pstr[4ex]{
-        (n0){\underline{\lambda} }
-        (n1){@}
-        (n2-n1){\lambda u}
-        (n3-n2){u}
-        (n4-n1){\lambda v}
-        (n5-n4){v}
-        (n6-n3){\lambda }
-        (n7-n0){\underline{x}}
-        (n8-n7){\underline{\lambda} }
-        (n9-n2){u}
-        (n10-n1){\lambda v}
-        (n11-n10){v}
-        (n12-n9){{\ghostlmd^{1}}}
-        (n13-n8){{\ghostvar^{1}}}
-        (n14-n13){{\ghostlmd^{1}}}
-        (n15-n12){{\ghostvar^{1}}}
-        (n16-n11){\lambda }
-        (n17-n0){\underline{y}}
+    (n0){\underline{\lambda} }
+    (n1){@}
+    (n2-n1){\lambda u}
+    (n3-n2){u}
+    (n4-n1){\lambda v}
+    (n5-n4){v}
+    (n6-n3){\lambda }
+    (n7-n0){\underline{x}}
+    %%%%
+    \, (n8-n7,35:1){\underline{\lambda} }
+    \, (n9-n2, 40){u}
+    \, (n10-n1){\lambda v}
+    \, (n11-n10){v}
+    \, (n12-n9){{\ghostlmd^{1}}}
+    \, (n13-n8){{\ghostvar^{1}}}
+    \, (n14-n13){{\ghostlmd^{1}}}
+    \, (n15-n12){{\ghostvar^{1}}}
+    \, (n16-n11){\lambda }
+    \, (n17-n0){\underline{y}}
 }
-&&
+&
 t_2 = \Pstr[4ex]{
     (n0){\underline{\lambda} }
     (n1){@}
@@ -1911,28 +1917,30 @@ t_2 = \Pstr[4ex]{
     (n5-n4){v}
     (n6-n3){\lambda }
     (n7-n0){\underline{x}}
-    (n8-n7){\underline{\ghostlmd^{2}}}
-    (n9-n6){{\ghostvar^{1}}}
-    (n10-n5){\lambda }
-    (n11-n0){\underline{y}}
+    %%%%
+    \, (n8-n7,35:2){\underline{\ghostlmd^{2}}}
+    \, (n9-n6,40){{\ghostvar^{1}}}
+    \, (n10-n5,40){\lambda }
+    \, (n11-n0){\underline{y}}
 }
 \end{eqnarray*}
 Traversing $J$ with concrete rules lets you follow $t_1$ until the second occurrence of $v$ in $t_1$, where the traversal gets stuck due to the bottom node $u$ lacking an operand. Whereas the imaginary traversal instantiates that missing operand on-the-fly, via the ghost child lambda node $\ghostlmd^1$ of $u$.
 Traversal $t_2$ illustrates a different situation where, instead of being stuck, the concrete traversals misses a valid path from the beta normal form: variable $x$ does have one argument in $J$, which gets traversed by concrete traversals, but the imaginary traversal $t_2$ pushes the exploration further by traversing the imaginary second argument to $x$, represented by $\ghostlmd^2$, eventually materializing node $y$, which ends up being the second argument of $x$ in the normal form.
 The core P-views
 %$\pview{\core{t_1}} = \lambda\, x\, \lambda^{[v]} \, \ghostvar^{1}\, \ghostlmd^{1}\, y$
-$\pview{\core{t_1}} = \Pstr[0.7cm]{(n0){\lambda}
-(n1-n0){x}
-(n2-n1){\lambda^{[v]}}
-(n3-n2){{\ghostvar^{1}}}
-(n4-n3){{\ghostlmd^{1}}}
-(n5-n0){y} }$
+$\pview{\core{t_1}} = \Pstr[0.7cm]{
+    (n0){\lambda}
+\,(n1-n0){x}
+\,(n2-n1){\lambda^{[v]}}
+\,(n3-n2){{\ghostvar^{1}}}
+\,(n4-n3){{\ghostlmd^{1}}}
+\,(n5-n0){y} }$
 and
  $\pview{\core{t_2}} = \Pstr[0.7cm]{
-     (n0){\lambda }
-     (n1-n0){x}
-    (n2-n1){{\ghostlmd^{2}}}
-    (n3-n0,40){y}}$
+    (n0){\lambda }
+    \,(n1-n0){x}
+    \,(n2-n1){{\ghostlmd^{2}}}
+    \,(n3-n0,40){y}}$
 are the two maximal paths in the beta-normal form.
 The beta-normal form of $J$ is thus $x (\lambda v.v\,y) y$.
 \end{example}
@@ -1945,7 +1953,64 @@ The beta-normal form of $J$ is thus $x (\lambda v.v\,y) y$.
 
     \noindent \resizebox{1\hsize}{!}{
     $$
-    \Pstr[0.7cm]{{\lambda }\ (n1){@}\ (n2-n1){\lambda x}\ (n3-n2){x}\ (n4-n1){\lambda y}\ (n5-n4){y}\ (n6-n3){\lambda }\ (n7-n2){x}\ (n8-n1){\lambda y}\ (n9-n8){y}\ (n10-n7){{\ghostlmd^{1}}}\ (n11-n6){{\ghostvar^{1}}}\ (n12-n5){\lambda }\ (n13-n4){y}\ (n14-n3){\lambda }\ (n15-n2){x}\ (n16-n1){\lambda y}\ (n17-n16){y}\ (n18-n15){{\ghostlmd^{1}}}\ (n19-n14){{\ghostvar^{1}}}\ (n20-n13){{\ghostlmd^{1}}}\ (n21-n12){{\ghostvar^{1}}}\ (n22-n11){{\ghostlmd^{1}}}\ (n23-n10){{\ghostvar^{1}}}\ (n24-n9){\lambda }\ (n25-n8){y}\ (n26-n7){{\ghostlmd^{1}}}\ (n27-n6){{\ghostvar^{1}}}\ (n28-n5){\lambda }\ (n29-n4){y}\ (n30-n3){\lambda }\ (n31-n2){x}\ (n32-n1){\lambda y}\ (n33-n32){y}\ (n34-n31){{\ghostlmd^{1}}}\ (n35-n30){{\ghostvar^{1}}}\ (n36-n29){{\ghostlmd^{1}}}\ (n37-n28){{\ghostvar^{1}}}\ (n38-n27){{\ghostlmd^{1}}}\ (n39-n26){{\ghostvar^{1}}}\ (n40-n25){{\ghostlmd^{1}}}\ (n41-n24){{\ghostvar^{1}}}\ (n42-n23){{\ghostlmd^{1}}}\ (n43-n22){{\ghostvar^{1}}}\ (n44-n21){{\ghostlmd^{1}}}\ (n45-n20){{\ghostvar^{1}}}\ (n46-n19){{\ghostlmd^{1}}}\ (n47-n18){{\ghostvar^{1}}}\ (n48-n17){\lambda }\ (n49-n16){y}\ (n50-n15){{\ghostlmd^{1}}}\ (n51-n14){{\ghostvar^{1}}}\ (n52-n13){{\ghostlmd^{1}}}\ (n53-n12){{\ghostvar^{1}}}\ (n54-n11){{\ghostlmd^{1}}}\ (n55-n10){{\ghostvar^{1}}}\ (n56-n9){\lambda }\ (n57-n8){y}\ldots }
+    \Pstr[0.7cm]{{\lambda }
+        (n1){@}
+        (n2-n1){\lambda x}
+        (n3-n2){x}
+        (n4-n1){\lambda y}
+        (n5-n4){y}
+        (n6-n3){\lambda }
+        (n7-n2){x}
+        (n8-n1){\lambda y}
+        (n9-n8){y}
+        (n10-n7){{\ghostlmd^{1}}}
+        (n11-n6){{\ghostvar^{1}}}
+        (n12-n5){\lambda }
+        (n13-n4){y}
+        (n14-n3){\lambda }
+        (n15-n2){x}
+        (n16-n1){\lambda y}
+        (n17-n16){y}
+        (n18-n15){{\ghostlmd^{1}}}
+        (n19-n14){{\ghostvar^{1}}}
+        (n20-n13){{\ghostlmd^{1}}}
+        (n21-n12){{\ghostvar^{1}}}
+        (n22-n11){{\ghostlmd^{1}}}
+        (n23-n10){{\ghostvar^{1}}}
+        (n24-n9){\lambda }
+        (n25-n8){y}
+        (n26-n7){{\ghostlmd^{1}}}
+        (n27-n6){{\ghostvar^{1}}}
+        (n28-n5){\lambda }
+        (n29-n4){y}
+        (n30-n3){\lambda }
+        (n31-n2){x}
+        (n32-n1){\lambda y}
+        (n33-n32){y}
+        (n34-n31){{\ghostlmd^{1}}}
+        (n35-n30){{\ghostvar^{1}}}
+        (n36-n29){{\ghostlmd^{1}}}
+        (n37-n28){{\ghostvar^{1}}}
+        (n38-n27){{\ghostlmd^{1}}}
+        (n39-n26){{\ghostvar^{1}}}
+        (n40-n25){{\ghostlmd^{1}}}
+        (n41-n24){{\ghostvar^{1}}}
+        (n42-n23){{\ghostlmd^{1}}}
+        (n43-n22){{\ghostvar^{1}}}
+        (n44-n21){{\ghostlmd^{1}}}
+        (n45-n20){{\ghostvar^{1}}}
+        (n46-n19){{\ghostlmd^{1}}}
+        (n47-n18){{\ghostvar^{1}}}
+        (n48-n17){\lambda }
+        (n49-n16){y}
+        (n50-n15){{\ghostlmd^{1}}}
+        (n51-n14){{\ghostvar^{1}}}
+        (n52-n13){{\ghostlmd^{1}}}
+        (n53-n12){{\ghostvar^{1}}}
+        (n54-n11){{\ghostlmd^{1}}}
+        (n55-n10){{\ghostvar^{1}}}
+        (n56-n9){\lambda }
+        (n57-n8){y}\ldots }
     $$
     }
 
@@ -1954,33 +2019,33 @@ The beta-normal form of $J$ is thus $x (\lambda v.v\,y) y$.
     So as the term is being evaluated, it takes exponentially longer to determine that $y_2$ is the argument of $y_1$.
     The resulting infinite traversal is expressed as follows (omitting justification pointers):
     \begin{equation*}
-    t_\Omega = \lambda \cdot @ \cdot \lambda x \cdot  x_1 \cdot \lambda y \cdot y_1
+    t_\Omega = \lambda ~ @ ~ \lambda x ~  x_1 ~ \lambda y ~ y_1
     \cdot  \sum_{i\geq 1}
         \left[
-            \lambda \cdot x_2 \cdot \lambda y \cdot y_1 \cdot
-             {(\ghostlmd\ \ghostvar)}^{2^i -1}\cdot \lambda \cdot y_2
-                 \sum_{i\leq j<i}
+            \lambda ~ x_2 ~ \lambda y ~ y_1 \cdot
+             {(\ghostlmd\ \ghostvar)}^{2^i -1}\cdot \lambda ~ y_2
+                 \cdot \sum_{i\leq j<i}
                     \left(
                         {(\ghostlmd\ \ghostvar)}^{2^j -1}
                         \cdot
-                        \lambda \cdot y_2
+                        \lambda ~ y_2
                     \right)
         \right]
     \end{equation*}
     where $\sum$ represents sequence concatenation and $u^i$ represents the concatenation of $i$ copies of $u$ for $i\geq 0$.
     Represented more succinctly by keeping only variable nodes and omitting redundant lambda and @-nodes:
-    $t_\Omega \filter \NodesVar =  x_1 \cdot y_1
+    $t_\Omega \filter \NodesVar =  x_1 ~ y_1
         \cdot  \sum_{i\geq 1}
             \left[
-                x_2 \cdot y_1 \cdot
-                 \ghostvar^{2^i -1}\cdot y_2
+                x_2 ~ y_1 \cdot
+                 \ghostvar^{2^i -1}\cdot y_2 \cdot
                      \sum_{1\leq j <i} (\ghostvar^{2^j -1} \cdot y_2)
             \right]
     $.
     Without ghost nodes, $\Omega$'s traversal semantics can thus be summarized as
     $
-        t_\Omega \filter (\NodesVar\inter\ExternalNodes) =  x_1 \cdot y_1
-        \cdot  \sum_{i\geq 1} x_2 \cdot y_1 \cdot {y_2}^i \ .
+        t_\Omega \filter (\NodesVar\inter\ExternalNodes) =  x_1 ~ y_1
+        \cdot  \sum_{i\geq 1} x_2 ~ y_1 \cdot {y_2}^i \ .
     $
 \end{example}
 
@@ -2053,14 +2118,14 @@ $}
 Enumerating normalizing traversals yields the set $\{t_\epsilon, t_{11}, t_{12}, t_{121}, t_{122} \}$ with maximal traversals $\{ t_{11}, t_{121}, t_{122} \}$ represented in Table~\ref{tab:varity2_trav}.
 The maximal paths in the beta-normal form are thus given by the core P-views
 $\pview{\core{t_{11}}} =
-        \lambda^{[x' x s z]} \,\ghostvar^{3}\,\ghostlmd^{1}\
+        \lambda^{[x x s z]} \,\ghostvar^{3}\,\ghostlmd^{1}\
         \ghostvar^{1}\,\ghostlmd^{1}\,\ghostvar^{3}
 $,
 $\pview{\core{t_{121}}} =
-        \lambda^{[x' x s z]} \,\ghostvar^{3}\,\ghostlmd^{1}\,\ghostvar^{1}\,\ghostlmd^{2}\,\ghostvar^{2}\,\ghostlmd^{1}\,\ghostvar^{3}$
+        \lambda^{[x x s z]} \,\ghostvar^{3}\,\ghostlmd^{1}\,\ghostvar^{1}\,\ghostlmd^{2}\,\ghostvar^{2}\,\ghostlmd^{1}\,\ghostvar^{3}$
 and
 $\pview{\core{t_{122}}} =
-    \lambda^{[x' x s z]} \,\ghostvar^{3}\,\ghostlmd^{1}\,\ghostvar^{1}\,\ghostlmd^{2}\,\ghostvar^{2}\,\ghostlmd^{2}\,\ghostvar^{4}$,
+    \lambda^{[x x s z]} \,\ghostvar^{3}\,\ghostlmd^{1}\,\ghostvar^{1}\,\ghostlmd^{2}\,\ghostvar^{2}\,\ghostlmd^{2}\,\ghostvar^{4}$,
 where the ghost variables all point to the first lambda node in each sequence.
 %%%% same with pointers:
 % \begin{align*}
@@ -2074,7 +2139,7 @@ where the ghost variables all point to the first lambda node in each sequence.
 % \Pstr[0.7cm]{(n0){\lambda }\ (n1-n0){{\ghostvar^{3}}}\ (n2-n1){{\ghostlmd^{1}}}\ (n3-n0){{\ghostvar^{1}}}\ (n4-n3){{\ghostlmd^{2}}}\ (n5-n0){{\ghostvar^{2}}}\ (n6-n5){{\ghostlmd^{2}}}\ (n7-n0){{\ghostvar^{4}}}}
 % \end{align*}
 %%%%%%%%%
-The beta-normal from of $varity\, 2$ is therefore $\lambda x x' s z . s (x s (x' s z))$.
+The beta-normal from of $varity\, 2$ is therefore $\lambda x' x s z . s (x' s (x s z))$.
 \end{example}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2377,7 +2442,7 @@ Take $N = (\lambda x . U) V$ where $x$ does not occur in $U$ then $N$ trivially 
 \end{property}
 \begin{proof}
 (i) If $M$ were an abstraction $\lambda x. N$ we would have $\lambda_l(M) = \lambda x$ which contradicts the assumption.
-(ii) By Proposition\ref{prop:qnf_nf}(ii), we have that $M$ trivially reduces to
+(ii) By Proposition~\ref{prop:qnf_nf}(ii), we have that $M$ trivially reduces to
 its beta-nf so by Property~\ref{property:lambdalist_linearred},
 $M$ and its normal form must have the same lambda list. We can then conclude using (i).
 \end{proof}
@@ -3422,9 +3487,8 @@ Let's consider the tree structure at the trivial redex on Figure~\ref{fig:reduci
 \endproofatend
 
 \begin{example}
-    The term
-    $M = \lambda x. (\lambda y z.z) u$ from Example~\ref{examp:ghost_materialization} trivially reduces to $N = \lambda x z . z$. Take the traversal $t$ from Example~\ref{examp:ghost_materialization}, then we have $\coresymbol(t) = \Pstr[10pt]{ (l){\lambda x z} \cdot (gv-l,32:2)\ghostvar }$ which is equivalent to
-$\Pstr[10pt]{(l){\lambda x^{[z]}} \cdot (gv-l,32:2)\ghostvar }$, itself equivalent to traversal $\Pstr[10pt]{ (l){\lambda x^{[z]}} \cdot (gv-l,32:2){z} }$ in $N$.
+    Take the term $M = \lambda x. (\lambda y z.z) u$, which trivially reduces to $N = \lambda x z . z$, and its traversal $t$ from Example~\ref{examp:ghost_materialization}.
+    We have $\Pstr[10pt]{(l){\lambda x^{[z]}} \, (gv-l,32:2)\ghostvar }$, which is equivalent to traversal $\Pstr[10pt]{ (l){\lambda x z} \, (gv-l,32:2){z} }$ in $N$.
 \end{example}
 
 
