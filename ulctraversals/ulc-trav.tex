@@ -237,9 +237,6 @@
 \renewcommand\ie{{\it i.e.\@\xspace}}
 \renewcommand\eg{{\it e.g.\@\xspace}}
 
-% Filter operator removing the argument lookup ghost nodes
-\newcommand\filterarglookup{\downharpoonright\!\downharpoonright}
-
 % partial function definition
 \newcommand\pfun{\mathrel{\ooalign{\hfil$\mapstochar\mkern5mu$\hfil\cr$\to$\cr}}}
 
@@ -261,7 +258,7 @@
 % Term equivalence up to alpha renaming
 \newcommand{\alphaequiv}{\equiv}
 
-% set of justified sequences of M using quadruplet encoding
+% set of justified sequences of M
 \def\justseqset{\mathcal{J}}
 \def\istraversal{\models}
 
@@ -638,31 +635,87 @@ denoted $\exttree(M)$ over the \defname{extended nodes} $\ExtendedNodes = \Nodes
 \subsection{Justified sequence of nodes}
 \label{sec:justseq}
 
-A \defname{justified sequence} is defined a sequence of nodes in $\ExtendedNodes$ where every occurrence $n$ in the sequence may have an associated link called `justification pointer' pointing to some previous node occurrence $j$ in the sequence, called its `justifier', with an associated `link label' $l\geq0$; with the constraint that the justifier node $\enables$-enables the source node with the corresponding label; that is $j \enables_l n$ must hold. We represent a justified sequence as a sequence of labelled node occurrences with back-pointing arrows representing justification pointers, for example: $\Pstr[10pt]{ s = \cdots (j){j} \ldots (n-j,25:l){n} }$ which we read `$n$ points to $j$', or `$n$ is justified by $j$' with link label $l$.
+A \defname{justified sequence} is defined a sequence of nodes in $\ExtendedNodes$ where every occurrence $n$ in the sequence may have an associated link called `justification pointer' pointing to some previous node occurrence $j$ in the sequence, called its `justifier', with an associated `link label' $l\geq0$; with the constraint that the justifier node $\enables$-enables the source node with the corresponding label; that is $j \enables_l n$ must hold. We call \emph{Link distance} the number of occurrences separating $n$ from its justifier $j$ plus $1$, or $0$ of $n$ has not justifier;
+and \emph{Link label} to refer the label $i$ of the justification pointer.
+We represent a justified sequence as a sequence of labelled node occurrences with back-pointing arrows representing justification pointers, for example: $\Pstr[10pt]{ s = \cdots (j){j} \ldots (n-j,25:l){n} }$ which we read `$n$ points to $j$', or `$n$ is justified by $j$' with link label $l$.
+
 For readability, we sometimes indicate the link label in exponent of the justified occurrence instead of above the pointer, or even omit the justification pointers altogether.
 Note that the enabling relation is \emph{statically} induced by the tree structure whereas the concept of justification is defined on node \emph{occurrences}, that is within a specific justified sequence. The set $\justseqset(M)$ of justified sequences over $M$ consists of all justified sequences over the extended nodes $\ExtendedNodes$.
 
+Let $s$ denote a justified sequence. We write $s^\omega$ to denote the last occurrence of $s$. For any occurrence $n$ in $s$ we write $s_{\leq n}$ for the prefix of $s$ ending at $n$, and $s_{<n}$ for the prefix ending immediately before $n$.
+%and $\jp(s)$ to denote the prefix of $s$ ending at the justifier of the last node of $s$.
+We say that $s$ \defname{extends} $u$ if $u$ is a strict prefix of $s$.
+%
+%
+We borrow basic definitions from Game Semantics~\cite{Abr02}. A justified sequence verifies the \defname{alternation condition} if it starts with a lambda node and subsequently alternates between (i) a variable or application node (ii) a lambda node.
+An occurrence in a justified sequence is \defname{hereditarily justified by some other occurrence} if recursively following justification pointers starting from the first occurrence leads to the second one.
+Since justification pointers honor the enabling relation $\enables$, if an occurrence of node $n$ is hereditarily justified by occurrence of a node $m\in\Nodes$ then $n$ is necessarily hereditarily enabled by $m$. Further if $m$ occurs only once in $s$ then the occurrences hereditarily justified by $m$ are precisely the occurrences of nodes that are hereditarily \emph{enabled} by $m$ in $\ctree(M)$.
+%
+The \defname{projection} $s\filter n$ of $s$ with respect to $n$ is the subsequence consisting of occurrences hereditarily justified by $n$ in $s$. We write $s \filter A$ for the subsequence of $s$ consisting of occurrences of nodes from a subset $A \subseteq \Nodes$.
+We will consider the subsequence $s\filter\ExternalNodes$ consisting of external nodes of $s$, or equivalently occurrences hereditarily justified by some occurrence of the root in $s$.
 
+The P-view is the sub-sequence obtained by reading a justified sequence backwards as follows: if the last node is a lambda node then follow its justification pointer and skip all the occurrences lying underneath; otherwise move to the preceding node:
+\begin{definition}
+\label{def:views}
+The \defname{P-view $\pview{s}$} of a justified sequence $s$ is defined recursively by:
+$$\begin{array}{rcll}
+ \pview{\epsilon} &=&  \epsilon \\
+ \pview{s \cdot n }  &=&  \pview{s} \cdot n
+    & \mbox{if $n$ is a variable or $@$ node;}
+    \\
+ \pview{\Pstr[10pt]{ s \cdot (m){m} \cdots (lmd-m,25){n}}} &=&
+        \Pstr{ \pview{s} \cdot (m2){m} \, (lmd2-m2,30){n} }
+    & \mbox{if $n$ is a lambda node;}
+    \\
+ \pview{s \cdot n }  &=&  n & \mbox{if $n$ is a lambda node with no pointer.}
+\end{array}$$
+%
+We define the dual notion $\oview{s}$ of \defname{O-view} by
+$\oview{\epsilon} = \epsilon$;
+$\oview{s \cdot n }  =  \oview{s} \cdot n$ for $\lambda$-node $n$;
+$\oview{\Pstr[10pt]{s \cdot (m){m} \cdots (x-m,30){x}}}= \Pstr{ \oview{s} \cdot (m2){m} \, (n2-m2,45){x} }$ for variable node $x$; and $\oview{s \cdot @ } = @$.
+%
+% Expanded version of the O-View definition:
+% The dual notion of O-view, denoted $\oview{s}$, is defined by:
+% $$\begin{array}{rcll}
+%  \oview{\epsilon} &=&  \epsilon \\
+%  \oview{s \cdot n }  &=&  \oview{s} \cdot n
+%     & \mbox{if $n$ is an $\lambda$-node;}
+%     \\
+%  \oview{\Pstr[10pt]{s \cdot (m){m} \cdot \cdots \cdot (x-m,30){n}}} &=&
+%     \Pstr{ \oview{s} \cdot (m2){m} \cdot (n2-m2,60){n} }
+%     & \mbox{if $n$ is a variable node;}
+%     \\
+%  \oview{s \cdot n }  &=&  n
+%     & \mbox{if $n$ is an $@$ node.}
+% \end{array}$$
+%
+Given two occurrences $n$ and $m$ in a justified sequence $s$, we say that $n$ is \defname{visible at} $m$ just if $n$ occurs in the P-view $\pview{s_{\leq m}}$.
+\end{definition}
+
+%%%%%%%%%
+\subsection{Name-free and name-preserving encodign}
 The \defname{(name-free) structure} of a justified sequence refers to the sequence obtained by discarding node labels while preserving node types. It is encoded as a sequence of triples $\{\lambda, {\sf Var}, @ \}\times\nat\times\nat$ where the first component indicates the type of each occurrence (lambda bunch, variable, application), the second component indicates the link distance, and the third component is the link label ($0$ for no pointer).
 Two sequences $s$ and $u$ over possibly two distinct terms are \defname{equivalent}, written $s \equiv u$ just if they have the same structure: the types of the underlying nodes in the two sequences match pairwise (either both variable/@ nodes or both lambda nodes) and have the same justification pointers. Two equivalent sequences are not necessarily equal since they may have different variable names.
 We say that two subsets $J_1\subseteq \justseqset(M_1)$ and $J_2\subseteq\justseqset(M_2)$ are isomorphic, written $J_1\cong J_2$, if  there exists a structure-preserving bijection between $J_1$ and $J_2$. That is there exists a bijection $\phi :J_1\longrightarrow J_2$ such that for any $j\in J$, $j\equiv\phi(j)$.
 
 \begin{example}
-    Alpha-conversion does not alter the structure of a sequence, so for instance we have $\Pstr[10pt]{ (l){\lambda x y} \, (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda z y} \, (n-l,25){z}}$. The number of variable bindings in a lambda node may also change without impacting its structure, as long as justification link labels are unaffected, so we also have $\Pstr[10pt]{ (l){\lambda x y z w t} \, (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda x} \, (n-l,25){x}}$ since the structure of both sequences is $(\lambda,0)\,({\sf Var},1)$.
+    Alpha-conversion does not alter the structure of a sequence, so for instance we have $\Pstr[10pt]{ (l){\lambda x y} \, (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda z y} \, (n-l,25){z}}$. The number of variable bindings in a lambda node may also change without impacting its structure, as long as justification link labels are unaffected, so we also have $\Pstr[10pt]{ (l){\lambda x y z w t} \, (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda x} \, (n-l,25){x}}$ since they both have structure $(\lambda,0)\,({\sf Var},1)$.
 \end{example}
 
 
-The \defname{quadruplet encoding} of a justified sequence of nodes with variables in $\VarSet$ is a sequence of quadruplets in $O_4 = \ExtendedNodes \times \mathcal{V}^* \times\nat\times\nat$ defined occurrence-wise where each quadruplets $(n,p,j,i) \in O_4$ is such that $n$ is a \emph{Node} from the extensional tree that uniquely defines the type and label of the occurrence;
-\emph{Pending lambdas} $p$ is the empty list $\epsilon$;
-\emph{Link distance} $j$ is the number of occurrences separating the occurrence from its justifier plus $1$, or $0$ for no justifier;
-\emph{Link label} $i$ is the label of the justification pointer.
-
+The \defname{quadruplet encoding} of a justified sequence of nodes with variables in $\VarSet$ is a sequence of quadruplets in $O_4 = \ExtendedNodes \times \mathcal{V}^* \times\nat\times\nat$ defined occurrence-wise where each quadruplets $(n,p,j,i) \in O_4$ is such that
+  $n$ is a \emph{Node} from the extensional tree that uniquely defines the type and label of the occurrence;
+  \emph{Pending lambdas} $p$ is the empty list $\epsilon$;
+  $j$ is the \emph{Link distance}
+  and $i$ is the \emph{Link label}.
+%
 This initial encoding is said to be \defname{canonical} because the \emph{pending lambdas} components are all empty. We will define subsequent transformations that alter the pending lambdas.
-Observe that given a fixed term, a canonical justified sequence encoding uniquely determines its structure, by just discarding the labels; and reciprocally, labels are uniquely recoverable from the sequence structure together with the enabling relation associated with that term.
+Observe that given a fixed term, the canonical encoding of a justified sequence uniquely determines its structure, by just discarding the labels; and reciprocally, labels are uniquely recoverable from the sequence structure together with the enabling relation associated with that term.
 %Pending lambdas will help us interpret justified sequences over two distinct terms (\eg, before and after firing a redex).
 %We will use non-canonical encodings to implement linear substitution via justified sequences, where the \emph{pending lambdas} component will provide a mechanism to combine two distinct lambda nodes in a single one, a process by which an anonymous ghost variable may materialize into a structural node with a variable name.
 
-When typesetting a sequence from $\justseqset(M)$, we represent occurrences by their associated node labels and represent the \emph{pending lambdas} in exponent. For example in the sequence $\cdots @ \cdot x \cdot \lambda\overline{x}^{[y_1 \ldots y_n]} \cdots$, $\lambda\overline{x}$ is the label of the tree node associated with that occurrence and $y_1 \ldots y_n$ are the \emph{pending lambdas} for this occurrence. We omit the exponent if the list of pending lambdas is empty. We adopt the quadruplet encoding throughout the rest of the paper and thus assume $\justseqset(M)$ to be a (strict) subset of $O_4^*$.
+When typesetting a sequence from $\justseqset(M)$, we represent occurrences by their associated node labels and represent the \emph{pending lambdas} in exponent. For example in the sequence $\cdots @ \cdot x \cdot \lambda\overline{x}^{[\overline{y}]} \cdots$, $\lambda\overline{x}$ is the label of the tree node associated with that occurrence and $\overline{y}$ are the \emph{pending lambdas} for this occurrence. We omit the exponent if the list of pending lambdas is empty. We adopt the quadruplet encoding throughout the rest of the paper and thus assume $\justseqset(M)$ to be a (strict) subset of $O_4^*$.
 
 \emph{Decoding a quadruplet sequence}
 We define a readout procedure to decode a sequence of quadruplets as a sequence
@@ -674,7 +727,7 @@ $\overline{x} \otimes y = \overline{x} \cdot y'$ if $y\in\overline{x}$ for some 
 For any $\overline{y} = y_1 \ldots y_m$, $m\geq 0$,
 we write $\overline{x} \otimes \overline{y}$ for $((\ldots(\overline{x} \otimes y_1) \otimes y_2) \ldots \otimes y_m)$.
 
-The \defname{readout function} $\readout: O_4^* \rightarrow \mathcal{L}^*$ converts a quadruplet-encoded justified sequence into a sequence of node labels in $\mathcal{L}$ that are not necessarily present in nodes from $\ctree(M)$.
+The \defname{readout function} $\readout: O_4^* \rightarrow \mathcal{L}^*$ converts a quadruplet-encoded justified sequence into a sequence of node labels in $\mathcal{L}$ (not necessarily present in nodes from $\ctree(M)$).
 We define it in two stages: function $\readoutlmd \colon O_4^* \rightarrow \mathcal{L}_\lambda^*$ first assigns pre-labels to lambda occurrences, then $\readoutvar\colon \mathcal{L}_\lambda^* \rightarrow \mathcal{L}^*$ assigns labels to variable occurrences based on the label assigned in the first stage to their justifier.
 The pre-labels are
 $\mathcal{L}_\lambda =
@@ -715,69 +768,16 @@ The readout function is the composition of the two stages: $\readout[s] = \reado
     $
     has quadruplet encoding
     $(\lambda x, \epsilon ,0,0)$, $(@,\epsilon,0,0)$, $(\lambda y z, \epsilon, 1,0)$, $(z,\epsilon, 1,2)$, $(\ghostlmd,\epsilon,3,2)$, $(\ghostvar,\epsilon,5,2)$ whereas the quadruplet sequence $ (\lambda x, g ,0,0), (@,\epsilon,0,0), (\lambda y z, x\,y\,y, 1,0), (z,\epsilon, 1,2), (\ghostlmd,\epsilon,3,2), (\ghostvar,\epsilon,5,2)$ encodes the justified sequence
-    $\Pstr[10pt]{
+    $s= \Pstr[10pt]{
         (l){\lambda x^{[g]}}  (a)@  (lyz-a,25:0){\lambda y z^{[x\,y\,y]}}  (z-lyz,30:2)z \, (gl-a,40:2)\ghostlmd \, (gv-l,38:2)\ghostvar }
-    $ which reads out via $\readout$ as
-    $\lambda x g ~ @ ~ \lambda y z x y' y'' ~ z ~ \lambda ~ g$.
+    $ which reads out as $\readout[s]= \lambda x g ~ @ ~ \lambda y z x y' y'' ~ z ~ \lambda ~ g$.
 \end{example}
 
-A justified sequence verifies the \defname{alternation condition} if the first node is a lambda node and subsequent nodes occurrences alternate between (i) a variable or application node (ii) a lambda node.
-A node occurrence in a justified sequence is \defname{hereditarily justified by some other occurrence} if recursively following justification pointers starting from the first occurrence in the sequence leads to the second one. Because justification pointers must honor the enabling relation $\enables$ induced by the term structure, if an occurrence of node $n$ is hereditarily justified by occurrence of a node $m\in\Nodes$ then $n$ is necessarily hereditarily enabled by $m$. Further if $m$ occurs only once in the justified sequence then the occurrences hereditarily justified by $m$ are precisely the occurrences of nodes that are hereditarily \emph{enabled} by $m$.
-
-Let $s$ denote a justified sequence.
-We write $s^\omega$ to denote the last occurrence of $s$. For any occurrence $n$ in $s$ we write $s_{\leq n}$ for the prefix of $s$ ending at $n$, and $s_{<n}$ for the prefix ending immediately before $n$.
-%and $\jp(s)$ to denote the prefix of $s$ ending at the justifier of the last node of $s$.
-We say that $s$ \defname{extends} $u$ if $u$ is a strict prefix of $s$.
-%
-We borrow the following two definitions from Game Semantics~\cite{Abr02}.
-\begin{definition}[Projections]
-Let $n$ be some occurrence of a justified sequence $s$. The \defname{projection} $s\filter n$ of $s$ with respect to $n$ is the subsequence obtained by keeping only occurrences hereditarily justified by $n$ in $s$. For a subset $A$ of nodes in $\Nodes$ we write $s \filter A$ to denote the subsequence of $s$ consisting of occurrences of nodes in $A$ only.
-We will consider the subsequence $s\filter\ExternalNodes$ consisting of external nodes of $s$, which is equivalently given by $s\filter r_1 \filter \ldots \filter r_n$ where $r_1, \ldots r_n$, $n\geq 1$ are the occurrences of the root in $s$.
-\end{definition}
-
-The P-view is the sub-sequence obtained by reading a justified sequence backwards as follows: if the last node is a variable node then follow its justification pointer (\ie, skip all the occurrences lying underneath); if it is a lambda node then move to the preceding node. Formally:
-\begin{definition}[Views]
-\label{def:views}
-The P-view $\pview{s}$ of a justified sequence $s$ is defined recursively by:
-$$\begin{array}{rcll}
- \pview{\epsilon} &=&  \epsilon \\
- \pview{s \cdot n }  &=&  \pview{s} \cdot n
-    & \mbox{if $n$ is a variable or $@$ node;}
-    \\
- \pview{\Pstr[10pt]{ s \cdot (m){m} \cdots (lmd-m,25){n}}} &=&
-        \Pstr{ \pview{s} \cdot (m2){m} \, (lmd2-m2,30){n} }
-    & \mbox{if $n$ is a lambda node;}
-    \\
- \pview{s \cdot n }  &=&  n & \mbox{if $n$ is a lambda node with no pointer.}
-\end{array}$$
-%
-We define the dual notion $\oview{s}$ of O-view by
-$\oview{\epsilon} = \epsilon$;
-$\oview{s \cdot n }  =  \oview{s} \cdot n$ for $\lambda$-node $n$;
-$\oview{\Pstr[10pt]{s \cdot (m){m} \cdots (x-m,30){x}}}= \Pstr{ \oview{s} \cdot (m2){m} \, (n2-m2,45){x} }$ for variable node $x$; and $\oview{s \cdot @ } = @$.
-%
-% Expanded version of the O-View definition:
-% The dual notion of O-view, denoted $\oview{s}$, is defined by:
-% $$\begin{array}{rcll}
-%  \oview{\epsilon} &=&  \epsilon \\
-%  \oview{s \cdot n }  &=&  \oview{s} \cdot n
-%     & \mbox{if $n$ is an $\lambda$-node;}
-%     \\
-%  \oview{\Pstr[10pt]{s \cdot (m){m} \cdot \cdots \cdot (x-m,30){n}}} &=&
-%     \Pstr{ \oview{s} \cdot (m2){m} \cdot (n2-m2,60){n} }
-%     & \mbox{if $n$ is a variable node;}
-%     \\
-%  \oview{s \cdot n }  &=&  n
-%     & \mbox{if $n$ is an $@$ node.}
-% \end{array}$$
-%
-Given two occurrences $n$ and $m$ in a justified sequence $s$, we say that $n$ is \defname{visible at} $m$ just if $n$ occurs in the P-view $\pview{s_{\leq m}}$.
-\end{definition}
 
 
 \subsection{Justified paths of the term tree}
 
-For any term $M$ we define the \defname{set of justified paths} $\pathset(M)$ as the set of justified sequences in $\justseqset(M)$ whose underlying sequences of nodes are precisely the structural paths (\ie, without ghosts) of the labelled-tree $\ctree(M)$ and justification pointers are induced by the enabling relation as follows: Occurrence of bound variable nodes are justified by their binder node with link label determined by the variable index in the binding node; free variables are justified by the initial node in the sequence (the tree root) and their link label is an index in $\nat$ uniquely identifying the free variable name; and lambda nodes are justified by the immediate predecessor in the sequence (its parent node by definition) with label index given by the child index. This notion is well defined because a variable binder necessarily occurs in the path from it to the root.
+For any term $M$ we define the \defname{set of justified paths} $\pathset(M)$ as the set of justified sequences in $\justseqset(M)$ whose underlying sequences of nodes are precisely the structural paths (\ie, without ghosts) of the labelled-tree $\ctree(M)$ and justification pointers are induced by the enabling relation as follows: Occurrence of bound variable nodes are justified by their binder node with link label determined by the variable index in the binding node; free variables are justified by the initial occurrence and their link label is an index in $\nat$ uniquely identifying the free variable name; and lambda nodes are justified by the immediate predecessor in the sequence (its parent node by definition) with label index given by the child index. This notion is well defined because a variable binder necessarily occurs in the path from it to the root.
 \begin{property}[Path Characterization]
 \label{prop:tree_path_charact}
  An untyped term $M$ is uniquely determined by either
@@ -920,28 +920,26 @@ where each justification label is indicated in exponent of the corresponding jus
 \label{prop:ulctrav_welldefined_pathview}
 The traversal rules are well defined, in particular for any sequence of nodes with pointers $t\in \travset$ we have:
 \begin{compactitem}
-\item[(i)] The sequence $t$ is a valid justified sequence, with respect to
+\item[(i)] $t$ is a valid justified sequence, with respect to
 the enabling relation $\enables$ on extended nodes $\ExtendedNodes$, and verifies the alternation condition;
 %(ii) and if the last node in $t$ is external then so are all the nodes in $\oview{t}$. % By induction on \oview{t}
 \item[(ii)] For all occurrences $\Pstr[0.5cm]{(m){m} \cdots (n-m,30:i){n}}$, $n$ is a ghost node if and only if $i > |m|$;
 \item[(iii)] $\pview{t}$ is a (justified) path in the extensional tree $\exttree(M)$;
-In particular, if $t$ does not contain ghost nodes then $\pview{t}$ is also structural path in $\ctree(M)$.
+So if $t$ does not contain ghost nodes then $\pview{t}$ is a structural path in $\ctree(M)$.
 \end{compactitem}
 \end{proposition}
 \shortproof
 Proven simultaneously by induction on the traversal rules.
-Rule \rulenamet{Lam^{\sf var}}: By induction hypothesis (iii) the P-view is a path in the extensional tree of $M$. But the last node of $t$ is a structural node therefore, this path is necessarily a structural path with no ghost node. Consequently, if the last node is a bound variable node, its enabler is precisely its binding lambda node which necessarily occurs exactly once in the path to the root. If the variable is free then the enabler is the root itself: (i) holds. By definition, the justification pointer honors the enabling relation so (ii) holds. The node $n$ is by definition the unique child of $\alpha$ thus (iii) holds.
-
-Rule \rulenamet{Lam^\ghostvar}, the induction hypothesis (ii) shows that $i>|m|$, which guarantees that $|\beta|+i-|m|>0$ is a valid justification label (i) and that (ii) holds for the traversed node $\ghostvar$.
+For \rulenamet{Lam^{\sf var}}: By induction hypothesis (iii) the P-view is a path in the extensional tree of $M$. But the last node of $t$ is a structural node therefore, this path is necessarily a structural path with no ghost node. Consequently, if the last node is a bound variable node, its enabler is precisely its binding lambda node which necessarily occurs exactly once in the path to the root. If the variable is free then the enabler is the root itself and (i) holds. By definition, the justification pointer honors the enabling relation so (ii) holds. The node $n$ is by definition the unique child of $\alpha$ thus (iii) holds.
+%
+For \rulenamet{Lam^\ghostvar}, the induction hypothesis (ii) shows that $i>|m|$, which guarantees that $|\beta|+i-|m|>0$ is a valid justification label (i) and that (ii) holds for the traversed node $\ghostvar$.
 Finally (iii) holds because the node preceding $\ghostvar$ in the P-view is precisely $\beta$, its parent node.
-
+%
 Other rules are straightforward.
 \endshortproof
 
-The last property generalizes a result from the theory of traversals for higher-order grammars~\cite{OngLics2006} and simply-typed lambda terms~\cite[Proposition 4.29]{BlumPhd} to the untyped setting: The game-semantic concept of P-views from Definition~\ref{def:views} corresponds to paths in the computations tree.
-
+The last property generalizes a concept from the theory of traversals~\cite{OngLics2006,BlumPhd} to the untyped setting: The game-semantic concept of P-views from Definition~\ref{def:views} corresponds to paths in the computations tree.
 % For any $t\in \travset$, the sequences $t\filter\ExternalNodes$ is a valid justified sequences verifying the alternation condition.
-
 
 \paragraph{On-the-fly eta-expansion}
 It is the variable rules \rulenamet{Var} and \rulenamet{IVar} that perform `on-the-fly expansion'. When the variable arity is high enough, the tree statically dictates the structural node to traverse next: we have $i \leq |m|$ and $\alpha$ is a structural lambda node in $\NodesLmd$; we call this the \defname{concrete sub-case}. Otherwise, the variable arity is too low to statically determine the operand of an application: $i > |m|$ and $\alpha$ is a ghost lambda node $\ghostlmd$; we call this the \defname{imaginary sub-case}.
@@ -950,19 +948,17 @@ Rule \rulenamet{Lam} traverses a lambda node by just visiting its unique child  
 Observe that we necessarily have $i>|n|$ since the $i$th child of $n$ is a ghost variable node.
 
 %%% analogy
-An analogy may help understand the intuition behind ghost nodes:
-just like the imaginary number $i$ in mathematics was invented from the impossibility of calculating the square root of $-1$, ghost nodes are introduced from the impossibility of resolving the argument of a variable when traversing a lambda term, due to an insufficient number of operands. Ghost nodes start to appear when the arity of a variable is too low to structurally traverse it.
-
+To give an analogy, just like the imaginary number $i$ in mathematics was invented from the impossibility of calculating the square root of $-1$, we introduce ghost nodes from the impossibility of resolving the argument of a variable when traversing a lambda term: they start to appear when the arity of a variable is too low to structurally traverse it.
 Continuing with the analogy, complex numbers are sometimes used as an intermediate concept to perform some calculation, without necessarily appearing in the final result. For instance, the De Moivre's Theorem, which involves complex numbers, is often used to prove trigonometry identities on real numbers. Similarly, we use ghost nodes to evaluate lambda terms but they eventually materialize as regular nodes in the final normal form.
 %%%%end of analogy
 
 \begin{definition}
-We call \defname{ghost materialization} any instantiation of a traversal rule where the last occurrence in the traversal prior to applying the rule is a ghost node, and the node traversed after applying the rule is a structural node.
+\defname{Ghost materialization} refers to any instantiation of a traversal rule where the last traversal occurrence prior to applying the rule is a ghost
+and the node traversed is structural.
 \end{definition}
 
 %%%%%% remark 1: materialization
-Observe that only the variable rule can materialize a structural node from a
-traversal ending with a ghost node. Once a traversal starts to visit ghost nodes, the only way for it to `return'  to structural nodes is via a ghost variable using an instantiation of \rulenamet{Var} producing a traversal of the form
+Observe that only \rulenamet{Var} can materialize a structural node: once a traversal starts to visit ghost nodes, the only way for it to `return'  to structural nodes is via a ghost variable using an instantiation of \rulenamet{Var} producing a traversal of the form
 $
 \Pstr[0.5cm]{ t \cdot (y){y} \, (l){\alpha}  \ldots (t-l,30:i){\ghostvar}
     \, (lx-y,40:i){\lambda \overline{x}}}
@@ -974,17 +970,19 @@ $\alpha$ is either a structural or ghost lambda node, and
 %%%%%%%%
 
 
-The underlying successive eta-expansions of $M$ can be reconstructed from the traversal itself:
+The successive fictitious eta-expansions underlying a traversal $t$ of $M$ can be reconstructed from $t$ itself:
 \begin{definition}
 \label{def:onthefly_etaexpansion}
 Let $M$ be an untyped term. If $n\in \Nodes$ is the root node of some subterm $N$ of $M$ then
-for $k \leq 0$ we define ${\sf ETA}(M, n, k) = M$; and for $k> 0$ we define ${\sf ETA}(M, n, k)$ as the term obtained by substituting in-place the subterm $N$ with $\lambda\theta_1 \cdots \theta_k. N \theta_1 \cdots \theta_k$ for some variables $\theta_1, \cdots, \theta_k$ fresh in $N$.
-
+for $k \leq 0$ we define ${\sf ETA}(M, n, k) = M$; and for $k> 0$,
+ ${\sf ETA}(M, n, k)$ is obtained by substituting in-place the subterm $N$ with $\lambda\theta_1 \cdots \theta_k. N \theta_1 \cdots \theta_k$ for some variables $\theta_1, \cdots, \theta_k$ fresh in $N$.
+%
 The \defname{eta-expansion of $M$ with respect to a finite traversal $t$}, written $M^t$, is defined inductively by $M^\epsilon = M$,
 $M^{u \cdot n} = M$ if $n$ has no justifier, and if $m$ denotes $n$'s justifier in $u$ with link label $i$ then $M^{u \cdot n} = {\sf ETA}(M^{u}, m, i-|m|)$.
+%
+(Note that we can have $i>|m|$ for the imaginary case of rules \rulenamet{Var} and \rulenamet{IVar}.)
 \end{definition}
-As mentioned earlier, the condition  $i-|m|>0$ only holds for the imaginary case of rules \rulenamet{Var} and \rulenamet{IVar}.
-It follows from the definition that $M$ is a sub-tree of $M^t$ therefore paths in the tree of $M$ are also paths in the tree of $M^t$.
+It follows from the definition that $M$ is a sub-tree of $M^t$: paths in $\ctree[M]$ are also paths in $\ctree[M^t]$.
 
 \begin{example}
 The eta-expansion of $J = (\lambda u . u(x\,u)) (\lambda v . v\,y)$ with respect to traversal $t$ from Example~\ref{ex:ulctrav_sample} is

@@ -77,7 +77,7 @@ Remove all binding and control pointers starting from the $@$ tokens themselves.
 \item Merge consecutive lambda tokens $\lambda x_1$, \ldots, $\lambda x_n$, $n>1$ in the traversals into single lambda nodes $\lambda x_1 \ldots x_n$.
  Binding pointers:
  \begin{itemize}
- \item For any binding pointer from some variable token $x$ in the traversal, pointing to one of the merged lambda nodes, replace the link as follows: if $x$ has deBrujin index $i$ then follow $i$ binding pointer in the original sequence. This will lead to some lambda token $\lambda x$. Make the link points instead to the merged lambda node containing that $\lambda x$. Assigned link label $i$ where $i$ is the index of the bound variable in the merged list of $x_1 \ldots x_n$.
+ \item For any binding pointer from some variable token $x$ in the traversal, pointing to one of the merged lambda nodes, replace the link as follows: if $x$ has De Bruijn index $i$ then follow $i$ binding pointer in the original sequence. This will lead to some lambda token $\lambda x$. Make the link points instead to the merged lambda node containing that $\lambda x$. Assigned link label $i$ where $i$ is the index of the bound variable in the merged list of $x_1 \ldots x_n$.
  \item Remove all the binding pointers from either lambda or $@$ tokens that are pointing to any of the merged lambda nodes.
  \item Remove all binding pointers from the merged lambda nodes to other nodes.
  \end{itemize}
