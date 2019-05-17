@@ -726,7 +726,7 @@ Let $n$ be some occurrence of a justified sequence $s$. The \defname{projection}
 We will consider the subsequence $s\filter\ExternalNodes$ consisting of external nodes of $s$, which is equivalently given by $s\filter r_1 \filter \ldots \filter r_n$ where $r_1, \ldots r_n$, $n\geq 1$ are the occurrences of the root in $s$.
 \end{definition}
 
-The P-view is the sub-sequence obtained by reading a justified sequence backwards and following the justification pointer every other node: if the last node is a variable node then follow its justification pointer (\ie, skip all the occurrences lying underneath); if it is a lambda node then move to the preceding node. Formally:
+The P-view is the sub-sequence obtained by reading a justified sequence backwards as follows: if the last node is a variable node then follow its justification pointer (\ie, skip all the occurrences lying underneath); if it is a lambda node then move to the preceding node. Formally:
 \begin{definition}[Views]
 \label{def:views}
 The P-view $\pview{s}$ of a justified sequence $s$ is defined recursively by:
@@ -1043,10 +1043,13 @@ $\Pstr[0.7cm]{
 
 We now generalize the notion of \emph{traversal core} from~\cite{BlumPhd} to imaginary traversals. In the typed setting, it is defined as the subsequence of a traversal consisting of external nodes only. In the untyped setting, we complement this filtering with a relabelling operation on lambda nodes.
 
-We consider sequences of variable names in $\VarSet^*$ as stacks equipped with  push and pop operations:
-for any sequence of variables $\overline{x} = x_1 \ldots x_n$, $n,j\geq0$, the operation $pop_j$ removes the first $j$ elements of the sequence: $pop_j (x_1 \ldots x_n) = x_{j+1} \ldots x_n$ if $j<n$, and $pop_j (x_1 \ldots x_n) = \epsilon$ otherwise. And for any other variable names $\overline{y} = y_1 \ldots y_m$, $m\geq0$ we write $\overline{x} \otimes \overline{y}$
-for the stack obtained by pushing the variables $\overline{x}$, read from right to left, onto $\overline{y}$, while renaming afresh any variable in $\overline{x}$ that would clash with some name in $\overline{y}$:
-$\overline{x} \otimes \overline{y} = \tilde{x}_1 \ldots \tilde{x}_n y_1 \ldots y_n$, where $\tilde{x}_i = x_i'$ with fresh name $x_i'$ if $x_i\in \overline{y}$, or $\tilde{x}_i = x_i$ otherwise, for $1\leq i\leq n$.
+We consider sequences of variable names in $\VarSet^*$ as stacks equipped with  push and pop operations: for any sequence of variables $\overline{x} = x_1 \ldots x_n$, $n,j\geq0$, the operation $pop_j$ removes the first $j$ elements of the sequence: $pop_j (x_1 \ldots x_n) = x_{j+1} \ldots x_n$ if $j<n$, and $pop_j (x_1 \ldots x_n) = \epsilon$ otherwise;
+and for variable names $\overline{y} = y_1 \ldots y_m$, $m\geq0$ we write $\overline{x} \cdot \overline{y}$
+for the stack obtained by pushing the variables $\overline{x}$, read from right to left, onto $\overline{y}$: $\overline{x} \cdot \overline{y} = x_1 \ldots x_n y_1 \ldots y_n$.
+
+% And for any other variable names $\overline{y} = y_1 \ldots y_m$, $m\geq0$ we write $\overline{x} \otimes \overline{y}$
+% for the stack obtained by pushing the variables $\overline{x}$, read from right to left, onto $\overline{y}$, while renaming afresh any variable in $\overline{x}$ that would clash with some name in $\overline{y}$:
+% $\overline{x} \otimes \overline{y} = \tilde{x}_1 \ldots \tilde{x}_n y_1 \ldots y_n$, where $\tilde{x}_i = x_i'$ with fresh name $x_i'$ if $x_i\in \overline{y}$, or $\tilde{x}_i = x_i$ otherwise, for $1\leq i\leq n$.
 
 \begin{definition}[Core projection]
 \label{def:coreprojection}
@@ -1055,14 +1058,17 @@ We define the partial function $\coresymbol_{\overline{y}}\colon \justseqset(M) 
 \begin{equation*}
 \coresymbol_{\overline{y}}(s\cdot n) =
 \begin{cases}
-\coresymbol_{\epsilon}(s) \cdot n
+%%%%
+    \coresymbol_{\epsilon}(s) \cdot n
     & \mbox{if } n\in\ExtendedNodesVar\inter\ExternalNodes, \\
-\coresymbol_{pop_{|n|}(\overline{y})}(s)
+     \coresymbol_{pop_{|n|}(\overline{y})}(s)
     & \mbox{if } n\in(\ExtendedNodesVar\inter\InternalNodes)\union\NodesApp, \\
-\coresymbol_{\epsilon}(s) \cdot \lambda \overline{x}\overline{y}
-    & \mbox{if } n\in\ExtendedNodesLmd\inter\ExternalNodes, n \mbox{ labelled } \lambda\overline{x},\\
-\coresymbol_{\overline{x} \otimes \overline{y}}(s)
-    & \mbox{if } n\in\ExtendedNodesLmd\inter\InternalNodes, n \mbox{ labelled } \lambda\overline{x} .
+\coresymbol_{\epsilon}(s) \cdot \lambda \overline{x}^{[p \cdot \overline{y}]}
+    & \mbox{if $n  \in\ExtendedNodesLmd\inter\ExternalNodes$
+        and $n = \lambda\overline{x}^{[\overline{p}]}$,} \\
+    \coresymbol_{\overline{x} \cdot \overline{y}}(s)
+    & \mbox{if $n \in\ExtendedNodesLmd\inter\InternalNodes$
+         and $n = \lambda\overline{x}^{[\overline{p}]}$.}
 %%%% Uncomment if want to make ghost lambda case explicit
 % \coresymbol_{\epsilon}(s) \cdot\lambda\overline{y}
 %     & \mbox{if } n\in\ghostlmd\inter\ExternalNodes, \\
@@ -1071,14 +1077,14 @@ We define the partial function $\coresymbol_{\overline{y}}\colon \justseqset(M) 
 %%%%%
 \end{cases}
 \end{equation*}
-The above equalities are assumed pointer-preserving, and are well-defined since an external node can only be justified by another external node. We define
-the \defname{core} of $s$ as $\core{s} = \coresymbol_\epsilon(s)$,
-and the \defname{core P-view} of $s$ as $\pview{\core{s}}$, the P-view of its core.
+where the original justification pointers are preserved (that is the link distance is adjusted to account for occurrences removed between an occurrence and its justifier). This is well-defined since an external node can only be justified by another external node. (For simplicity we identify $\ghostlmd$ with the dummy $\lambda$, so that the last two equalities handle the ghost lambda case when $\overline{x}=\epsilon$.)
+We call $\core{s} = \coresymbol_\epsilon(s)$ the \defname{core} of $s$,
+and $\pview{\core{s}}$ its \defname{core P-view}, the P-view of its core.
 
-(To keep the definition simple, (i) ghost lambda is identified with the dummy lambda, so that ghost lambda case is handle by the last two equalities; (ii) we do not bother renaming the variable occurrences when a variable get renamed via $\otimes$, this is because the name of variable occurrences can always be recovered from its justifier and justification label.)
+%(ii) we do not bother renaming the variable occurrences when a variable get renamed via $\otimes$, this is because the name of variable occurrences can always be recovered from its justifier and justification label.)
 \end{definition}
 
-In the above definition, the subscript parameter $\overline{y}$ is called \defname{stack of pending lambdas}. As the sequence is read backwards, it accumulates variable names which then get discharched onto the next external lambda node read from the sequence. Hence the \emph{core projection} is the sub-sequence obtained by removing internal nodes and prepending to each external lambda node's label, the stack of \emph{pending lambdas} between that point to the next external node.
+The subscript parameter in `$\coresymbol_{\overline{y}}$' is called \defname{stack of pending lambdas}. As $\coresymbol$ reads the sequence backwards, it accumulates variable names which then get discharged onto the next external lambda node read from the sequence. So in words, the \emph{core projection} is the sub-sequence obtained by removing all internal nodes and discharging on each external lambda node the stack of \emph{pending lambdas} at that point.
 
 Since the core of a justified sequence only contains external nodes it follows that $\coresymbol$ is idempotent.
 
@@ -2304,14 +2310,18 @@ So $M$ is in quasi-normal form, even though it has a non-trivial redex in the ar
 \begin{definition}[Arguments of the hoc]
 Let $z$ be the \emph{hoc} of $M$. The arguments of the \emph{hoc} occurrence, written ${\sf Args}(M)$, is a list of subterms of $M$ defined by induction:
 \begin{align*}
-{\sf Args}(z) &= \epsilon \\
-{\sf Args}(\lambda x . U ) &= {\sf Args}(U) \\
-{\sf Args}(U V) &= \begin{cases}
-             {\sf Args}(U) \cdot V & \mbox{if } \lambda_l(U) = \epsilon\\
-             {\sf Args}(U)         & \mbox{if } \lambda_l(U) \neq \epsilon
-            \end{cases}
+    & \begin{array}{ll}
+        {\sf Args}(z) &= \epsilon \\
+        {\sf Args}(\lambda x . U ) &= {\sf Args}(U)
+    \end{array}
+&
+{\sf Args}(U V) &=
+    \begin{cases}
+        {\sf Args}(U) \cdot V & \mbox{if } \lambda_l(U) = \epsilon, \\
+        {\sf Args}(U)         & \mbox{if } \lambda_l(U) \neq \epsilon.
+    \end{cases}
 \end{align*}
-Note that the variable case where $x\neq z$ is not needed since the induction proceeds by spinal descent to the head occurrence.
+Note that the case of a variable $x\neq z$ is not needed since the induction proceeds by spinal descent to the head occurrence $z$.
 \end{definition}
 
 \begin{property}
@@ -3637,7 +3647,7 @@ This work got inspired by the slides of the Galop 2016 presentation by Daniil Be
 \begin{table}
 \resizebox{1\hsize}{!}{
 $t_{1} = \Pstr[0.7cm]{
-    %%% first strand
+[ %%% first strand
     (n0){\underline{\lambda}}
     (n2-n1){\lambda t}
     (n3-n2){t}
@@ -3676,7 +3686,7 @@ $t_{1} = \Pstr[0.7cm]{
     (n51-n2){{\ghostvar^{4}}}
     (n52-n1){{\ghostlmd^{4}}}
     (n53-n0){\underline{\ghostvar^{3}}}
-    %%% second strand
+] [ %%% second strand
     (n54-n53){\underline{\ghostlmd^{1}}}
     (n55-n52){{\ghostvar^{1}}}
     (n56-n51){{\ghostlmd^{1}}}
@@ -3715,11 +3725,12 @@ $t_{1} = \Pstr[0.7cm]{
     (n89-n2){{\ghostvar^{2}}}
     (n90-n1){{\ghostlmd^{2}}}
     (n91-n0){\underline{\ghostvar^{1}}}
+]
 }$
 }
 \resizebox{1\hsize}{!}{
 $t_{11} = \Pstr[0.7cm]{
-    %%% first strand
+[ %%% first strand
     (n0){\underline{\lambda}}
     (n1){@}
     (n2-n1){\lambda t}
@@ -3745,7 +3756,7 @@ $t_{11} = \Pstr[0.7cm]{
     (n22-n7){\lambda s z}
     \cdots
     (n53-n0){\underline{\ghostvar^{3}}}
-    %%% second strand
+] [ %%% second strand
     (n54-n53){\underline{\ghostlmd^{1}}}
     \cdots
     (n85-n6){x}
@@ -3755,7 +3766,7 @@ $t_{11} = \Pstr[0.7cm]{
     (n89-n2){{\ghostvar^{2}}}
     (n90-n1){{\ghostlmd^{2}}}
     (n91-n0){\underline{\ghostvar^{1}}}
-    %%% third strand
+] [ %%% third strand
     (n92-n91){\underline{\ghostlmd^{1}}}
     (n93-n90){{\ghostvar^{1}}}
     (n94-n89){{\ghostlmd^{1}}}
@@ -3785,12 +3796,14 @@ $t_{11} = \Pstr[0.7cm]{
     (n118-n3){{\ghostlmd^{6}}}
     (n119-n2){{\ghostvar^{4}}}
     (n120-n1){{\ghostlmd^{4}}}
-    (n121-n0){\underline{\ghostvar^{3}}}}$
+    (n121-n0){\underline{\ghostvar^{3}}}
+]
+    }$
 }
 \resizebox{1\hsize}{!}{
 $t_{121} =
 \Pstr[0.7cm]{
-%%% first strand
+[ %%% first strand
  (n0){\underline\lambda}
  (n1){@}
  (n2-n1){\lambda t}
@@ -3816,7 +3829,7 @@ $t_{121} =
  (n22-n7){\lambda s z}
  \cdots % abbreviated
  (n53-n0){\underline{\ghostvar^{3}}}
-%%% second strand
+] [ %%% second strand
  (n54-n53){\underline{\ghostlmd^{1}}}
  \cdots % abbreviated
  (n85-n6){x}
@@ -3826,7 +3839,7 @@ $t_{121} =
  (n89-n2){{\ghostvar^{2}}}
  (n90-n1){{\ghostlmd^{2}}}
  (n91-n0){\underline{\ghostvar^{1}}}
-%%% third strand
+] [ %%% third strand
  (n92-n91){\underline{\ghostlmd^{2}}}
  (n93-n90){{\ghostvar^{2}}}
  (n94-n89){{\ghostlmd^{2}}}
@@ -3848,7 +3861,7 @@ $t_{121} =
  (n110-n3){{\ghostlmd^{5}}}
  (n111-n2){{\ghostvar^{3}}}
  (n112-n1){\underline{\ghostlmd^{3}}}
-%%% fourth strand
+] [ %%% fourth strand
  (n113-n0){\underline{\ghostvar^{2}}}
  (n114-n113){{\ghostlmd^{1}}}
  (n115-n112){{\ghostvar^{1}}}
@@ -3879,13 +3892,14 @@ $t_{121} =
  (n140-n3){{\ghostlmd^{6}}}
  (n141-n2){{\ghostvar^{4}}}
  (n142-n1){{\ghostlmd^{4}}}
- (n143-n0){\underline{\ghostvar^{3}}}}
+ (n143-n0){\underline{\ghostvar^{3}}}
+ ]}
 $}
 %
 \resizebox{1\hsize}{!}{$
 \Pstr[0.7cm]{
 t_{122} =
-    %%% first strand
+[ %%% first strand
     (n0){\underline\lambda}
     (n1){@}
     (n2-n1){\lambda t}
@@ -3911,7 +3925,7 @@ t_{122} =
     (n22-n7){\lambda s z}
     \cdots %%% abbreviated first strand
     (n53-n0){\underline{\ghostvar^{3}}}
-    %%% second strand
+] [ %%% second strand
     (n54-n53){\underline{\ghostlmd^{1}}}
     \cdots %%% abbreviated 2nd strand
     (n85-n6){x}
@@ -3921,7 +3935,7 @@ t_{122} =
     (n89-n2){{\ghostvar^{2}}}
     (n90-n1){{\ghostlmd^{2}}}
     (n91-n0){\underline{\ghostvar^{1}}}
-    %%% third strand
+][ %%% third strand
     (n92-n91){\underline{\ghostlmd^{2}}}
     (n93-n90){{\ghostvar^{2}}}
     (n94-n89){{\ghostlmd^{2}}}
@@ -3944,7 +3958,7 @@ t_{122} =
     (n111-n2){{\ghostvar^{3}}}
     (n112-n1){{\ghostlmd^{3}}}
     (n113-n0){{\ghostvar^{2}}}
-    %%% fourth strand
+] [ %%% fourth strand
     (n114-n113){{\ghostlmd^{2}}}
     (n115-n112){{\ghostvar^{2}}}
     (n116-n111){{\ghostlmd^{2}}}
@@ -3974,8 +3988,10 @@ t_{122} =
     (n140-n3){{\ghostlmd^{7}}}
     (n141-n2){{\ghostvar^{5}}}
     (n142-n1){{\ghostlmd^{5}}}
-    (n143-n0){\underline{\ghostvar^{4}}}}$}
-\caption{The maximal traversals $t_{11}$, $t_{121}$ and $t_{122}$ of $varity\,2$ from Example~\ref{example:varity} yield the three maximal paths of the normal form $\lambda x y s z . s (x\, s (y\, s\, z))$. Strands boundaries are underlined.}
+    (n143-n0){\underline{\ghostvar^{4}}}
+]
+    }$}
+\caption{Maximal traversals $t_{11}$, $t_{121}, t_{122}$ from Example~\ref{example:varity} yielding the maximal paths of the normal form $\lambda x' x s z . s (x' s (x s z))$ of $varity\,2$. Strands are delimited with brackets `[\ldots]'.}
 \label{tab:varity2_trav}
 \end{table}
 \end{landscape}
