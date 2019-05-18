@@ -213,11 +213,12 @@
 \newcommand{\rulefont}[1]{\mathbf{\sf #1}}
 
 \def\readout{\mathrm{R}} % readout function
-\def\readoutlmd{\readout_\lambda} % prea-readout function
-\def\readoutvar{\readout_{\sf var}} % readout var function
 
 \def\coresymbol{\pi} % function returning the core of a traversal
 \newcommand{\core}[1]{\coresymbol(#1)} % core of a traversal
+
+\def\nameencoding{\mathcal{E}} % name-preserving encoding
+
 
 \DeclareMathSymbol{\Tau}{\mathalpha}{operators}{"54}
 
@@ -695,70 +696,69 @@ Given two occurrences $n$ and $m$ in a justified sequence $s$, we say that $n$ i
 
 %%%%%%%%%
 \subsection{Name-free and name-preserving encodign}
-The \defname{(name-free) structure} of a justified sequence refers to the sequence obtained by discarding node labels while preserving node types. It is encoded as a sequence of triples $\{\lambda, {\sf Var}, @ \}\times\nat\times\nat$ where the first component indicates the type of each occurrence (lambda bunch, variable, application), the second component indicates the link distance, and the third component is the link label ($0$ for no pointer).
-Two sequences $s$ and $u$ over possibly two distinct terms are \defname{equivalent}, written $s \equiv u$ just if they have the same structure: the types of the underlying nodes in the two sequences match pairwise (either both variable/@ nodes or both lambda nodes) and have the same justification pointers. Two equivalent sequences are not necessarily equal since they may have different variable names.
-We say that two subsets $J_1\subseteq \justseqset(M_1)$ and $J_2\subseteq\justseqset(M_2)$ are isomorphic, written $J_1\cong J_2$, if  there exists a structure-preserving bijection between $J_1$ and $J_2$. That is there exists a bijection $\phi :J_1\longrightarrow J_2$ such that for any $j\in J$, $j\equiv\phi(j)$.
+The \defname{(name-free) structure} of a justified sequence is obtained by discarding node labels while preserving node types, arities and justification pointers. It is encoded as a sequence of elements from
+$(\{\sf Lmd\}\times\nat\times\nat\times\nat) +
+   (\{\sf Var\}\times\nat\times\nat)
+   + \{ @ \}$
+where $(\lambda, a, j, i)$ represents a lambda bunch of arity $a$
+with link distance $j$ and link label $i$ ($0$ for no pointer);
+$({\sf Var}, j, i)$ represents a variable occurrence
+with link distance $j$ and link label $i$;
+and $@$ represents the occurrence of an application node.
+%
+Two sequences $s$ and $u$ over possibly two distinct terms are \defname{equivalent}, written $s \equiv u$ just if they have the same structure: the type (variable, @-node or lambda node), arity, justification distance and label of the underlying occurrences match pairwise. Two equivalent sequences are not necessarily equal since they may have different variable names.
+We say that two subsets $J_1\subseteq \justseqset(M_1)$ and $J_2\subseteq\justseqset(M_2)$ are isomorphic, written $J_1\cong J_2$, if  there exists a structure-preserving bijection between $J_1$ and $J_2$; that is a bijection $\phi :J_1\longrightarrow J_2$ such that $j\equiv\phi(j)$ for all $j\in J$.
 
 \begin{example}
-    Alpha-conversion does not alter the structure of a sequence, so for instance we have $\Pstr[10pt]{ (l){\lambda x y} \, (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda z y} \, (n-l,25){z}}$. The number of variable bindings in a lambda node may also change without impacting its structure, as long as justification link labels are unaffected, so we also have $\Pstr[10pt]{ (l){\lambda x y z w t} \, (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda x} \, (n-l,25){x}}$ since they both have structure $(\lambda,0)\,({\sf Var},1)$.
+    Alpha-conversion preserves the structure so for instance we have
+    $\Pstr[10pt]{ (l){\lambda x y} \, (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda z y} \, (n-l,25){z}}$.
+    % The number of variable bindings in a lambda node may also change without impacting its structure, as long as justification link labels are unaffected, so we also have $\Pstr[10pt]{ (l){\lambda x y z w t} \, (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda x} \, (n-l,25){x}}$ since they both have structure $(\lambda,0)\,({\sf Var},1)$.
 \end{example}
 
 
-The \defname{quadruplet encoding} of a justified sequence of nodes with variables in $\VarSet$ is a sequence of quadruplets in $O_4 = \ExtendedNodes \times \mathcal{V}^* \times\nat\times\nat$ defined occurrence-wise where each quadruplets $(n,p,j,i) \in O_4$ is such that
-  $n$ is a \emph{Node} from the extensional tree that uniquely defines the type and label of the occurrence;
-  \emph{Pending lambdas} $p$ is the empty list $\epsilon$;
-  $j$ is the \emph{Link distance}
-  and $i$ is the \emph{Link label}.
+The \defname{name-preserving encoding} of a justified sequence of nodes with variables in $\VarSet$ is a sequence of element in
+$\nameencoding = (\{\sf Lmd\}\times\mathcal{V}^*\times\nat\times\nat) +
+   (\{\sf Var\}\times\nat\times\nat)
+   + \{ @ \}$  defined occurrence-wise similarly to the name-free encoding
+ except for the lambda node case where
+  an occurrence of a lambda node $\lambda\overline{x}\in\ExtendedNodesLmd$
+ with link distance $j$ and link label $i$ gets encoded
+ by $({\sf Lmd},\overline{x},j,i) \in \mathcal{E}$.
 %
-This initial encoding is said to be \defname{canonical} because the \emph{pending lambdas} components are all empty. We will define subsequent transformations that alter the pending lambdas.
-Observe that given a fixed term, the canonical encoding of a justified sequence uniquely determines its structure, by just discarding the labels; and reciprocally, labels are uniquely recoverable from the sequence structure together with the enabling relation associated with that term.
-%Pending lambdas will help us interpret justified sequences over two distinct terms (\eg, before and after firing a redex).
-%We will use non-canonical encodings to implement linear substitution via justified sequences, where the \emph{pending lambdas} component will provide a mechanism to combine two distinct lambda nodes in a single one, a process by which an anonymous ghost variable may materialize into a structural node with a variable name.
-
-When typesetting a sequence from $\justseqset(M)$, we represent occurrences by their associated node labels and represent the \emph{pending lambdas} in exponent. For example in the sequence $\cdots @ \cdot x \cdot \lambda\overline{x}^{[\overline{y}]} \cdots$, $\lambda\overline{x}$ is the label of the tree node associated with that occurrence and $\overline{y}$ are the \emph{pending lambdas} for this occurrence. We omit the exponent if the list of pending lambdas is empty. We adopt the quadruplet encoding throughout the rest of the paper and thus assume $\justseqset(M)$ to be a (strict) subset of $O_4^*$.
-
-\emph{Decoding a quadruplet sequence}
-We define a readout procedure to decode a sequence of quadruplets as a sequence
-of node labels.
+Observe that given a fixed term, the name-preserving encoding of a justified sequence uniquely determines its structure, by just discarding the second component from the lambda-node encoding; and reciprocally, the list of $\lambda$-bound variables is uniquely recoverable from the structure via the enabling relation $\enables$ over $\exttree$.
 %
-For any variables $\overline{x}\in\VarSet^*$
-and variable $y\in\VarSet$ we write $\overline{x} \otimes y$ for the list of variables obtained by appending $y$ to $\overline{x}$ without introducing any name clash: $\overline{x} \otimes y = \overline{x} \cdot y$ if $y\not\in\overline{x}$, and
-$\overline{x} \otimes y = \overline{x} \cdot y'$ if $y\in\overline{x}$ for some  variable $y'\in\mathcal{V}$ fresh in $\overline{x}$.
-For any $\overline{y} = y_1 \ldots y_m$, $m\geq 0$,
-we write $\overline{x} \otimes \overline{y}$ for $((\ldots(\overline{x} \otimes y_1) \otimes y_2) \ldots \otimes y_m)$.
+Note that both name-free and name-preserving encoding assimilate the ghost lambda `$\ghostlmd$' with the dummy lambda `$\lambda$'.
+%
+We adopt the name-preserving encoding throughout the rest of the paper and thus assume $\justseqset(M)$ to be a (strict) subset of $\nameencoding^*$.
 
-The \defname{readout function} $\readout: O_4^* \rightarrow \mathcal{L}^*$ converts a quadruplet-encoded justified sequence into a sequence of node labels in $\mathcal{L}$ (not necessarily present in nodes from $\ctree(M)$).
-We define it in two stages: function $\readoutlmd \colon O_4^* \rightarrow \mathcal{L}_\lambda^*$ first assigns pre-labels to lambda occurrences, then $\readoutvar\colon \mathcal{L}_\lambda^* \rightarrow \mathcal{L}^*$ assigns labels to variable occurrences based on the label assigned in the first stage to their justifier.
-The pre-labels are
-$\mathcal{L}_\lambda =
-\{ \lambda \overline{x} \, | \, \overline{x} \in \VarSet^* \}
-    + \{ @ \} + (\nat \times \nat)
-$, where the last two dimensions encode respectively the link distance and link label of a variable occurrence.
-The pre-labelling function $\readoutlmd \colon O_4 \rightarrow \mathcal{L}_\lambda$ is first defined for one occurrence $(n,l,j,i)\in O_4$ as: $\readoutlmd[(@,l,j,i)] = @$,
-$\readoutlmd[(n,l,j,i)] = (j, i)$ for $n\in\ExtendedNodesVar$,
-and $\readoutlmd[(\lambda \overline{x},\overline{p},j,i)]
-= \lambda \overline{z}$ where $\overline{z} = \overline{x} \otimes \overline{p}$ for $\lambda\overline{x}\in\ExtendedNodesLmd$.
-We then consider its extension $\readoutlmd \colon O_4^* \rightarrow \mathcal{L}_\lambda^*$ defined point-wise on justified sequences.
-(Without loss of generality we assume that the term is closed, or equivalently that free variable occurrences point to the initial occurrence where the link label is taken from a pre-defined set of free-variable indices.)
-
-Variable label assignment is defined by $\readoutvar\colon \mathcal{L}_\lambda^* \rightarrow \mathcal{L}^*$ as:
-$$\begin{array}{rcll}
-    \readoutvar[\epsilon]
-         &=&  \epsilon \\
-    \readoutvar[s \cdot @]
-         &=&  \readoutvar[s] \cdot @ \\
-    \readoutvar[s \cdot \lambda\overline{x} ]
-         &=&  \readoutvar[s] \cdot \lambda\overline{x} \\
-    \readoutvar[s \cdot \lambda\overline{x}\,  u_1 \ldots u_{i-1} (i,j)]
-         &=&
-          \begin{cases}
-            \readoutvar[s \cdot \lambda\overline{x}\,  u_1 \ldots u_{i-1}] \cdot x_j &
-              \mbox{if $j\leq |\overline{x}|$.} \\
-            \readoutvar[s \cdot \lambda\overline{x}\,  u_1 \ldots u_{i-1}] \cdot \ghostvar & \mbox{if $j> |\overline{x}|$.}
-         \end{cases}
+%
+%%%%% clashfree concatanation
+% For any variables $\overline{x}\in\VarSet^*$
+% and variable $y\in\VarSet$ we write $\overline{x} \otimes y$ for the list of variables obtained by appending $y$ to $\overline{x}$ without introducing any name clash: $\overline{x} \otimes y = \overline{x} \cdot y$ if $y\not\in\overline{x}$, and
+% $\overline{x} \otimes y = \overline{x} \cdot y'$ if $y\in\overline{x}$ for some  variable $y'\in\mathcal{V}$ fresh in $\overline{x}$.
+% For any $\overline{y} = y_1 \ldots y_m$, $m\geq 0$,
+% we write $\overline{x} \otimes \overline{y}$ for $((\ldots(\overline{x} \otimes y_1) \otimes y_2) \ldots \otimes y_m)$.
+%%%%%%
+The \defname{readout function} $\readout: \nameencoding^* \rightarrow \mathcal{L}^*$
+decodes a name-preserving encoding into a sequence of node labels in $\mathcal{L}$ (not necessarily present in $\ctree(M)$). It is defined by
+$\readout[\epsilon]= \epsilon$;
+$\readout[s \cdot @] = \readout[s] \cdot @$;
+$\readout[s \cdot ({\sf Lmd}, \overline{x}, j, i) ] = \readout[s] \cdot \lambda\overline{x}$
+and for any encoding $s = u \cdot ({\sf Lmd}, \overline{x}, k, l)\,  n_1 \ldots n_{i-1}$ for  $n_1, \ldots n_{i-1}\in \nameencoding$, $i\geq 1$, and $u \in \nameencoding^*$ we have:
+$$
+\begin{array}{lll}
+\readout[u \cdot ({\sf Lmd}, \overline{x}, k, l)\,  n_1 \ldots n_{i-1}\, (i,j)]
+&=&
+ \begin{cases}
+   \readout[s] \cdot x_j &
+     \mbox{if $j\leq |\overline{x}|$.} \\
+   \readout[s] \cdot \ghostvar &
+     \mbox{if $j> |\overline{x}|$.}
+\end{cases}
 \end{array}$$
-where we assimilate the ghost and dummy lambda so that $\ghostlmd$ is covered by the case  $\lambda\overline{x}$, $\overline{x}=\epsilon$.
-The readout function is the composition of the two stages: $\readout[s] = \readoutvar[\readoutlmd[s]]$ for $s \in O_4^*$.
+where $\ghostlmd$ is covered by the case  $\lambda\overline{x}$, $\overline{x}=\epsilon$.
+We then define $\readout \colon \nameencoding^* \rightarrow \mathcal{L}^*$
+by point-wise extension.
 
 \begin{example}
 \label{examp:ghost_materialization}
@@ -766,14 +766,31 @@ The readout function is the composition of the two stages: $\readout[s] = \reado
     $t = \Pstr[10pt]{
         (l){\lambda x} \, (a)@ \, (lyz-a,25:0){\lambda y z} \, (z-lyz,25:2)z \, (gl-a,35:2)\ghostlmd \, (gv-l,39:2)\ghostvar }
     $
-    has quadruplet encoding
-    $(\lambda x, \epsilon ,0,0)$, $(@,\epsilon,0,0)$, $(\lambda y z, \epsilon, 1,0)$, $(z,\epsilon, 1,2)$, $(\ghostlmd,\epsilon,3,2)$, $(\ghostvar,\epsilon,5,2)$ whereas the quadruplet sequence $ (\lambda x, g ,0,0), (@,\epsilon,0,0), (\lambda y z, x\,y\,y, 1,0), (z,\epsilon, 1,2), (\ghostlmd,\epsilon,3,2), (\ghostvar,\epsilon,5,2)$ encodes the justified sequence
+    has name-preserving encoding
+    $({\sf Lmd }, x ,0,0)$,
+    $@$,
+    $({\sf Lmd }, y\, z, 1,0)$,
+    $({\sf Var },1,2)$,
+    $({\sf Lmd },\epsilon,3,2)$,
+    $({\sf Var },5,2)$
+    whereas the sequence
+    $ ({\sf Lmd }, x\, g, 0, 0),
+    @,
+    ({\sf Lmd }, y\, z\, x\, y\, y, 1,0),
+    ({\sf Var }, 1,2),
+    ({\sf Lmd },\epsilon,3,2),
+    ({\sf Var },5,2)$ encodes the justified sequence
     $s= \Pstr[10pt]{
-        (l){\lambda x^{[g]}}  (a)@  (lyz-a,25:0){\lambda y z^{[x\,y\,y]}}  (z-lyz,30:2)z \, (gl-a,40:2)\ghostlmd \, (gv-l,38:2)\ghostvar }
-    $ which reads out as $\readout[s]= \lambda x g ~ @ ~ \lambda y z x y' y'' ~ z ~ \lambda ~ g$.
+        (l){\lambda x g}
+         (a)@
+         (lyz-a,25:0){\lambda y z x y y}
+         \,(z-lyz,30:2)z
+         (gl-a,40:2)\ghostlmd
+         (gv-l,38:2)\ghostvar }
+    $ which reads out as $\readout[s]= \lambda x g ~ @ ~ \lambda y z x y y ~ z ~ \lambda ~ g$.
 \end{example}
 
-
+%%%%%%%%%%%%%%%%% end of `name-preserving' presentation
 
 \subsection{Justified paths of the term tree}
 
@@ -811,7 +828,7 @@ It is well-defined because sequences in $T$ correspond to actual paths in the tr
 
 \begin{algorithm}[!ht]
 \begin{algorithmic}
-\caption{Reconstructing a term tree from justified paths.}
+\caption{Reading out a term tree from its justified paths.}
 \label{algo:termtree_readout_from_justitied_paths}
 \REQUIRE{Set $T$ of justified sequences of a term $M$ verifying $T \equiv \pathset(N)$ for some term $N$.}
 \ENSURE{Tree of $N$, modulo variable renaming.}
@@ -3376,7 +3393,7 @@ Let's consider the tree structure at the trivial redex on Figure~\ref{fig:reduci
 
     \item[Case $r=1$] Depicted on Figure~\ref{fig:reducing_trivialredex} (bottom). The tree structure is altered: the application node and the argument $A_1$ are eliminated in the reduct. There is an implicit injection $\Phi$ from nodes of $N$ to nodes of $M$. We extent this function to \emph{occurrences} of nodes as follows. Let's introduce the abbreviation $\overline{y} = \overline\eta x_2 \ldots x_n$.
     \begin{align*}
-        \Phi\colon O_4(N) &\rightarrow O_4(M) \\
+        \Phi\colon \nameencoding(N) &\rightarrow \nameencoding(M) \\
         (n,p,d,k) &\longmapsto (\Phi(n),p,d,k) & \mbox{if $n\neq\lambda\overline{y}$} \\
         (\lambda\overline{y},p,d,k) &\longmapsto (\lambda\overline\eta,(x_2 \ldots x_n \cdot p),d,k)
     \end{align*}
