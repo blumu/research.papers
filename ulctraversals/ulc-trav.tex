@@ -608,8 +608,6 @@ We write $\Nodes(M)$ to denote the set of nodes of $\ctree(M)$, or just $\Nodes$
 We define the \defname{enabling relation} $\enables$ on tree nodes $\Nodes$ as the relation mapping (i) each lambda node to all the variable nodes that it binds; (ii) the root of the tree to all the free variable nodes; (iii) variable and application node to each one of their child node. We write $n \enables_k \lambda\overline{x}$, for $k\geq0$, to indicate that a lambda node $\lambda\overline{x}$ is the $k$th child of a variable or application node $n$; $\lambda\overline{x} \enables_k n$, for $k\geq1$, to indicate that the label of a bound variable node $n$ is precisely the name of the $k$th variable bound by  $\lambda\overline{x}$ , that is $n=x_k$; and if $r$ denotes the root of the tree then we take the convention $r \enables_k z$ for any free variable node $z$, where $k$ denotes the free variable index of $z$ according to some predefined numbering of free variables.
 We say that node $m$ \defname{hereditarily enables} $n$ if they relate by the reflexive transitive closure of $\enables$.
 
-Because variable names and bindings are entirely recoverable from the enabling relation, our notion of term tree could equivalently be defined as a name-free tree over three node labels $\{ \lambda, {\sf Var}, @ \}$ indicating the type of each node, together with the enabling relation.
-
 A tree node is \defname{external} if it is hereditarily enabled by the root, otherwise it is \defname{internal}. We write $\ExternalNodes$ for the set of external nodes, that is the image of the tree root by the reflexive transitive closure of the enabling relation. Internal nodes are therefore precisely the nodes hereditarily justified by application nodes $@$. We write $\InternalNodes$ to denote the set of internal nodes.
 The \defname{arity} of a node $n$, written $|n|$,
 is defined for a variable node as the number of immediate arguments (\ie, children in the tree); for an application node, as the number of operands (\ie, number of children of the $@$-node minus 1); for a lambda node $\lambda x_1 \cdots x_k$, $k\geq 0$, as the number of bound variables $k$.
@@ -697,12 +695,12 @@ Given two occurrences $n$ and $m$ in a justified sequence $s$, we say that $n$ i
 %%%%%%%%%
 \subsection{Name-free and name-preserving encodign}
 The \defname{(name-free) structure} of a justified sequence is obtained by discarding node labels while preserving node types, arities and justification pointers. It is encoded as a sequence of elements from
-$(\{\sf Lmd\}\times\nat\times\nat\times\nat) +
-   (\{\sf Var\}\times\nat\times\nat)
+$(\nat\times\nat\times\nat) +
+   (\nat\times\nat)
    + \{ @ \}$
-where $(\lambda, a, j, i)$ represents a lambda bunch of arity $a$
+where $(a, j, i)$ represents a lambda bunch of arity $a$
 with link distance $j$ and link label $i$ ($0$ for no pointer);
-$({\sf Var}, j, i)$ represents a variable occurrence
+$(j, i)$ represents a variable occurrence
 with link distance $j$ and link label $i$;
 and $@$ represents the occurrence of an application node.
 %
@@ -712,18 +710,17 @@ We say that two subsets $J_1\subseteq \justseqset(M_1)$ and $J_2\subseteq\justse
 \begin{example}
     Alpha-conversion preserves the structure so for instance we have
     $\Pstr[10pt]{ (l){\lambda x y} \, (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda z y} \, (n-l,25){z}}$.
-    % The number of variable bindings in a lambda node may also change without impacting its structure, as long as justification link labels are unaffected, so we also have $\Pstr[10pt]{ (l){\lambda x y z w t} \, (n-l,25){x} } \equiv \Pstr[10pt]{ (l){\lambda x} \, (n-l,25){x}}$ since they both have structure $(\lambda,0)\,({\sf Var},1)$.
 \end{example}
 
 
 The \defname{name-preserving encoding} of a justified sequence of nodes with variables in $\VarSet$ is a sequence of element in
-$\nameencoding = (\{\sf Lmd\}\times\mathcal{V}^*\times\nat\times\nat) +
-   (\{\sf Var\}\times\nat\times\nat)
+$\nameencoding = (\mathcal{V}^*\times\nat\times\nat) +
+   (\nat\times\nat)
    + \{ @ \}$  defined occurrence-wise similarly to the name-free encoding
  except for the lambda node case where
   an occurrence of a lambda node $\lambda\overline{x}\in\ExtendedNodesLmd$
  with link distance $j$ and link label $i$ gets encoded
- by $({\sf Lmd},\overline{x},j,i) \in \mathcal{E}$.
+ by $(\overline{x},j,i) \in \mathcal{E}$.
 %
 Observe that given a fixed term, the name-preserving encoding of a justified sequence uniquely determines its structure, by just discarding the second component from the lambda-node encoding; and reciprocally, the list of $\lambda$-bound variables is uniquely recoverable from the structure via the enabling relation $\enables$ over $\exttree$.
 %
@@ -739,17 +736,17 @@ The \defname{readout function} $\readout: \nameencoding^* \rightarrow \mathcal{L
 decodes a name-preserving encoding into a sequence of node labels in $\mathcal{L}$ (not necessarily present in $\ctree(M)$). It is defined by
 $\readout[\epsilon]= \epsilon$;
 $\readout[s \cdot @] = \readout[s] \cdot @$;
-$\readout[s \cdot ({\sf Lmd}, \overline{x}, j, i) ] = \readout[s] \cdot \lambda\overline{x}$
-and for any encoding $s = u \cdot ({\sf Lmd}, \overline{x}, k, l)\,  n_1 \ldots n_{i-1}$ for  $n_1, \ldots n_{i-1}\in \nameencoding$, $i\geq 1$, and $u \in \nameencoding^*$ we have:
+$\readout[s \cdot (\overline{x}, j, i) ] = \readout[s] \cdot \lambda\overline{x}$
+and for any encoding $s = u \cdot (\overline{x}, k, l)\,  n_1 \ldots n_{j-1}$ for  $n_1, \ldots n_{j-1}\in \nameencoding$, $j\geq 1$, $k,l\geq 0$, and $u \in \nameencoding^*$ we have:
 $$
 \begin{array}{lll}
-\readout[u \cdot ({\sf Lmd}, \overline{x}, k, l)\,  n_1 \ldots n_{i-1}\, (i,j)]
+\readout[u \cdot (\overline{x}, k, l)\,  n_1 \ldots n_{j-1}\, (j,i)]
 &=&
  \begin{cases}
-   \readout[s] \cdot x_j &
-     \mbox{if $j\leq |\overline{x}|$.} \\
+   \readout[s] \cdot x_i &
+     \mbox{if $i\leq |\overline{x}|$.} \\
    \readout[s] \cdot \ghostvar &
-     \mbox{if $j> |\overline{x}|$.}
+     \mbox{if $i> |\overline{x}|$.}
 \end{cases}
 \end{array}$$
 where $\ghostlmd$ is covered by the case  $\lambda\overline{x}$, $\overline{x}=\epsilon$.
@@ -763,19 +760,19 @@ by point-wise extension.
         (l){\lambda x} \, (a)@ \, (lyz-a,25:0){\lambda y z} \, (z-lyz,25:2)z \, (gl-a,35:2)\ghostlmd \, (gv-l,39:2)\ghostvar }
     $
     has name-preserving encoding
-    $({\sf Lmd }, x ,0,0)$,
+    $(x ,0,0)$,
     $@$,
-    $({\sf Lmd }, y\, z, 1,0)$,
-    $({\sf Var },1,2)$,
-    $({\sf Lmd },\epsilon,3,2)$,
-    $({\sf Var },5,2)$
+    $(y\, z, 1,0)$,
+    $(1,2)$,
+    $(\epsilon,3,2)$,
+    $(5,2)$
     whereas the sequence
-    $ ({\sf Lmd }, x\, g, 0, 0),
+    $ (x\, g, 0, 0),
     @,
-    ({\sf Lmd }, y\, z\, x\, y\, y, 1,0),
-    ({\sf Var }, 1,2),
-    ({\sf Lmd },\epsilon,3,2),
-    ({\sf Var },5,2)$ encodes the justified sequence
+    (y\, z\, x\, y\, y, 1,0),
+    (1,2),
+    (\epsilon,3,2),
+    (5,2)$ encodes the justified sequence
     $s= \Pstr[10pt]{
         (l){\lambda x g}
          (a)@
@@ -795,7 +792,16 @@ The results presented in the paper apply to both the name-free and name-preservi
 
 \subsection{Justified paths of the term tree}
 
-For any term $M$ we define the \defname{set of justified paths} $\pathset(M)$ as the set of justified sequences in $\justseqset(M)$ whose underlying sequences of nodes are precisely the structural paths (\ie, without ghosts) of the labelled-tree $\ctree(M)$ and justification pointers are induced by the enabling relation as follows: Occurrence of bound variable nodes are justified by their binder node with link label determined by the variable index in the binding node; free variables are justified by the initial occurrence and their link label is an index in $\nat$ uniquely identifying the free variable name; and lambda nodes are justified by the immediate predecessor in the sequence (its parent node by definition) with label index given by the child index. This notion is well defined because a variable binder necessarily occurs in the path from it to the root.
+For any term $M$ we define the \defname{set of justified paths} $\pathset(M)$ as the set of justified sequences in $\justseqset(M)$ whose underlying sequences of nodes are precisely the paths of the labelled-tree $\ctree(M)$ from the root to every node in $\Nodes$, and justification pointers are induced by the enabling relation:
+ %
+ bound variable nodes are justified by their binder node with link label giving the variable name index in the binding $\lambda$-node;
+ %
+ free variables are justified by the initial occurrence (the tree root) and their link label is an index in $\nat$ uniquely identifying the
+ free variable name;
+ %
+ and lambda nodes are justified by the immediate predecessor in the path sequence (its parent node by definition) with label index given by the child index.
+ %
+ This notion is well defined because a variable binder necessarily occurs in the path to the root.
 \begin{property}[Path Characterization]
 \label{prop:tree_path_charact}
  An untyped term $M$ is uniquely determined by either
@@ -814,6 +820,29 @@ or (ii) the \emph{structure} of the maximal justified paths of $\pathset(M)$, up
   \}$, the subset of maximal paths.
 \end{example}
 
+
+\begin{todobox}
+    Rework in paragraph.
+    Let $T\subset \nameencoding^* $ be a finite set of name-preserving encoding of justified sequences such that $T$ is isomorphic to justified paths $\pathset(M_2)$ of some other term $M_2$.
+    Take $T = \{ t_0, \ldots t_n \}$
+
+    $P^- = t_1 \vee t_n $
+    $ P = \{ \readout[r] \| r \in P^- \}$
+
+    We assume that we have a clash-avoiding renaming function
+     $\alpha \colon \nameencoding^* \longrightarrow \nameencoding^*$
+     which rename variable names in $\nameencoding^*$ so that a given variable name does not occur more than once.
+
+     Let $X = \mathcal{P}(\nameencoding^*)$ the set of subsets of $\nameencoding^*$
+
+     We define the unification function $\vee \colon X \longrightarrow X$
+$\{ \} \vee \{ t \} = \{ t \}$
+
+$\{ \} \vee \{ t \} = \{ t \}$
+
+
+
+\end{todobox}
 Algorithm~\ref{algo:termtree_readout_from_justitied_paths} shows how to reconstruct the tree from a set of justified sequences that is isomorphic to the justified paths of the term. Note how ghost variables get materialized by  assigning real variable names. Observe as well that variable nodes with same binder and same link label are assigned the same variable name. This assignment is sound since by Property~\ref{prop:tree_path_charact}, justification pointers in a justified path uniquely determine variables names.
 
 \begin{definition}[Induced labelled-tree]
@@ -976,14 +1005,14 @@ and the node traversed is structural.
 \end{definition}
 
 %%%%%% remark 1: materialization
-Observe that only \rulenamet{Var} can materialize a structural node: once a traversal starts to visit ghost nodes, the only way for it to `return'  to structural nodes is via a ghost variable using an instantiation of \rulenamet{Var} producing a traversal of the form
+Observe that only \rulenamet{Var} can materialize a structural node, so once a traversal starts to visit ghost nodes, the only way to `return'  to structural nodes is via an instantiation of \rulenamet{Var} producing a traversal of the form
 $
 \Pstr[0.5cm]{ t \cdot (y){y} \, (l){\alpha}  \ldots (t-l,30:i){\ghostvar}
     \, (lx-y,40:i){\lambda \overline{x}}}
 $
 where
- $\lambda \overline{x} \in \NodesLmd$ is the $i$th child lambda node of variable node $y \in \NodesVar$,
-$\alpha$ is either a structural or ghost lambda node, and
+ $\lambda \overline{x} \in \NodesLmd$ is the $i$th child lambda node of structural variable node $y \in \NodesVar$,
+and $\alpha$ is a lambda node verifying
  $0\leq |\alpha| < i \leq |y|$.
 %%%%%%%%
 
@@ -998,7 +1027,7 @@ for $k \leq 0$ we define ${\sf ETA}(M, n, k) = M$; and for $k> 0$,
 The \defname{eta-expansion of $M$ with respect to a finite traversal $t$}, written $M^t$, is defined inductively by $M^\epsilon = M$,
 $M^{u \cdot n} = M$ if $n$ has no justifier, and if $m$ denotes $n$'s justifier in $u$ with link label $i$ then $M^{u \cdot n} = {\sf ETA}(M^{u}, m, i-|m|)$.
 %
-(Note that we can have $i>|m|$ for the imaginary case of rules \rulenamet{Var} and \rulenamet{IVar}.)
+(Note that we have $i>|m|$ only for the imaginary sub-case of \rulenamet{Var} and \rulenamet{IVar}.)
 \end{definition}
 It follows from the definition that $M$ is a sub-tree of $M^t$: paths in $\ctree[M]$ are also paths in $\ctree[M^t]$.
 
