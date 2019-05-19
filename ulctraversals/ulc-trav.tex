@@ -257,7 +257,7 @@
 \newcommand{\hoc}{\emph{hoc}}
 
 % Term equivalence up to alpha renaming
-\newcommand{\alphaequiv}{\equiv}
+%\newcommand{\alphaequiv}{\equiv}
 
 % set of justified sequences of M
 \def\justseqset{\mathcal{J}}
@@ -442,7 +442,7 @@ The next section introduces basic definitions from the traversal theory. Section
 \emph{Sequences:} For any alphabet $\Sigma$ we write $\Sigma^*$ to denote the set of (possibly infinite) sequences over elements of $\Sigma$.
  We use the abbreviation $\overline{x}$ for the sequence of elements $x_1 \ldots x_n$ for some $n\geq0$, $\epsilon$ for the empty sequence, and for any two sequences $\overline{x}, \overline{y}$ of length $n,m\geq 0$, we write $\overline{x} \cdot \overline{y}$ for the concatenation $x_1 \ldots x_n y_1 \ldots y_m$.
 
- \emph{Labelled trees:} Given a set of labels $\mathcal{L}$, the expression `$l\langle t_1, \ldots, t_m \rangle$' for $m \geq 0$ denotes a $\mathcal{L}$-labelled tree with root labelled $l\in \mathcal{L}$. The case $m=0$ represents a leaf, and otherwise a node labelled $l$ with $m$ ordered children trees $t_1$, \ldots, $t_m$. We will sometimes use the formal definition of a labelled-tree as a partial function $\nat^* \rightarrow \mathcal{L}$ mapping directed tree-paths to labels in $\mathcal{L}$, where a directed path is the sequence of child indices to follow from the tree root to a given node or leaf.
+ \emph{Labelled trees:} Given a set of labels $\mathcal{L}$, the expression `$l\langle t_1, \ldots, t_m \rangle$' for $m \geq 0$ denotes a $\mathcal{L}$-labelled tree with root labelled $l\in \mathcal{L}$. The case $m=0$ represents a leaf, and otherwise a node labelled $l$ with $m$ ordered children trees $t_1$, \ldots, $t_m$.
 
 \subsection{Lambda calculus background and notations}
 \label{sec:lambdacalculus_basics}
@@ -452,7 +452,7 @@ where $x$ ranges over a countable set of variable names $\VarSet$.
 % countable is important so that we can pick as many fresh variables as needed
 For conciseness we abbreviate consecutive lambda abstractions when writing lambda terms, so that $\lambda x_1 \ldots \lambda x_n . M$ for some $n\geq 0$ and term $M$ will be written $\lambda x_1 \ldots x_n . M$; or just
 $\lambda \overline{x} . M$ if $\overline{x} = x_1 \ldots x_n$.
-We will also drop brackets, and assume left-associative application so that $U\,V\,W$ means $(U\,V)\,W$. We write $M \alphaequiv N$ to denote that $M$ and $N$ are equal up to variable renaming.
+We will also drop brackets, and assume left-associative application so that $U\,V\,W$ means $(U\,V)\,W$. We says that  two terms are $\alpha$-equivalent if they are equal up to variable renaming.
 In the rest of the paper, we use uppercase letters $M, N, T, U, V$ for lambda terms and lowercase $x,y,z$ to denote variables. Terms will all have variable names ranging in some fixed set $\VarSet$ of identifiers.
 
 We recall standard results of the lambda calculus.
@@ -804,86 +804,71 @@ For any term $M$ we define the \defname{set of justified paths} $\pathset(M)$ as
  This notion is well defined because a variable binder necessarily occurs in the path to the root.
 \begin{property}[Path Characterization]
 \label{prop:tree_path_charact}
- An untyped term $M$ is uniquely determined by either
-(i) the maximal justified paths of $\pathset(M)$;
-or (ii) the \emph{structure} of the maximal justified paths of $\pathset(M)$, up to $\alpha$-conversion.
+ An untyped term $M$ is uniquely determined
+(i) by the maximal justified paths of $\pathset(M)$;
+or (ii) up to $\alpha$-conversion, by the \emph{structure} of the maximal justified paths of $\pathset(M)$.
 \end{property}
 \begin{proof}
-(i) Term trees are in one-to-one correspondence with the standard tree representation of lambda terms in the lambda calculus. By definition, $\pathset(M)$ is prefix-closed and thus uniquely determined by its maximal elements. (ii) Variables names are uniquely determined by the justification pointers and their associated label index.
+(i) A $\lambda$-term $M$ is uniquely determined by its term tree $\ctree(M)$, itself uniquely determined by its maximal paths.
+(ii) Variables bindings are uniquely determined by the justification pointers with their associated label; so maximal justified paths are  reconstructible from their structure, up to $\alpha$-conversion, by assigning fresh variable names to all lambda-nodes.
 \end{proof}
 
 \begin{example}
-  $\pathset((\lambda x.x y) (\lambda z.z))$ is the prefix closure of
+    The maximal justified paths of
+  $\pathset((\lambda x.x y) (\lambda z.z))$
+  are
   $\{
   \Pstr{ (r){\lambda} (at){@} (lx-at,30:0){\lambda x} (x-lx,30:1){x} (l2-x,30:1){\lambda} (y-r,40:1){y} },
   \Pstr{ (r){\lambda} (at){@} (lz-at,35:1){\lambda z} (z-lz,35:1){z}}
-  \}$, the subset of maximal paths.
+  \}$.
 \end{example}
 
+%%%
+A set of name-preserving justified paths $T\subset \nameencoding^*$ is \defname{$\alpha$-consistent} if all paths agree on how to name variables in lambda nodes: for any two maximal justified paths $p \cdot (\overline{x}, 1, i) \cdot s_1$ and $p \cdot (\overline{y}, 1, i) \cdot s_2$ in $T$, $i\geq 0,p,s_1,s_2\in \nameencoding^*$
+we have $\overline{x} = \overline{y}$.
+% NOTE: maximality is important in this definition: for normalizing traversals, the projection core may not give the right number of pending lambdas if the traversal ends before reaching the end of a strand
 
-\begin{todobox}
-    Rework in paragraph.
-    Let $T\subset \nameencoding^* $ be a finite set of name-preserving encoding of justified sequences such that $T$ is isomorphic to justified paths $\pathset(M_2)$ of some other term $M_2$.
-    Take $T = \{ t_0, \ldots t_n \}$
+\begin{proposition}[Name-preserving read out of a term from justified paths]
+\label{proposition:termtree_readout_from_justitied_paths}
 
-    $P^- = t_1 \vee t_n $
-    $ P = \{ \readout[r] \| r \in P^- \}$
+Let $T\subset \nameencoding^*$ be a finite set of (name-preserving encoded) justified sequences  that is $\alpha$-consistent.
+If $T\cong \pathset(M)$ for some (a priori unknown) untyped term $M$ then one can effectively readout from $T$ an untyped
+term  $\readout[T]$ that is $\alpha$-equivalent to $M$.
 
-    We assume that we have a clash-avoiding renaming function
-     $\alpha \colon \nameencoding^* \longrightarrow \nameencoding^*$
-     which rename variable names in $\nameencoding^*$ so that a given variable name does not occur more than once.
+Furthermore, provided that no variable capture situation occurs, the variable names occurring in $\readout[T]$ are the original names from lambda-occurrences from $T$.
+\end{proposition}
+%(Then $T$ is path-like, that is lambda-nodes are justified by their immediate predecessor in the sequence.)
+\begin{proof}
+    Because $T \cong \pathset(M)$, the sequences in $T$ have the properties
+of justified paths of a term tree: they start with a lambda, alternate between lambda and variable/@, lambdas have
+a single-child, and are necessarily justified by their immediate predecessor in the sequence (their parent).
+Furthermore, $T$ induces an arity for each occurrence of a sequence in $T$: the arity of a lambda-occurrence $(\overline{x},j,i)\in\nameencoding$ is $|\overline{x}|$, the arity of a variable or @-occurrence is the maximum
+child-index (given by the link label) of any lambda occurrence immediately following it in any sequence of $T$.
 
-     Let $X = \mathcal{P}(\nameencoding^*)$ the set of subsets of $\nameencoding^*$
+This allows use to construct a $\mathcal{L}$-labelled tree
+inductively from the maximal sequences of $T$.
+We first inductively construct a $\mathcal{L^-}$-labelled tree with
+$\mathcal{L^-} = \{ @ \} + \{
+    \lambda \overline{x} \ | \
+    \overline{x} \in \mathcal{V}^* \} + \nat\times\nat$,
+where a De Bruijn pair $(j,i)\in \nat\times\nat$ represents a variable node such that the link distance $j$ identifies the binder lambda-node, and the link label $i$ gives the bound variable index in that binding lambda node. Since $T$ is $\alpha$-consistent, there is only choice of variable names $\overline{x}$ to assign to a given lambda-node.
 
-     We define the unification function $\vee \colon X \longrightarrow X$
-$\{ \} \vee \{ t \} = \{ t \}$
+An important step at this point is to rename variables to avoid any potential variable capture when we finally replace the De Bruijn pairs by the variable names they refer to.
+%
+Firstly, the variable names $\overline{x}$ from lambda-occurrences in sequences in $T$ may contain duplicates. We resolve this by renaming names that are repeated within the same lambda node, provided that some variable occurrence under that node refers to the first variable name: this is the situation of a justified path  $\cdots \lambda x x y \cdots (j,1)$ where the De Bruijn pair $(j,1)$ refers to the first $x$ of the lambda node. In this case the lambda node becomes $\lambda x x' y$.
+%
+Secondly, two nested lambdas in a given justified path may bind the same variable name. If this can introduces a clash, \ie, the variable occurs freely under the nested lambda, then we rename the bound variable in the nested lambda. This is the situation of a justified path of the form $\cdots \lambda{xyz} \cdots \lambda {xuv} \cdots (j,1) \cdots$
+ where the De Bruijn pair $(j,1)$ refers to the $x$ from the first lambda $\lambda{x y z}$.
 
-$\{ \} \vee \{ t \} = \{ t \}$
-
-
-
-\end{todobox}
-Algorithm~\ref{algo:termtree_readout_from_justitied_paths} shows how to reconstruct the tree from a set of justified sequences that is isomorphic to the justified paths of the term. Note how ghost variables get materialized by  assigning real variable names. Observe as well that variable nodes with same binder and same link label are assigned the same variable name. This assignment is sound since by Property~\ref{prop:tree_path_charact}, justification pointers in a justified path uniquely determine variables names.
-
-\begin{definition}[Induced labelled-tree]
-Let $T$ be a set of justified sequences of $M$ that is isomorphic to justified paths $\pathset(M_2)$ of some other term $M_2$.
-Then $T$ induces the $\mathcal{L}$-labelled tree $(P,L)$
-with labels $\mathcal{L} = \ExtendedNodes \times P \times \nat$.
-The set of directed paths $P \subseteq \nat^*$ are \emph{generated} from justified sequences in $T$: variable occurrences and application node have child index $1$; the child index of lambda-node occurrences is given by their justification label.
-The label function $L : P \rightarrow\mathcal{L}$ is defined for
-any path $p\in P$, generated from some sequence $s = s' \cdot n$ of $T$,
-as follows: if $n$ has no justifier then $L(p) = (n, p, 0)$; otherwise $L(p) = (n, b, i)$ where $b$ is the prefix of $p$ corresponding to $n$'s justifier and $i$ is the label of $n$'s justification pointer.
-\end{definition}
-It is well-defined because sequences in $T$ correspond to actual paths in the tree of $M_2$, therefore any two sequences $s_1, s_2$ generating the same path $p$ must end with the same tree node with same justifier.
-
-\begin{algorithm}[!ht]
-\begin{algorithmic}
-\caption{Reading out a term tree from its justified paths.}
-\label{algo:termtree_readout_from_justitied_paths}
-\REQUIRE{Set $T$ of justified sequences of a term $M$ verifying $T \equiv \pathset(N)$ for some term $N$.}
-\ENSURE{Tree of $N$, modulo variable renaming.}
-\STATE Let $(P, L)$ be the labelled-tree induced by $T$.
-\FORALL{node $n \in P$ (by depth-first enumeration)}
-    \STATE Let $(l,b,i) = L(n)$
-    \IF{$n \in \NodesVar \union \NodesLmd \union \NodesApp$}
-        \STATE $L'(n) \leftarrow l$
-        %\COMMENT{It's either $@$, some variable name $x$, or $\lambda x_1 \ldots x_m$ for $m\geq 0$}
-    \ELSIF{$n \in\ghostlmd$}
-        \STATE Let $\alpha$ be a fresh identifier
-        \COMMENT{Will be used as prefix to name variable bound by $n$}
-        \STATE $id(n) \leftarrow \alpha$
-        \STATE $arity \leftarrow \max \{ i \ | \ L(v) = (\ghostvar, n, i) \mbox{ for some } v \in P \}$
-        \STATE $L'(n) \leftarrow \lambda \alpha_1 \ldots \alpha_{arity} $
-    \ELSIF{$n \in\ghostvar$}
-            \STATE $\alpha \leftarrow id(b)$
-            \COMMENT{Get naming prefix associated with this binder}
-            \STATE $L'(n) \leftarrow \alpha_i $
-            \COMMENT{Variable occurrences with same binder and justification label have same name.}
-    \ENDIF
-\ENDFOR
-\RETURN The labelled-tree $(P, L')$.
-\end{algorithmic}
-\end{algorithm}
+After renaming variables in the $\mathcal{L^-}$-labelled tree, the final
+$\mathcal{L}$-labelled tree is obtained by replacing all De Bruijn pair $(j,i)$ by the $i$th variable name from the lambda node located $j$ nodes above it in the term tree.
+%
+Interpreting that $\mathcal{L}$-labelled as a term tree $\ctree[\_ ]$ then lets us read back from it some term $N$ such that $\ctree[N]$ is precisely that tree.
+%
+By construction we have $\pathset(N) = T$ therefore
+$N$ and $M$ have the same justified paths structures so by
+Property~\ref{prop:tree_path_charact} they must be $\alpha$-equivalent.
+\end{proof}
 
 
 \section{Imaginary Traversals}
@@ -1385,7 +1370,7 @@ the paths in the tree representation of the beta-normal form of a simply-typed t
 \label{prop:path_charact_stlc}
 Let $M^\tau$ be a closed simply typed term
 in eta-long form with beta-normal form $N^\tau$
-we have $\travsetcon(M^\tau)/{\sim} = \pathset(N^\tau)$.
+we have $\travsetcon(M^\tau)/{\sim} \cong \pathset(N^\tau)$.
 \end{proposition}
 \begin{proof}
  By soundness of Game Semantics, beta-eta equivalent terms have the same game denotation, therefore by Theorem~\ref{thm:gamesem_correspondence_stlc}, the traversals of the beta-normal form are the traversals cores of the term. The Path-View correspondence (Proposition~\ref{prop:ulctrav_welldefined_pathview}) and Proposition~\ref{prop:ulc_and_stlc_trav_coincide} then show that the P-views of traversal cores of $M^\tau$ give the tree paths of the eta-long form of the beta normal form of $M^\tau$.
@@ -1405,7 +1390,7 @@ This yields the normalization procedure for simply-typed terms in eta-long form 
     \item Enumerate \emph{concrete and essential} traversals of $M^\tau$ with rules of Definition~\ref{dfn:essential_traversals};
     \item For each maximal traversal $t$, get its \emph{traversal core} $\core{t}$ by removing all occurrences of internal nodes;
   \end{itemize}
-  \item Apply Algorithm~\ref{algo:termtree_readout_from_justitied_paths} to reconstruct the tree of the $\beta$-normal form of $M^\tau$ from $T$.
+  \item Return $\readout[T]$ (See Proposition~\ref{proposition:termtree_readout_from_justitied_paths}).
 \end{enumerate}
 \end{algorithmic}
 \end{algorithm}
@@ -1671,7 +1656,7 @@ where $\pview{\core{t}} = t$, is not equivalent to $\pview{\core{u}}$ for any $u
 
     \infrule[$\rulefont{Lam^\ghostvar_\normalizing}$]
         {
-            \istraversal \Pstr[0.5cm]{ t \cdot(beta){\beta} \cdot (m){m} \ldots (gl-m,40:i){\ghostlmd}}
+            \istraversal \Pstr[0.5cm]{ t \cdot(beta){\beta} (m){m} \ldots (gl-m,40:i){\ghostlmd}}
         }
         {
             \Pstr[0.5cm]{ \istraversal t \cdot(beta){\beta} \,
@@ -1741,7 +1726,7 @@ shows correctness of the algorithm, in particular that the set of justified path
     \item Enumerate maximal \emph{normalizing} traversals $\travsetnorm(M)$ using the rules of Table~\ref{tab:normalizing_trav_rules};
     \item For each traversal, apply transformation $\coresymbol$ to get the traversal core.
   \end{itemize}
-  \item Apply Algorithm~\ref{algo:termtree_readout_from_justitied_paths} to reconstruct the tree of the $\beta$-nf of $M$ from the justified paths  $T$.
+  \item Return $\readout[T]$ (See Proposition~\ref{proposition:termtree_readout_from_justitied_paths}).
 \end{enumerate}
 \end{algorithmic}
 \end{algorithm}
@@ -1767,7 +1752,7 @@ at the start of each strand.
 \label{examp:churchincrement}
 Let every $k\geq0$ refer to the Church numerals $\lambda s z . s^k z$
 where $s^k z$ denotes $k$ repeated (right-associative) applications of $s$ to $z$.
-Take $M \alphaequiv {\sf add}\, 1$ representing the increment function such that $M k$ reduces to $k+1$ for all $k$, where ${\sf add} \alphaequiv \lambda x y s z. x\, s (y\, s\, z)$.
+Take $M = {\sf add}\, 1$ representing the increment function such that $M k$ reduces to $k+1$ for all $k$, where ${\sf add} = \lambda x y s z. x\, s (y\, s\, z)$.
 Let us traverse the tree of $M$ represented in Figure~\ref{fig:comptree_examples}. Throughout this example we underline external nodes to highlight node occurrences at the strands' boundaries.
 We start at the root and traverse the tree until hitting the first non-deterministic choice which produces
 $t_\epsilon = \Pstr[0.7cm]{(n0){\underline\lambda }\,(n1){@}\,(n2-n1){\lambda x y s z}\,(n3-n2){x}\,(n4-n1,32){\lambda s z}\,(n5-n4,30){s}\,(n6-n3,33){\lambda }\,(n7-n2,37){s}\,(n8-n1,32){\ghostlmd^3}\,(n9-n0,32){\underline{\ghostvar}^2} }$.
@@ -2108,8 +2093,8 @@ The beta-normal form of $J$ is thus $x (\lambda v.v\,y) y$.
 \begin{example}[Neil Jones' varity example]
     \label{example:varity}
 Take the term $varity\, 2$ where
-$2 \alphaequiv \lambda s_2 z_2 . s_2 (s_2\ z_2)$ and
-$varity \alphaequiv \lambda t.t (\lambda n a x . n (\lambda s z . a s (x s z))) (\lambda a. a) (\lambda z_0 . z_0)$.
+$2 = \lambda s_2 z_2 . s_2 (s_2\ z_2)$ and
+$varity = \lambda t.t (\lambda n a x . n (\lambda s z . a s (x s z))) (\lambda a. a) (\lambda z_0 . z_0)$.
 %To compute the set of normalizing traversals, we apply the traversal rules inductively until an input variable is reached, at which point we eta-expand with rule \rulenamet{IVar} for all possible values of $k$ ranging from $1$ to the dynamic arity of the traversal.
 The initial traversal strand $t_\epsilon$ is
 
