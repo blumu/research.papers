@@ -3030,8 +3030,8 @@ Let $M$ and $N$ be two terms with variables in $\mathcal{V}$. Let $\phi\colon \j
 
 \begin{lemma}
 \label{lem:bisimulation_isomorphism}
-If $M$ and $N$ are $\phi$-bisimilar;
-the restriction of $\phi$ to $\coresymbol(\travset^\dagger(N))$ is injective;
+If $M$ and $N$ are $\phi$-bisimilar such that
+$\phi$ restricted to $\coresymbol(\travset^\dagger(N))$ is injective
 and there is a mapping $\rho: \VarSet^*(N) \rightarrow \VarSet^*(M)$ such that for any variable names $\alpha\in\VarSet^*(N)$,  $\phi$ and $\coresymbol_\alpha$ commute modulo $\rho$:
 (\ie, for all $u$, $ \coresymbol_{\rho(\alpha)}(\phi(u)) = \phi(\coresymbol_{\alpha}(u))$), then $\coresymbol(\travset(N)) \cong \coresymbol(\travset(M))$.
 \end{lemma}
@@ -3047,7 +3047,7 @@ The sets of normalizing traversals before and after linear reduction are identic
 \begin{proposition}[Traversals are sound for linear reduction]
 \label{prop:ulctrav_impl_linear_reduction}
 Let $M$ be an untyped term.
-If $M \llred N$ then $\coresymbol(\travsetnorm(M)) \cong \coresymbol(\travsetnorm(N))$.
+If $M \llred N$ then $\coresymbol(\travsetnorm^{\max}(M)) \cong \coresymbol(\travsetnorm^{\max}(N))$.
 \end{proposition}
 %\begin{proof}
 \proofatend
@@ -3342,7 +3342,7 @@ Hence $M$ and $N$ are in $\phi$-bisimulation, thus because $\phi$ is injective a
 
 \begin{proposition}[Traversals are sound for trivial reduction]
 \label{prop:ulctrav_sound_for_trivialreduction}
-    Let $M$ be an untyped term containing only trivial redexes, and $N$ the reduct obtained by firing the \emph{leftmost spinal-innermost} trivial redex, then $\coresymbol(\travsetnorm(M)) \cong \coresymbol(\travsetnorm(N))$.
+    Let $M$ be an untyped term containing only trivial redexes, and $N$ the reduct obtained by firing the \emph{leftmost spinal-innermost} trivial redex, then $\coresymbol(\travsetnorm^{\max}(M)) \cong \coresymbol(\travsetnorm^{\max}(N))$.
 \end{proposition}
 \proofatend
 %\begin{proof}
@@ -3554,10 +3554,10 @@ Let's consider the tree structure at the trivial redex on Figure~\ref{fig:reduci
 
 \begin{corollary}
 \label{cor:qnf_and_nf_traveset_invariant}
-If $M$ is in \emph{qnf} and has beta-normal form $N$ then $\coresymbol(\travsetnorm(M)) \cong \coresymbol(\travsetnorm(N))$.
+If $M$ is in \emph{qnf} and has beta-normal form $N$ then $\coresymbol(\travsetnorm^{\max}(M)) \cong \coresymbol(\travsetnorm^{\max}(N))$.
 \end{corollary}
 \begin{proof}
-By Proposition~\ref{prop:qnf_nf}(ii) a \emph{qnf} trivially reduces to its beta-nf: there is a reduction sequence $M = M_1 \rightarrow_\beta M_2 \ldots \rightarrow_\beta M_q= N$, $q\geq1$  where in each reduction step, $M_{i+1}$ is obtained by reducing the leftmost spinal-innermost standard redex of $M_i$ (of the form $(\lambda x . U) T$ such that $U$ does not contain any redex). By Proposition~\ref{prop:qnf_nf}(i), each such redex is trivial. We conclude with Proposition~\ref{prop:ulctrav_sound_for_trivialreduction} which shows that the set $\core{\travsetnorm(\_)}$ is an invariant (up to isomorphism) throughout this trivial reduction sequence.
+By Proposition~\ref{prop:qnf_nf}(ii) a \emph{qnf} trivially reduces to its beta-nf: there is a reduction sequence $M = M_1 \rightarrow_\beta M_2 \ldots \rightarrow_\beta M_q= N$, $q\geq1$  where in each reduction step, $M_{i+1}$ is obtained by reducing the leftmost spinal-innermost standard redex of $M_i$ (of the form $(\lambda x . U) T$ such that $U$ does not contain any redex). By Proposition~\ref{prop:qnf_nf}(i), each such redex is trivial. We conclude with Proposition~\ref{prop:ulctrav_sound_for_trivialreduction} which shows that the set $\core{\travsetnorm^{\max}(\_)}$ is an invariant (up to isomorphism) throughout this trivial reduction sequence.
 \end{proof}
 
 \begin{proposition}
@@ -3569,7 +3569,7 @@ Let $M$ be an untyped term with a beta-normal form. Then
 \end{enumerate*}
 \end{proposition}
 \begin{proof}
-(i) If $M$ has a normal form then by Theorem~\ref{thm:completeness_leftmostlinearred} its linear reduction sequence yields a quasi-normal form $Q$ which by Theorem~\ref{thm:soundness_leftmostlinearred} is beta-equivalent to $M$. Thus by Proposition~\ref{prop:ulctrav_impl_linear_reduction} the traversals of $M$ and $Q$ are isomorphic. So if $M$ has an infinite traversal then so does $Q$, which contradicts Proposition~\ref{prop:qnf_traversals_are_finite}.
+(i) If $M$ has a normal form then by Theorem~\ref{thm:completeness_leftmostlinearred} its linear reduction sequence yields a quasi-normal form $Q$ which by Theorem~\ref{thm:soundness_leftmostlinearred} is beta-equivalent to $M$. Thus by Proposition~\ref{prop:ulctrav_impl_linear_reduction} the maximal traversals of $M$ and $Q$ are isomorphic. So if $M$ has an infinite traversal then so does $Q$, which contradicts Proposition~\ref{prop:qnf_traversals_are_finite}.
 (ii) Traversals rules defining $\travsetnorm$ all have bounded non-determinism therefore by (i) $\travsetnorm$ is finite.
 \end{proof}
 %%%% REMARK: (i) It would be possible to prove (i) directly without appealing to Theorem~\ref{thm:completeness_leftmostlinearred}. (In which case this theorem  would follow from the above proposition). The proof would follow a similar argument as that of Theorem~\ref{thm:completeness_leftmostlinearred}, by showing that traversals lead to the head variable in the beta-nf, and recursively to head variables of its arguments. So an i traversals would yield (through P-view) to an infinite sequence of paths in the beta-normal form, which is a contradiction since beta-nf have a finite tree representation.
@@ -3595,14 +3595,14 @@ By Proposition~\ref{prop:ulc_travnorm_finite} there is a finite number of traver
 \begin{theorem}[ULC Normalized Paths Characterization]
 \label{thm:path_charact_ulc}
 Let $M$ be an untyped term with normal form $T$. Then
-$\travsetnorm(M)/{\sim} \ \cong\ \pathset(T)$.
+$\travsetnorm^{\max}(M)/{\sim} \ \cong\ \pathset^{\max}(T)$.
 \end{theorem}
 \begin{proof}
 Let's first assume that $M$ is in beta-normal form. Then its tree does not contain any $@$-node and all nodes must be external.
 Hence the dynamic arity of a traversal ending with external variable $x$ is precisely $|x|$, the arity of $x$. A straightforward induction on the traversal
 rules shows, that since the \rulenamet{Var} is never used, we necessarily have  $\travsetnorm(M) = \pathset(M)$. Further, since all nodes are externals, the projection $\coresymbol$ and $\pview{\_}$ functions both coincides with the identity function thus $\pview{\core{\travsetnorm(M)}} = \travsetnorm(M) = \pathset(M)$.
-
-Otherwise, since $M$ has a beta-nf, by Theorem~\ref{thm:completeness_leftmostlinearred} its \emph{leftmost linear reduction sequence} terminates and yields a \emph{qnf}. By Proposition~\ref{prop:ulctrav_impl_linear_reduction} the set of traversals is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of traversals of the \emph{qnf} is isomorphic to the set of traversals of $M$. Corollary~\ref{cor:qnf_and_nf_traveset_invariant} permits us to conclude.
+%
+If $M$ is not normal form then since $M$ has a beta-nf, by Theorem~\ref{thm:completeness_leftmostlinearred} its \emph{leftmost linear reduction sequence} terminates and yields a \emph{qnf}. By Proposition~\ref{prop:ulctrav_impl_linear_reduction} the set of maximal traversals is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of maximal traversals of the \emph{qnf} is isomorphic to the set of maximal traversals of $M$. Corollary~\ref{cor:qnf_and_nf_traveset_invariant} permits us to conclude.
 \end{proof}
 
 \paragraph{Soundness of the normalization procedure} It follows from Theorem~\ref{thm:path_charact_ulc} and the fact that a term is uniquely characterized by its set of justified paths $\pathset$ (Property~\ref{prop:tree_path_charact}).
