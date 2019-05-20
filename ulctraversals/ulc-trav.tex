@@ -304,13 +304,12 @@
 
 
 \begin{abstract}
-    We introduce a method to evaluate untyped lambda terms based on a term-tree traversing technique inspired from Game Semantics and the judicious use of eta-expansion.
+    A method to evaluate untyped lambda terms based on a term-tree traversing technique inspired from Game Semantics and the judicious use of eta-expansion.
     As \emph{traversals} explore nodes of the term tree,
-    some of the subterms gets dynamically eta-expanded in order to locate their non-immediate arguments.
-    We constrain the amount of ad-hoc eta-expansion performed with the
-    notion of \emph{dynamic arity} which limits the number of arguments possibly applied to a variable within a given tree traversal.
-    The resulting traversals can be finitely enumerated and are shown
-    to characterize the paths in the tree representation of the beta-normal form, when it exists.
+    some of the subterms are dynamically eta-expanded in order to locate their non-immediate arguments.
+    The notion of \emph{dynamic arity} determines when ad-hoc eta-expansion is appropriate.
+    % by limiting the number of arguments possibly applied to a variable within a given tree traversal.
+    The resulting traversals are finitely enumerable and characterize the paths in the tree representation of the beta-normal form, when it exists.
     Correctness follows from the fact that traversals implement \emph{leftmost linear reduction}, a generalization of the \emph{head linear reduction} of Danos-Regnier.
 \end{abstract}
 
