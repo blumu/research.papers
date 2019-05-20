@@ -440,7 +440,7 @@ The next section introduces basic definitions from the traversal theory. Section
 \label{sec:basic_def}
 \subsection{Notations}
 \emph{Sequences:} For any alphabet $\Sigma$ we write $\Sigma^*$ to denote the set of (possibly infinite) sequences over elements of $\Sigma$.
- We use the abbreviation $\overline{x}$ for the sequence of elements $x_1 \ldots x_n$ for some $n\geq0$, $\epsilon$ for the empty sequence, and for any two sequences $\overline{x}, \overline{y}$ of length $n,m\geq 0$, we write $\overline{x} \cdot \overline{y}$ for the concatenation $x_1 \ldots x_n y_1 \ldots y_m$.
+ We use the abbreviation $\overline{x}$ for the sequence of elements $x_1 \ldots x_n$ for some $n\geq0$, $\epsilon$ for the empty sequence, and for any two sequences $\overline{x}, \overline{y}$ of length $n,m\geq 0$, we write $\overline{x} \cdot \overline{y}$ for the concatenation $x_1 \ldots x_n y_1 \ldots y_m$. We write $|s|$ for the length of a sequence $s$.
 
  \emph{Labelled trees:} Given a set of labels $\mathcal{L}$, the expression `$l\langle t_1, \ldots, t_m \rangle$' for $m \geq 0$ denotes a $\mathcal{L}$-labelled tree with root labelled $l\in \mathcal{L}$. The case $m=0$ represents a leaf, and otherwise a node labelled $l$ with $m$ ordered children trees $t_1$, \ldots, $t_m$.
 
@@ -644,7 +644,9 @@ Note that the enabling relation is \emph{statically} induced by the tree structu
 Let $s$ denote a justified sequence. We write $s^\omega$ to denote the last occurrence of $s$. For any occurrence $n$ in $s$ we write $s_{\leq n}$ for the prefix of $s$ ending at $n$, and $s_{<n}$ for the prefix ending immediately before $n$.
 %and $\jp(s)$ to denote the prefix of $s$ ending at the justifier of the last node of $s$.
 We say that $s$ \defname{extends} $u$ if $u$ is a strict prefix of $s$.
+A sequence $s$ is \defname{maximal} in $T\subseteq \justseqset(M)$ if there is no sequence in $T$ that extends it.
 %
+For any set $T\subseteq \justseqset(M)$ we write $T^{\max}$ for the subset of maximal sequences of $T$.
 %
 We borrow basic definitions from Game Semantics~\cite{Abr02}. A justified sequence verifies the \defname{alternation condition} if it starts with a lambda node and subsequently alternates between (i) a variable or application node (ii) a lambda node.
 An occurrence in a justified sequence is \defname{hereditarily justified by some other occurrence} if recursively following justification pointers starting from the first occurrence leads to the second one.
@@ -732,24 +734,27 @@ Observe that given a fixed term, the name-preserving encoding of a justified seq
 % For any $\overline{y} = y_1 \ldots y_m$, $m\geq 0$,
 % we write $\overline{x} \otimes \overline{y}$ for $((\ldots(\overline{x} \otimes y_1) \otimes y_2) \ldots \otimes y_m)$.
 %%%%%%
-The \defname{readout function} $\readout: \nameencoding^* \rightarrow \mathcal{L}^*$
+The \emph{readout function} $\readout: \nameencoding^* \rightarrow \mathcal{L}^*$
 decodes a name-preserving encoding into a sequence of node labels in $\mathcal{L}$ (not necessarily present in $\ctree(M)$). It is defined by
 $\readout[\epsilon]= \epsilon$;
 $\readout[s \cdot @] = \readout[s] \cdot @$;
 $\readout[s \cdot (\overline{x}, j, i) ] = \readout[s] \cdot \lambda\overline{x}$
-and for any encoding $s = u \cdot (\overline{x}, k, l)\,  n_1 \ldots n_{j-1}$ for  $n_1, \ldots n_{j-1}\in \nameencoding$, $j\geq 1$, $k,l\geq 0$, and $u \in \nameencoding^*$ we have:
-$$
-\begin{array}{lll}
-\readout[u \cdot (\overline{x}, k, l)\,  n_1 \ldots n_{j-1}\, (j,i)]
-&=&
- \begin{cases}
-   \readout[s] \cdot x_i &
-     \mbox{if $i\leq |\overline{x}|$.} \\
-   \readout[s] \cdot \ghostvar &
-     \mbox{if $i> |\overline{x}|$.}
-\end{cases}
-\end{array}$$
-where $\ghostlmd$ is covered by the case  $\lambda\overline{x}$, $\overline{x}=\epsilon$.
+and for any encoding $s = u \cdot (\overline{x}, k, l)\,  n_1 \ldots n_{j-1}$ where $u \in \nameencoding^*$, $n_1, \ldots n_{j-1}\in \nameencoding$, $j\geq 1$, $k,l\geq 0$,
+$\readout[s\, (j,i)] = \readout[s] \cdot x_i$
+if $i\leq |\overline{x}|$; and
+$\readout[s\, (j,i)]  = \readout[s] \cdot \ghostvar$ if $i> |\overline{x}|$.
+% $$
+% \begin{array}{lll}
+% \readout[u \cdot (\overline{x}, k, l)\,  n_1 \ldots n_{j-1}\, (j,i)]
+% &=&
+%  \begin{cases}
+%    \readout[s] \cdot x_i &
+%      \mbox{if $i\leq |\overline{x}|$.} \\
+%    \readout[s] \cdot \ghostvar &
+%      \mbox{if $i> |\overline{x}|$.}
+% \end{cases}
+% \end{array}$$
+The ghost lambda $\ghostlmd$ is covered by the case  $\lambda\overline{x}$, $\overline{x}=\epsilon$.
 We then define $\readout \colon \nameencoding^* \rightarrow \mathcal{L}^*$
 by point-wise extension.
 
@@ -765,14 +770,14 @@ by point-wise extension.
     $(y\, z, 1,0)$,
     $(1,2)$,
     $(\epsilon,3,2)$,
-    $(5,2)$
-    whereas the sequence
-    $ (x\, g, 0, 0),
-    @,
-    (y\, z\, x\, y\, y, 1,0),
-    (1,2),
-    (\epsilon,3,2),
-    (5,2)$ encodes the justified sequence
+    $(5,2)$.
+    The sequence encoding
+    $ (x\, g, 0, 0)$,
+    $@$,
+    $(y\, z\, x\, y\, y, 1,0)$,
+    $(1,2)$,
+    $(\epsilon,3,2)$,
+    $(5,2)$, on the other hand, encodes the justified sequence
     $s= \Pstr[10pt]{
         (l){\lambda x g}
          (a)@
@@ -1128,7 +1133,8 @@ $\cdots  \lambda\overline{x}^{[\overline{y}]} \cdots$ where $\overline{y}$ denot
 
 Some immediate properties follow:
 (i) The core of a justified sequence only contains external nodes therefore $\coresymbol$ is idempotent.
-(ii) If $M$ is in beta-normal form then all the nodes of the $\exttree{M}$ are external, therefore the core projection is the identity function.
+(ii) If $M$ is in beta-normal form then all the nodes of
+ $\exttree(M)$ are external, therefore the core projection is the identity function.
 (iii) When discharging new variable names onto a lambda node, core projection can cause variable name reuse, but the justification pointers from the underlying name-free structure prevent any possible ambiguity.
 
 \begin{example}Take traversal $t = \lambda w^{[y]} ~ @ ~ \lambda x y ~ x ~ \lambda ~ z$ of $\lambda w . (\lambda x y .x) z$.
@@ -1270,14 +1276,15 @@ By an easy induction on $t$ using the fact that in the recursive calculation of 
 
 We introduce a quotient relation to identify traversals with identical core P-views:
 \begin{definition}[Quotienting]
-The equivalence relation $\sim$ over $\travulc$ is defined by $t \sim u$ if and only if $\pview{\core{t}} \equiv \pview{\core{u}}$.
+The equivalence relation $\sim$ over $\travulc$ is defined by $t \sim u$ if and only if
+$\pview{\core{t'}} \equiv \pview{\core{u'}}$
+where $t'$ and $u'$ denote respectively the longest prefix of $t$ and $u$ ending with an external variable node.
 For any subset $T\subseteq \travulc$ of traversals, we write $T/{\sim}$ for the equivalence classes of $T$.
-%%%%%%% Following precision is not necessary
-%We identify a $\sim$-equivalence class with the structure of the P-view core of the traversals it contains.
-%%%
+%
 For any subset $U\subseteq T$ we say that $U$ is \defname{$T$-complete} if it contains at least one element for each $\sim$-equivalence class of $T$; that is if $U/{\sim} = T/{\sim}$.
 \end{definition}
-
+The definition of $\sim$ excludes traversals with unfinished strands because
+$\coresymbol$ generates the pending lambdas of an external node from the entire strand following it.
 
 \begin{proposition}
 \label{prop:essential_traversal_simcomplete}
@@ -1285,20 +1292,28 @@ For any subset $U\subseteq T$ we say that $U$ is \defname{$T$-complete} if it co
 (ii) $\pview{\core{\travsetes}} = \core{\travsetes}$.
 \end{proposition}
 \shortproof
-(i) See full details in \cite{longversion-2018arXiv}.
+(i) % See full details in \cite{longversion-2018arXiv}.
 Proposition~\ref{prop:eta_expanded_trav} reduces the proof to the case of concrete traversals.
-We show by strong induction on $t\in\travset$
- that it has a subsequence $u\in\travsetcones$ such that $t \sim u$. If the last node of $t$ is external then it follows immediately from the induction hypothesis.
-If it is an internal node, then
-let $n$ be the last external occurrence in $t$,
-which by the traversal rules is necessarily an external lambda node.
-By definition of $\coresymbol$, $n$ is also the last occurrence in $\core{t}$ therefore $\core{t} = \core{t}_{\leq n}$.
-But \emph{up to relabelling}, $\coresymbol$ commutes with prefixing: $\core{t}_{\leq n} = \core{t_{\leq n}}$. (More precisely, $\core{t}_{\leq n}$ is obtained from $\core{t_{\leq n}}$
-by pre-pending to $n$'s label the stack of pending lambdas from the internal lambda nodes occurring between $n$ and $t$.)
-Applying the I.H. on $t_{\leq n}$ gives $\pview{\core{t_{\leq n}}} = \pview{\core{u'}}$ for some $u' \in \travsetes$.
-It remains to show that $u = u' \cdot m_1 \ldots m_q\in\travsetes$
-where $m_1 \ldots m_q$, for $q>0$, $m_q = t^\omega$, are the internal occurrences following $n$ in $t$.
-A finite induction on $q$ shows that $u_{\leq m_q} \in\travsetes$ and $m_q$'s justifying node and label are the same in $u$ and $t$. The only non-trivial case is rule \rulenamet{Var}: by the Path-View correspondence, $\pview{u_{<m_q}}$ is a path in the tree from the root to $m_q$ therefore $m_q$'s binder necessarily occur in $u$, we can  conclude using the I.H.~on $u_{<m_q}$ and applying \rulenamet{Var} on $u_{<m_q}$ to get $u_{\leq m_q}$.
+We show by strong induction on $t\in\travset$ ending with an external variable $t^\omega$ that it has a subsequence $u$ such that $u\in\travsetes$ and $t \sim u$.
+Let $\lambda\overline{x}$ denote the last external lambda node in $t$, and $v$ denote the subsequence of internal occurrences between $\lambda\overline{x}$ and $t^\omega$.
+Base case: If $\lambda\overline{x}$ is the initial occurrence then all the occurrences between it and $t^\omega$ are necessarily internal nodes and $t$ is therefore itself an essential traversal.
+Otherwise, let $y$ denote the external variable occurrence justifying
+$\lambda\overline{x}$ in $t$.
+%
+By definition of core P-view we have
+$\pview{\core{t}} = \pview{\core{t}_{\leq y}} \cdot \lambda\overline{x}' \cdot
+t^\omega$, where $\lambda\overline{x}'$ denotes the occurrence of $\lambda\overline{x}$ augmented with the stack of pending lambda from the strand $\lambda\overline{x} \cdot v \cdot t^\omega$ as per the definition of $\coresymbol$.
+%
+Applying the I.H. on $t_{\leq y}$ gives $\pview{\core{t_{\leq y}}} = \pview{\core{u'}}$ for some $u' \in \travsetes$.
+By definition of $\coresymbol$, it commutes with prefixing at an occurrence of an external variable, thus
+$\pview{\core{t}}
+= \pview{\core{t_{\leq y}}} \cdot \lambda\overline{x}' \cdot t^\omega
+= \pview{\core{u'}} \cdot \lambda\overline{x}' \cdot t^\omega$
+which equates $\pview{\core{u}}$ if we take $u = u' \cdot \lambda\overline{x} \cdot v \cdot t^\omega$.
+%
+It remains to show that $u\in\travsetes$.
+If we write the occurrences of $ v \cdot t^\omega$ as $m_1 \ldots m_q$, for $q>0$ then a finite induction on $q$ shows that $u_{\leq m_q} \in\travsetes$ and $m_q$'s justifying node and label are the same in $u$ and $t$. The only non-trivial case is rule \rulenamet{Var}: by the Path-View correspondence, $\pview{u_{<m_q}}$ is a path in the tree from the root to $m_q$ therefore $m_q$'s binder necessarily occur in $u$, we can  conclude using the I.H.~on $u_{<m_q}$ and applying \rulenamet{Var} on $u_{<m_q}$ to get $u_{\leq m_q}$.
+%
 (ii) In essential traversals, non-initial occurrences of external lambda nodes must immediately follow their justifier by rule \rulenamet{IVar}, hence after removing internal nodes the P-view coincide with the identify function.
 \endshortproof
 \proofatend
@@ -1605,9 +1620,10 @@ and since $k\geq 1$, the set $\{1..k\}$ is not empty so there is at least one $q
 
 This weaving property shows that exceeding the dynamic arity causes expansion of external ghost variable nodes into deeper ones which ultimately leads to traversals that are not relevant for normalization.
 This suggests a stricter version of traversals:
-\begin{definition}[Normalizing traversals]
+\begin{definition}
 \label{def:normalizing_traversals}
-The set $\travsetnorm$ of \defname{normalizing traversals}, is the subset of essential traversals defined by the rules of Definition~\ref{dfn:essential_traversals} where the index $i$ in rule \rulenamet{IVar} is bounded by the dynamic arity of the traversal.
+The set $\travsetnorm$ of \defname{normalizing traversals} is the subset of essential traversals obtained with the system of rules of Definition~\ref{dfn:essential_traversals} with the additional restriction in rule \rulenamet{IVar}
+that the argument index $i$ should not be greater than the dynamic arity of the traversal.
 % \infrule[$\rulefont{IVar_\normalizing}$]
 %      { t \cdot n \in\travsetnorm
 %      \andalso n \in\ExternalNodes\inter\ExtendedNodesVar
@@ -1615,8 +1631,7 @@ The set $\travsetnorm$ of \defname{normalizing traversals}, is the subset of ess
 %      \andalso 1 \leq i \leq\dynar(t)}
 %      {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:i){\alpha}}\in\travsetnorm}
 % where $\alpha = \ghostlmd$ just if $i>|n|$.
-Table~\ref{tab:normalizing_trav_rules} recapitulates the rules thus obtained  using judgement derivations, where the judgement `$\istraversal t$' means that $t\in\travsetnorm$.
-A traversal that cannot be extended is said to be \defname{maximal}.
+Table~\ref{tab:normalizing_trav_rules} defines this system of rules using judgement derivations, where the judgement `$\istraversal t$' means that $t\in\travsetnorm$.
 \end{definition}
 
 \iflongversion
