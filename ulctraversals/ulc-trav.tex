@@ -197,10 +197,13 @@
 \newcommand{\concrete}{{\sf con}}
 
 \newcommand\travsetshort{\mathcal{T}\!r}
-\newcommand{\travsetes}{{\travset_\essential}}
-\newcommand{\travsetcon}{{\travset_\concrete}}
-\newcommand{\travsetcones}{{\travset_{c.e.}}} %concrete and essential
-\newcommand{\travsetnorm}{\travset_\normalizing}
+\newcommand{\travsetes}{{\travset_\essential}} % essential traversals
+\newcommand{\travsetcon}{{\travset_\concrete}} % concrete traversals
+\newcommand{\travsetcones}{{\travset_{c.e.}}} % concrete and essential traversals
+\newcommand{\travsetnorm}{\travset_\normalizing} % normalizing traversals
+\newcommand{\travsetscn}{\travset_{s.c.n.}} % strand-complete normalizing traversals
+
+
 
 % for succinctness we omit ULC for the symbol representing
 % set of traversals of ULC
@@ -3002,10 +3005,8 @@ By definition of $k$ we have $i_{k-1}\geq|@_{k-1}|$, therefore by definition of 
 
 \paragraph{Traversal bisimulation}
 
-We define $\travset^\dagger(M)$ as the subset of traversals of $\travsetnorm(M)$ ending with either a structural node or an external ghost variable (\ie, not ending with an internal ghost variable nor a ghost lambda).
-Observe that every traversal in $\travsetnorm$ has a traversal extension in $\travset^\dagger$.
-Indeed, if $t \in \travsetnorm$ ends with an internal ghost variable or a ghost lambda then repeatedly applying
-rules \rulenamet{Var} and \rulenamet{Lmd} yields a traversal ending with an external node.
+The subset $\travsetscn$ of \defname{strand-complete normalizing traversals} of $\travsetnorm$, consists of normalizing traversals ending with an external (possibly ghost) variable node.
+Observe that every traversal in $\travsetnorm$ is either in $\travsetscn$ or it has an traversal extension in $\travsetscn$, for if it does not end with an external variable then either rule \rulenamet{App}, \rulenamet{Lmd} or \rulenamet{Var} can extend it depending on the type of the last occurrence. So in particular the two sets have the same maximal traversals:  $\travsetnorm^{\max} = \travsetscn^{\max}$.
 
 \begin{definition}[Traversal bisimulation]
 \label{def:bisimilar_terms}
@@ -3013,37 +3014,41 @@ Let $M$ and $N$ be two terms with variables in $\mathcal{V}$. Let $\phi\colon \j
 
 \noindent We define the state transition system $(X, R_\phi, \rightarrow_X)$ as:
 \begin{itemize}[nosep]
-    \item \emph{States}: $X$ is the disjoint union $\travset^\dagger(M) + \travset^\dagger(N)$.
+    \item \emph{States} $X = \travsetscn(M) + \travsetscn(N)$.
 
-    \item \emph{Binary relation $R_\phi\subseteq X \times X$} defined for any traversals $t, u \in X$ as:
-    $ t~R_\phi~u$ just if $t\in\travset^\dagger(M)$, $u\in\travset^\dagger(N)$ and $\phi(u) = t$.
+    \item \emph{Binary relation $R_\phi\subseteq X \times X$} defined for $t, u \in X$ by $ t\,R_\phi\,u$ just if $t\in\travsetscn(M)$, $u\in\travsetscn(N)$ and $\phi(u) = t$.
 
-    \item \emph{Transitions} For all $t, t' \in \travset^\dagger(M)$ we write $t \rightarrow_M t'$ just if $t'$ is a minimal extension of $t$ that remains in $\travset^\dagger(M)$ (\ie, $t'$ extends $t$ using rules of Table~\ref{tab:normalizing_trav_rules} and any occurrence strictly between the last occurrence in $t$ and $t'$ is an either internal ghost variable or a ghost lambda node.) We define $\rightarrow_N$  identically and write $t \rightarrow_X t'$ if either $t \rightarrow_M t'$ or $t \rightarrow_N t'$ holds for $t, t' \in X$.
+    \item \emph{Transitions $\rightarrow_X$} For all $t, t' \in \travsetscn(M)$ we write $t \rightarrow_M t'$ just if $t'$ is a minimal extension of $t$ that remains in $\travsetscn(M)$ (\ie, $t'$ extends $t$ using rules of Table~\ref{tab:normalizing_trav_rules} and any occurrence strictly between the last occurrence in $t$ and $t'$ is not an external variable.) We define $\rightarrow_N$  identically and write $t \rightarrow_X t'$ if either $t \rightarrow_M t'$ or $t \rightarrow_N t'$ holds for $t, t' \in X$.
 \end{itemize}
 
 \noindent The terms $M$ and $N$ are \defname{$\phi$-bisimilar} if $R_\phi$ is a bisimulation over $X$ with respect to $\rightarrow_X$, that is:
 \begin{itemize}[nosep]
-    \item (B1) for all $t_1, t_2 \in \travset^\dagger(M)$, $u_1 \in \travset^\dagger(N)$ with $t_1~R_\phi~u_1$ and $t_1 \rightarrow_M t_2$ there is $u_2 \in \travset^\dagger(N)$ such that $u_1 \rightarrow_N u_2$ and $t_2~R_\phi~u_2$.
-    \item (B2) for all $t_1 \in \travset^\dagger(M)$, $u_1, u_2 \in \travset^\dagger(N)$ with $t_1~R_\phi~u_1$ and $u_1 \rightarrow_N u_2$ there is $t_2 \in \travset^\dagger(M)$ such that $t_1 \rightarrow_M t_2$ and $t_2~R_\phi~u_2$.
+    \item (I) We have $t_\epsilon\,R_\phi\,u_\epsilon$,
+    where
+     $t_\epsilon\in \travsetscn(M)$ and $u_\epsilon\in \travsetscn(N)$
+     denote the initial strands of $M$ and $N$, that is the longest traversal
+     obtained without using rule \rulenamet{IVar}.
+
+    \item (B1) for all $t_1, t_2 \in \travsetscn(M)$, $u_1 \in \travsetscn(N)$ with $t_1\,R_\phi\,u_1$ and $t_1 \rightarrow_M t_2$ there is $u_2 \in \travsetscn(N)$ such that $u_1 \rightarrow_N u_2$ and $t_2\,R_\phi\,u_2$.
+    \item (B2) for all $t_1 \in \travsetscn(M)$, $u_1, u_2 \in \travsetscn(N)$ with $t_1\,R_\phi\,u_1$ and $u_1 \rightarrow_N u_2$ there is $t_2 \in \travsetscn(M)$ such that $t_1 \rightarrow_M t_2$ and $t_2\,R_\phi\,u_2$.
 \end{itemize}
 \end{definition}
 
 \begin{lemma}
 \label{lem:bisimulation_isomorphism}
-If $M$ and $N$ are $\phi$-bisimilar such that
-$\phi$ restricted to $\coresymbol(\travset^\dagger(N))$ is injective
-and there is a mapping $\rho: \VarSet^*(N) \rightarrow \VarSet^*(M)$ such that for any variable names $\alpha\in\VarSet^*(N)$,  $\phi$ and $\coresymbol_\alpha$ commute modulo $\rho$:
-(\ie, for all $u$, $ \coresymbol_{\rho(\alpha)}(\phi(u)) = \phi(\coresymbol_{\alpha}(u))$), then $\coresymbol(\travset(N)) \cong \coresymbol(\travset(M))$.
+If $M$ and $N$ are $\phi$-bisimilar
+for some function $\phi$ whose restriction to $\coresymbol(\travsetscn(N))$ is injective and which commutes with $\coresymbol$
+%(for all $u \in \travsetscn(M)$ $\coresymbol(\phi(u)) \equiv \phi(\coresymbol(u))$),
+then $\coresymbol(\travsetscn(N)) \cong \coresymbol(\travsetscn(M))$.
 \end{lemma}
 \begin{proof}
-Consider $\phi$ as a function from $\coresymbol(\travset^\dagger(N))$ to $\coresymbol(\travset^\dagger(M))$.
-It is \emph{well-defined}: $\travset^\dagger(N)$ is by definition the transitive closure of the empty traversal by $\rightarrow_N$, so for any traversal $u$ of $\travset^\dagger(N)$, repeatedly applying (B2) for each step of its $\rightarrow_N$ derivation shows that $t = \phi(u) \in \travset^\dagger(M)$. By commutativity of $\coresymbol$ and $\phi$ we have $\coresymbol(t)=\phi(\coresymbol(u)) \in \coresymbol(\travset^\dagger(M))$.
-Similarly, it is \emph{surjective} by (B1) because $\travset^\dagger(M)$ is the transitive closure of the empty traversal by $\rightarrow_M$. Finally it is \emph{injective} by assumption.
-Hence we have $\coresymbol(\travset^\dagger(N)) \cong \coresymbol(\travset^\dagger(M))$, and because $\coresymbol$ eliminates internal nodes from traversals, we also have $\coresymbol(\travset(N)) \cong \coresymbol(\travset(M))$.
+Consider $\phi$ as a function from $\coresymbol(\travsetscn(N))$ to $\coresymbol(\travsetscn(M))$.
+It is \emph{well-defined}: $\travsetscn(N)$ is by definition the transitive closure of the initial strand by $\rightarrow_N$, so for any traversal $u$ of $\travsetscn(N)$, repeatedly applying (B2) for each step of its $\rightarrow_N$ derivation shows that $t = \phi(u) \in \travsetscn(M)$. By commutativity of $\coresymbol$ and $\phi$ we have $\coresymbol(t)=\phi(\coresymbol(u)) \in \coresymbol(\travsetscn(M))$.
+Similarly, it is \emph{surjective} by (B1) because $\travsetscn(M)$ is the transitive closure of the initial strand by $\rightarrow_M$. Finally it is \emph{injective} by assumption.
+Hence we have $\coresymbol(\travsetscn(N)) \cong \coresymbol(\travsetscn(M))$.
 \end{proof}
 
 %%%%% Soundness of leftmost liner reduction
-The sets of normalizing traversals before and after linear reduction are identical, up to appropriate mapping between nodes of the term and its reduct.
 \begin{proposition}[Traversals are sound for linear reduction]
 \label{prop:ulctrav_impl_linear_reduction}
 Let $M$ be an untyped term.
@@ -3225,13 +3230,13 @@ Some immediate properties:
 \begin{itemize}
 \item $\phi_1$, and $\phi$ are well-defined since by the P-view-path property, $x$'s binder and (resp.~$@_a$) must necessarily occurs in the P-view at $x$ (resp.~$\lambda\overline{y}'$).
 
-\item The restriction of $\phi$ to $\coresymbol(\travset^\dagger(N))$
+\item The restriction of $\phi$ to $\coresymbol(\travsetscn(N))$
 coincides precisely with the element-wise structure-preserving\footnote{Recall that two justified sequences over two distinct terms share the same structure just if their constituting nodes are of the same kind (variable/@ nodes or lambda node), have the same link labels, and same pointer lengths.} extension of $\Phi$ over justified sequences.
-This is because $\phi_1$ only alters justification pointers of internal nodes ($@_x$ and $\lambda\overline y$) and $\phi_2$ only inserts internal nodes, while justified sequences in $\coresymbol(\travset^\dagger(N))$ do not contain any external node.
+This is because $\phi_1$ only alters justification pointers of internal nodes ($@_x$ and $\lambda\overline y$) and $\phi_2$ only inserts internal nodes, while justified sequences in $\coresymbol(\travsetscn(N))$ do not contain any external node.
 
-\item The restriction of $\phi$ to $\coresymbol(\travset^\dagger(N))$, is injective.
+\item The restriction of $\phi$ to $\coresymbol(\travsetscn(N))$, is injective.
 %%%%%%% Short summary: because when a traversal extends in more than one possible way (with rule \rulenamet{IVar}), then either the next possible occurrences all have distinct justification pointers, or $\Phi$ maps them to distinct nodes in $M$.
-Suppose that $\coresymbol(u)\neq\coresymbol(v)$ for $u,v\in\travset^\dagger(N)$ then we must have $u\neq v$.
+Suppose that $\coresymbol(u)\neq\coresymbol(v)$ for $u,v\in\travsetscn(N)$ then we must have $u\neq v$.
 Let $s$ denote the longest common prefix of $u$ and $v$; and $n_1, n_2$ the nodes immediately following $s$ in $u$ and $v$
 respectively. We have $s \rightarrow_N s \cdot n_1$ and $s \rightarrow_N s\cdot n_2$ with $n_1\ne n_2$ therefore $n_1, n_2$ are necessarily traversed
 by the non-deterministic rule \rulenamet{IVar}. Hence they must both be external nodes and therefore they are not eliminated after applying $\coresymbol$: the last occurrence of $\coresymbol(s\cdot n_1)$ and $\coresymbol(s\cdot n_2)$ are different. Since $\Phi$ maps distinct external sibling nodes in $N$ to distinct sibling nodes in $M$, we necessarily have
@@ -3247,9 +3252,9 @@ This is shown by an easy induction and by assuming, without loss of generality, 
 
 We now show that $M$ and $N$ are in $\phi$-bisimulation by induction on the traversals rules.
 
-\emph{Base case}: $\rulename{Root}_\normalizing$ The empty traversal in $M$ is trivially the image by $\phi$ of the empty traversal in $N$. Same for the two singleton traversals consisting of the root nodes of $M$ and $N$.
+\emph{Base case}: $\rulename{Root}_\normalizing$ The singleton traversals consisting of the root nodes of $M$ and $N$ are image of one another by $\phi$.
 
-\emph{Induction}: Let $u\in \travset^\dagger(N)$, $t\in\travset^\dagger(M)$ with $t = \phi (u)$ and $m, n$ denote respectively the last node in $t$ and $u$. We prove both directions by case analysis on the \emph{first} traversal rule used to extend $t$ (resp.~$u$).
+\emph{Induction}: Let $u\in \travsetscn(N)$, $t\in\travsetscn(M)$ with $t = \phi (u)$ and $m, n$ denote respectively the last node in $t$ and $u$. We prove both directions by case analysis on the \emph{first} traversal rule used to extend $t$ (resp.~$u$).
 
 Observe that the result holds trivially up until the traversal in $M$ reaches occurrence $x$ since one can use the exact same rules used to traverse $M$ in order to traverse the corresponding node in $N$, and reciprocally for traversals of $N$ until reaching node $@_x$. The crucial part of the induction takes place when traversing the \emph{lloc} variable $x$ (or $@_x$ in $N$).
 
@@ -3279,7 +3284,7 @@ Observe that the result holds trivially up until the traversal in $M$ reaches oc
     $\phi(u')
     = \phi(u \cdot \lambda\overline{y}')
     = \phi(u) \cdot \phi(\lambda\overline{y}')
-    = t \cdot v \cdot \lambda\overline{y} \in \travset^\dagger(M)$.
+    = t \cdot v \cdot \lambda\overline{y} \in \travsetscn(M)$.
     %%%%%%%%%%%%%%%%%%
 
     \item $\rulename{Lam}^@_\normalizing$
@@ -3301,8 +3306,8 @@ Observe that the result holds trivially up until the traversal in $M$ reaches oc
     Hence, the rule $\rulename{Lam}^{\sf var}_\normalizing$ used to extend  $u$ can also be used to extend $t$, and reciprocally.
 
     \item $\rulename{Lam^\ghostvar_\normalizing}$
-    This case is excluded since $t$ and $u$ belong to $\travset^\dagger(M)$ and
-    $\travset^\dagger(N)$ respectively and therefore their last occurrence cannot be a ghost lambda.
+    This case is excluded since $t$ and $u$ belong to $\travsetscn(M)$ and
+    $\travsetscn(N)$ respectively and therefore their last occurrence cannot be a ghost lambda.
 
     \item $\rulename{Var_\normalizing}$
     (B2) Since $\Phi$ maps external variable nodes to external variable nodes,preserves the parent-child relation for variable nodes and $\phi$ preserves the justification pointer of external variable nodes, if this rule can extend traversal $u$ with node $n'$ then the same rule can be used to extend $t$ with $\phi(n')$.
@@ -3447,7 +3452,7 @@ Let's consider the tree structure at the trivial redex on Figure~\ref{fig:reduci
     $\lambda\overline x_1 \ldots x_n$ into
     $\lambda\overline\eta x_2 \ldots x_n$. Formally:
 
-    Let $u$ be a traversal of $\travset^\dagger(N)$
+    Let $u$ be a traversal of $\travsetscn(N)$
     ending with $\lambda\overline{y}$ that is
     $u = u_1 \cdot \lambda\overline{y} $ for some traversal $u_1$.
     The sequence $\phi(u)$ is of the form
