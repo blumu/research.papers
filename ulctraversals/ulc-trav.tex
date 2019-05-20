@@ -871,7 +871,7 @@ Secondly, two nested lambdas in a given justified path may bind the same variabl
 After renaming variables in the $\mathcal{L^-}$-labelled tree, the final
 $\mathcal{L}$-labelled tree is obtained by replacing all De Bruijn pair $(j,i)$ by the $i$th variable name from the lambda node located $j$ nodes above it in the term tree.
 %
-Interpreting that $\mathcal{L}$-labelled as a term tree $\ctree[\_ ]$ then lets us read back from it some term $N$ such that $\ctree[N]$ is precisely that tree.
+Interpreting that $\mathcal{L}$-labelled as a term tree $\ctree(\_ )$ then lets us read back from it some term $N$ such that $\ctree(N)$ is precisely that tree.
 %
 By construction we have $\pathset(N) = T$ therefore
 $N$ and $M$ have the same justified paths structures so by
@@ -1022,7 +1022,7 @@ $M^{u \cdot n} = M$ if $n$ has no justifier, and if $m$ denotes $n$'s justifier 
 %
 (Note that we have $i>|m|$ only for the imaginary sub-case of \rulenamet{Var} and \rulenamet{IVar}.)
 \end{definition}
-It follows from the definition that $M$ is a sub-tree of $M^t$: paths in $\ctree[M]$ are also paths in $\ctree[M^t]$.
+It follows from the definition that $M$ is a sub-tree of $M^t$: paths in $\ctree(M)$ are also paths in $\ctree(M^t)$.
 
 \begin{example}
 The eta-expansion of $J = (\lambda u . u(x\,u)) (\lambda v . v\,y)$ with respect to traversal $t$ from Example~\ref{ex:ulctrav_sample} is
@@ -1432,6 +1432,11 @@ Algorithm~\ref{algo:stlc_normalization_by_traversals} terminates and returns the
 \begin{proof}
 \emph{Soundness} A beta-normal term is uniquely determined by the set of maximal paths in its tree representation (Property~\ref{prop:tree_path_charact}). By Proposition~\ref{prop:path_charact_stlc}, this set corresponds precisely to the set of core P-views of \emph{concrete} traversals,
 and by Proposition~\ref{prop:essential_traversal_simcomplete} it is also given by the core of \emph{essential} concrete traversals.
+For eta-long forms, the operation $\coresymbol$ coincides with filtering the internal nodes without altering the bound variables in lambda-nodes, therefore $\travsetcones$ is $\alpha$-consistent and we can use the
+readout procedure of Proposition~\ref{proposition:termtree_readout_from_justitied_paths} to reconstruct the term
+from its justified paths.
+
+
 \emph{Termination} By Property~\ref{prop:concrete_essential_trav_finite} the set of concrete essential traversals is finite and each traversal is itself finite, therefore the enumeration in Algorithm~\ref{algo:stlc_normalization_by_traversals} terminates.
 \end{proof}
 
@@ -3599,7 +3604,7 @@ By Proposition~\ref{prop:ulc_travnorm_finite} there is a finite number of traver
 
 \begin{theorem}[ULC Normalized Paths Characterization]
 \label{thm:path_charact_ulc}
-Let $M$ be an untyped term with normal form $T$. Then
+Let $M$ be an untyped term with normal form $T$. We have
 $\travsetnorm^{\max}(M)/{\sim} \ \cong\ \pathset^{\max}(T)$.
 \end{theorem}
 \begin{proof}
@@ -3610,7 +3615,23 @@ rules shows, that since the \rulenamet{Var} is never used, we necessarily have  
 If $M$ is not normal form then since $M$ has a beta-nf, by Theorem~\ref{thm:completeness_leftmostlinearred} its \emph{leftmost linear reduction sequence} terminates and yields a \emph{qnf}. By Proposition~\ref{prop:ulctrav_impl_linear_reduction} the set of maximal traversals is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of maximal traversals of the \emph{qnf} is isomorphic to the set of maximal traversals of $M$. Corollary~\ref{cor:qnf_and_nf_traveset_invariant} permits us to conclude.
 \end{proof}
 
-\paragraph{Soundness of the normalization procedure} It follows from Theorem~\ref{thm:path_charact_ulc} and the fact that a term is uniquely characterized by its set of justified paths $\pathset$ (Property~\ref{prop:tree_path_charact}).
+\begin{proposition}
+    \label{prop:core_travsetnorm_alpha_consistent}
+ $\core{\travsetnorm^{\max}(M)}$ is $\alpha$-consistent.
+\end{proposition}
+\begin{proof}
+A traversal of $\travsetscn$ is uniquely defined by the sequence of non-deterministic choices of the argument index $i$ made at the end of each strand. Further, by \ref{thm:path_charact_ulc}, this sequence of indices also determines the path to the corresponding node in the tree of the normal form.
+Hence for any two traversal $t_1,t_2 \in \travsetscn$
+ending with strands $\ldots  \lambda\overline{x}_1 \ldots y_1$ and
+$\ldots \lambda\overline{x}_1 \ldots y_1$.
+If the sequence of argument indices leading to $\lambda\overline{x}_1$ and $\lambda\overline{x}_2$ are not the same then both occurrence refer to different node of the tree of the normal form.
+Otherwise, if the argument indices are the same, then all the non-deterministic choices leading to $\lambda\overline{x}_1$ and $\lambda\overline{x}_2$ are the same therefore $t_{\leq \lambda\overline{x}_1} = t_{\leq \lambda\overline{x}_2}$, which by the deterministic rules extends to $t_1 = t_2$.
+Hence $\core{t_1} = \core{t_2}$ and therefore $\lambda\overline{x}$
+and $\lambda\overline{y}$ are assigned the same list of variable names in
+$\core{t_1}$ and $\core{t_2}$.
+\end{proof}
+
+\paragraph{Soundness of the normalization procedure} It follows from Theorem~\ref{thm:path_charact_ulc} and the fact that a term is uniquely characterized by its set of justified paths $\pathset$ (Property~\ref{prop:tree_path_charact}).  Because the justified paths $\core{\travsetnorm^{\max}(M)}$ are $\alpha$-consistent we can reconstruct from them the beta-normal from using the readout procedure of Proposition~\ref{proposition:termtree_readout_from_justitied_paths}.
 
 % \begin{remark}
 % The infinitary counterpart of the characterization theorem for lambda terms with no normal form (not shown in this paper) can be stated as:
