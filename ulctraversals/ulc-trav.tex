@@ -444,7 +444,15 @@ The next section introduces basic definitions from the traversal theory. Section
 \emph{Sequences:} For any alphabet $\Sigma$ we write $\Sigma^*$ to denote the set of (possibly infinite) sequences over elements of $\Sigma$.
  We use the abbreviation $\overline{x}$ for the sequence of elements $x_1 \ldots x_n$ for some $n\geq0$, $\epsilon$ for the empty sequence, and for any two sequences $\overline{x}, \overline{y}$ of length $n,m\geq 0$, we write $\overline{x} \cdot \overline{y}$ for the concatenation $x_1 \ldots x_n y_1 \ldots y_m$. We write $|s|$ for the length of a sequence $s$.
 
- \emph{Labelled trees:} Given a set of labels $\mathcal{L}$, the expression `$l\langle t_1, \ldots, t_m \rangle$' for $m \geq 0$ denotes a $\mathcal{L}$-labelled tree with root labelled $l\in \mathcal{L}$. The case $m=0$ represents a leaf, and otherwise a node labelled $l$ with $m$ ordered children trees $t_1$, \ldots, $t_m$.
+ \emph{Labelled trees:} Given a set of labels $\mathcal{L}$, the expression `$l\langle t_1, \ldots, t_m \rangle$' for $m \geq 0$ denotes a $\mathcal{L}$-labelled tree with root labelled $l\in \mathcal{L}$. The case $m=0$ represents a leaf-node, and for $m>0$ a node labelled $l$ with $m$ ordered children trees $t_1$, \ldots, $t_m$.
+ We refer to them as the \emph{set of nodes} of the tree equipped with
+ the natural parent-child relation induced by the above definition.
+ %
+ The set of maximal directed paths $\Pi(t)$ of a $\mathcal{L}$-labelled-tree $t$ is the set of sequences over $\mathcal{L}\times \nat$
+ defined by induction as
+ $\Pi(l \langle t_1, \ldots t_n \rangle) = \{ l \cdot i \cdot p \ |  \ p \in \Pi(t_i), 1\leq i \leq n \}$ and
+ $\Pi(l\langle \rangle) = \{ l \}$.
+ The set of paths of a $\mathcal{L}$-labelled-tree $t$ is defined as the odd-prefix closure of its maximal paths.
 
 \subsection{Lambda calculus background and notations}
 \label{sec:lambdacalculus_basics}
@@ -657,7 +665,7 @@ Since justification pointers honor the enabling relation $\enables$, if an occur
 The \defname{projection} $s\filter n$ of $s$ with respect to $n$ is the subsequence consisting of occurrences hereditarily justified by $n$ in $s$. We write $s \filter A$ for the subsequence of $s$ consisting of occurrences of nodes from a subset $A \subseteq \Nodes$.
 We will consider the subsequence $s\filter\ExternalNodes$ consisting of external nodes of $s$, or equivalently occurrences hereditarily justified by some occurrence of the root in $s$.
 
-The P-view is the sub-sequence obtained by reading a justified sequence backwards as follows: if the last node is a lambda node then follow its justification pointer and skip all the occurrences lying underneath; otherwise move to the preceding node:
+The P-view is the sub-sequence obtained by reading a justified sequence backwards as follows: if the last node is a lambda node then follow its justification pointer (if it has one) and skip all the occurrences lying underneath; otherwise move to the preceding node:
 \begin{definition}
 \label{def:views}
 The \defname{P-view $\pview{s}$} of a justified sequence $s$ is defined recursively by:
@@ -708,7 +716,7 @@ $(j, i)$ represents a variable occurrence
 with link distance $j$ and link label $i$;
 and $@$ represents the occurrence of an application node.
 %
-Two sequences $s$ and $u$ over possibly two distinct terms are \defname{equivalent}, written $s \equiv u$ just if they have the same structure: the type (variable, @-node or lambda node), arity, justification distance and label of the underlying occurrences match pairwise. Two equivalent sequences are not necessarily equal since they may have different variable names.
+Two sequences $s$ and $u$ over possibly two distinct terms are \defname{equivalent}, written $s \equiv u$ just if they have the same structure: the type (variable, @-node or lambda node), arity, link distance and link label of the underlying occurrences match pairwise. Two equivalent sequences are not necessarily equal since they may have different variable names.
 We say that two subsets $J_1\subseteq \justseqset(M_1)$ and $J_2\subseteq\justseqset(M_2)$ are isomorphic, written $J_1\cong J_2$, if  there exists a structure-preserving bijection between $J_1$ and $J_2$; that is a bijection $\phi :J_1\longrightarrow J_2$ such that $j\equiv\phi(j)$ for all $j\in J$.
 
 \begin{example}
@@ -726,7 +734,8 @@ $\nameencoding = (\mathcal{V}^*\times\nat\times\nat) +
  with link distance $j$ and link label $i$ gets encoded
  by $(\overline{x},j,i) \in \mathcal{E}$.
 %
-Observe that given a fixed term, the name-preserving encoding of a justified sequence uniquely determines its structure, by just discarding the second component from the lambda-node encoding; and reciprocally, the list of $\lambda$-bound variables is uniquely recoverable from the structure via the enabling relation $\enables$ over $\exttree$.
+The name-preserving encoding of a justified sequence is obtained by just replacing the second component from the lambda-node encoding by its length.
+Reciprocally, given a fixed term, the list of $\lambda$-bound variables is uniquely recoverable from the structure via the enabling relation $\enables$ over $\exttree$.
 %
 %
 %%%%% clashfree concatanation
@@ -742,9 +751,9 @@ $\readout[\epsilon]= \epsilon$;
 $\readout[s \cdot @] = \readout[s] \cdot @$;
 $\readout[s \cdot (\overline{x}, j, i) ] = \readout[s] \cdot \lambda\overline{x}$
 and for any encoding $s = u \cdot (\overline{x}, k, l)\,  n_1 \ldots n_{j-1}$ where $u \in \nameencoding^*$, $n_1, \ldots n_{j-1}\in \nameencoding$, $j\geq 1$, $k,l\geq 0$,
-$\readout[s\, (j,i)] = \readout[s] \cdot x_i$
-if $i\leq |\overline{x}|$; and
-$\readout[s\, (j,i)]  = \readout[s] \cdot \ghostvar$ if $i> |\overline{x}|$.
+$\readout[s\cdot (j,i)] = \readout[s] \cdot x_i$
+if $i\leq |\overline{x}|$, and
+$\readout[s\cdot (j,i)]  = \readout[s] \cdot \ghostvar$ if $i> |\overline{x}|$.
 % $$
 % \begin{array}{lll}
 % \readout[u \cdot (\overline{x}, k, l)\,  n_1 \ldots n_{j-1}\, (j,i)]
@@ -799,7 +808,8 @@ The results presented in the paper apply to both the name-free and name-preservi
 
 \subsection{Justified paths of the term tree}
 
-For any term $M$ we define the \defname{set of justified paths} $\pathset(M)$ as the set of justified sequences in $\justseqset(M)$ whose underlying sequences of nodes are precisely the paths of the labelled-tree $\ctree(M)$ from the root to every node in $\Nodes$, and justification pointers are induced by the enabling relation:
+We define the \defname{set of justified paths} $\pathset(M)$ of a term $M$ as the set of justified sequences in $\justseqset(M)$
+whose underlying sequences of nodes are those from the paths of the labelled-tree $\ctree(M)$ and justification pointers are induced by the enabling relation:
  %
  bound variable nodes are justified by their binder node with link label giving the variable name index in the binding $\lambda$-node;
  %
@@ -816,7 +826,8 @@ For any term $M$ we define the \defname{set of justified paths} $\pathset(M)$ as
 or (ii) up to $\alpha$-conversion, by the \emph{structure} of the maximal justified paths of $\pathset(M)$.
 \end{property}
 \begin{proof}
-(i) A $\lambda$-term $M$ is uniquely determined by its term tree $\ctree(M)$, itself uniquely determined by its maximal paths.
+(i) A $\lambda$-term $M$ is uniquely determined by its term tree $\ctree(M)$, itself uniquely determined by its maximal paths, which can be reconstructed from the justified maximal paths (labels are the same, and the child index is $1$ for variable/@ nodes and is given by the justification label for lambda nodes).
+%
 (ii) Variables bindings are uniquely determined by the justification pointers with their associated label; so maximal justified paths are  reconstructible from their structure, up to $\alpha$-conversion, by assigning fresh variable names to all lambda-nodes.
 \end{proof}
 
@@ -841,7 +852,7 @@ we have $\overline{x} = \overline{y}$.
 Let $T\subset \nameencoding^*$ be a finite set of (name-preserving encoded) justified sequences  that is $\alpha$-consistent.
 If $T\cong \pathset(M)$ for some (a priori unknown) untyped term $M$ then one can effectively readout from $T$ an untyped
 term  $\readout[T]$ that is $\alpha$-equivalent to $M$.
-
+%
 Furthermore, provided that no variable capture situation occurs, the variable names occurring in $\readout[T]$ are the original names from lambda-occurrences from $T$.
 \end{proposition}
 %(Then $T$ is path-like, that is lambda-nodes are justified by their immediate predecessor in the sequence.)
@@ -864,11 +875,10 @@ An important step at this point is to rename variables to avoid any potential va
 %
 Firstly, the variable names $\overline{x}$ from lambda-occurrences in sequences in $T$ may contain duplicates. We resolve this by renaming names that are repeated within the same lambda node, provided that some variable occurrence under that node refers to the first variable name: this is the situation of a justified path  $\cdots \lambda x x y \cdots (j,1)$ where the De Bruijn pair $(j,1)$ refers to the first $x$ of the lambda node. In this case the lambda node becomes $\lambda x x' y$.
 %
-Secondly, two nested lambdas in a given justified path may bind the same variable name. If this can introduces a clash, \ie, the variable occurs freely under the nested lambda, then we rename the bound variable in the nested lambda. This is the situation of a justified path of the form $\cdots \lambda{xyz} \cdots \lambda {xuv} \cdots (j,1) \cdots$
+Secondly, two distinct nested lambdas in a given justified path may bind the same variable name. If this introduces a clash, \ie, the variable occurs freely under the nested lambda, then we rename the bound variable in the nested lambda. This is the situation of a justified path of the form $\cdots \lambda{xyz} \cdots \lambda {xuv} \cdots (j,1) \cdots$
  where the De Bruijn pair $(j,1)$ refers to the $x$ from the first lambda $\lambda{x y z}$.
 
-After renaming variables in the $\mathcal{L^-}$-labelled tree, the final
-$\mathcal{L}$-labelled tree is obtained by replacing all De Bruijn pair $(j,i)$ by the $i$th variable name from the lambda node located $j$ nodes above it in the term tree.
+After renaming variables in the $\mathcal{L^-}$-labelled tree, we obtain the final $\mathcal{L}$-labelled tree by replacing all De Bruijn pair $(j,i)$ with the $i$th variable name from the lambda node located $j$ nodes above it in the term tree.
 %
 Interpreting that $\mathcal{L}$-labelled as a term tree $\ctree(\_ )$ then lets us read back from it some term $N$ such that $\ctree(N)$ is precisely that tree.
 %
@@ -884,8 +894,8 @@ Property~\ref{prop:tree_path_charact} they must be $\alpha$-equivalent.
 
 \begin{definition}
 The set $\travulc(M)$ of \defname{traversals} of an untyped lambda term $M$, abbreviated $\travulc$ when the term is clear from context, is the set of justified sequences of nodes over the extensional tree of $M$, recursively defined by the rules of Table~\ref{tab:trav_rules}.
-
-We will use interchangeably `\emph{ULC traversal}', `\emph{imaginary traversal}' or just `\emph{traversal}' when referring to a traversal of an untyped term.
+%
+We use interchangeably `\emph{imaginary traversal}' or just `\emph{traversal}' when referring to a traversal of an untyped term.
 \end{definition}
 
 \begin{table}[!t]
@@ -1638,7 +1648,8 @@ that the argument index $i$ should not be greater than the dynamic arity of the 
 %      \andalso 1 \leq i \leq\dynar(t)}
 %      {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:i){\alpha}}\in\travsetnorm}
 % where $\alpha = \ghostlmd$ just if $i>|n|$.
-Table~\ref{tab:normalizing_trav_rules} defines this system of rules using judgement derivations, where the judgement `$\istraversal t$' means that $t\in\travsetnorm$.
+Table~\ref{tab:normalizing_trav_rules} defines this system via
+judgement derivations, where the judgement `$\istraversal t$' means `$t\in\travsetnorm$'.
 \end{definition}
 
 \iflongversion
