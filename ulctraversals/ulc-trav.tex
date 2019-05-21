@@ -319,7 +319,7 @@
 
 \section{Introduction}
 
-\subsection{Background and related work}
+\subsection{Background}
 The theory of traversals was originally introduced in the context of higher-order recursion schemes~\cite{OngLics2006} as tree generators, and was
 then extended to simply-typed languages with higher-order free variables, such as the simply-typed lambda calculus (STLC)~\cite{BlumPhd}. A traversal consists of a sequence of nodes taken from a tree-representation of the \emph{eta-long expanded} term, where every node occurrence may have an associated labelled link, or ``justification pointer'', referring to some previous occurrence in the sequence. It always starts from the root of the tree and successively visits other nodes by either descending deeper into the tree structure, or jumping to other tree branches. A small set of rules formally defines how to extend a given traversal--what node to visit next with which justification pointer. This yields a prefix-closed set of justified sequences of nodes defining the set of traversals of the term.
 
@@ -448,8 +448,8 @@ The next section introduces basic definitions from the traversal theory. Section
  We refer to them as the \emph{set of nodes} of the tree equipped with
  the natural parent-child relation induced by the above definition.
  %
- The set of maximal directed paths $\Pi(t)$ of a $\mathcal{L}$-labelled-tree $t$ is the set of sequences over $\mathcal{L}\times \nat$
- defined by induction as
+ The maximal directed paths $\Pi(t)$ of a $\mathcal{L}$-labelled-tree $t$ are the sequences over $\mathcal{L} + \nat$
+ inductively defined as
  $\Pi(l \langle t_1, \ldots t_n \rangle) = \{ l \cdot i \cdot p \ |  \ p \in \Pi(t_i), 1\leq i \leq n \}$ and
  $\Pi(l\langle \rangle) = \{ l \}$.
  The set of paths of a $\mathcal{L}$-labelled-tree $t$ is defined as the odd-prefix closure of its maximal paths.
@@ -811,14 +811,13 @@ The results presented in the paper apply to both the name-free and name-preservi
 We define the \defname{set of justified paths} $\pathset(M)$ of a term $M$ as the set of justified sequences in $\justseqset(M)$
 whose underlying sequences of nodes are those from the paths of the labelled-tree $\ctree(M)$ and justification pointers are induced by the enabling relation:
  %
- bound variable nodes are justified by their binder node with link label giving the variable name index in the binding $\lambda$-node;
+ bound variable nodes point to their binder $\lambda$-node, which necessarily occurs in the path to the root, with link label set to the index of the variable name in the binding $\lambda$-node;
  %
- free variables are justified by the initial occurrence (the tree root) and their link label is an index in $\nat$ uniquely identifying the
+ free variables point to the initial occurrence (the tree root) with link label  set to an index in $\nat$ uniquely identifying the
  free variable name;
  %
- and lambda nodes are justified by the immediate predecessor in the path sequence (its parent node by definition) with label index given by the child index.
+ and lambda nodes are justified by the immediate predecessor in the path sequence, its parent node by definition of a tree path, with label index given by its child index.
  %
- This notion is well defined because a variable binder necessarily occurs in the path to the root.
 \begin{property}[Path Characterization]
 \label{prop:tree_path_charact}
  An untyped term $M$ is uniquely determined
@@ -1391,8 +1390,9 @@ For any (closed) simply-typed term $M^\tau$ in \emph{eta-long form},
 % The interesting part of the proof will be to show how the ghost nodes gradually ``materialize'' after each step of the linear reduction, and how the dynamic arity gives the right bound for limiting eta-expansion.
 % \end{itemize}
 
-Consequently, traversals characterize
-the paths in the tree representation of the beta-normal form of a simply-typed term in eta-long form:
+%Consequently, traversals characterize
+% the paths in the tree representation of the beta-normal form of a simply-typed term in eta-long form:
+
 \begin{proposition}[Eta-Long Normalized Paths Characterization]
 \label{prop:path_charact_stlc}
 Let $M^\tau$ be a closed simply typed term
@@ -1468,8 +1468,7 @@ justification pointer $i$ in the variable rules \rulenamet{IVar} is guaranteed t
 A \defname{strand} of a traversal $t$, is a sub-sequence of consecutive nodes of even length from $t$, starting with an external lambda node and ending with an external variable node, with only internal node occurrences in-between.
 \end{definition}
 
-From the parity property of traversals, a strand must consist of alternations of lambda nodes and variable/application nodes. We will highlight a strand within a traversal by underlining its first and last occurrence as follows:
-$$ t = \cdots \underline{\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ \underline{n_1} \cdots $$
+From the parity property of traversals, a strand must consist of alternations of lambda nodes and variable/application nodes. We will highlight a strand within a traversal by underlining its first and last occurrence as follows: $ t = \cdots \underline{\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ \underline{n_1} \cdots $
 for some $k\geq 1$ where for $1 \leq j \leq k$, $\alpha_j$ is in $\ExtendedNodesLmd$, $n_j$ is in $\ExtendedNodesVar\union\NodesApp$, and the $2k-2$ nodes occurring between $\alpha_k$ and $n_1$ are internal nodes.
 
 \begin{definition} %[Traversal dynamic arity]
@@ -2423,7 +2422,7 @@ Let $M$ be a term in \emph{qnf}.
 \end{itemize}
 \end{proposition}
 \shortproof
-Overview of~\cite{longversion-2018arXiv}.
+%Overview of~\cite{longversion-2018arXiv}.
 (i) Let $R = (\lambda x . N) A$
  be the leftmost spinal-innermost standard $\beta$-redex of $M$. Since there is no other redex left of it, in the bottom-up calculation of $lloc_M(M)$ the last case (application $UV$ where $\lambda_l(U)$ is not empty) never occurs and $lloc_M(M)$  must be at least $lloc_M(R)$ (\ie, if the latter is non-empty then so is the former).
 Also, it is at least $lloc_R(R)$ since
@@ -2529,9 +2528,96 @@ $M$ and its normal form must have the same lambda list. We can then conclude usi
 \label{thm:completeness_leftmostlinearred}
 If $M$ has a beta-normal form then its left-most linear reduction terminates (and thus yields a quasi normal form).
 \end{theorem}
-\begin{todobox}
-    include snippet of proof from appendix
-\end{todobox}
+\shortproof
+% The proof relies on Theorem~\ref{thm:danosregnier_headlinred}, to reduce
+% the to the case of quasi-head-normal-forms.
+% It is then proven by strong induction on the size of $M$ and case analysis.
+% In the application case,
+Suppose that $M$ has a $\beta$-normal form ($\beta$-nf). Then its head-reduction terminates and by Theorem~\ref{thm:danosregnier_headlinred} its $\hlred$-reduction
+ also terminates and yields its \emph{qhnf}. Since $\hlred$ coincides with $\llred$, for terms not in \emph{qhnf}, we can without loss of generality assume that $M$ is in \emph{qhnf}.
+We prove by strong induction on the \emph{size} of $M$ that
+`{\bf (H1)} If $M$ has a $\beta$-nf then its linear reduction sequence terminates.'
+%
+The variable case is trivial, and the abstraction case follows
+immediately by induction. Suppose $M = U V$ and $M$ is not a \emph{qnf} then it has a \emph{lloc} that is distinct from the \emph{hoc}.
+%
+%\begin{enumerate}[noitemsep,label=(\roman*),leftmargin=1pc]
+%\item
+Suppose that the \emph{lloc} of $M$ is in $U$.
+%($lloc_M(U) \ne \bot$).
+    We show by finite \emph{structural} induction on subterms $T$ of $U$ that:
+    `{\bf (H2)} If $lloc_M(T) \neq \bot$ and $hoc(M)$ is in $T$ then there are at most a finite number of steps in the linear reduction sequence of $M$ that involve a linear substitutions in (reducts of) $T$.'
+%
+    If $T$ is a variable, since it contains the \hoc\, it must be the
+    \hoc~itself. Because $M$ is in \emph{qhnf}, the \hoc~is not involved in any generalized redex and therefore $T$ is not involved in any substitution of the linear reduction sequence of $M$.
+%
+    If $T$ is an abstraction then both the \emph{hoc} and \emph{lloc} are in its body so we conclude by induction (H2).
+%
+    If $T = T_1 T_2$. By definition, the \emph{hoc} is necessarily in $T_1$.
+    Suppose that $\emph{lloc}$ is in $T_2$. Then we have $lloc_M(T_1) =\bot$ therefore none of the steps in the linear reduction sequence of $M$ involve substitutions in $T_1$.
+    %(there is no variable in $T_1$ involved in a  general redex therefore subsequent linear reduction steps can only introduce general redexes on the right of $T_1$).
+    If it is a variable $x$ then it must be the \emph{hoc} and $T = x\,T_2$.
+    We show the result by induction (H3) on the number of pending arguments of the \emph{hoc}.
+    %
+    %\begin{compactitem}
+    %\item
+    \emph{Base case of H3}: $z$ has a single argument which must be $T_2$.
+    By Theorem~\ref{thm:danosregnier_headlinred}, reducing all the prime redexes in $M$ yields its head-normal form
+    with head variable $x$.
+    Let $\gamma$ denotes the sequence of substitutions performed on $M$ to reduce the prime redexes, so that $\gamma(M)$ is the head normal form of $M$.  Then $\gamma(T_2)$ will becomes the (unique) argument of $x$ in the head normal form. And because $M$ has a $\beta$-nf, the term $\gamma(T_2)$ must also have a $\beta$-nf.
+    %
+    Because $z$ has a single hoc argument, all the subsequent linear substitutions in $M$ must necessarily occur under $T_2$ and its reducts: the \emph{lloc} will never get out of $T_2$.
+    %%%% not needed in short proof
+    %    (Indeed, otherwise by the inductive definition of \emph{lloc} there would be a subterm $U' V'$ of $M$ where $U'$ contains $z T_2$ and $\lambda_l(U;) \neq \epsilon$, which by definition of {\sf Args} would imply that $V'$ is another hoc argument, contradicting the assumption that the hoc has a single argument.)
+    %%%%
+    Let $M'$ denote the term obtained by replacing
+    the subterm $T$ by $T_2$, the $\llred$-reduction sequence of $M$ coincides with that of $M'$.
+    %
+    Now $M'$ must necessarily have a $\beta$-normal form. Otherwise it's standard $\beta$-reduction sequence would not terminate, which would imply that $\gamma(T_2)$ does not terminate, which contradicts the fact that $\gamma(T_2)$ is the argument of the head variable in the head normal form!
+    %
+    Since $M'$ is smaller than $M$, by H1, its linear-reduction sequence terminates. We can conclude since the linear reduction sequences of $M$ and $M'$ coincide.
+
+    %%%%%%%%%%%%%%%
+    %\item
+     \emph{Inductive case of H3} Suppose H3  holds for terms with $n \geq 1$ \hoc\ arguments, and suppose ${\sf Args}(M) = n+1$.
+   %
+    Let $U_{n+1} V_{n+1}$ denote the subterm of $M$ such that $V_{n+1}$ is the last \hoc\ argument of $M$. We consider the term $M'$ obtained from $M$ by removing the last \hoc\ argument of $M$ (\ie~replacing $U_{n+1} V_{n+1}$ by $U_{n+1}$).
+    Observe that the last argument of the hoc cannot be possibly be argument of any generalized redex, therefore the linear reduction of $M$ must  coincide with that of $M'$ up until the \hoc\ of the reduct of $M$ lies under the last \hoc\ argument $U_{n+1}$.
+%
+    By induction hypothesis (H3), the $\llred$-reductions sequences of $M'$ involves a finite number of substitutions under $T_2$. Consequently, the same holds in $M$.
+    %\end{compactitem}
+%%%%
+
+    Suppose $T_1$ is not a variable. Let $z$ denote a fresh variable in $M$, and $M' = M[z/T_1]$ be the term obtained by replacing the subterm $T_1$ in $M$ by the fresh variable $z$.   Since $T_1$ is not a variable, $M'$ must be strictly smaller than $M$. And since $M$ has a $\beta$-nf, so must $M'$, thus by the induction hypothesis (H1), the $\llred$ reduction sequence of $M'$ terminates. Consequently, there is only a finite number of steps in the linear reduction of $M'$ that involve substitutions in reducts of $z~T_2$.
+    Clearly, the linear reduction steps under $T_2$ in $M'$ coincide with those of $T_2$ in $M$. Hence, we can conclude that at most a finite number of substitutions take place under $T= T_1 T_2$ in the linear reduction sequence of $M$.
+%%%%
+
+    Suppose that $\emph{lloc}$ is in $T_1$. Then by the induction (H2) there is a finite number of steps in the linear reduction sequence of $M$ that involve (reducts of) $T_1$. Let us consider the first reduct $R$ of $M$ in the $\llred$ reduction sequence such that the \emph{lloc} is not under a reduct of $T_1$.  Observe that in the linear reduction sequence of $T$, the subterm $T_2$ remains unmodified as long as the \emph{lloc} remains in (the reduct) of $T_1$.
+    %
+    At $R$, if the \emph{lloc} is not under $T_2$ then none of the further steps in the linear reduction sequence of $R$ will involve $T_2$
+    % (\ie, subsequent substitutions will occur outside of $T$ -- on its right,  more precisely).
+    We can therefore conclude.
+    %
+    If instead at $R$ the \emph{lloc} lies under the subterm $T_2$
+    %: $lloc_R(T2) \ne\bot$,
+    then $T_1$ cannot be a variable, otherwise it would be both the \emph{hoc} and the \emph{lloc} of $M$ which contradict the assumption. We can thus conclude by applying the same reasoning as case (a) above to the reduct $R$.
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\item
+    Suppose that the lloc is in $V$.
+    Then by definition of the \emph{lloc}
+    %for the application case,
+    we have $lloc_M(U) =\bot$ and $\lambda_l(U)=\epsilon$.
+    Hence $U$ is in \emph{qnf} and by Proposition~\ref{prop:qnf_nf} it has a $\beta$-nf.
+     By Property~\ref{prop:qnf_betanf_empty_lambdalist}
+    $U$'s normal form is not an abstraction. Hence since $M$ has a
+    $\beta$-nf so must $V$ and $\betanf{M} = \betanf{U} \betanf{V}$.
+    By (H1) the $\llred$-reduction of $V$ must terminate.
+    We conclude by observing that the linear-substitutions performed in the
+    linear-reduction sequence of $M$ map one-to-one to those in the linear-reduction sequence of $V$: if $V \llred V_2 \llred \ldots V_i$ then $M = U V \llred U V_2 \llred \ldots U V_i$ for some $i\geq 0$.
+%\end{enumerate}
+\endshortproof
+
 \proofatend
 Suppose $M$ has a beta-normal form then by a standard result of lambda calculus its head-reduction terminates, therefore by Theorem~\ref{thm:danosregnier_headlinred} the $\hlred$-reduction of $M$ terminates and yields its quasi-\emph{head}-normal form. Since $\hlred$ coincides with $\llred$, for terms not in \emph{qhnf}, we can without loss of generality assume that $M$ is in \emph{qhnf}.
 We prove by induction on the \emph{size} of $M$ that
@@ -2704,7 +2790,7 @@ If $v$ is empty then the node following $u$ in $t$, if it exists, is necessarily
 \begin{proposition}[Quasi-normal forms strand decomposition]
 \label{prop:qnf_strand_decomposition}
 A maximal traversal $t_{\max}$ of a term in \emph{qnf}
-consists of a strand of type $S$ followed by a succession of strands of type $S$ and $G$ according to the following transitions:
+starts with a strand of type $S$ and is followed by a succession of strands of type $S$ and $G$ according to the following transitions:
 \begin{center}
 \begin{tabular}{r|ll l}
 Strand type  & Strand shape & Transition & Next strand shape\\
@@ -2895,7 +2981,8 @@ $G$.
 \endproofatend
 %\end{proof}
 \shortproof
-Overview of the full proof~\cite{longversion-2018arXiv}: A case analysis shows that for a \emph{qnf}, the rules of normalizing traversals unfold according to the state diagram of Figure~\ref{fig:qnf_strand_decomposition_statemachine} where it never traverses an internal variable.
+%Overview of the full proof~\cite{longversion-2018arXiv}:
+A case analysis shows that for a \emph{qnf}, the rules of normalizing traversals unfold according to the state diagram of Figure~\ref{fig:qnf_strand_decomposition_statemachine} where it never traverses an internal variable.
 It starts with a spinal descent to the linear head occurrence, whose $lloc_M$ must be $\bot$ since the term is a \emph{qnf} and so it is necessarily an external node. The initial strand is thus of type $S$. After a strand of type $S$, if the next node is a structural lambda then by Property~\ref{prop:qnf_longapply} its $lloc_M$ is necessarily $\bot$, another spinal descent follows which yields a strand of type $S$.
 We prove the third transition with the same argument.
 Let us consider the second transition (the fourth is proven similarly) where the node following the strand is a ghost lambda. The strand is of form $\underline{\lambda\overline{\eta_1}} \cdot u_1 \cdot \underline{x_1} $ where by Property~\ref{prop:strand_spinaldescent} $u_1$ is  non-empty: $u_1 =
@@ -3052,13 +3139,13 @@ Let $M$ and $N$ be two terms with variables in $\mathcal{V}$. Let $\phi\colon \j
 \begin{lemma}
 \label{lem:bisimulation_isomorphism}
 If $M$ and $N$ are $\phi$-bisimilar
-for some function $\phi$ whose restriction to $\coresymbol(\travsetscn(N))$ is injective and which commutes with $\coresymbol$
-%(for all $u \in \travsetscn(M)$ $\coresymbol(\phi(u)) \equiv \phi(\coresymbol(u))$),
+for some function $\phi$ whose restriction to $\coresymbol(\travsetscn(N))$ is injective
 then $\coresymbol(\travsetscn(N)) \cong \coresymbol(\travsetscn(M))$.
 \end{lemma}
 \begin{proof}
 Consider $\phi$ as a function from $\coresymbol(\travsetscn(N))$ to $\coresymbol(\travsetscn(M))$.
-It is \emph{well-defined}: $\travsetscn(N)$ is by definition the transitive closure of the initial strand by $\rightarrow_N$, so for any traversal $u$ of $\travsetscn(N)$, repeatedly applying (B2) for each step of its $\rightarrow_N$ derivation shows that $t = \phi(u) \in \travsetscn(M)$. By commutativity of $\coresymbol$ and $\phi$ we have $\coresymbol(t)=\phi(\coresymbol(u)) \in \coresymbol(\travsetscn(M))$.
+It is \emph{well-defined}: $\travsetscn(N)$ is by definition the transitive closure of the initial strand by $\rightarrow_N$, so for any traversal $u$ of $\travsetscn(N)$, repeatedly applying (B2) for each step of its $\rightarrow_N$ derivation shows that $t \equiv \phi(u) \in \travsetscn(M)$.
+Since by assumption $\phi$ is structure-preserving on $\travsetscn(M)$, it must commute with $\coresymbol$ and we have $\coresymbol(t)\equiv\phi(\coresymbol(u)) \in \coresymbol(\travsetscn(M))$.
 Similarly, it is \emph{surjective} by (B1) because $\travsetscn(M)$ is the transitive closure of the initial strand by $\rightarrow_M$. Finally it is \emph{injective} by assumption.
 Hence we have $\coresymbol(\travsetscn(N)) \cong \coresymbol(\travsetscn(M))$.
 \end{proof}
@@ -3577,7 +3664,8 @@ Let's consider the tree structure at the trivial redex on Figure~\ref{fig:reduci
 If $M$ is in \emph{qnf} and has beta-normal form $N$ then $\coresymbol(\travsetnorm^{\max}(M)) \cong \coresymbol(\travsetnorm^{\max}(N))$.
 \end{corollary}
 \begin{proof}
-By Proposition~\ref{prop:qnf_nf}(ii) a \emph{qnf} trivially reduces to its beta-nf: there is a reduction sequence $M = M_1 \rightarrow_\beta M_2 \ldots \rightarrow_\beta M_q= N$, $q\geq1$  where in each reduction step, $M_{i+1}$ is obtained by reducing the leftmost spinal-innermost standard redex of $M_i$ (of the form $(\lambda x . U) T$ such that $U$ does not contain any redex). By Proposition~\ref{prop:qnf_nf}(i), each such redex is trivial. We conclude with Proposition~\ref{prop:ulctrav_sound_for_trivialreduction} which shows that the set $\core{\travsetnorm^{\max}(\_)}$ is an invariant (up to isomorphism) throughout this trivial reduction sequence.
+By Proposition~\ref{prop:qnf_nf}(ii) a \emph{qnf} reduces to its beta-nf: there is a reduction sequence $M = M_1 \rightarrow_\beta \ldots \rightarrow_\beta M_q= N$, $q\geq1$  where in each step, $M_{i+1}$ is obtained by reducing the leftmost spinal-innermost standard redex of $M_i$ (of the form $(\lambda x . U) T$ such that $U$ does not contain any redex). By Proposition~\ref{prop:qnf_nf}(i), such redex is trivial. By Proposition~\ref{prop:ulctrav_sound_for_trivialreduction}
+the operation $\core{\travsetnorm^{\max}(\_)}$ is an invariant (up to isomorphism) throughout this trivial reduction sequence.
 \end{proof}
 
 \begin{proposition}
@@ -3627,7 +3715,9 @@ If $M$ is not normal form then since $M$ has a beta-nf, by Theorem~\ref{thm:comp
 
 \begin{proposition}
     \label{prop:core_travsetnorm_alpha_consistent}
- $\core{\travsetnorm^{\max}(M)}$ is $\alpha$-consistent.
+    $\core{\travsetscn(M)}$ is $\alpha$-consistent, and therefore so
+    is
+    $\core{\travsetnorm^{\max}(M)}$.
 \end{proposition}
 \begin{proof}
 A traversal of $\travsetscn$ is uniquely defined by the sequence of non-deterministic choices of the argument index $i$ made at the end of each strand. Further, by \ref{thm:path_charact_ulc}, this sequence of indices also determines the path to the corresponding node in the tree of the normal form.
@@ -3641,7 +3731,7 @@ and $\lambda\overline{y}$ are assigned the same list of variable names in
 $\core{t_1}$ and $\core{t_2}$.
 \end{proof}
 
-\paragraph{Soundness of the normalization procedure} It follows from Theorem~\ref{thm:path_charact_ulc} and the fact that a term is uniquely characterized by its set of justified paths $\pathset$ (Property~\ref{prop:tree_path_charact}).  Because the justified paths $\core{\travsetnorm^{\max}(M)}$ are $\alpha$-consistent we can reconstruct from them the beta-normal from using the readout procedure of Proposition~\ref{proposition:termtree_readout_from_justitied_paths}.
+\paragraph{Soundness of the normalization procedure} It follows from Theorem~\ref{thm:path_charact_ulc} and because a term is characterized by its justified paths $\pathset$ (Property~\ref{prop:tree_path_charact}). Because the justified paths $\core{\travsetnorm^{\max}(M)}$ are $\alpha$-consistent we can reconstruct from them the beta-normal from using the readout procedure of Proposition~\ref{proposition:termtree_readout_from_justitied_paths}.
 
 % \begin{remark}
 % The infinitary counterpart of the characterization theorem for lambda terms with no normal form (not shown in this paper) can be stated as:
@@ -3651,7 +3741,7 @@ $\core{t_1}$ and $\core{t_2}$.
 
 \section{Further directions}
 
-As we have seen, the traversal theory of the untyped lambda calculus implements leftmost linear reduction, a non-strict (``hyper-lazy''~\cite{danosherbelinregnier1996}) reduction strategy that substitutes variables one at a time. This bring the question of whether alternative notions of traversals are definable by considering other evaluation strategies such as call-by-name and call-by-value~\cite{plotkin-75}. A call-by-name version of head-linear reduction, that does not reduce inside the body of an unapplied abstraction, would easily be accommodated in the traversal setting. A strict evaluation strategy like call-by-value, on the other hand, might require substantial changes. As for traditional reduction strategies, such as the normal order of lambda calculus, it is not immediately obvious how to implement simultaneous substitution with traversals since, by nature, they traverse the term tree one node at a time. Perhaps this can be modeled by non-deterministically spawning new traversals for every free occurrence of the variable to be substituted.
+As we have seen, the traversal theory of the untyped lambda calculus implements leftmost linear reduction, a non-strict, ``hyper-lazy''~\cite{danosherbelinregnier1996}, reduction strategy that substitutes variables one at a time. This bring the question of whether alternative notions of traversals are definable by considering other evaluation strategies such as call-by-name and call-by-value~\cite{plotkin-75}. A call-by-name version of head-linear reduction, that does not reduce inside the body of an unapplied abstraction, would easily be accommodated in the traversal setting. A strict evaluation strategy like call-by-value, on the other hand, might require substantial changes. As for traditional reduction strategies, such as the normal order of lambda calculus, it is not immediately obvious how to implement simultaneous substitution with traversals since, by nature, they traverse the term tree one node at a time. Perhaps this can be modeled by non-deterministically spawning new traversals for every free occurrence of the variable to be substituted.
 
 
 \begin{todobox}
@@ -3671,16 +3761,6 @@ the untyped lambda calculus: that there is an isomorphism between the cores of i
 %%%%%%%%%%%%%%%%%
 
 
-\begin{todobox}
-- Thank reviewer
-- Where proofs are not given:
-    - either leave out completely
-    - or better  write a sentence to give the proof method.
-    - some of the proofs from the appendix could have been brought into
-    the paper by showing just some interesting/non-standard cases.
-\end{todobox}
-
-
 % \subsection*{Higher-order collapsible pushdown automata}
 
 % In the typed-setting, there are well-understood correspondences between grammars and automaton. When used as tree-generating devices, for instances, higher-order recursion schemes can be turned into equivalent \emh{collapsible} higher-order pushdown automata, and reciprocally~\cite{OngLics2006}. A recursion scheme can be viewed as a closed typed lambda-term with recursion of ground type with order-$1$ free constructors representing the nodes and leaves of the tree (itself of ground type). The automaton resulting from the first construction proceeds by simulating traversals over the tree representation of the recursion scheme.
@@ -3691,9 +3771,8 @@ the untyped lambda calculus: that there is an isomorphism between the cores of i
 %  The generated tree would be an order-$0$ tree representation of the beta-normal of a term: each terminal symbol of the automaton would correspond to a ``token'' of the lambda term: either a lambda node (represented by non-terminal of type $o\rightarrow o$), or a variable node (represented by a non-terminal of type $o^k\rightarrow o$ where $k\geq0$ is the number of operands applied to the variable in the beta normal form of the term.
 
 \subsection*{Acknowledgement}
-This work got inspired by the slides of the Galop 2016 presentation by Daniil Berezun and Neil D. Jones on Partial Evaluation and Normalization by Traversals
-~\cite{berezunjones_partialevalbytraversals}. It benefited from email communications with the authors as well as memorable discussion with Neil D. Jones during his visit at Microsoft Research in May 2017.
-
+This work got inspired by the slides of the Galop 2016 presentation by Daniil Berezun and Neil D. Jones~\cite{berezunjones_partialevalbytraversals}. It benefited from email communications with the authors as well as memorable discussion with Neil D. Jones during his visit at Microsoft in May 2017.
+An anonymous referee has also provided valuable comments.
 \bibliographystyle{abbrv}
 \bibliography{ulc-trav}
 
