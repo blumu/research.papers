@@ -3139,13 +3139,14 @@ Let $M$ and $N$ be two terms with variables in $\mathcal{V}$. Let $\phi\colon \j
 \begin{lemma}
 \label{lem:bisimulation_isomorphism}
 If $M$ and $N$ are $\phi$-bisimilar
-for some function $\phi$ whose restriction to $\coresymbol(\travsetscn(N))$ is injective
+for some function $\phi$ whose restriction to $\coresymbol(\travsetscn(N))$ is injective and commute with $\coresymbol$
+%(for all $u \in \travsetscn(M)$ $\coresymbol(\phi(u)) = \phi(\coresymbol(u))$),
 then $\coresymbol(\travsetscn(N)) \cong \coresymbol(\travsetscn(M))$.
 \end{lemma}
 \begin{proof}
 Consider $\phi$ as a function from $\coresymbol(\travsetscn(N))$ to $\coresymbol(\travsetscn(M))$.
-It is \emph{well-defined}: $\travsetscn(N)$ is by definition the transitive closure of the initial strand by $\rightarrow_N$, so for any traversal $u$ of $\travsetscn(N)$, repeatedly applying (B2) for each step of its $\rightarrow_N$ derivation shows that $t \equiv \phi(u) \in \travsetscn(M)$.
-Since by assumption $\phi$ is structure-preserving on $\travsetscn(M)$, it must commute with $\coresymbol$ and we have $\coresymbol(t)\equiv\phi(\coresymbol(u)) \in \coresymbol(\travsetscn(M))$.
+It is \emph{well-defined}: $\travsetscn(N)$ is by definition the transitive closure of the initial strand by $\rightarrow_N$, so for any traversal $u$ of $\travsetscn(N)$, repeatedly applying (B2) for each step of its $\rightarrow_N$ derivation shows that $t = \phi(u) \in \travsetscn(M)$.
+By commutativity of $\coresymbol$ and $\phi$ we have $\coresymbol(t)=\phi(\coresymbol(u)) \in \coresymbol(\travsetscn(M))$.
 Similarly, it is \emph{surjective} by (B1) because $\travsetscn(M)$ is the transitive closure of the initial strand by $\rightarrow_M$. Finally it is \emph{injective} by assumption.
 Hence we have $\coresymbol(\travsetscn(N)) \cong \coresymbol(\travsetscn(M))$.
 \end{proof}
@@ -3156,8 +3157,8 @@ Hence we have $\coresymbol(\travsetscn(N)) \cong \coresymbol(\travsetscn(M))$.
 Let $M$ be an untyped term.
 If $M \llred N$ then $\coresymbol(\travsetnorm^{\max}(M)) \cong \coresymbol(\travsetnorm^{\max}(N))$.
 \end{proposition}
-%\begin{proof}
-\proofatend
+\begin{proof}
+%\proofatend
 Suppose that $M \llred N$. Let $x$ denote the leftmost linear variable occurrence in $M$ and
 let $(\lambda x, A)$ be the generalized redex involving it, so that $N$ is the term obtained after
 firing the generalized redex $(\lambda x, A)$. A property of linear head reduction is that the reduct contains the original
@@ -3443,16 +3444,16 @@ Like in the first case, we can define a function $\phi$ such that
 %%%%%%%%%%%%%%%%% End of case where t ends with lloc variable occurrence x
 
 Hence $M$ and $N$ are in $\phi$-bisimulation, thus because $\phi$ is injective and commutes with $\coresymbol$, by Lemma~\ref{lem:bisimulation_isomorphism} the two sets of traversals are isomorphic.
-\endproofatend
-%\end{proof}
+%\endproofatend
+\end{proof}
 
 
 \begin{proposition}[Traversals are sound for trivial reduction]
 \label{prop:ulctrav_sound_for_trivialreduction}
     Let $M$ be an untyped term containing only trivial redexes, and $N$ the reduct obtained by firing the \emph{leftmost spinal-innermost} trivial redex, then $\coresymbol(\travsetnorm^{\max}(M)) \cong \coresymbol(\travsetnorm^{\max}(N))$.
 \end{proposition}
-\proofatend
-%\begin{proof}
+%\proofatend
+\begin{proof}
 Let's consider the tree structure at the trivial redex on Figure~\ref{fig:reducing_trivialredex}. It is of the form $(\lambda \overline{x} . T) A_1 \ldots A_r$ for $r\geq1$ where $(x_1, A_1)$ forms the leftmost trivial redex.
     Two cases must be considered:
 
@@ -3533,7 +3534,7 @@ Let's consider the tree structure at the trivial redex on Figure~\ref{fig:reduci
     \begin{align*}
         \Phi\colon \nameencoding(N) &\rightarrow \nameencoding(M) \\
         (n,p,d,k) &\longmapsto (\Phi(n),p,d,k) & \mbox{if $n\neq\lambda\overline{y}$} \\
-        (\lambda\overline{y},p,d,k) &\longmapsto (\lambda\overline\eta,(x_2 \ldots x_n \cdot p),d,k)
+        (\overline{y},p,d,k) &\longmapsto (\overline\eta,(x_2 \ldots x_n \cdot p),d,k)
     \end{align*}
     So in particular, $\Phi$ maps occurrences of $\lambda\overline{y}$ to occurrences of $\lambda\overline\eta$ with binding variables $x_2 \ldots x_n$ appended to $\overline\eta$.
     \begin{equation}
@@ -3650,8 +3651,8 @@ Let's consider the tree structure at the trivial redex on Figure~\ref{fig:reduci
     \end{itemize}
     We can then conclude by Lemma~\ref{lem:bisimulation_isomorphism} that the two sets of traversals are isomorphic.
     \end{description}
-%\end{proof}
-\endproofatend
+\end{proof}
+%\endproofatend
 
 \begin{example}
     Take the term $M = \lambda x. (\lambda y z.z) u$, which trivially reduces to $N = \lambda x z . z$, and its traversal $t$ from Example~\ref{examp:ghost_materialization}.
