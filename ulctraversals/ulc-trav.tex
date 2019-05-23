@@ -3157,23 +3157,23 @@ Hence we have $\coresymbol(\travsetscn(N)) \cong \coresymbol(\travsetscn(M))$.
 Let $M$ be an untyped term.
 If $M \llred N$ then $\coresymbol(\travsetnorm^{\max}(M)) \cong \coresymbol(\travsetnorm^{\max}(N))$.
 \end{proposition}
-\begin{proof}
+%\shortproof
+%\endshortproof
+%\begin{proof}
 %\proofatend
-Suppose that $M \llred N$. Let $x$ denote the leftmost linear variable occurrence in $M$ and
-let $(\lambda x, A)$ be the generalized redex involving it, so that $N$ is the term obtained after
-firing the generalized redex $(\lambda x, A)$. A property of linear head reduction is that the reduct contains the original
-term itself, modulo alpha conversion and relabelling of the \emph{lloc} node. This induces an implicit map $\Phi$ from nodes
-of the reduct $N$ to those of $M$:
-$$\Phi : \ExtendedNodes(N)  \rightarrow \ExtendedNodes(M) $$
-which maps nodes from the substituted subterm in $N$ to the corresponding nodes under argument $A$ in $M$;
-and every node in $N$ that is not involved in the substitution, to its counterpart in $M$.
-
-The substitution involved in the leftmost linear reduction affects the tree in three possible ways depending on the structure and number of $x$'s operands:
+Suppose that $M \llred N$. Let $x$ denote the leftmost linear variable occurrence in $M$ and $(\lambda x, A)$ be the generalized redex involving it, so that $N$ is the term obtained by firing $(\lambda x, A)$.
+A property of linear head reduction is that the reduct contains the original
+term itself, modulo alpha conversion and relabelling of the \emph{lloc} node. This induces an implicit map  $\Phi : \ExtendedNodes(N)  \rightarrow \ExtendedNodes(M)$ from nodes of the reduct $N$ to those of $M$,
+such that it maps nodes under the substituted subterm in $N$ to the corresponding nodes under argument $A$ in $M$, and every node in $N$ that is not involved in the substitution, to its counterpart in $M$.
+%
+The linear substitution affects the term tree in three possible ways
+ depending on the arity of the \emph{lloc} and the structure of the argument:
 \begin{description}[itemindent=1em]
     \item[Case 1] $x$ has at least one operand ($|x|>0$) and $A$ is an abstraction;
     \item[Case 2] $x$ has at least one operand ($|x|>0$) and $A$ is not an abstraction;
     \item[Case 3] $x$ is unapplied ($|x|=0$).
 \end{description}
+For each of case we show that there is an injection $\phi\colon\justseqset(N)\longrightarrow \justseqset(M)$ such that $M$ and $N$ are $\phi$-bisimilar.
 
 %%%%%%%%%%% Summary of the proof %%%%%%
 % Observe first that the nodes of the subterm $A$$ map 1-1 to the nodes of
@@ -3196,25 +3196,14 @@ The substitution involved in the leftmost linear reduction affects the tree in t
 %   the reduct $N$ using the exact same traversal rules used to traverse $M$.
 %%%%%%%%%%%%%%%%%%
 
-We proceed by showing that for each of the three cases, there is an injection $\phi$ such that $M$ and $N$ are $\phi$-bisimilar.
-
-\begin{description}[itemindent=0em,leftmargin=0cm]
-    \item[Case 1]
-    The reduction is represented on Figure~\ref{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument}
-    where $x$ has some operand ($|x|>0$), and $A$ is an abstraction $\lambda\overline{y}. R$.
-
-    Let $\lambda\overline{x}$ denote $x$'s binding lambda node in $M$, $i$ denote $x$'s binding index, and $@_a$ denote the parent node of the subterm $A$.
-
-    After reduction:
-    (i) Node $x$ gets replaced by an application node $@_x$ and its existing children are preserved.
-    (ii) The subterm $\lambda\overline{y}'. R'$, obtained from $R$ by renaming variable afresh to avoid variable capture, becomes the operator child of $@_x$.  (Note that we write $\lambda\overline{y}'$ to distinguish the root node of $R'$ from the root $\lambda\overline{y}$ of $R$ in $N$, even though the bound variable names are $\overline{y}$ for both nodes.)
-
-    We thus have $\Phi(@_x) = x$, $\Phi(\lambda\overline{y}') = \lambda\overline{y}$, and $\Phi$ maps each node from subterm $\lambda\overline{y}'. R'$  to the corresponding node under $\lambda\overline{y}.R$.
-
+%\begin{description}[itemindent=0em,leftmargin=0cm]
+%    \item[Case 1]
+{\bf Case 1}
 %%%%%%%%% Figure showing the substitution Case 1.
-\begin{figure}[htbp]
+%\begin{figure}[htbp]
+\begin{wrapfigure}{L}{0.6\textwidth}
     \centering
-    \begin{tikzpicture}[baseline=(root.base),level distance=5ex,inner ysep=0.5mm,sibling distance=8mm]
+    \begin{tikzpicture}[baseline=(root.base),level distance=4ex,inner ysep=0.5mm,sibling distance=7mm]
     \node (root){}
             child[dashed]{node{$@_{a}$}
                 child[solid]{node{$\lambda\overline{\xi}_a$}
@@ -3243,7 +3232,7 @@ We proceed by showing that for each of the three cases, there is an injection $\
                 child[dashed]{node{\ldots}}
             }
     ;
-    \node (root2) at (8,0) {}
+    \node (root2) at (5.3,0) {}
         child[dashed]{node{$@_{a}$}
             child[solid]{node{$\lambda\overline{\xi}_a$}
                 child[dashed]{node{$@$}
@@ -3274,50 +3263,72 @@ We proceed by showing that for each of the three cases, there is an injection $\
             child[dashed]{node{\ldots}}
         }
     ;
-    \draw[<-] ([xshift=2.5cm,yshift=-2cm]root.east) -- +(2cm,0)
+    \draw[<-] ([xshift=1.8cm,yshift=-2cm]root.east) -- +(1cm,0)
     node[midway, above] {$\Phi$};
-    \end{tikzpicture}
-    \caption{(Case 1) Reduction $M\llred N$ where node $x$ has at least one operand, and $A$ is a non-dummy
-     abstraction $\lambda\overline{y} . R$. Linearly firing  generalized redex $(\lambda x, A)$ for $x$ in $M$ (left)
-     yields $N$ (right) where $R'$ is a copy of $R$ with fresh names to avoid variable capture.
-    Function $\Phi$ maps nodes from the right tree to the left tree.}
-    \label{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument}
-    \end{figure}
-
+    \draw[->] ([xshift=1.8cm,yshift=-1cm]root.east) -- +(1cm,0)
+    node[midway, above] {$\llred$};
+\end{tikzpicture}
+\caption{(Case 1) $M\llred N$ where the \emph{lloc} $x$ has at least one operand, and the argument is an abstraction $\lambda\overline{y} . R$.
+ Linearly firing the generalized redex in $M$ (left)
+ yields $N$ (right) where $R'$ is a copy of $R$.
+$\Phi$ maps nodes from the reduct $N$ (right) to those of $M$ (left).}
+\label{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument}
+\end{wrapfigure}
+%
+    The reduction is represented on Figure~\ref{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument}
+    where $|x|>0$, and $A$ is an abstraction $\lambda\overline{y}. R$.
+%
+    Let $\lambda\overline{x}$ denote $x$'s binding lambda node in $M$, $i$ denote $x$'s binding index, and $@_a$ denote the parent node of the subterm $A$.
+%
+    After reduction,
+    node $x$ gets replaced by an application node $@_x$,  its existing children are preserved, and a new subterm $\lambda\overline{y}'. R'$, a copy of the subterm tree $A$, gets attached as the $0$th child tree of $@_x$.
+    The original variable name in $R$ are preserved, which does not cause capture of variables since the variable binding is uniquely determined by the enabling relation of the term tree.
+    (We write $\lambda\overline{y}'$ to distinguish the root node of $R'$ from the root $\lambda\overline{y}$ of $R$, even though they are both labelled with variable names $\overline{y}$.)
+%
+    We thus have $\Phi(@_x) = x$, $\Phi(\lambda\overline{y}') = \lambda\overline{y}$, and $\Phi$ maps each node from subterm $\lambda\overline{y}'. R'$  to the corresponding node under $\lambda\overline{y}.R$.
+%
 
 Observe that $\Phi$ has the following properties:
-\begin{enumerate}[label=(\roman*)]
-    \item $\Phi$ preserves the parent-child relation for lambda and variable nodes: for any lambda or variable node $n$, the child nodes of $n$'s image by $\Phi$ are the image of the $n$'s children. (This is not true for application node $@_x$, however);
+%\begin{enumerate}[label=(\roman*)]
+    %%%\item
+    (i) $\Phi$ preserves the enabling relation: if $n_1 \enables_i n_2$ in $N$ for $i\geq 0$, $n_1,n_2 \in \Nodes(N)$ then $\Phi(n_1) \enables_i \Phi(n_1)$ as long as $(n_1,n_2) \neq (@_x,\lambda\overline{y}')$.
+    %
+    Indeed, $\Phi$ preserves the parent-child relation for all nodes except $@_x$: the child nodes of their image by $\Phi$ are the image of their children;
+    %
+    and $\Phi$ preserves variable binding: it maps the binder of a variable node $z$ in $N$ to the binder of $\Phi(z)$ in $M$ with same variable index;
+%
+    %%% \item
+    (ii) $\Phi$ preserves node types:
+    external and internal nodes map respectively to external and internal nodes;
+    lambda nodes map to lambda nodes;
+    a variable or @-node maps to either a variable or an @-node;
+    ghost and structural nodes map respectively to ghost and structural nodes;
+%
+    %%% \item
+    (iii) $\Phi$ preserves node arity. In particular $|x| = |@_x|$ since $@_x$'s operator does not contribute to its arity;
+%
+    %%% \item
+    (iv) $\Phi$ is not injective: since nodes under $R$ and $R'$ in $N$ map pairwise to the same node under $R$ in $M$.
+%\end{enumerate}
 
-    \item $\Phi$ is naming-consistent: any two variable nodes sharing the same name  in $N$ map to variable nodes with same name in $M$;
-
-    \item $\Phi$ preserves variable binding: it maps the binder lambda node of a variable node $z$ in $N$ to the binder in $M$ of $\Phi(z)$;
-
-    \item hence $\Phi$ preserves the enabling relation: if $n_1 \enables_i n_2$ in $N$ for $i\geq 0$, $n_1,n_2 \in \Nodes(N)$ then $\Phi(n_1) \enables_i \Phi(n_1)$ as long as $(n_1,n_2) \neq (@_x,\lambda\overline{y}')$.
-
-    \item $\Phi$ preserves node types: images of external and internal nodes are respectively external and internal nodes; images of variable/@-nodes are variable/@-nodes; images of lambda nodes are lambda nodes; images of ghost and structural nodes are respectively ghost and structural;
-
-    \item $\Phi$ preserves node arity. In particular $|x| = |@_x|$ since $@_x$'s operator does not contribute to its arity;
-
-    \item $\Phi$ is not injective: since for any node in $R'$ there is a corresponding node in $R$ that is mapped to the same node in $M$.
-\end{enumerate}
-
-Let $\justseqset^P$ denote the subset $\justseqset$
-consisting of justified sequences verifying the P-view-path correspondence:
-the P-view at every occurrence of an internal node is precisely the path from the root to that node in the term tree. By Property~\ref{prop:tree_path_charact} we have $\travset \subseteq \justseqset^P$.
-
-We define $\phi$ as an extension of $\Phi$ to justified sequences of $\justseqset^P$ of $N$ as follows:
-(i) maps all other occurrences to their image by $\Phi$;
-(ii) it preserves all justification pointers except for $@_x$ and $\lambda\overline{y}'$;
-(iii) inserts in-between each occurrence of $x$ and its immediately following lambda-node, the corresponding \emph{argument lookup} of $x$. Formally $\phi = \phi_1 \circ \phi_2$ where
-\begin{align*}
-\phi_1 \colon & \justseqset^P(N) \rightarrow \justseqset(M) \\
-& \epsilon \mapsto \epsilon  \\
-& t \cdot n \mapsto \phi(t) \ \cdot \Phi(n) &\mbox{$\Phi(n)$ has same link label and length as $n$, for $n\not\in \{ @_x, \lambda\overline{y} \}$}\\
- & t \cdot @_x \mapsto \phi(t) \ \cdot x &\mbox{$x$ points to the first occurrence of $x$'s binder in $\pview{t}$} \\
-& t \cdot \lambda\overline{y}' \rightarrow \phi(t) \ \cdot \lambda\overline{y} &\mbox{$\lambda\overline{y}$ points to the last occurrence of $@_a$ in $\pview{t}$.}
-\end{align*}
-and $\phi_2$ is the function that inserts the argument lookup sequence of ghost nodes between each occurrence of $x$ and $\lambda\overline{y}$ in a justified sequence. Observe that the argument lookup of $x$ is entirely statically determined and thus can be reconstructed from any (visible) traversal $t_{\leq x}$ of $M$ by repeatedly instantiating rules \rulenamet{Lmd} and \rulenamet{Var} starting from $t_{\leq x}$ until reaching node $\lambda\overline{y}$.
+Let $\travsetscn^p$ denote the prefix closure of $\travsetscn$.
+We define $\phi$ as the extension of $\Phi$ to justified sequences of $\travsetscn^p(N)$ that
+maps each occurrence to its image by $\Phi$;
+preserves all justification pointers except for $@_x$ and $\lambda\overline{y}'$;
+and inserts after each occurrence of the \emph{lloc} $x$, the corresponding \emph{argument lookup} of $x$.
+Formally $\phi = \phi_1 \circ \phi_2$ where
+%
+$\phi_1$ is the point-wise extension of $\Phi$ to $\travsetscn^p(N)$
+with adjusted justification pointers:
+for $n\not\in \{ @_x, \lambda\overline{y} \}$, $\Phi(n)$ has same link distance and label as $n$;
+if $n$ is an occurrences of $x$ then $\Phi(n)$ points to the first occurrence of $x$'s binder in $\pview{\phi(u)}$ and has link label $i$;
+if $n$ is an occurrences of $\lambda\overline{y}'$ then  $\Phi(n)$ points to the last occurrence of $@_a$ in $\pview{\phi(u)}$ with link label $i$.
+It is well-defined since by the P-view-path correspondence, $x$'s binder (resp.~$@_a$) necessarily occurs in the P-view at $x$ (resp.~$\lambda\overline{y}'$).
+%
+And $\phi_2$ inserts the argument lookup (consisting only of ghost
+nodes) between every occurrence of $x$ and $\lambda\overline{y}$. The argument lookup of the \emph{lloc} is statically determined by the
+term tree and, provided that the prefix at the $x$ is a valid traversal
+of $M$, is obtained by repeatedly instantiating rules \rulenamet{Lmd} and \rulenamet{Var} until reaching node $\lambda\overline{y}$.
 
 The following example illustrates how $\phi$ is calculated on a generic
 traversal $u$ of $N$ involving the lloc variable $x$:
@@ -3329,37 +3340,49 @@ traversal $u$ of $N$ involving the lloc variable $x$:
     \phi(u) = \phi_2(\phi_1(u)) &=& \Pstr[10pt]{ \ldots (aa){@_a} \cdot (la){\bulklambda{\xi_a}} \cdot \ldots (a1){@_1} \cdot (l1){\bulklambda{\xi_1}} \cdot @ \ldots \bulklambda{z} \cdot (x-l1,30:i) x \cdot \ghostlmd \cdot \ghostvar \ldots \ghostlmd \cdot \ghostvar \cdot (ly-a,20:i_a){\bulklambda{y}} }
 \end{eqnarray*}
 
-Some immediate properties:
-\begin{itemize}
-\item $\phi_1$, and $\phi$ are well-defined since by the P-view-path property, $x$'s binder and (resp.~$@_a$) must necessarily occurs in the P-view at $x$ (resp.~$\lambda\overline{y}'$).
+%%%%\begin{itemize}
+%%%% \item
+$\phi_1$, and $\phi$ are well-defined since by the P-view-path correspondence, $x$'s binder (resp.~$@_a$) necessarily occurs in the P-view at $x$ (resp.~$\lambda\overline{y}'$).
 
-\item The restriction of $\phi$ to $\coresymbol(\travsetscn(N))$
-coincides precisely with the element-wise structure-preserving\footnote{Recall that two justified sequences over two distinct terms share the same structure just if their constituting nodes are of the same kind (variable/@ nodes or lambda node), have the same link labels, and same pointer lengths.} extension of $\Phi$ over justified sequences.
-This is because $\phi_1$ only alters justification pointers of internal nodes ($@_x$ and $\lambda\overline y$) and $\phi_2$ only inserts internal nodes, while justified sequences in $\coresymbol(\travsetscn(N))$ do not contain any external node.
+%%%% \item
+The restriction of $\phi$ to $\coresymbol(\travsetscn(N))$
+coincides precisely with the element-wise structure-preserving
+extension of $\Phi$ over justified sequences.
+This is because $\phi_1$ only alters justification pointers of internal nodes $@_x$ and $\lambda\overline y$, and $\phi_2$ only inserts internal nodes, while justified sequences in $\coresymbol(\travsetscn(N))$ do not contain any external node.
 
-\item The restriction of $\phi$ to $\coresymbol(\travsetscn(N))$, is injective.
+%%%% \item
+The restriction of $\phi$ to $\coresymbol(\travsetscn(N))$, is injective.
 %%%%%%% Short summary: because when a traversal extends in more than one possible way (with rule \rulenamet{IVar}), then either the next possible occurrences all have distinct justification pointers, or $\Phi$ maps them to distinct nodes in $M$.
 Suppose that $\coresymbol(u)\neq\coresymbol(v)$ for $u,v\in\travsetscn(N)$ then we must have $u\neq v$.
-Let $s$ denote the longest common prefix of $u$ and $v$; and $n_1, n_2$ the nodes immediately following $s$ in $u$ and $v$
-respectively. We have $s \rightarrow_N s \cdot n_1$ and $s \rightarrow_N s\cdot n_2$ with $n_1\ne n_2$ therefore $n_1, n_2$ are necessarily traversed
-by the non-deterministic rule \rulenamet{IVar}. Hence they must both be external nodes and therefore they are not eliminated after applying $\coresymbol$: the last occurrence of $\coresymbol(s\cdot n_1)$ and $\coresymbol(s\cdot n_2)$ are different. Since $\Phi$ maps distinct external sibling nodes in $N$ to distinct sibling nodes in $M$, we necessarily have
+Let $s$ denote the longest common prefix of $u$ and $v$; then the next two nodes $n_1, n_2$ immediately following $s$ in $u$ and $v$
+are necessarily traversed by the non-deterministic rule \rulenamet{IVar}.
+Hence they must both be external nodes and therefore they are not eliminated after applying $\coresymbol$: the last occurrence of $\coresymbol(s\cdot n_1)$ and $\coresymbol(s\cdot n_2)$ are different. Since $\Phi$ maps distinct external sibling nodes in $N$ to distinct sibling nodes in $M$, we necessarily have
 $\phi(\coresymbol(s\cdot n_1))\neq \phi(\coresymbol(s\cdot n_2))$.
 %%%%%%%%%
 
-\item $\coresymbol$ and $\phi$ commute modulo the implicit renaming function $\rho: \VarSet^*(N) \rightarrow \VarSet^*(M)$ underlying $\Phi$. Formally, for any variable names $\alpha\in\VarSet^*$ occurring in $N$ we have:
-$$
-\phi(\coresymbol_\alpha(u)) = \coresymbol_{\rho(\alpha)}(\phi(u)) \ .
-$$
-This is shown by an easy induction and by assuming, without loss of generality, that variable names are not reused in either $M$ or $N$: each variable name is introduced by at most one lambda node in each term. (This condition can always be met via alpha-conversion.)
-\end{itemize}
+%%%% \item
+Since $\Phi$ preserves $\lambda$-node labels, it also preserves arities, hence $\coresymbol$ involves the same pending lambdas in $u$ or $\phi(u)$, hence $\coresymbol$ and $\phi$ commute.
+%%%%\end{itemize}
 
-We now show that $M$ and $N$ are in $\phi$-bisimulation by induction on the traversals rules.
+To show that $M$ and $N$ are in $\phi$-bisimulation, we simultaneously show that the definition of $\phi$ is well-defined
+(more specifically the argument lookup extension performed by $\phi_2$)
+and that $(I)$, $(B1)$ and $(B2)$ hold by induction on the number of strands in the traversal traversals.
 
-\emph{Base case}: $\rulename{Root}_\normalizing$ The singleton traversals consisting of the root nodes of $M$ and $N$ are image of one another by $\phi$.
+For case $(I)$, both traversal starts with the
+rule $\rulename{Root}_\normalizing$, the proof argument is then the same as for $(B1)$ and $(B2)$, which shows that they extend into the $R_\phi$-related initial strands of $M$ and $N$.
 
-\emph{Induction}: Let $u\in \travsetscn(N)$, $t\in\travsetscn(M)$ with $t = \phi (u)$ and $m, n$ denote respectively the last node in $t$ and $u$. We prove both directions by case analysis on the \emph{first} traversal rule used to extend $t$ (resp.~$u$).
+For $(B1)$ and $(B2)$, given $u\in \travsetscn(N)$ and $t\in\travsetscn(M)$
+such that $\phi$ is well defined for $u$ and $t = \phi (u)$
+and $m, n$ denote respectively the last node in $t$ and $u$.
+We prove both directions by induction on the length of the next strand
+extending $t$ (resp.~$u$) and case analysis on the traversal rule used,
+that every extension from $t$ to $t'$ (resp.~$u$ to $u'$) is a valid traversal.
+%We assume that $t = t' t_1 \ldots t_
+\begin{todobox}
+    fix the mess i created
+\end{todobox}
 
-Observe that the result holds trivially up until the traversal in $M$ reaches occurrence $x$ since one can use the exact same rules used to traverse $M$ in order to traverse the corresponding node in $N$, and reciprocally for traversals of $N$ until reaching node $@_x$. The crucial part of the induction takes place when traversing the \emph{lloc} variable $x$ (or $@_x$ in $N$).
+Observe that the result holds trivially up until the traversal in $M$ reaches occurrence $x$ since one can use the exact same rules used to traverse $M$ in order to traverse the corresponding node in $N$, and reciprocally for traversals of $N$ until reaching node $@_x$. The crucial part of the induction takes place when traversing the \emph{lloc} variable $x$ in $M$ (resp.~$@_x$ in $N$).
 
 \begin{itemize}[itemindent=0.5em, leftmargin=0.5em]
     \item $\rulename{App}_\normalizing$ We have $m = \Phi(n)$.
@@ -3380,20 +3403,18 @@ Observe that the result holds trivially up until the traversal in $M$ reaches oc
     This formula precisely captures the ``pending argument lookup'' algorithm implicitly
     implemented by the rules \rulenamet{Lmd} and \rulenamet{Var}:
     with exactly $i_a$ instantiations of those two rules, traversal $t$ gets extended by $2(i_a-1)$ ghost nodes followed
-    by the root of $A$:
-            $$ t \rightarrow_M t \cdot v \cdot \lambda\overline{y}$$
+    by the root of $A$ into $t \cdot v \cdot \lambda\overline{y}$,
     where  $v$ is a \emph{pending argument lookup}.
-    Therefore by definition of $\phi$ if $v$ denote the argument lookup of $x$ we have:
-    $\phi(u')
+    And we have $\phi(u')
     = \phi(u \cdot \lambda\overline{y}')
     = \phi(u) \cdot \phi(\lambda\overline{y}')
     = t \cdot v \cdot \lambda\overline{y} \in \travsetscn(M)$.
     %%%%%%%%%%%%%%%%%%
 
     \item $\rulename{Lam}^@_\normalizing$
-    (B1) follows from the fact that parent-child relation is preserved by $\Phi$
+    (B1) holds since the parent-child relation is preserved by $\Phi$
     (B2) Suppose $n \neq \lambda\overline{z}$ then it follows again from the fact that parent-child relation is preserved by $\Phi$.
-    Otherwise, we have $n = \lambda\overline{z}$ and $u \rightarrow_N u \cdot \lambda\overline{y}'$ can be simulated in $M$ using rule $\rulename{Lam}^{\sf var}$: $t \rightarrow_M t \cdot x$.
+    Otherwise, we have $n = \lambda\overline{z}$ and $u$'s extension $u \cdot \lambda\overline{y}'$ can be simulated in $M$ using rule $\rulename{Lam}^{\sf var}$, extending $t$ as traversal $t \cdot x$.
 
     \item $\rulename{Lam}^{\sf var}_\normalizing$
     We have already shown that  $\phi$ preserves the local child-parent relationship for lambda nodes; node types, and arity of lambda nodes.
@@ -3424,8 +3445,10 @@ Observe that the result holds trivially up until the traversal in $M$ reaches oc
 
 \end{itemize}
 
-%%%%%%%% CASE 2
-\item[Case 2] where $x$ has at least one operand ($|x|>0$) and $A$ is an application ($|\overline{y}|=0$). The root lambda node of $A$ is therefore a dummy lambda: $A = \lambda. R$. Let $r$ denote the root node of $R$, which is either a variable if $R$ is in head-normal form, or an $@$-node otherwise.
+%%%%%%%%
+{\bf Case 2}
+%\item[Case 2]
+ where $x$ has at least one operand ($|x|>0$) and $A$ is an application ($|\overline{y}|=0$). The root lambda node of $A$ is therefore a dummy lambda: $A = \lambda. R$. Let $r$ denote the root node of $R$, which is either a variable if $R$ is in head-normal form, or an $@$-node otherwise.
 The tree of the reduct $N$ is obtained from $\ctree(M)$
 by substituting $x$'s label with that of $r$ (modulo variable renaming to avoid capture if $r$ is a variable node) and prepending $r$'s children to existing $x$'s children. Other nodes, including $x$'s parent lambda node, remain untouched. Let $r'$ denote this updated node in the reduct $N$.
 This transformation yields an implicit mapping function $\Phi : \ExtendedNodes(N)\rightarrow \ExtendedNodes(N)$ such that $\Phi(r') = x$.
@@ -3433,20 +3456,22 @@ Although $\Phi$ does not preserve the arity of $x$, it does not affect the dynam
 We can then extend $\Phi$ to a function $\phi$ on justified sequence and show by induction that it yields a bisimulation similarly to the previous case.
 
 %%%%%%% CASE 3
-\item[Case 3] where $x$ is unapplied ($|x|=0$).
+{\bf Case 3}
+%\item[Case 3]
+ where $x$ is unapplied ($|x|=0$).
 After reduction, node $x$ gets replaced by subterm $A$ and the label of $x$'s parent lambda node gets concatenated with the label of $A$'s root node:
 the parent lambda node $\lambda\overline{z}$ of $x$ in $M$ becomes $\lambda\overline{z}\overline{y}'$ in the reduct $N$.
 Like in the first case, we can define a function $\phi$ such that
  traversals of $M$ of the form $\ldots \lambda\overline{z}\cdot x \cdot v \cdot \lambda\overline{y} \cdot \ldots$, where $v$ is an argument lookup, are images of traversals in $N$ of the form $\ldots \cdot \lambda\overline{z}\overline{y}' \ldots$. Once again, although the arity of $x$ is not preserved, this does not affect the dynamic arity because $|\lambda{\overline{z} \overline{y}'}| =
  |\lambda{\overline{z}}| +  |\lambda{\overline{y}}|$.
-\end{description}
+%\end{description}
 
 %%%%%%%%%%%%%%%%% End of case where t ends with lloc variable occurrence x
 
 Hence $M$ and $N$ are in $\phi$-bisimulation, thus because $\phi$ is injective and commutes with $\coresymbol$, by Lemma~\ref{lem:bisimulation_isomorphism} the two sets of traversals are isomorphic.
 %\endproofatend
-\end{proof}
-
+%\end{proof}
+%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{proposition}[Traversals are sound for trivial reduction]
 \label{prop:ulctrav_sound_for_trivialreduction}
