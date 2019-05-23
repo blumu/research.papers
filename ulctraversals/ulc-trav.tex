@@ -203,6 +203,9 @@
 \newcommand{\travsetnorm}{\travset_\normalizing} % normalizing traversals
 \newcommand{\travsetscn}{\travset_{s.c.n.}} % strand-complete normalizing traversals
 
+\def\almostequal{\doteq}  % almost justified sequence equality
+\def\almosteqisomorphic{\stackrel{.}{\cong}} % almost-equal isomorphism
+\def\structisomorphic{\cong} % structural-equality isomorphism
 
 
 % for succinctness we omit ULC for the symbol representing
@@ -717,7 +720,7 @@ with link distance $j$ and link label $i$;
 and $@$ represents the occurrence of an application node.
 %
 Two sequences $s$ and $u$ over possibly two distinct terms are \defname{equivalent}, written $s \equiv u$ just if they have the same structure: the type (variable, @-node or lambda node), arity, link distance and link label of the underlying occurrences match pairwise. Two equivalent sequences are not necessarily equal since they may have different variable names.
-We say that two subsets $J_1\subseteq \justseqset(M_1)$ and $J_2\subseteq\justseqset(M_2)$ are isomorphic, written $J_1\cong J_2$, if  there exists a structure-preserving bijection between $J_1$ and $J_2$; that is a bijection $\phi :J_1\longrightarrow J_2$ such that $j\equiv\phi(j)$ for all $j\in J$.
+We say that two subsets $J_1\subseteq \justseqset(M_1)$ and $J_2\subseteq\justseqset(M_2)$ are isomorphic, written $J_1\structisomorphic J_2$, if  there exists a structure-preserving bijection between $J_1$ and $J_2$; that is a bijection $\phi :J_1\longrightarrow J_2$ such that $j\equiv\phi(j)$ for all $j\in J$.
 
 \begin{example}
     Alpha-conversion preserves the structure so for instance we have
@@ -849,14 +852,14 @@ we have $\overline{x} = \overline{y}$.
 \label{proposition:termtree_readout_from_justitied_paths}
 
 Let $T\subset \nameencoding^*$ be a finite set of (name-preserving encoded) justified sequences  that is $\alpha$-consistent.
-If $T\cong \pathset(M)$ for some (a priori unknown) untyped term $M$ then one can effectively readout from $T$ an untyped
+If $T\structisomorphic \pathset(M)$ for some (a priori unknown) untyped term $M$ then one can effectively readout from $T$ an untyped
 term  $\readout[T]$ that is $\alpha$-equivalent to $M$.
 %
 Furthermore, provided that no variable capture situation occurs, the variable names occurring in $\readout[T]$ are the original names from lambda-occurrences from $T$.
 \end{proposition}
 %(Then $T$ is path-like, that is lambda-nodes are justified by their immediate predecessor in the sequence.)
 \begin{proof}
-    Because $T \cong \pathset(M)$, the sequences in $T$ have the properties
+    Because $T \structisomorphic \pathset(M)$, the sequences in $T$ have the properties
 of justified paths of a term tree: they start with a lambda, alternate between lambda and variable/@, lambdas have
 a single-child, and are necessarily justified by their immediate predecessor in the sequence (their parent).
 Furthermore, $T$ induces an arity for each occurrence of a sequence in $T$: the arity of a lambda-occurrence $(\overline{x},j,i)\in\nameencoding$ is $|\overline{x}|$, the arity of a variable or @-occurrence is the maximum
@@ -1397,7 +1400,7 @@ For any (closed) simply-typed term $M^\tau$ in \emph{eta-long form},
 \label{prop:path_charact_stlc}
 Let $M^\tau$ be a closed simply typed term
 in eta-long form with beta-normal form $N^\tau$
-we have $\travsetcon(M^\tau)/{\sim} \cong \pathset(N^\tau)$.
+we have $\travsetcon(M^\tau)/{\sim} \structisomorphic \pathset(N^\tau)$.
 \end{proposition}
 \begin{proof}
  By soundness of Game Semantics, beta-eta equivalent terms have the same game denotation, therefore by Theorem~\ref{thm:gamesem_correspondence_stlc}, the traversals of the beta-normal form are the traversals cores of the term. The Path-View correspondence (Proposition~\ref{prop:ulctrav_welldefined_pathview}) and Proposition~\ref{prop:ulc_and_stlc_trav_coincide} then show that the P-views of traversal cores of $M^\tau$ give the tree paths of the eta-long form of the beta normal form of $M^\tau$.
@@ -3106,59 +3109,75 @@ By definition of $k$ we have $i_{k-1}\geq|@_{k-1}|$, therefore by definition of 
 \endproofatend
 
 \paragraph{Traversal bisimulation}
-
-We say that two justified sequences $u$ and $v$ are \defname{almost-equal},
-written $u \doteq v$
-if their occurrences are pairwise equal (same label, same pointer)
-except for the external lambda node of their last incomplete strand,
-whose list of bound variables may differ.
-
-For $t, t' \in \travsetnorm(M)$ we write $t \rightarrow_M t'$ just if $t'$ is an immediate extension of $t$ in $\travsetnorm(M)$, that is $t'$ extends $t$ using one rule of Table~\ref{tab:normalizing_trav_rules}.
+For $t, t' \in \travsetnorm(M)$ we write $t \rightarrow_M t'$ just if $t'$ is an immediate extension of $t$ in $\travsetnorm(M)$, that is $t'$ extends $t$ via a single rule instantiation from Table~\ref{tab:normalizing_trav_rules}.
 
 \begin{definition}[Traversal bisimulation]
 \label{def:bisimilar_terms}
 Let $M$ and $N$ be two terms with variables in $\mathcal{V}$, and $\phi\colon \travsetnorm(N) \rightarrow\justseqset(M)$ be a function
-from traversals of $N$ to justified sequences of $M$.
+from traversals of $N$ to justified sequences of $M$ such that
+$\phi$ maps the initial singleton traversal of $N$ to that of $M$.
 %
-We consider the state transition system $(X, R_\phi, \rightarrow_X)$
-over \emph{States} $X = \travsetnorm(M) + \travsetnorm(N)$,
+Let $(X, R_\phi, \rightarrow_X)$ denote the state transition system
+over \emph{States} $X = \travsetnorm(M) + \travsetnorm(N)$
 with  \emph{Transitions} $t \rightarrow_X t'$
-if either $t \rightarrow_M t'$ or $t \rightarrow_N t'$ holds, for $t, t' \in X$;
-and \emph{Binary relation $R_\phi\subseteq X \times X$} defined for $t, u \in X$ by $ t\,R_\phi\,u$ just if $t\in\travsetnorm(M)$, $u\in\travsetnorm(N)$ and $\phi(u) \doteq t$.
+if either $t \rightarrow_M t'$ or $t \rightarrow_N t'$ holds, for $t, t' \in X$, and \emph{Binary relation $R_\phi\subseteq X \times X$} defined for $t, u \in X$ by $ t\,R_\phi\,u$ just if $t\in\travsetnorm(M)$, $u\in\travsetnorm(N)$ and $\phi(u) = t$.
 
 The terms $M$ and $N$ are \defname{$\phi$-bisimilar} if $R_\phi$ is a bisimulation over $X$ with respect to $\rightarrow_X$:
 \begin{itemize}[nosep]
-    \item[(B1)] for all $t_1, t_2 \in \travsetnorm(M)$, $u_1 \in \travsetnorm(N)$ with $t_1\,R_\phi\,u_1$ and $t_1 \rightarrow_M t_2$ there is $u_2 \in \travsetnorm(N)$ such that $u_1 \rightarrow_N u_2$ and $t_2\,R_\phi\,u_2$;
-    \item[(B2)] for all $t_1 \in \travsetnorm(M)$, $u_1, u_2 \in \travsetnorm(N)$ with $t_1\,R_\phi\,u_1$ and $u_1 \rightarrow_N u_2$ there is $t_2 \in \travsetnorm(M)$ such that $t_1 \rightarrow_M t_2$ and $t_2\,R_\phi\,u_2$.
+    \item[(B1)]
+    %for all $t_1, t_2 \in \travsetnorm(M)$, $u_1 \in \travsetnorm(N)$ with
+    if $t_1\,R_\phi\,u_1$ and $t_1 \rightarrow_M t_2$ then there is $u_2 \in \travsetnorm(N)$ such that $u_1 \rightarrow_N u_2$ and $t_2\,R_\phi\,u_2$;
+    \item[(B2)]
+    %for all $t_1 \in \travsetnorm(M)$, $u_1, u_2 \in \travsetnorm(N)$ with
+    if $t_1\,R_\phi\,u_1$ and $u_1 \rightarrow_N u_2$ then there is $t_2 \in \travsetnorm(M)$ such that $t_1 \rightarrow_M t_2$ and $t_2\,R_\phi\,u_2$.
 \end{itemize}
 \end{definition}
 
-The subset $\travsetscn$ of \defname{strand-complete normalizing traversals} of $\travsetnorm$, consists of normalizing traversals ending with an external (possibly ghost) variable node.
-Thus in $\travsetscn$, `almost-equality' coincides with `equality`.
-Observe that every traversal in $\travsetnorm$ is either in $\travsetscn$ or it has an traversal extension in $\travsetscn$, for if it does not end with an external variable then either rule \rulenamet{App}, \rulenamet{Lmd} or \rulenamet{Var} can extend it depending on the type of the last occurrence. So in particular the two sets have the same maximal traversals:  $\travsetnorm^{\max} = \travsetscn^{\max}$.
+The subset $\travsetscn$ of \defname{strand-complete normalizing traversals} of $\travsetnorm$, consists of finite normalizing traversals ending with an external (possibly ghost) variable node.
+%
+Observe that every finite maximal traversal in $\travsetnorm$ is
+necessarily in $\travsetscn$ for if it does not end with an external variable then either rule \rulenamet{App}, \rulenamet{Lmd} or \rulenamet{Var} can extend it depending on the type of the last occurrence, which contradicts maximality.
+Consequently the finite maximal traversals of $\travsetnorm$ are precisely the  maximal traversals of $\travsetscn$.
+
+We say that two justified sequences $u$ and $v$ are \defname{almost-equal},
+written $u \almostequal v$
+if their occurrences are pairwise equal (same label, same pointer)
+except for the external lambda node of their last incomplete strand,
+whose list of bound variables may differ.
+So in particular, two almost equal sequences have equal prefix up to the
+their last external variable occurrence; and thus in $\travsetscn$, `almost-equality' coincides with `equality`.
+%
+A function $\phi\colon J\longrightarrow\justseqset(M)$
+defined on some $J\subseteq \justseqset(N)$
+is \defname{almost the identity} if we have $u \almostequal \phi(u)$ for all $u\in J$.
+%
+Two subsets $J_1\subseteq \justseqset(M)$, $J_2\subseteq\justseqset(N)$ are \defname{almost equal}, written $J_1\almosteqisomorphic J_2$, if there exists a bijection $\phi \colon J_1\longrightarrow J_2$ such that $j\almostequal\phi(j)$ for all $j\in J$.
+
 
 \begin{lemma}
 \label{lem:bisimulation_isomorphism}
 If $M$ and $N$ are $\phi$-bisimilar
-for some function $\phi$ whose restriction to $\coresymbol(\travsetscn(N))$ is injective and commute with $\coresymbol$
-%(for all $u \in \travsetscn(M)$ $\coresymbol(\phi(u)) = \phi(\coresymbol(u))$),
-then $\coresymbol(\travsetscn(N)) \cong \coresymbol(\travsetscn(M))$.
+and the restriction of $\phi$ to $\coresymbol(\travsetnorm(N))$
+ is almost the identity,
+ is injective,
+ and commutes with core projection $\coresymbol$
+then $\coresymbol(\travsetnorm(N)) \almosteqisomorphic \coresymbol(\travsetnorm(M))$, and thus
+$\coresymbol(\travsetscn(N)) \structisomorphic \coresymbol(\travsetscn(M))$.
 \end{lemma}
-\begin{todobox}
-    to fix: scn -> normalizing
-\end{todobox}
 \begin{proof}
-Consider $\phi$ as a function from $\coresymbol(\travsetscn(N))$ to $\coresymbol(\travsetscn(M))$.
-It is \emph{well-defined}: $\travsetscn(N)$ is by definition the transitive closure of the singleton traversal by $\rightarrow_N$, so for any traversal $u$ of $\travsetscn(N)$, repeatedly applying (B2) for each step of its $\rightarrow_N$ derivation shows that $t = \phi(u) \in \travsetscn(M)$, and the commutativity of $\coresymbol$ and $\phi$ gives $\coresymbol(t)=\phi(\coresymbol(u)) \in \coresymbol(\travsetscn(M))$.
-Similarly, it is \emph{surjective} by (B1) because $\travsetscn(M)$ is the transitive closure of the singleton traversal by $\rightarrow_M$. Finally it is \emph{injective} by assumption.
-Hence we have the desired isomorphism.
+Consider $\phi$ as a function
+ $\coresymbol(\travsetnorm(N))\longrightarrow\coresymbol(\travsetnorm(M))$.
+It is \emph{well-defined}: by definition, $\travsetnorm(N)$ is the transitive closure of the singleton traversal by $\rightarrow_N$, so for any traversal $u$ of $\travsetnorm(N)$, repeatedly applying (B2) for each step of its $\rightarrow_N$ derivation shows that $t = \phi(u) \in \travsetnorm(M)$, and the commutativity of $\coresymbol$ and $\phi$ gives $\coresymbol(t)=\phi(\coresymbol(u)) \in \coresymbol(\travsetnorm(M))$.
+Similarly, it is \emph{surjective} by (B1) because $\travsetnorm(M)$ is the transitive closure of the singleton traversal by $\rightarrow_M$. Finally it is \emph{injective} by assumption. Hence we have the desired isomorphism.
+Finally, for strand-complete traversals, almost equality coincides with equality.
 \end{proof}
 
 %%%%% Soundness of leftmost liner reduction
-\begin{proposition}[Traversals are sound for linear reduction]
+\begin{proposition}%[Traversals are sound for linear reduction]
 \label{prop:ulctrav_impl_linear_reduction}
-Let $M$ be an untyped term.
-If $M \llred N$ then $\coresymbol(\travsetnorm^{\max}(M)) \cong \coresymbol(\travsetnorm^{\max}(N))$.
+%Let $M$ be an untyped term.
+If $M \llred N$ then $\coresymbol(\travsetnorm(M))
+\almosteqisomorphic \coresymbol(\travsetnorm(N))$.
 \end{proposition}
 %\shortproof
 %\endshortproof
@@ -3466,9 +3485,9 @@ Hence $M$ and $N$ are in $\phi$-bisimulation, thus because $\phi$ is injective a
 %\end{proof}
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
-\begin{proposition}[Traversals are sound for trivial reduction]
+\begin{proposition}%[Traversals are sound for trivial reduction]
 \label{prop:ulctrav_sound_for_trivialreduction}
-    Let $M$ be an untyped term containing only trivial redexes, and $N$ the reduct obtained by firing the \emph{leftmost spinal-innermost} trivial redex, then $\coresymbol(\travsetnorm^{\max}(M)) \cong \coresymbol(\travsetnorm^{\max}(N))$.
+    Let $M$ be an untyped term containing only trivial redexes, and $N$ the reduct obtained by firing the \emph{leftmost spinal-innermost} trivial redex, then $\coresymbol(\travsetnorm(M)) \almosteqisomorphic \coresymbol(\travsetnorm(N))$.
 \end{proposition}
 %\proofatend
 \begin{proof}
@@ -3680,11 +3699,13 @@ Let's consider the tree structure at the trivial redex on Figure~\ref{fig:reduci
 
 \begin{corollary}
 \label{cor:qnf_and_nf_traveset_invariant}
-If $M$ is in \emph{qnf} and has beta-normal form $N$ then $\coresymbol(\travsetnorm^{\max}(M)) \cong \coresymbol(\travsetnorm^{\max}(N))$.
+If $M$ is in \emph{qnf} and has beta-normal form $N$ then $\coresymbol(\travsetnorm(M)) \almosteqisomorphic \coresymbol(\travsetnorm(N))$.
 \end{corollary}
 \begin{proof}
-By Proposition~\ref{prop:qnf_nf}(ii) a \emph{qnf} reduces to its beta-nf: there is a reduction sequence $M = M_1 \rightarrow_\beta \ldots \rightarrow_\beta M_q= N$, $q\geq1$  where in each step, $M_{i+1}$ is obtained by reducing the leftmost spinal-innermost standard redex of $M_i$ (of the form $(\lambda x . U) T$ such that $U$ does not contain any redex). By Proposition~\ref{prop:qnf_nf}(i), such redex is trivial. By Proposition~\ref{prop:ulctrav_sound_for_trivialreduction}
-the operation $\core{\travsetnorm^{\max}(\_)}$ is an invariant (up to isomorphism) throughout this trivial reduction sequence.
+By Proposition~\ref{prop:qnf_nf}(ii) a \emph{qnf} reduces to its beta-nf: there is a reduction sequence $M = M_1 \rightarrow_\beta \ldots \rightarrow_\beta M_q= N$, $q\geq1$  where in each step, $M_{i+1}$ is obtained by reducing the leftmost spinal-innermost standard redex of $M_i$
+%(of the form $(\lambda x . U) T$ such that $U$ does not contain any redex)
+and by Proposition~\ref{prop:qnf_nf}(i), each such redex is trivial. By Proposition~\ref{prop:ulctrav_sound_for_trivialreduction}
+the set $\core{\travsetnorm(\_)}$ is an invariant (up to $\almosteqisomorphic$-isomorphism) throughout this trivial reduction sequence.
 \end{proof}
 
 \begin{proposition}
@@ -3722,14 +3743,14 @@ By Proposition~\ref{prop:ulc_travnorm_finite} there is a finite number of traver
 \begin{theorem}[ULC Normalized Paths Characterization]
 \label{thm:path_charact_ulc}
 Let $M$ be an untyped term with normal form $T$. We have
-$\travsetnorm^{\max}(M)/{\sim} \ \cong\ \pathset^{\max}(T)$.
+$\core{\travsetnorm^{\max}(M)} \, \structisomorphic\, \pathset^{\max}(T)$.
 \end{theorem}
 \begin{proof}
 Let's first assume that $M$ is in beta-normal form. Then its tree does not contain any $@$-node and all nodes must be external.
 Hence the dynamic arity of a traversal ending with external variable $x$ is precisely $|x|$, the arity of $x$. A straightforward induction on the traversal
-rules shows, that since the \rulenamet{Var} is never used, we necessarily have  $\travsetnorm(M) = \pathset(M)$. Further, since all nodes are externals, the projection $\coresymbol$ and $\pview{\_}$ functions both coincides with the identity function thus $\pview{\core{\travsetnorm(M)}} = \travsetnorm(M) = \pathset(M)$.
+shows, that since \rulenamet{Var} is never used we necessarily have  $\travsetnorm(M) = \pathset(M)$. Since all nodes are externals the projection $\coresymbol$ coincides with the identity thus $\core{\travsetnorm(M)} = \travsetnorm(M) = \pathset(M)$.
 %
-If $M$ is not normal form then since $M$ has a beta-nf, by Theorem~\ref{thm:completeness_leftmostlinearred} its \emph{leftmost linear reduction sequence} terminates and yields a \emph{qnf}. By Proposition~\ref{prop:ulctrav_impl_linear_reduction} the set of maximal traversals is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of maximal traversals of the \emph{qnf} is isomorphic to the set of maximal traversals of $M$. Corollary~\ref{cor:qnf_and_nf_traveset_invariant} permits us to conclude.
+If $M$ is not normal form then since $M$ has a beta-nf, by Theorem~\ref{thm:completeness_leftmostlinearred} its \emph{leftmost linear reduction sequence} terminates and yields a \emph{qnf}. By Proposition~\ref{prop:ulctrav_impl_linear_reduction} the set of core of maximal traversals is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of core of maximal traversals of the \emph{qnf} is isomorphic to the core of maximal traversals of $M$. Corollary~\ref{cor:qnf_and_nf_traveset_invariant} permits us to conclude.
 \end{proof}
 
 \begin{proposition}
