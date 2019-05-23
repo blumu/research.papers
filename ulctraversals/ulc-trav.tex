@@ -3107,34 +3107,35 @@ By definition of $k$ we have $i_{k-1}\geq|@_{k-1}|$, therefore by definition of 
 
 \paragraph{Traversal bisimulation}
 
-The subset $\travsetscn$ of \defname{strand-complete normalizing traversals} of $\travsetnorm$, consists of normalizing traversals ending with an external (possibly ghost) variable node.
-Observe that every traversal in $\travsetnorm$ is either in $\travsetscn$ or it has an traversal extension in $\travsetscn$, for if it does not end with an external variable then either rule \rulenamet{App}, \rulenamet{Lmd} or \rulenamet{Var} can extend it depending on the type of the last occurrence. So in particular the two sets have the same maximal traversals:  $\travsetnorm^{\max} = \travsetscn^{\max}$.
+We say that two justified sequences $u$ and $v$ are \defname{almost-equal},
+written $u \doteq v$
+if their occurrences are pairwise equal (same label, same pointer)
+except for the external lambda node of their last incomplete strand,
+whose list of bound variables may differ.
+
+For $t, t' \in \travsetnorm(M)$ we write $t \rightarrow_M t'$ just if $t'$ is an immediate extension of $t$ in $\travsetnorm(M)$, that is $t'$ extends $t$ using one rule of Table~\ref{tab:normalizing_trav_rules}.
 
 \begin{definition}[Traversal bisimulation]
 \label{def:bisimilar_terms}
-Let $M$ and $N$ be two terms with variables in $\mathcal{V}$. Let $\phi\colon \justseqset(N) \rightarrow\justseqset(M)$ be a function from the justified sequences of $N$ to justified sequences of $M$.
+Let $M$ and $N$ be two terms with variables in $\mathcal{V}$, and $\phi\colon \travsetnorm(N) \rightarrow\justseqset(M)$ be a function
+from traversals of $N$ to justified sequences of $M$.
+%
+We consider the state transition system $(X, R_\phi, \rightarrow_X)$
+over \emph{States} $X = \travsetnorm(M) + \travsetnorm(N)$,
+with  \emph{Transitions} $t \rightarrow_X t'$
+if either $t \rightarrow_M t'$ or $t \rightarrow_N t'$ holds, for $t, t' \in X$;
+and \emph{Binary relation $R_\phi\subseteq X \times X$} defined for $t, u \in X$ by $ t\,R_\phi\,u$ just if $t\in\travsetnorm(M)$, $u\in\travsetnorm(N)$ and $\phi(u) \doteq t$.
 
-\noindent We define the state transition system $(X, R_\phi, \rightarrow_X)$ as:
+The terms $M$ and $N$ are \defname{$\phi$-bisimilar} if $R_\phi$ is a bisimulation over $X$ with respect to $\rightarrow_X$:
 \begin{itemize}[nosep]
-    \item \emph{States} $X = \travsetscn(M) + \travsetscn(N)$.
-
-    \item \emph{Binary relation $R_\phi\subseteq X \times X$} defined for $t, u \in X$ by $ t\,R_\phi\,u$ just if $t\in\travsetscn(M)$, $u\in\travsetscn(N)$ and $\phi(u) = t$.
-
-    \item \emph{Transitions $\rightarrow_X$} For all $t, t' \in \travsetscn(M)$ we write $t \rightarrow_M t'$ just if $t'$ is a minimal extension of $t$ that remains in $\travsetscn(M)$ (\ie, $t'$ extends $t$ using rules of Table~\ref{tab:normalizing_trav_rules} and any occurrence strictly between the last occurrence in $t$ and $t'$ is not an external variable.) We define $\rightarrow_N$  identically and write $t \rightarrow_X t'$ if either $t \rightarrow_M t'$ or $t \rightarrow_N t'$ holds for $t, t' \in X$.
-\end{itemize}
-
-\noindent The terms $M$ and $N$ are \defname{$\phi$-bisimilar} if $R_\phi$ is a bisimulation over $X$ with respect to $\rightarrow_X$, that is:
-\begin{itemize}[nosep]
-    \item (I) We have $t_\epsilon\,R_\phi\,u_\epsilon$,
-    where
-     $t_\epsilon\in \travsetscn(M)$ and $u_\epsilon\in \travsetscn(N)$
-     denote the initial strands of $M$ and $N$, that is the longest traversal
-     obtained without using rule \rulenamet{IVar}.
-
-    \item (B1) for all $t_1, t_2 \in \travsetscn(M)$, $u_1 \in \travsetscn(N)$ with $t_1\,R_\phi\,u_1$ and $t_1 \rightarrow_M t_2$ there is $u_2 \in \travsetscn(N)$ such that $u_1 \rightarrow_N u_2$ and $t_2\,R_\phi\,u_2$.
-    \item (B2) for all $t_1 \in \travsetscn(M)$, $u_1, u_2 \in \travsetscn(N)$ with $t_1\,R_\phi\,u_1$ and $u_1 \rightarrow_N u_2$ there is $t_2 \in \travsetscn(M)$ such that $t_1 \rightarrow_M t_2$ and $t_2\,R_\phi\,u_2$.
+    \item[(B1)] for all $t_1, t_2 \in \travsetnorm(M)$, $u_1 \in \travsetnorm(N)$ with $t_1\,R_\phi\,u_1$ and $t_1 \rightarrow_M t_2$ there is $u_2 \in \travsetnorm(N)$ such that $u_1 \rightarrow_N u_2$ and $t_2\,R_\phi\,u_2$;
+    \item[(B2)] for all $t_1 \in \travsetnorm(M)$, $u_1, u_2 \in \travsetnorm(N)$ with $t_1\,R_\phi\,u_1$ and $u_1 \rightarrow_N u_2$ there is $t_2 \in \travsetnorm(M)$ such that $t_1 \rightarrow_M t_2$ and $t_2\,R_\phi\,u_2$.
 \end{itemize}
 \end{definition}
+
+The subset $\travsetscn$ of \defname{strand-complete normalizing traversals} of $\travsetnorm$, consists of normalizing traversals ending with an external (possibly ghost) variable node.
+Thus in $\travsetscn$, `almost-equality' coincides with `equality`.
+Observe that every traversal in $\travsetnorm$ is either in $\travsetscn$ or it has an traversal extension in $\travsetscn$, for if it does not end with an external variable then either rule \rulenamet{App}, \rulenamet{Lmd} or \rulenamet{Var} can extend it depending on the type of the last occurrence. So in particular the two sets have the same maximal traversals:  $\travsetnorm^{\max} = \travsetscn^{\max}$.
 
 \begin{lemma}
 \label{lem:bisimulation_isomorphism}
@@ -3143,12 +3144,14 @@ for some function $\phi$ whose restriction to $\coresymbol(\travsetscn(N))$ is i
 %(for all $u \in \travsetscn(M)$ $\coresymbol(\phi(u)) = \phi(\coresymbol(u))$),
 then $\coresymbol(\travsetscn(N)) \cong \coresymbol(\travsetscn(M))$.
 \end{lemma}
+\begin{todobox}
+    to fix: scn -> normalizing
+\end{todobox}
 \begin{proof}
 Consider $\phi$ as a function from $\coresymbol(\travsetscn(N))$ to $\coresymbol(\travsetscn(M))$.
-It is \emph{well-defined}: $\travsetscn(N)$ is by definition the transitive closure of the initial strand by $\rightarrow_N$, so for any traversal $u$ of $\travsetscn(N)$, repeatedly applying (B2) for each step of its $\rightarrow_N$ derivation shows that $t = \phi(u) \in \travsetscn(M)$.
-By commutativity of $\coresymbol$ and $\phi$ we have $\coresymbol(t)=\phi(\coresymbol(u)) \in \coresymbol(\travsetscn(M))$.
-Similarly, it is \emph{surjective} by (B1) because $\travsetscn(M)$ is the transitive closure of the initial strand by $\rightarrow_M$. Finally it is \emph{injective} by assumption.
-Hence we have $\coresymbol(\travsetscn(N)) \cong \coresymbol(\travsetscn(M))$.
+It is \emph{well-defined}: $\travsetscn(N)$ is by definition the transitive closure of the singleton traversal by $\rightarrow_N$, so for any traversal $u$ of $\travsetscn(N)$, repeatedly applying (B2) for each step of its $\rightarrow_N$ derivation shows that $t = \phi(u) \in \travsetscn(M)$, and the commutativity of $\coresymbol$ and $\phi$ gives $\coresymbol(t)=\phi(\coresymbol(u)) \in \coresymbol(\travsetscn(M))$.
+Similarly, it is \emph{surjective} by (B1) because $\travsetscn(M)$ is the transitive closure of the singleton traversal by $\rightarrow_M$. Finally it is \emph{injective} by assumption.
+Hence we have the desired isomorphism.
 \end{proof}
 
 %%%%% Soundness of leftmost liner reduction
@@ -3167,13 +3170,12 @@ term itself, modulo alpha conversion and relabelling of the \emph{lloc} node. Th
 such that it maps nodes under the substituted subterm in $N$ to the corresponding nodes under argument $A$ in $M$, and every node in $N$ that is not involved in the substitution, to its counterpart in $M$.
 %
 The linear substitution affects the term tree in three possible ways
- depending on the arity of the \emph{lloc} and the structure of the argument:
+ depending on the arity of the \emph{lloc} and the structure of the argument. For each one we show that there is an injection $\phi\colon\travsetnorm(N)\longrightarrow \justseqset(M)$ such that $M$ and $N$ are $\phi$-bisimilar:
 \begin{description}[itemindent=1em]
     \item[Case 1] $x$ has at least one operand ($|x|>0$) and $A$ is an abstraction;
     \item[Case 2] $x$ has at least one operand ($|x|>0$) and $A$ is not an abstraction;
     \item[Case 3] $x$ is unapplied ($|x|=0$).
 \end{description}
-For each of case we show that there is an injection $\phi\colon\justseqset(N)\longrightarrow \justseqset(M)$ such that $M$ and $N$ are $\phi$-bisimilar.
 
 %%%%%%%%%%% Summary of the proof %%%%%%
 % Observe first that the nodes of the subterm $A$$ map 1-1 to the nodes of
@@ -3275,20 +3277,20 @@ $\Phi$ maps nodes from the reduct $N$ (right) to those of $M$ (left).}
 \label{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument}
 \end{wrapfigure}
 %
-    The reduction is represented on Figure~\ref{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument}
-    where $|x|>0$, and $A$ is an abstraction $\lambda\overline{y}. R$.
+    Figure~\ref{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument}
+    represents this reduction.
 %
-    Let $\lambda\overline{x}$ denote $x$'s binding lambda node in $M$, $i$ denote $x$'s binding index, and $@_a$ denote the parent node of the subterm $A$.
+    Let $\lambda\overline{x}$ denote $x$'s binding lambda node in $M$, $i$ denote $x$'s binding index, and $@_a$ denote the parent node of the argument $A = \lambda\overline{y}. R$.
 %
     After reduction,
     node $x$ gets replaced by an application node $@_x$,  its existing children are preserved, and a new subterm $\lambda\overline{y}'. R'$, a copy of the subterm tree $A$, gets attached as the $0$th child tree of $@_x$.
-    The original variable name in $R$ are preserved, which does not cause capture of variables since the variable binding is uniquely determined by the enabling relation of the term tree.
+    We preserve the original variable name from $R$, which does not cause capture of variables since the variable binding is uniquely determined by the enabling relation of the term tree.
     (We write $\lambda\overline{y}'$ to distinguish the root node of $R'$ from the root $\lambda\overline{y}$ of $R$, even though they are both labelled with variable names $\overline{y}$.)
 %
     We thus have $\Phi(@_x) = x$, $\Phi(\lambda\overline{y}') = \lambda\overline{y}$, and $\Phi$ maps each node from subterm $\lambda\overline{y}'. R'$  to the corresponding node under $\lambda\overline{y}.R$.
 %
 
-Observe that $\Phi$ has the following properties:
+%Observe that $\Phi$ has the following properties:
 %\begin{enumerate}[label=(\roman*)]
     %%%\item
     (i) $\Phi$ preserves the enabling relation: if $n_1 \enables_i n_2$ in $N$ for $i\geq 0$, $n_1,n_2 \in \Nodes(N)$ then $\Phi(n_1) \enables_i \Phi(n_1)$ as long as $(n_1,n_2) \neq (@_x,\lambda\overline{y}')$.
@@ -3311,14 +3313,14 @@ Observe that $\Phi$ has the following properties:
     (iv) $\Phi$ is not injective: since nodes under $R$ and $R'$ in $N$ map pairwise to the same node under $R$ in $M$.
 %\end{enumerate}
 
-Let $\travsetscn^p$ denote the prefix closure of $\travsetscn$.
-We define $\phi$ as the extension of $\Phi$ to justified sequences of $\travsetscn^p(N)$ that
-maps each occurrence to its image by $\Phi$;
-preserves all justification pointers except for $@_x$ and $\lambda\overline{y}'$;
+We define $\phi$ on traversals $\travsetnorm(N)$
+as the function that maps occurrence pointwise by $\Phi$;
+preserves all justification pointers except
+for $@_x$ and $\lambda\overline{y}'$;
 and inserts after each occurrence of the \emph{lloc} $x$, the corresponding \emph{argument lookup} of $x$.
 Formally $\phi = \phi_1 \circ \phi_2$ where
 %
-$\phi_1$ is the point-wise extension of $\Phi$ to $\travsetscn^p(N)$
+$\phi_1$ is the point-wise extension of $\Phi$ to $\travsetnorm(N)$
 with adjusted justification pointers:
 for $n\not\in \{ @_x, \lambda\overline{y} \}$, $\Phi(n)$ has same link distance and label as $n$;
 if $n$ is an occurrences of $x$ then $\Phi(n)$ points to the first occurrence of $x$'s binder in $\pview{\phi(u)}$ and has link label $i$;
@@ -3327,8 +3329,7 @@ It is well-defined since by the P-view-path correspondence, $x$'s binder (resp.~
 %
 And $\phi_2$ inserts the argument lookup (consisting only of ghost
 nodes) between every occurrence of $x$ and $\lambda\overline{y}$. The argument lookup of the \emph{lloc} is statically determined by the
-term tree and, provided that the prefix at the $x$ is a valid traversal
-of $M$, is obtained by repeatedly instantiating rules \rulenamet{Lmd} and \rulenamet{Var} until reaching node $\lambda\overline{y}$.
+term tree and is obtained by repeatedly instantiating rules \rulenamet{Lmd} and \rulenamet{Var} until reaching node $\lambda\overline{y}$.
 
 The following example illustrates how $\phi$ is calculated on a generic
 traversal $u$ of $N$ involving the lloc variable $x$:
@@ -3342,18 +3343,15 @@ traversal $u$ of $N$ involving the lloc variable $x$:
 
 %%%%\begin{itemize}
 %%%% \item
-$\phi_1$, and $\phi$ are well-defined since by the P-view-path correspondence, $x$'s binder (resp.~$@_a$) necessarily occurs in the P-view at $x$ (resp.~$\lambda\overline{y}'$).
-
-%%%% \item
-The restriction of $\phi$ to $\coresymbol(\travsetscn(N))$
+The restriction of $\phi$ to $\coresymbol(\travsetnorm(N))$
 coincides precisely with the element-wise structure-preserving
 extension of $\Phi$ over justified sequences.
-This is because $\phi_1$ only alters justification pointers of internal nodes $@_x$ and $\lambda\overline y$, and $\phi_2$ only inserts internal nodes, while justified sequences in $\coresymbol(\travsetscn(N))$ do not contain any external node.
+This is because $\phi_1$ only alters justification pointers of internal nodes $@_x$ and $\lambda\overline y$, and $\phi_2$ only inserts internal nodes, while justified sequences in $\coresymbol(\travsetnorm(N))$ do not contain any external node.
 
 %%%% \item
-The restriction of $\phi$ to $\coresymbol(\travsetscn(N))$, is injective.
+The restriction of $\phi$ to $\coresymbol(\travsetnorm(N))$, is injective.
 %%%%%%% Short summary: because when a traversal extends in more than one possible way (with rule \rulenamet{IVar}), then either the next possible occurrences all have distinct justification pointers, or $\Phi$ maps them to distinct nodes in $M$.
-Suppose that $\coresymbol(u)\neq\coresymbol(v)$ for $u,v\in\travsetscn(N)$ then we must have $u\neq v$.
+Suppose that $\coresymbol(u)\neq\coresymbol(v)$ for $u,v\in\travsetnorm(N)$ then we must have $u\neq v$.
 Let $s$ denote the longest common prefix of $u$ and $v$; then the next two nodes $n_1, n_2$ immediately following $s$ in $u$ and $v$
 are necessarily traversed by the non-deterministic rule \rulenamet{IVar}.
 Hence they must both be external nodes and therefore they are not eliminated after applying $\coresymbol$: the last occurrence of $\coresymbol(s\cdot n_1)$ and $\coresymbol(s\cdot n_2)$ are different. Since $\Phi$ maps distinct external sibling nodes in $N$ to distinct sibling nodes in $M$, we necessarily have
@@ -3361,23 +3359,16 @@ $\phi(\coresymbol(s\cdot n_1))\neq \phi(\coresymbol(s\cdot n_2))$.
 %%%%%%%%%
 
 %%%% \item
-Since $\Phi$ preserves $\lambda$-node labels, it also preserves arities, hence $\coresymbol$ involves the same pending lambdas in $u$ or $\phi(u)$, hence $\coresymbol$ and $\phi$ commute.
+Since $\Phi$ preserves $\lambda$-node labels, it also preserves arities, hence $\coresymbol$ involves the same pending lambdas when applied to either $u$ or $\phi(u)$, hence $\coresymbol$ and $\phi$ commute.
 %%%%\end{itemize}
 
-To show that $M$ and $N$ are in $\phi$-bisimulation, we simultaneously show that the definition of $\phi$ is well-defined
-(more specifically the argument lookup extension performed by $\phi_2$)
-and that $(I)$, $(B1)$ and $(B2)$ hold by induction on the number of strands in the traversal traversals.
-
-For case $(I)$, both traversal starts with the
-rule $\rulename{Root}_\normalizing$, the proof argument is then the same as for $(B1)$ and $(B2)$, which shows that they extend into the $R_\phi$-related initial strands of $M$ and $N$.
-
-For $(B1)$ and $(B2)$, given $u\in \travsetscn(N)$ and $t\in\travsetscn(M)$
-such that $\phi$ is well defined for $u$ and $t = \phi (u)$
+We now show that $M$ and $N$ are in $\phi$-bisimulation.
+For $(B1)$ and $(B2)$, given $u\in \travsetnorm(N)$ and $t\in\travsetnorm(M)$
+such that $\phi$ is well defined for $u$ and $t \doteq \phi (u)$
 and $m, n$ denote respectively the last node in $t$ and $u$.
-We prove both directions by induction on the length of the next strand
-extending $t$ (resp.~$u$) and case analysis on the traversal rule used,
-that every extension from $t$ to $t'$ (resp.~$u$ to $u'$) is a valid traversal.
-%We assume that $t = t' t_1 \ldots t_
+We prove both directions by induction on
+and case analysis on the last traversal rule used to
+extend the traversal.
 \begin{todobox}
     fix the mess i created
 \end{todobox}
@@ -3385,11 +3376,13 @@ that every extension from $t$ to $t'$ (resp.~$u$ to $u'$) is a valid traversal.
 Observe that the result holds trivially up until the traversal in $M$ reaches occurrence $x$ since one can use the exact same rules used to traverse $M$ in order to traverse the corresponding node in $N$, and reciprocally for traversals of $N$ until reaching node $@_x$. The crucial part of the induction takes place when traversing the \emph{lloc} variable $x$ in $M$ (resp.~$@_x$ in $N$).
 
 \begin{itemize}[itemindent=0.5em, leftmargin=0.5em]
+    \item $\rulename{Root}_\normalizing$ The singleton traversals consisting of the root nodes of $M$ and $N$ are image of one another by $\phi$.
+
     \item $\rulename{App}_\normalizing$ We have $m = \Phi(n)$.
-
+    %
     (B1) Suppose $t$ extends to $t'$ with the application rule then $m, n \in\NodesApp$. Then the last occurrence $m'$ in $t'$ is the unique node verifying $m \enables_0 m'$.  Since $\Phi$ does not map $@_x$ to an application node we necessarily have  $n \neq @_x$. Thus $\phi$ preserves the enabling relation at $n$, and we can use the application rule in $N$ to extend $u$ into $u' = u \cdot n'$ where $n \enables_0 n'$ and $\phi(n') = m'$.
-
-    (B2) Suppose $u'$ extends traversal $u$ with the application rule then the last occurrence $n$ in $u$ is an application node.
+    %
+    (B2) Suppose $u'$ extends traversal $u$ with the application rule then the $n$ is an application node.
     If $n\neq@_x$ then $\phi$ preserves the enabling relation at $n$ and therefore the application rule can be used in $M$ to simulate $u'$.
 
     %%%%%%%%%%%%%%%%% Case t ends with lloc variable occurrence x
@@ -3408,7 +3401,7 @@ Observe that the result holds trivially up until the traversal in $M$ reaches oc
     And we have $\phi(u')
     = \phi(u \cdot \lambda\overline{y}')
     = \phi(u) \cdot \phi(\lambda\overline{y}')
-    = t \cdot v \cdot \lambda\overline{y} \in \travsetscn(M)$.
+    = t \cdot v \cdot \lambda\overline{y} \in \travsetnorm(M)$.
     %%%%%%%%%%%%%%%%%%
 
     \item $\rulename{Lam}^@_\normalizing$
@@ -3430,8 +3423,8 @@ Observe that the result holds trivially up until the traversal in $M$ reaches oc
     Hence, the rule $\rulename{Lam}^{\sf var}_\normalizing$ used to extend  $u$ can also be used to extend $t$, and reciprocally.
 
     \item $\rulename{Lam^\ghostvar_\normalizing}$
-    This case is excluded since $t$ and $u$ belong to $\travsetscn(M)$ and
-    $\travsetscn(N)$ respectively and therefore their last occurrence cannot be a ghost lambda.
+    This case is excluded since $t$ and $u$ belong to $\travsetnorm(M)$ and
+    $\travsetnorm(N)$ respectively and therefore their last occurrence cannot be a ghost lambda.
 
     \item $\rulename{Var_\normalizing}$
     (B2) Since $\Phi$ maps external variable nodes to external variable nodes,preserves the parent-child relation for variable nodes and $\phi$ preserves the justification pointer of external variable nodes, if this rule can extend traversal $u$ with node $n'$ then the same rule can be used to extend $t$ with $\phi(n')$.
