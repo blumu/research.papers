@@ -199,12 +199,12 @@
 \newcommand\travsetshort{\mathcal{T}\!r}
 \newcommand{\travsetes}{{\travset_\essential}} % essential traversals
 \newcommand{\travsetcon}{{\travset_\concrete}} % concrete traversals
-\newcommand{\travsetcones}{{\travset_{c.e.}}} % concrete and essential traversals
+\newcommand{\travsetcones}{\travset_{c.e.}} % concrete and essential traversals
 \newcommand{\travsetnorm}{\travset_\normalizing} % normalizing traversals
 \newcommand{\travsetscn}{\travset_{s.c.n.}} % strand-complete normalizing traversals
 
 \def\almostequal{\doteq}  % almost justified sequence equality
-\def\almosteqisomorphic{\stackrel{.}{\cong}} % almost-equal isomorphism
+%\def\almosteqisomorphic{\stackrel{.}{\cong}} % almost-equal isomorphism
 \def\structisomorphic{\cong} % structural-equality isomorphism
 
 
@@ -1098,6 +1098,30 @@ $\Pstr[0.7cm]{
  of $\ctree(J^t)$.
 \end{example}
 
+
+\paragraph{Strands of traversals}
+
+\begin{definition}
+    \label{ref:strand}
+    A \defname{strand} of a traversal, is a sub-sequence of consecutive occurrences of even length, starting with an external lambda node and ending with an external variable node, with only internal node occurrences in-between.
+
+    From the parity property of traversals, a strand must consist of alternations of lambda nodes and variable/application nodes. To highlight a strand within a traversal we sometimes underline its opening and closing occurrence as follows:
+     $ t = \cdots \underline{\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ \underline{n_1} \cdots $
+for some $k\geq 1$ where for $1 \leq j \leq k$, $\alpha_j$ is in $\ExtendedNodesLmd$, $n_j$ is in $\ExtendedNodesVar\union\NodesApp$,
+the external lambda $\alpha_k$ and external variable $n_1$ delimit the strand boundaries and the $2k-2$ nodes in-between are all internal.
+\end{definition}
+
+We say that a traversal is \defname{strand-complete}
+if each strand initiated by an external lambda occurrence in the traversal
+is eventually ended by the occurrence of an external variable.
+In other words, a traversal is strand-complete
+if it is finite and ends with an external variable node.
+Otherwise we say that the last strand in the traversal is \emph{incomplete}.
+%
+Observe that a finite maximal traversal
+is necessarily strand-complete for if it were not ending with an external variable we could extend it with either \rulenamet{App}, \rulenamet{Lmd} or \rulenamet{Var}.
+%
+
 \paragraph{Traversal core}
 
 In the typed setting the \emph{core of a traversal}~\cite{BlumPhd} is simply obtained by removing all internal occurrences from a traversal.
@@ -1111,7 +1135,7 @@ pushing elements onto the stack is done via sequence concatenation:
 \begin{definition}[Core projection]
 \label{def:coreprojection}
 Let $\overline{y} \in \VarSet^*$ denote a stack of variable names.
-We define the function $\coresymbol_{\overline{y}}\colon \justseqset(M) \longrightarrow \justseqset(M)$ by induction: $\coresymbol_{\overline{y}}(\epsilon) = \epsilon$, and for any justified sequence $s \cdot n\in\justseqset(M)$ with prefix $s \in \justseqset(M)$ and node occurrence $n\in\ExtendedNodes$:
+We define the partial function $\coresymbol_{\overline{y}}\colon \justseqset(M) \longrightarrow \justseqset(M)$ on finite justified sequences by induction: $\coresymbol_{\overline{y}}(\epsilon) = \epsilon$, and for any justified sequence $s \cdot n\in\justseqset(M)$ with prefix $s \in \justseqset(M)$ and node occurrence $n\in\ExtendedNodes$:
 \begin{equation*}
 \coresymbol_{\overline{y}}(s\cdot n) =
 \begin{cases}
@@ -1139,7 +1163,10 @@ We call $\core{s} = \coresymbol_\epsilon(s)$ the \defname{core} of $s$,
 and $\pview{\core{s}}$ its \defname{core P-view}, the P-view of its core.
 \end{definition}
 
-The subscript parameter in `$\coresymbol_{\overline{y}}$' is called \defname{stack of pending lambdas}. As $\coresymbol$ reads the sequence backwards, it accumulates variable names which then get discharged onto the next external lambda node read from the sequence. So in words, the \emph{core projection} is the sub-sequence obtained by removing all internal nodes and discharging on each external lambda node the stack of \emph{pending lambdas} at that point.
+The subscript parameter in `$\coresymbol_{\overline{y}}$' is called \defname{stack of pending lambdas}. As $\coresymbol$ reads a strand backwards, it accumulates variable names which then get discharged onto the opening lambda node of the strand.
+\iflongversion
+So in words, the \emph{core projection} is the sub-sequence obtained by removing all internal nodes and discharging on each external lambda node the stack of \emph{pending lambdas} at that point.
+\fi
 This definition has a name-free counterpart that uses a stack length argument in place of the stack argument $\overline{y}$.
 %
 To aid with the calculation of the traversal core we will sometimes indicate the pending lambdas in exponent of external lambda nodes as follows:
@@ -1292,13 +1319,12 @@ We introduce a quotient relation to identify traversals with identical core P-vi
 \begin{definition}[Quotienting]
 The equivalence relation $\sim$ over $\travulc$ is defined by $t \sim u$ if and only if
 $\pview{\core{t'}} \equiv \pview{\core{u'}}$
-where $t'$ and $u'$ denote respectively the longest prefix of $t$ and $u$ ending with an external variable node.
+where $t'$ and $u'$ denote respectively the longest finite prefix of $t$ and $u$ ending with an external variable node.
 For any subset $T\subseteq \travulc$ of traversals, we write $T/{\sim}$ for the equivalence classes of $T$.
 %
-For any subset $U\subseteq T$ we say that $U$ is \defname{$T$-complete} if it contains at least one element for each $\sim$-equivalence class of $T$; that is if $U/{\sim} = T/{\sim}$.
+For any subset $U\subseteq T$ we say that $U$ is \defname{$T$-complete} if it contains at least one element for each $\sim$-equivalence class of $T$; that is if $U$ and $T$ have the same equivalence classes.
 \end{definition}
-The definition of $\sim$ excludes traversals with unfinished strands because
-$\coresymbol$ generates the pending lambdas of an external node from the entire strand following it.
+The definition considers only finite prefixes ending with an external variable because $\coresymbol$ generates the pending lambdas of an external lambda node from the entire sequence of nodes following it until the next external variable.
 
 \begin{proposition}
 \label{prop:essential_traversal_simcomplete}
@@ -1415,10 +1441,10 @@ This yields the normalization procedure for simply-typed terms in eta-long form 
 \REQUIRE{Closed simply typed term $M^\tau$ of type $\tau$ in eta-long form.}
 \ENSURE{Tree of the beta-normal form of $M^\tau$.}
 \begin{enumerate}[nosep]
-  \item Calculate $T = \core{\travsetcones(M^\tau)}$
+  \item Calculate $T = \core{\travsetcones^{\max}(M^\tau)}$
   \begin{itemize}[nosep]
     \item Enumerate \emph{concrete and essential} traversals of $M^\tau$ with rules of Definition~\ref{dfn:essential_traversals};
-    \item For each maximal traversal $t$, get its \emph{traversal core} $\core{t}$ by removing all occurrences of internal nodes;
+    \item For each maximal traversal, get its \emph{core} by removing occurrences of internal nodes;
   \end{itemize}
   \item Return $\readout[T]$ (See Proposition~\ref{proposition:termtree_readout_from_justitied_paths}).
 \end{enumerate}
@@ -1464,15 +1490,6 @@ The set of essential traversals is infinite due to rule $\rulename{IVar}$ where 
 
 Because the tree has a finite number of nodes, the nodes arities are bounded by some maximal value. Which means that beyond a certain value, the
 justification pointer $i$ in the variable rules \rulenamet{IVar} is guaranteed to be greater than the arity $|m|$ of the variable, and therefore the next node to visit is necessarily a ghost node. The intuition supporting the dynamic arity is that after a sufficiently large number of eta-expansions, we are also guaranteed to \emph{continuously} traverse ghost nodes that never materialize to structural nodes. In other words, any further extension will necessarily be constructed using repeated applications of \rulenamet{Lam^\ghostvar} and the eta-expanded variants of \rulenamet{Var}, and will thus consists only of ghost occurrences.
-
-
-\begin{definition}
-\label{ref:strand}
-A \defname{strand} of a traversal $t$, is a sub-sequence of consecutive nodes of even length from $t$, starting with an external lambda node and ending with an external variable node, with only internal node occurrences in-between.
-\end{definition}
-
-From the parity property of traversals, a strand must consist of alternations of lambda nodes and variable/application nodes. We will highlight a strand within a traversal by underlining its first and last occurrence as follows: $ t = \cdots \underline{\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ \underline{n_1} \cdots $
-for some $k\geq 1$ where for $1 \leq j \leq k$, $\alpha_j$ is in $\ExtendedNodesLmd$, $n_j$ is in $\ExtendedNodesVar\union\NodesApp$, and the $2k-2$ nodes occurring between $\alpha_k$ and $n_1$ are internal nodes.
 
 \begin{definition} %[Traversal dynamic arity]
 \label{dfn:dynamic-arity}
@@ -1756,7 +1773,7 @@ shows correctness of the algorithm, in particular that the set of justified path
 \REQUIRE{Untyped term $M$ having a beta-normal form}
 \ENSURE{Tree of the beta-normal form of $M$ modulo $\alpha$-conversion}
 \begin{enumerate}[nosep]
-  \item Calculate $T \leftarrow \core{\travsetnorm(M)}$
+  \item Calculate $T \leftarrow \core{\travsetnorm^{\max}(M)}$
   \begin{itemize}[leftmargin=0.5em,nosep]
     \item Enumerate maximal \emph{normalizing} traversals $\travsetnorm(M)$ using the rules of Table~\ref{tab:normalizing_trav_rules};
     \item For each traversal, apply transformation $\coresymbol$ to get the traversal core.
@@ -2215,7 +2232,7 @@ where the ghost variables all point to the first lambda node in each sequence.
 % \Pstr[0.7cm]{(n0){\lambda }\ (n1-n0){{\ghostvar^{3}}}\ (n2-n1){{\ghostlmd^{1}}}\ (n3-n0){{\ghostvar^{1}}}\ (n4-n3){{\ghostlmd^{2}}}\ (n5-n0){{\ghostvar^{2}}}\ (n6-n5){{\ghostlmd^{2}}}\ (n7-n0){{\ghostvar^{4}}}}
 % \end{align*}
 %%%%%%%%%
-The beta-normal from of $varity\, 2$ is therefore $\lambda x' x s z . s (x' s (x s z))$.
+The beta-normal form of $varity\, 2$ is therefore $\lambda x' x s z . s (x' s (x s z))$.
 \end{example}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2736,7 +2753,7 @@ If $M = \lambda x . U$ then $U$ must also admit a beta-nf so we can conclude by 
 \label{sec:correctness_ulc_normalization}
 Correctness of the evaluation procedure relies, like in the STLC case, on a Path Characterization Theorem.
 Unlike STLC, however, we prove this characterization without appealing to Game Semantics, since we have not formally established the game denotation correspondence for ULC.
-The proof proceeds instead by showing that $\sim$-equivalence classes are preserved by \emph{leftmost-linear reduction} (Section~\ref{sec:leftmostlinearred}). It is based on a bisimulation argument requiring careful analysis of the traversals structure.
+The proof proceeds instead by showing that traversal cores are preserved by \emph{leftmost-linear reduction} (Section~\ref{sec:leftmostlinearred}). It is based on a bisimulation argument requiring careful analysis of the traversals structure.
 
 
 \begin{definition}
@@ -3111,6 +3128,22 @@ By definition of $k$ we have $i_{k-1}\geq|@_{k-1}|$, therefore by definition of 
 \paragraph{Traversal bisimulation}
 For $t, t' \in \travsetnorm(M)$ we write $t \rightarrow_M t'$ just if $t'$ is an immediate extension of $t$ in $\travsetnorm(M)$, that is $t'$ extends $t$ via a single rule instantiation from Table~\ref{tab:normalizing_trav_rules}.
 
+
+We say that two justified sequences $u$ and $v$ are \defname{almost-equal},
+written $u \almostequal v$,
+if their occurrences are pairwise equal (same label, same pointer)
+except for the external lambda node of their last incomplete strand,
+whose list of bound variables may differ.
+So in particular, two almost equal justified sequences have equal prefix up to the their last external variable occurrence,
+and thus for strand-complete traversals, `almost-equality' coincides with `equality'.
+%
+% A function $\phi\colon J\longrightarrow\justseqset(M)$
+% defined on some $J\subseteq \justseqset(N)$
+% is \defname{almost the identity} if we have $u \almostequal \phi(u)$ for all $u\in J$.
+%
+% Two subsets $J_1\subseteq \justseqset(M)$, $J_2\subseteq\justseqset(N)$ are \defname{almost equal}, written $J_1\almosteqisomorphic J_2$, if there exists a bijection $\phi \colon J_1\longrightarrow J_2$ such that $j\almostequal\phi(j)$ for all $j\in J$.
+
+
 \begin{definition}[Traversal bisimulation]
 \label{def:bisimilar_terms}
 Let $M$ and $N$ be two terms with variables in $\mathcal{V}$, and $\phi\colon \travsetnorm(N) \rightarrow\justseqset(M)$ be a function
@@ -3120,7 +3153,7 @@ $\phi$ maps the initial singleton traversal of $N$ to that of $M$.
 Let $(X, R_\phi, \rightarrow_X)$ denote the state transition system
 over \emph{States} $X = \travsetnorm(M) + \travsetnorm(N)$
 with  \emph{Transitions} $t \rightarrow_X t'$
-if either $t \rightarrow_M t'$ or $t \rightarrow_N t'$ holds, for $t, t' \in X$, and \emph{Binary relation $R_\phi\subseteq X \times X$} defined for $t, u \in X$ by $ t\,R_\phi\,u$ just if $t\in\travsetnorm(M)$, $u\in\travsetnorm(N)$ and $\phi(u) = t$.
+if either $t \rightarrow_M t'$ or $t \rightarrow_N t'$ holds, for $t, t' \in X$, and \emph{Binary relation $R_\phi\subseteq X \times X$} defined for $t, u \in X$ by $ t\,R_\phi\,u$ just if $t\in\travsetnorm(M)$, $u\in\travsetnorm(N)$, $t = \phi(u)$ and $\core{t} \almostequal \core{u}$.
 
 The terms $M$ and $N$ are \defname{$\phi$-bisimilar} if $R_\phi$ is a bisimulation over $X$ with respect to $\rightarrow_X$:
 \begin{itemize}[nosep]
@@ -3133,51 +3166,42 @@ The terms $M$ and $N$ are \defname{$\phi$-bisimilar} if $R_\phi$ is a bisimulati
 \end{itemize}
 \end{definition}
 
-The subset $\travsetscn$ of \defname{strand-complete normalizing traversals} of $\travsetnorm$, consists of finite normalizing traversals ending with an external (possibly ghost) variable node.
-%
-Observe that every finite maximal traversal in $\travsetnorm$ is
-necessarily in $\travsetscn$ for if it does not end with an external variable then either rule \rulenamet{App}, \rulenamet{Lmd} or \rulenamet{Var} can extend it depending on the type of the last occurrence, which contradicts maximality.
-Consequently the finite maximal traversals of $\travsetnorm$ are precisely the  maximal traversals of $\travsetscn$.
 
-We say that two justified sequences $u$ and $v$ are \defname{almost-equal},
-written $u \almostequal v$
-if their occurrences are pairwise equal (same label, same pointer)
-except for the external lambda node of their last incomplete strand,
-whose list of bound variables may differ.
-So in particular, two almost equal sequences have equal prefix up to the
-their last external variable occurrence; and thus in $\travsetscn$, `almost-equality' coincides with `equality`.
-%
-A function $\phi\colon J\longrightarrow\justseqset(M)$
-defined on some $J\subseteq \justseqset(N)$
-is \defname{almost the identity} if we have $u \almostequal \phi(u)$ for all $u\in J$.
-%
-Two subsets $J_1\subseteq \justseqset(M)$, $J_2\subseteq\justseqset(N)$ are \defname{almost equal}, written $J_1\almosteqisomorphic J_2$, if there exists a bijection $\phi \colon J_1\longrightarrow J_2$ such that $j\almostequal\phi(j)$ for all $j\in J$.
-
+Let $\travsetscn(M)$ denote the set of (finite) strand-complete normalizing traversals of $M$.
 
 \begin{lemma}
 \label{lem:bisimulation_isomorphism}
 If $M$ and $N$ are $\phi$-bisimilar
-and the restriction of $\phi$ to $\coresymbol(\travsetnorm(N))$
- is almost the identity,
- is injective,
- and commutes with core projection $\coresymbol$
-then $\coresymbol(\travsetnorm(N)) \almosteqisomorphic \coresymbol(\travsetnorm(M))$, and thus
-$\coresymbol(\travsetscn(N)) \structisomorphic \coresymbol(\travsetscn(M))$.
+and $\phi$ is injective
+then $\coresymbol(\travsetscn(N)) = \coresymbol(\travsetscn(M))$.
 \end{lemma}
 \begin{proof}
-Consider $\phi$ as a function
- $\coresymbol(\travsetnorm(N))\longrightarrow\coresymbol(\travsetnorm(M))$.
-It is \emph{well-defined}: by definition, $\travsetnorm(N)$ is the transitive closure of the singleton traversal by $\rightarrow_N$, so for any traversal $u$ of $\travsetnorm(N)$, repeatedly applying (B2) for each step of its $\rightarrow_N$ derivation shows that $t = \phi(u) \in \travsetnorm(M)$, and the commutativity of $\coresymbol$ and $\phi$ gives $\coresymbol(t)=\phi(\coresymbol(u)) \in \coresymbol(\travsetnorm(M))$.
-Similarly, it is \emph{surjective} by (B1) because $\travsetnorm(M)$ is the transitive closure of the singleton traversal by $\rightarrow_M$. Finally it is \emph{injective} by assumption. Hence we have the desired isomorphism.
-Finally, for strand-complete traversals, almost equality coincides with equality.
+
+\begin{todobox}
+    update proof to to show equality not just a bijection
+
+\end{todobox}
+$\travsetnorm(N)$ is by definition the transitive closure by $\rightarrow_N$ of the singleton traversal, so for any $u$ of $\travsetnorm(N)$, repeatedly applying (B2) for each step of its $\rightarrow_N$ derivation shows that $t = \phi(u) \in \travsetnorm(M)$.
+%
+If $u$ is strand-complete then it is finite so $\coresymbol(t)$ is well-defined and commutativity of $\coresymbol$ and $\phi$ gives $\coresymbol(t)=\phi(\coresymbol(u))$ which simultaneously shows that $t$ is strand complete and that $\coresymbol(t)$ is in $\coresymbol(\travsetscn(M))$.
+%
+Similarly, it is \emph{surjective} by (B1) because $\travsetnorm(M)$ is the transitive closure by $\rightarrow_M$ of the singleton traversal. Finally it is \emph{injective} by assumption. Hence $\phi$ defines a bijection.
+
+    % $\phi$ as a function
+%  $\coresymbol(\travsetscn(N))\longrightarrow\coresymbol(\travsetscn(M))$
+% is \emph{well-defined}: $\travsetnorm(N)$ is by definition the transitive closure by $\rightarrow_N$ of the singleton traversal, so for any $u$ of $\travsetnorm(N)$, repeatedly applying (B2) for each step of its $\rightarrow_N$ derivation shows that $t = \phi(u) \in \travsetnorm(M)$.
+% %
+% If $u$ is strand-complete then it is finite so $\coresymbol(t)$ is well-defined and commutativity of $\coresymbol$ and $\phi$ gives $\coresymbol(t)=\phi(\coresymbol(u))$ which simultaneously shows that $t$ is strand complete and that $\coresymbol(t)$ is in $\coresymbol(\travsetscn(M))$.
+% %
+% Similarly, it is \emph{surjective} by (B1) because $\travsetnorm(M)$ is the transitive closure by $\rightarrow_M$ of the singleton traversal. Finally it is \emph{injective} by assumption. Hence $\phi$ defines a bijection.
 \end{proof}
 
 %%%%% Soundness of leftmost liner reduction
 \begin{proposition}%[Traversals are sound for linear reduction]
 \label{prop:ulctrav_impl_linear_reduction}
 %Let $M$ be an untyped term.
-If $M \llred N$ then $\coresymbol(\travsetnorm(M))
-\almosteqisomorphic \coresymbol(\travsetnorm(N))$.
+If $M \llred N$ then $\coresymbol(\travsetscn(M))
+= \coresymbol(\travsetscn(N))$.
 \end{proposition}
 %\shortproof
 %\endshortproof
@@ -3487,7 +3511,7 @@ Hence $M$ and $N$ are in $\phi$-bisimulation, thus because $\phi$ is injective a
 
 \begin{proposition}%[Traversals are sound for trivial reduction]
 \label{prop:ulctrav_sound_for_trivialreduction}
-    Let $M$ be an untyped term containing only trivial redexes, and $N$ the reduct obtained by firing the \emph{leftmost spinal-innermost} trivial redex, then $\coresymbol(\travsetnorm(M)) \almosteqisomorphic \coresymbol(\travsetnorm(N))$.
+    Let $M$ be an untyped term containing only trivial redexes, and $N$ the reduct obtained by firing the \emph{leftmost spinal-innermost} trivial redex, then $\coresymbol(\travsetscn(M)) = \coresymbol(\travsetscn(N))$.
 \end{proposition}
 %\proofatend
 \begin{proof}
@@ -3592,7 +3616,7 @@ Let's consider the tree structure at the trivial redex on Figure~\ref{fig:reduci
     $\lambda\overline x_1 \ldots x_n$ into
     $\lambda\overline\eta x_2 \ldots x_n$. Formally:
 
-    Let $u$ be a traversal of $\travsetscn(N)$
+    Let $u$ be a traversal of $\travsetnorm(N)$
     ending with $\lambda\overline{y}$ that is
     $u = u_1 \cdot \lambda\overline{y} $ for some traversal $u_1$.
     The sequence $\phi(u)$ is of the form
@@ -3699,13 +3723,13 @@ Let's consider the tree structure at the trivial redex on Figure~\ref{fig:reduci
 
 \begin{corollary}
 \label{cor:qnf_and_nf_traveset_invariant}
-If $M$ is in \emph{qnf} and has beta-normal form $N$ then $\coresymbol(\travsetnorm(M)) \almosteqisomorphic \coresymbol(\travsetnorm(N))$.
+If $M$ is in \emph{qnf} and has $\beta$-normal form $N$ then $\coresymbol(\travsetscn(M)) = \coresymbol(\travsetscn(N))$.
 \end{corollary}
 \begin{proof}
 By Proposition~\ref{prop:qnf_nf}(ii) a \emph{qnf} reduces to its beta-nf: there is a reduction sequence $M = M_1 \rightarrow_\beta \ldots \rightarrow_\beta M_q= N$, $q\geq1$  where in each step, $M_{i+1}$ is obtained by reducing the leftmost spinal-innermost standard redex of $M_i$
 %(of the form $(\lambda x . U) T$ such that $U$ does not contain any redex)
 and by Proposition~\ref{prop:qnf_nf}(i), each such redex is trivial. By Proposition~\ref{prop:ulctrav_sound_for_trivialreduction}
-the set $\core{\travsetnorm(\_)}$ is an invariant (up to $\almosteqisomorphic$-isomorphism) throughout this trivial reduction sequence.
+the set $\core{\travsetscn(\_)}$ is an invariant throughout this trivial reduction sequence.
 \end{proof}
 
 \begin{proposition}
@@ -3737,41 +3761,49 @@ Let $M$ be an untyped term with a beta-normal form. Then
 Algorithm~\ref{algo:ulc_normalization_by_traversals} terminates.
 \end{proposition}
 \begin{proof}
-By Proposition~\ref{prop:ulc_travnorm_finite} there is a finite number of traversals in $\travsetnorm$ and each of them can be obtained with finitely many applications of traversal rules.
+By Proposition~\ref{prop:ulc_travnorm_finite} there is a finite number of normalizing traversals and each of them can be obtained with finitely many applications of traversal rules.
 \end{proof}
 
 \begin{theorem}[ULC Normalized Paths Characterization]
 \label{thm:path_charact_ulc}
 Let $M$ be an untyped term with normal form $T$. We have
-$\core{\travsetnorm^{\max}(M)} \, \structisomorphic\, \pathset^{\max}(T)$.
+$\travsetscn(M)/{\sim} \, \structisomorphic\, \pathset(T)$.
 \end{theorem}
 \begin{proof}
 Let's first assume that $M$ is in beta-normal form. Then its tree does not contain any $@$-node and all nodes must be external.
 Hence the dynamic arity of a traversal ending with external variable $x$ is precisely $|x|$, the arity of $x$. A straightforward induction on the traversal
-shows, that since \rulenamet{Var} is never used we necessarily have  $\travsetnorm(M) = \pathset(M)$. Since all nodes are externals the projection $\coresymbol$ coincides with the identity thus $\core{\travsetnorm(M)} = \travsetnorm(M) = \pathset(M)$.
+shows, that since \rulenamet{Var} is never used we necessarily have
+$\travsetnorm(M) = \travsetscn(M) = \pathset(M)$. Since all nodes are externals the projection $\coresymbol$ coincides with the identity thus $\core{\travsetnorm(M)} = \travsetnorm(M) = \pathset(M)$.
 %
-If $M$ is not normal form then since $M$ has a beta-nf, by Theorem~\ref{thm:completeness_leftmostlinearred} its \emph{leftmost linear reduction sequence} terminates and yields a \emph{qnf}. By Proposition~\ref{prop:ulctrav_impl_linear_reduction} the set of core of maximal traversals is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of core of maximal traversals of the \emph{qnf} is isomorphic to the core of maximal traversals of $M$. Corollary~\ref{cor:qnf_and_nf_traveset_invariant} permits us to conclude.
+If $M$ is not normal form then since $M$ has a beta-nf, by Theorem~\ref{thm:completeness_leftmostlinearred} its \emph{leftmost linear reduction sequence} terminates and yields a \emph{qnf}. By Proposition~\ref{prop:ulctrav_impl_linear_reduction} the set of traversal cores is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of cores of  traversals of the \emph{qnf} is isomorphic to the traversal cores of $M$. Corollary~\ref{cor:qnf_and_nf_traveset_invariant} permits us to conclude.
 \end{proof}
 
 \begin{proposition}
     \label{prop:core_travsetnorm_alpha_consistent}
-    $\core{\travsetscn(M)}$ is $\alpha$-consistent, and therefore so
-    is
-    $\core{\travsetnorm^{\max}(M)}$.
+    $\core{\travsetscn(M)}$ is $\alpha$-consistent.
 \end{proposition}
 \begin{proof}
-A traversal of $\travsetscn$ is uniquely defined by the sequence of non-deterministic choices of the argument index $i$ made at the end of each strand. Further, by \ref{thm:path_charact_ulc}, this sequence of indices also determines the path to the corresponding node in the tree of the normal form.
-Hence for any two traversal $t_1,t_2 \in \travsetscn$
+A traversal of $\travsetscn$
+necessarily terminates with an external variable node (for any other node type the traversal would be extendable) and
+is uniquely defined by the sequence of non-deterministic choices of the argument index $i$ made at the end of each strand. Further, by Theorem~\ref{thm:path_charact_ulc}, this sequence of indices also determines the path to the corresponding node in the tree of the normal form.
+Hence for any two maximal traversals $t_1,t_2 \in \travsetnorm$
 ending with strands $\ldots  \lambda\overline{x}_1 \ldots y_1$ and
 $\ldots \lambda\overline{x}_1 \ldots y_1$.
-If the sequence of argument indices leading to $\lambda\overline{x}_1$ and $\lambda\overline{x}_2$ are not the same then both occurrence refer to different node of the tree of the normal form.
-Otherwise, if the argument indices are the same, then all the non-deterministic choices leading to $\lambda\overline{x}_1$ and $\lambda\overline{x}_2$ are the same therefore $t_{\leq \lambda\overline{x}_1} = t_{\leq \lambda\overline{x}_2}$, which by the deterministic rules extends to $t_1 = t_2$.
+If the sequence of argument indices leading to $\lambda\overline{x}_1$ and $\lambda\overline{x}_2$ are not the same then the two occurrences refer to different nodes of the tree of the normal form.
+Otherwise, if the argument indices are the same, that is all the non-deterministic choices leading to $\lambda\overline{x}_1$ and $\lambda\overline{x}_2$ are the same, we must have $t_{\leq \lambda\overline{x}_1} = t_{\leq \lambda\overline{x}_2}$, which by the deterministic
+traversal rules extends to $t_1 = t_2$.
 Hence $\core{t_1} = \core{t_2}$ and therefore $\lambda\overline{x}$
 and $\lambda\overline{y}$ are assigned the same list of variable names in
 $\core{t_1}$ and $\core{t_2}$.
 \end{proof}
 
-\paragraph{Soundness of the normalization procedure} It follows from Theorem~\ref{thm:path_charact_ulc} and because a term is characterized by its justified paths $\pathset$ (Property~\ref{prop:tree_path_charact}). Because the justified paths $\core{\travsetnorm^{\max}(M)}$ are $\alpha$-consistent we can reconstruct from them the beta-normal from using the readout procedure of Proposition~\ref{proposition:termtree_readout_from_justitied_paths}.
+\paragraph{Soundness of Algorithm~\ref{algo:ulc_normalization_by_traversals}} It follows from Theorem~\ref{thm:path_charact_ulc} and because a term is  characterized by its justified paths (Property~\ref{prop:tree_path_charact}).
+Proposition~\ref{prop:core_travsetnorm_alpha_consistent}
+implies that
+the set of cores of (finite) maximal traversals of $M$
+is $\alpha$-consistent, so we can
+apply the readout procedure of Proposition~\ref{proposition:termtree_readout_from_justitied_paths} to
+reconstruct the $\beta$-normal form.
 
 % \begin{remark}
 % The infinitary counterpart of the characterization theorem for lambda terms with no normal form (not shown in this paper) can be stated as:
