@@ -3181,7 +3181,8 @@ then $\coresymbol(\travsetscn(N)) = \coresymbol(\travsetscn(M))$.
     update proof to to show equality not just a bijection
 
 \end{todobox}
-$\travsetnorm(N)$ is by definition the transitive closure by $\rightarrow_N$ of the singleton traversal, so for any $u$ of $\travsetnorm(N)$, repeatedly applying (B2) for each step of its $\rightarrow_N$ derivation shows that $t = \phi(u) \in \travsetnorm(M)$.
+$\travsetnorm(N)$ is by definition the transitive closure by $\rightarrow_N$ of the singleton traversal, so for any $u$ of $\travsetscn(N) \subset \travsetnorm(N)$, repeatedly applying (B2) for each step of its $\rightarrow_N$ derivation shows that $t = \phi(u) \in \travsetnorm(M)$.
+But since $\phi(u) \almostequal u$ and $u$ is strand-complete we have $ \phi(u) = u$. Hence $u$ ...traversals, $\phi$ coincide with this identity
 %
 If $u$ is strand-complete then it is finite so $\coresymbol(t)$ is well-defined and commutativity of $\coresymbol$ and $\phi$ gives $\coresymbol(t)=\phi(\coresymbol(u))$ which simultaneously shows that $t$ is strand complete and that $\coresymbol(t)$ is in $\coresymbol(\travsetscn(M))$.
 %
