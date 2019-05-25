@@ -1328,7 +1328,7 @@ The definition considers only finite prefixes ending with an external variable b
 
 \begin{proposition}
 \label{prop:essential_traversal_simcomplete}
-(i) The essential traversals $\travsetes$ are $\travset$-complete.
+(i) $\travsetes$ is $\travset$-complete.
 (ii) $\pview{\core{\travsetes}} = \core{\travsetes}$.
 \end{proposition}
 \shortproof
@@ -2752,7 +2752,7 @@ If $M = \lambda x . U$ then $U$ must also admit a beta-nf so we can conclude by 
 \section{Correctness of ULC evaluation}
 \label{sec:correctness_ulc_normalization}
 Correctness of the evaluation procedure relies, like in the STLC case, on a Path Characterization Theorem.
-Unlike STLC, however, we prove this characterization without appealing to Game Semantics, since we have not formally established the game denotation correspondence for ULC.
+Unlike STLC, however, we prove this characterization without appealing to Game Semantics.
 The proof proceeds instead by showing that traversal cores are preserved by \emph{leftmost-linear reduction} (Section~\ref{sec:leftmostlinearred}). It is based on a bisimulation argument requiring careful analysis of the traversals structure.
 
 
@@ -2788,7 +2788,7 @@ If $v$ is empty then the node following $u$ in $t$, if it exists, is necessarily
 \begin{definition}[Strand types]
     \label{def:strandtypes} We distinguish two types of strands:
     \begin{itemize}[nosep]
-        \item Structural argument strands (S) of the form $\underline{\lambda\overline{\eta}} \cdot u \cdot \underline{x}$
+        \item Structural-argument strands (S) of the form $\underline{\lambda\overline{\eta}} \cdot u \cdot \underline{x}$
             where
             \begin{itemize}[nosep]
             \item $\lambda\overline{\eta}$ is an external structural lambda node verifying $lloc_M(\lambda\overline\eta) = \bot$,
@@ -2796,7 +2796,7 @@ If $v$ is empty then the node following $u$ in $t$, if it exists, is necessarily
             \item $x$ is an external structural variable node;
             \end{itemize}
 
-        \item Ghost argument strands ($G$) of the form $\underline{\ghostlmd} \cdot  v \cdot \lambda\overline{y} \cdot u \cdot \underline{x}$
+        \item Ghost-argument strands ($G$) of the form $\underline{\ghostlmd} \cdot  v \cdot \lambda\overline{y} \cdot u \cdot \underline{x}$
         where
         \begin{itemize}[nosep]
             \item $\ghostlmd$ is an external ghost lambda node,
@@ -3201,11 +3201,13 @@ If $M \llred N$ then $\coresymbol(\travsetscn(M))
 %\proofatend
 Suppose that $M \llred N$. Let $x$ denote the leftmost linear variable occurrence in $M$ and $(\lambda x, A)$ be the generalized redex involving it, so that $N$ is the term obtained by firing $(\lambda x, A)$.
 A property of linear head reduction is that the reduct contains the original
-term itself, modulo alpha conversion and relabelling of the \emph{lloc} node. This induces an implicit map  $\Phi : \ExtendedNodes(N)  \rightarrow \ExtendedNodes(M)$ from nodes of the reduct $N$ to those of $M$,
+term itself
+%, modulo alpha conversion and relabelling of the \emph{lloc} node
+. This induces an implicit map  $\Phi : \ExtendedNodes(N)  \rightarrow \ExtendedNodes(M)$ from reduct's nodes to the term's nodes,
 such that it maps nodes under the substituted subterm in $N$ to the corresponding nodes under argument $A$ in $M$, and every node in $N$ that is not involved in the substitution, to its counterpart in $M$.
 %
 The linear substitution affects the term tree in three possible ways
- depending on the arity of the \emph{lloc} and the structure of the argument. We show that $M$ and $N$ are bisimilar for each case.
+ depending on the arity of the \emph{lloc} and the structure of the argument. We show bisimilarity for each case.
 \iflongversion
 \begin{description}[itemindent=1em]
     \item[Case 1] $x$ has at least one operand ($|x|>0$) and $A$ is an abstraction;
@@ -3340,10 +3342,11 @@ We thus have $\Phi(@_x) = x$, $\Phi(\lambda\overline{y}') = \lambda\overline{y}$
     ghost and structural nodes map respectively to ghost and structural nodes;
 %
     %%% \item
-    (iii) $\Phi$ preserves node arity. In particular $|x| = |@_x|$ since $@_x$'s operator does not contribute to its arity;
+    (iii) $\Phi$ preserves arity. In particular $|x| = |@_x|$ since $@_x$'s operator does not contribute to its arity;
 %
     %%% \item
-    (iv) $\Phi$ is not injective: since nodes under $R$ and $R'$ in $N$ map pairwise to the same node under $R$ in $M$.
+    (iv) $\Phi$ is not injective: since nodes under $R$ and $R'$
+    map pairwise to the same node under $R$ in $M$.
 %\end{enumerate}
 
 We define $\phi$ on traversals $\travsetnorm(N)$
@@ -3387,7 +3390,8 @@ We prove both directions by induction on
 and case analysis on the rule used to
 extend the traversal.
 %
-Observe that the result holds trivially up until the traversal in $M$ reaches occurrence $x$ since one can use the exact same rules used to traverse $M$ in order to traverse the corresponding node in $N$, and reciprocally for traversals of $N$ until reaching node $@_x$. The crucial part of the induction takes place when traversing the \emph{lloc} variable $x$ in $M$ (resp.~$@_x$ in $N$).
+Observe that the result holds trivially up until the traversal in $M$ reaches occurrence $x$ since the exact same rules traversing $M$
+can also traverse the corresponding nodes in $N$, and reciprocally for traversals of $N$ until reaching node $@_x$. The crucial part of the induction takes place when traversing the \emph{lloc} variable $x$ in $M$ (resp.~$@_x$ in $N$).
 
 \begin{todobox}
     fix the mess i created
@@ -3481,7 +3485,6 @@ Hence $M$ and $N$ are bisimular and we conclude by Lemma~\ref{lem:bisimulation_i
 \label{prop:ulctrav_sound_for_trivialreduction}
     Let $M$ be an untyped term containing only trivial redexes, and $N$ the reduct obtained by firing the \emph{leftmost spinal-innermost} trivial redex, then $\coresymbol(\travsetscn(M)) = \coresymbol(\travsetscn(N))$.
 \end{proposition}
-%\proofatend
 \begin{proof}
 Let's consider the tree structure at the trivial redex on Figure~\ref{fig:reducing_trivialredex}. It is of the form $(\lambda \overline{x} . T) A_1 \ldots A_r$ for $r\geq1$ where $(x_1, A_1)$ forms the leftmost trivial redex.
     Two cases must be considered:
@@ -3545,141 +3548,133 @@ Let's consider the tree structure at the trivial redex on Figure~\ref{fig:reduci
 \label{fig:reducing_trivialredex}
     \end{figure}
 %%%%%%%%%%
-{\bf Case $r>1$} Because the structure of the tree is preserved after reduction, there is an implicit injection $\Phi$ from nodes of the reduct $N$ to nodes of $M$. Let $\phi$ denote its element-wise structure-reserving  extension to justified sequences.
+{\bf Case $r>1$} The term tree after reduction is a subtree of the original tree, modulo minor relabelling. This induces
+an injection $\Phi$ from nodes of the reduct $N$ to nodes of $M$.
+Extending it occurrence-wise to justified sequences
+yields a bisimulation between $M$ and $N$ are bisimilar.
+This is because:
+%
+(i) Since $x_1$ does not occur in $T$, the term $A_1$ will never be traversed in $N$.
+%
+(ii) Only occurrences hereditarily justified by $\lambda x_1 \ldots x_n$ see their link label changed, between a traversal of $N$ and its simulation in $M$. But since they are internal nodes, they get filtered out by $\coresymbol$.
+%
+(iii) The arity of node $\lambda x_2 \ldots x_n$ increases by $1$ after applying $\Phi$, but it does not impact the dynamic arity of traversals because the arity of the application node also increases by $1$.
+%
+%Secondly, since $\Phi$ is injective, so is its element-wise extension to justified sequences.
+%
+(iv) The bisimulation preserves the core. This is shown by an easy induction, observing that nodes $@$ and $\lambda x_2\ldots x_n$ necessarily occur consecutively in a traversal of $N$, and because $|@| = |\Phi(@)| -1$ and $|\lambda x_2\ldots x_n| = |\Phi(\lambda x_2\ldots x_n)| - 1$, the core projection is preserved.
 
-    Firstly, $M$ and $N$ are in $\phi$-bisimulation. We omit the details, the key observations are:
-    (i) Since $x_1$ does not occur in $T$, the term $A_1$ will never be traversed in $N$.
-    (ii) Only nodes hereditarily justified by $\lambda x_1 \ldots x_n$ see their label (or link label) changed after applying $\Phi$. But since those are external nodes, they get filtered out by the core projection $\coresymbol$.
-    (iii) The arity of node $\lambda x_2 \ldots x_n$ increases by $1$ after applying $\Phi$, but it does not impact the dynamic arity of traversals because the arity of the application node also increases by $1$.
-
-    Secondly, since $\Phi$ is injective, so is its element-wise extension to justified sequences.
-
-    Finally, $\phi$ and $\coresymbol$ commute. This is shown by an easy induction, observing that nodes $@$ and $\lambda x_2\ldots x_n$ necessarily occur consecutively in a traversal of $N$, and because $|@| = |\Phi(@)| -1$ and $|\lambda x_2\ldots x_n| = |\Phi(\lambda x_2\ldots x_n)| - 1$, the core projection is preserved modulo $\Phi$.
-
-    Hence by Lemma~\ref{lem:bisimulation_isomorphism} the two sets of traversals are isomorphic.
 %%%%%%%
-{\bf Case $r>1$} Depicted on Figure~\ref{fig:reducing_trivialredex} (bottom). The tree structure is altered: the application node and the argument $A_1$ are eliminated in the reduct. There is an implicit injection $\Phi$ from nodes of $N$ to nodes of $M$. We extent this function to \emph{occurrences} of nodes as follows. Let's introduce the abbreviation $\overline{y} = \overline\eta x_2 \ldots x_n$.
-    \begin{align*}
-        \Phi\colon \nameencoding(N) &\rightarrow \nameencoding(M) \\
-        (n,p,d,k) &\longmapsto (\Phi(n),p,d,k) & \mbox{if $n\neq\lambda\overline{y}$} \\
-        (\overline{y},p,d,k) &\longmapsto (\overline\eta,(x_2 \ldots x_n \cdot p),d,k)
-    \end{align*}
-    So in particular, $\Phi$ maps occurrences of $\lambda\overline{y}$ to occurrences of $\lambda\overline\eta$ with binding variables $x_2 \ldots x_n$ appended to $\overline\eta$.
+{\bf Case $r>1$} Depicted at bottom of Figure~\ref{fig:reducing_trivialredex}. The tree structure is altered: the application node and the argument $A_1$ are eliminated in the reduct. There is an implicit injection $\Phi$ from nodes of $N$ to nodes of $M$.
+Let's abbreviate $\overline{y} = \overline\eta x_2 \ldots x_n$,
+then
+$\Phi$ maps occurrences of $\lambda\overline{y}$ to occurrences of $\lambda\overline\eta$ with binding variables $x_2 \ldots x_n$ appended to $\overline\eta$.
     \begin{equation}
         \Phi(\lambda\overline{y})
         =
         \lambda\overline\eta^{[x_2\ldots x_n]}
         \label{eqn:phi_maps_lambday_to_lambdaeta}
     \end{equation}
-    Observe also that $\Phi$ commutes with the rebinding operation: because in the case of $\lambda\overline{y}$, $\Phi$ appends variable names to the left whereas the rebinding operation appends variables names to the right.
 
     We extend $\Phi$ to justified sequences by taking the element-wise extension $\phi$ with the following additional modification: any occurrence of node $\lambda\overline{y}$ in a traversal of $N$ gets expanded by $\phi$ into the three occurrences $\lambda\overline\eta \cdot @ \cdot \lambda\overline{x}$ in $M$.
 
-    We have the following properties:
-    \begin{itemize}
-    \item $\phi$ is injective. It follows from the fact that $\Phi$ is itself injective.
+    %%%%%%%%%%
+$\rightarrow_M$ can simulate $\rightarrow_N$ and reciprocally. This is shown by induction on the traversal rules. One interesting case is when ghost nodes in $M$ get materialized into structural nodes in $N$:
+Consider the traversal of $M$ for some $i\geq1$:
+$t = \Pstr[10pt]{
+    (l){\lambda\overline\eta} \cdot (a)@ \cdot (lx-a,25:0){\lambda\overline{x}} \cdot \ldots \cdot (gl-a,30:i)\ghostlmd \cdot (gv-l,32:{|\eta|-1+i})\ghostvar }
+$.
+If $i>n$ then corresponding traversal in $N$
+also ends with a ghost variable:
+$u = \Pstr[10pt]{
+    (l){\lambda\overline\eta x_2 \ldots x_n} \cdot \ldots \cdot  (gv-l,32:{|\eta|-1+i})\ghostvar }
+$
+If $i\leq n$ then the ghost nodes $\ghostvar$ gets materialized into variable occurrence $x_i$ in $N$:
+$u = \Pstr[10pt]{
+    (l){\lambda\overline\eta x_2\cdots x_n} \cdot \ldots \cdot  (gv-l,32:{|\eta|+i-1}){x_i} }
+$
 
-    \item $\phi$ and $\coresymbol$ commute. This is because $\phi$ carries over the list of pending lambdas and the core symbol operation adequately implements merging of nodes $\lambda\overline\eta$ and
+Let $u$ be a traversal of $\travsetnorm(N)$
+ending with $\lambda\overline{y}$ that is
+$u = u_1 \cdot \lambda\overline{y} $ for some traversal $u_1$.
+The gets simulated in $M$ by $t$ of the form
+$t = t_1 \cdot \lambda\overline{\eta} \cdot @ \cdot \lambda\overline{x}$.
+%%%%%%%%%%
+    The simulation preserve the core $\coresymbol$
+    because the simulation in $M$
+    carries over the list of pending lambdas, and the core symbol operation adequately implements merging of nodes $\lambda\overline\eta$ and
     $\lambda\overline x_1 \ldots x_n$ into
-    $\lambda\overline\eta x_2 \ldots x_n$. Formally:
-
-    Let $u$ be a traversal of $\travsetnorm(N)$
-    ending with $\lambda\overline{y}$ that is
-    $u = u_1 \cdot \lambda\overline{y} $ for some traversal $u_1$.
-    The sequence $\phi(u)$ is of the form
-    $\phi(u) = \phi(u_1) \cdot \lambda\overline{\eta} \cdot @ \cdot \lambda\overline{x}$. Let $\overline\alpha$ be the list of pending lambdas at $u_{\leq \lambda\overline{y}}$. There are two cases:
-
-    Suppose $\lambda\overline\eta$ is internal. We have:
+    $\lambda\overline\eta x_2 \ldots x_n$
+and
+    $|\lambda\overline{\eta}| - |@| + |\lambda\overline{x}|
+    =|\lambda\overline{\eta}| - 1 + |\lambda\overline{x}|
+    =|\lambda\overline{\eta}x_2\ldots x_n|
+    =|\lambda\overline{y}|
+    $
+\iflongversion
+    Formally, let $\overline\alpha$ be the list of pending lambdas
+    at $u_{\leq \lambda\overline{y}}$. There are two cases.
+    Suppose $\lambda\overline\eta$ is internal, then:
     \begin{align*}
-        \coresymbol_{\overline\alpha}(\phi(u))
-        &=  \coresymbol_{\overline\alpha}(\phi(u_1) \cdot \lambda\overline{\eta} \cdot @ \cdot \lambda\overline{x})
-            & \mbox{(def.~of $\phi(u)$)}
+        \coresymbol_{\overline\alpha}(t))
+        &=  \coresymbol_{\overline\alpha}(t_1 \cdot \lambda\overline{\eta} \cdot @ \cdot \lambda\overline{x})
+            & \mbox{(def.~of $t$)}
         \\
-        &=  \coresymbol_{\overline{x}\overline\alpha}(\phi(u_1) \cdot
+        &=  \coresymbol_{\overline{x}\overline\alpha}(t_1 \cdot
         \lambda\overline\eta \cdot @)
             & \mbox{(def.~of $\coresymbol$)}
         \\
-        &=  \coresymbol_{pop_1(\overline{x}\overline\alpha)}(\phi(u_1) \cdot
+        &=  \coresymbol_{pop_1(\overline{x}\overline\alpha)}(t_1 \cdot
         \lambda\overline{\eta})
             & \mbox{(def.~of $\coresymbol$ and $|@|=1$)}
         \\
-        &=  \coresymbol_{\overline\eta \cdot pop_1(\overline{x}\overline\alpha)}(\phi(u_1))
+        &=  \coresymbol_{\overline\eta \cdot pop_1(\overline{x}\overline\alpha)}(t_1)
             & \mbox{(def.~of $\coresymbol$)}
         \\
-        &=  \coresymbol_{\overline{y}\overline\alpha}(\phi(u_1))
+        &=  \coresymbol_{\overline{y}\overline\alpha}(t_1)
             & \mbox{(def.~of $\overline{y}$)}
         \\
-        &=  \phi(\coresymbol_{\overline{y}\overline\alpha}(u_1))
+        &=  \coresymbol_{\overline{y}\overline\alpha}(u_1)
             & \mbox{(by induction hypothesis)}
         \\
-        &= \phi(\coresymbol_{\overline\alpha}(u_1 \cdot \lambda\overline{y})) & \mbox{(def of $\coresymbol$)} \\
-        &=  \phi(\coresymbol_{\overline\alpha}(u))
+        &= \coresymbol_{\overline\alpha}(u_1 \cdot \lambda\overline{y}) & \mbox{(def of $\coresymbol$)} \\
+        &=  \coresymbol_{\overline\alpha}(u)
             & \mbox{(def.~of $u$).}
     \end{align*}
-
-    Suppose $\lambda\overline\eta$ is external. We have:
+    Suppose $\lambda\overline\eta$ is external, then:
     \begin{align*}
-        \coresymbol_{\overline\alpha}(\phi(u))
-        &=  \coresymbol_{\overline\alpha}(\phi(u_1) \cdot \lambda\overline{\eta} \cdot @ \cdot \lambda\overline{x})
+        \coresymbol_{\overline\alpha}(t)
+        &=  \coresymbol_{\overline\alpha}(t_1 \cdot \lambda\overline{\eta} \cdot @ \cdot \lambda\overline{x})
             & \mbox{(def.~of $\phi(u)$)}
         \\
-        &=  \coresymbol_{\overline{x}\overline\alpha}(\phi(u_1) \cdot
+        &=  \coresymbol_{\overline{x}\overline\alpha}(t_1 \cdot
         \lambda\overline\eta \cdot @)
             & \mbox{(def.~of $\coresymbol$)}
         \\
-        &=  \coresymbol_{pop_1(\overline{x}\overline\alpha)}(\phi(u_1) \cdot \lambda\overline\eta)
+        &=  \coresymbol_{pop_1(\overline{x}\overline\alpha)}(t_1 \cdot \lambda\overline\eta)
             & \mbox{(def.~of $\coresymbol$ and $|@|=1$)}
         \\
-        &=  \coresymbol_{x_2\ldots x_n \overline\alpha}(\phi(u_1) \cdot \lambda\overline\eta)
+        &=  \coresymbol_{x_2\ldots x_n \overline\alpha}(t_1 \cdot \lambda\overline\eta)
         & \mbox{(def.~of $pop$)}
         \\
-        &=  \coresymbol_{\epsilon}(\phi(u_1)) \cdot \lambda\overline\eta^{[x_2\ldots x_n \overline\alpha]}
+        &=  \coresymbol_{\epsilon}(t_1) \cdot \lambda\overline\eta^{[x_2\ldots x_n \overline\alpha]}
             & \mbox{(def.~of $\coresymbol$)}
+        \\
+        &=  \coresymbol_{\epsilon}(t_1) \cdot (\lambda\overline\eta^{[x_2\ldots x_n]})^{[\overline\alpha]}
+            & \mbox{(rebinding composition)}
+        \\
+            &= \coresymbol_{\epsilon}(u_1) \cdot \lambda\overline{y}^{[\overline\alpha]}
+            & \mbox{(by Eqn.~\ref{eqn:phi_maps_lambday_to_lambdaeta})}
+        \\
+        &= \coresymbol_{\overline\alpha}(u_1 \cdot \lambda\overline{y})
+            & \mbox{(def.~of $\coresymbol$)}
+        \\
+        &= \coresymbol_{\overline\alpha}(u)
+            & \mbox{(def.~of $u$)}
     \end{align*}
-    And:
-    \begin{align*}
-        \phi(\coresymbol_{\overline\alpha}(u))
-        &= \phi(\coresymbol_{\overline\alpha}(u_1 \cdot \lambda\overline{y}))
-        & \mbox{(def.~of $u$)}
-    \\
-        &= \phi(\coresymbol_{\epsilon}(u_1) \cdot \lambda\overline{y}^{[\overline\alpha]})
-        & \mbox{(def.~of $\coresymbol$)}
-    \\
-        &= \phi(\coresymbol_{\epsilon}(u_1)) \cdot \phi(\lambda\overline{y}^{[\overline\alpha]})
-        & \mbox{(def.~of $\phi$)}
-    \\
-        &=  \coresymbol_{\epsilon}(\phi(u_1)) \cdot \phi(\lambda\overline{y}^{[\overline\alpha]})
-        & \mbox{(commutativity, by I.H.)}
-    \\
-        &=  \coresymbol_{\epsilon}(\phi(u_1)) \cdot \phi(\lambda\overline{y})^{[\overline\alpha]}
-        & \mbox{($\phi$ commutes with rebinding)}
-    \\
-    &=  \coresymbol_{\epsilon}(\phi(u_1)) \cdot (\lambda\overline\eta^{[x_2\ldots x_n]})^{[\overline\alpha]}
-        & \mbox{(by Eqn.~\ref{eqn:phi_maps_lambday_to_lambdaeta})}
-    \\
-        &=  \coresymbol_{\epsilon}(\phi(u_1)) \cdot\lambda\overline\eta^{[x_2\ldots x_n \overline\alpha]}
-        & \mbox{(rebinding composition)}
-    \end{align*}
-    Hence $\phi(\coresymbol_{\overline\alpha}(u)) = \coresymbol_{\overline\alpha}(\phi(u))$.
-
-    \item $\rightarrow_M$ can simulate $\rightarrow_N$ and reciprocally. This is shown by induction on the traversal rules. One interesting case is when ghost nodes in $M$ get materialized into structural nodes in $N$:
-    Consider the traversal of $M$ for some $i\geq1$:
-    $t = \Pstr[10pt]{
-        (l){\lambda\overline\eta} \cdot (a)@ \cdot (lx-a,25:0){\lambda\overline{x}} \cdot \ldots \cdot (gl-a,30:i)\ghostlmd \cdot (gv-l,32:{|\eta|-1+i})\ghostvar }
-    $.
-    If $i>n$ then corresponding traversal in $N$
-    also ends with a ghost variable:
-    $u = \Pstr[10pt]{
-        (l){\lambda\overline\eta x_2 \ldots x_n} \cdot \ldots \cdot  (gv-l,32:{|\eta|-1+i})\ghostvar }
-    $
-    If $i\leq n$ then the ghost nodes $\ghostvar$ gets materialized into variable occurrence $x_i$ in $N$:
-    $u = \Pstr[10pt]{
-        (l){\lambda\overline\eta x_2\cdots x_n} \cdot \ldots \cdot  (gv-l,32:{|\eta|+i-1}){x_i} }
-    $
-    \end{itemize}
     We can then conclude by Lemma~\ref{lem:bisimulation_isomorphism} that the two sets of traversals are isomorphic.
+\fi
 \end{proof}
-%\endproofatend
 
 \begin{example}
     Take the term $M = \lambda x. (\lambda y z.z) u$, which trivially reduces to $N = \lambda x z . z$, and its traversal $t$ from Example~\ref{examp:ghost_materialization}.
@@ -3737,9 +3732,10 @@ $\travsetscn(M)/{\sim} \, \structisomorphic\, \pathset(T)$.
 \end{theorem}
 \begin{proof}
 Let's first assume that $M$ is in beta-normal form. Then its tree does not contain any $@$-node and all nodes must be external.
-Hence the dynamic arity of a traversal ending with external variable $x$ is precisely $|x|$, the arity of $x$. A straightforward induction on the traversal
-shows, that since \rulenamet{Var} is never used we necessarily have
-$\travsetnorm(M) = \travsetscn(M) = \pathset(M)$. Since all nodes are externals the projection $\coresymbol$ coincides with the identity thus $\core{\travsetnorm(M)} = \travsetnorm(M) = \pathset(M)$.
+Hence the dynamic arity of a traversal ending with external variable $x$ is precisely the arity of $x$. Since all nodes are external,
+rule \rulenamet{Var} is never used and we necessarily have
+$\travsetnorm(M) = \travsetscn(M) = \pathset(M)$, and further
+the projection $\coresymbol$ coincides with the identity thus $\core{\travsetnorm(M)} = \travsetnorm(M) = \pathset(M)$.
 %
 If $M$ is not normal form then since $M$ has a beta-nf, by Theorem~\ref{thm:completeness_leftmostlinearred} its \emph{leftmost linear reduction sequence} terminates and yields a \emph{qnf}. By Proposition~\ref{prop:ulctrav_impl_linear_reduction} the set of traversal cores is preserved by \emph{linear reduction} (up to an isomorphism) thus the set of cores of  traversals of the \emph{qnf} is isomorphic to the traversal cores of $M$. Corollary~\ref{cor:qnf_and_nf_traveset_invariant} permits us to conclude.
 \end{proof}
