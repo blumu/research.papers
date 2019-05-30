@@ -336,11 +336,13 @@ where traversals explore a branches in the tree representation of the normal for
 %%%%%%%%%%%%%%%
 \subsection{Overview}
 This paper
-(i) Generalizes the notion of traversals from the typed setting, which we refer to as `\emph{concrete traversals}', to the untyped lambda calculus (ULC), which we name `\emph{imaginery traversals}';
+(i) Generalizes the notion of traversals from the typed setting, referred as `\emph{concrete traversals}', to the untyped lambda calculus (ULC), which we name `\emph{imaginery traversals}';
 (ii) Introduces a method to evaluate untyped lambda terms based on enumerating traversals;
-(iii) Formalizes the connection between traversals and the notion of \emph{head linear reduction}.
+(iii) Establishes a connection between traversals and \emph{head linear reduction}.
 
-The key idea of imaginary traversals is the ad-hoc use of eta-expansion. Attempting to traverse an untyped lambda term causes the traversal to get stuck when the operator sub-term of an application has insufficiently many operands. In such a situation, there is no operand node in the term tree to traverse. Take the term $M = (\lambda f.f)(\lambda x.x)$ for example. A concrete traversal gives the sequence of nodes $\lambda f \cdot f \cdot \lambda x \cdot x$ (where pointers are omitted), at which point the traversal is stuck because there is no subterm representing the first argument of $f$.
+Attempting to traverse an untyped lambda term with the
+traversal rules of STLC causes the traversal to get stuck when the operator sub-term of an application has insufficiently many operands. In such a situation, there is no operand node in the term tree to traverse.
+A concrete traversal of the term $M = (\lambda f.f)(\lambda x.x)$ for example,  gives the sequence of nodes $\lambda f \cdot f \cdot \lambda x \cdot x$, at which point the traversal is stuck because there is no subterm representing the first argument of $f$.
 Similarly, a concrete traversal of $U = (\lambda x. x x)(\lambda y. y)$ gets  stuck at variable $y$ (See Example~\ref{examp:baby}). To take an analogy with abstract machine evaluators, this would be like a broken implementation of a Krivine machine~\cite{Krivine2007} attempting to lookup a variable from an empty environment, or a SECD machine~\cite{landin-secd} attempting to pop an argument from an empty stack when evaluating the application operator.
 
 This situation never occurs in the typed setting where lambda terms are
@@ -348,11 +350,12 @@ conveniently assumed to be \emph{eta-long expanded}, a transformation that recur
 which ensures that when traversing an application, there exists a subterm representing every possible operator's argument.
 
 Untyped terms admitting a simple type, like $M$, can be traversed via eta-long expansion with respect to whichever type they inhabit.
-But this is not feasible in the general ULC case where untyped terms do not necessarily inhabit a simple type. In those cases, performing static eta-expansions sometimes help, for instance the term $U$, which has no simple type, can be traversed if we first eta-expand all its variable occurrences. But this does not always work: for instance in the term
- $J = (\lambda u . u(x\, u)) (\lambda v . v\, y)$ from
- Example~\ref{ex:missingoperand}, nested eta-expansions are necessary to traverse it:
- the fresh variable resulting from the eta-expansion of $x\, u$ needs to be itself eta-expanded! Eta-expanding all variables infinitely often is not feasible, so instead imaginary traversals
-  exhibit the missing operand via ad-hoc dynamic eta-expansion, as they traverse the term.
+But this is not feasible in the general ULC case where untyped terms do not necessarily inhabit a simple type.
+Sometimes, well-chosen eta-expansions can still help, for instance the untyped term $U$, which has no simple type, is traversable if we eta-expand all its variable occurrences. This does not always work unfortunately: to traverse the
+term $J = (\lambda u . u(x\, u)) (\lambda v . v\, y)$ from
+ Example~\ref{ex:missingoperand}, nested eta-expansions are necessary:
+ the fresh variable resulting from the eta-expansion of $x\, u$ needs to be itself eta-expanded to unblock a concrete traversal of the term.
+ Eta-expanding all variables infinitely often is not feasible, so instead imaginary traversals exhibit the missing operand via ad-hoc dynamic eta-expansion, as they traverse the term.
  This allows the traversal to proceed as if the operand existed in the original term.
 
 So for instance in $M$, an imaginary traversal traverses node $x$ by jumping to a fictitious fresh node $y$ that would exist if $f$ were eta-expanded
@@ -376,12 +379,12 @@ Evaluating an untyped term boils down to enumerating traversals.
 We achieve this by restricting the non-determinism when traversing a variable: we bound the argument index by a critical quantity called the `dynamic arity', calculated in linear time from the traversal itself. It defines the number of arguments beyond which eta-expansions becomes unnecessary for the sake of finding a path in the normal form. This restricts both the breadth and depth of the traversal enumeration: only a finite number of on-the-fly eta-expansions are applied on a given traversal; and a traversal cannot unfold infinitely, provided that the term has a beta-normal form.
 On the other hand, traversing a non-terminating term like $(\lambda x. x\,x)(\lambda x. x\,x)$ leads to infinitely long traversals, as one would expect.
 
-The read-out phase of the algorithm appeals to a correspondence property between the traversals and paths in the tree representation of the normal form. The term $M$, for instance, has a single traversal $t$, which via a suitable filtering, yields the path $\lambda z \cdot z$; its beta-normal form is thus $\lambda z. z$, up to variable renaming.
+The read out phase of the algorithm appeals to a correspondence property between the traversals and paths in the tree representation of the normal form. The term $M$, for instance, has a single traversal $t$, which via a suitable filtering, yields the path $\lambda z ~ z$; its beta-normal form is thus $\lambda z. z$, up to variable renaming.
 
  To prove correctness of the evaluation procedure, we show that traversals essentially implement a recursive version of \emph{head linear reduction}, a non-standard reduction strategy based on an alternative notion of redex
   where substitution occurs one variable occurrence at a time.
 
- We have implemented the evaluation procedure in HOG, a software program to study the theory of traversals as well as higher-order pushdown automata generated from Higher-Order Grammars and lambda terms~\cite{BlumGalop2008,Blum-HogTool}.  Section~\ref{sec:examples} illustrates the evaluation procedure and includes traversals of untyped lambda terms generated with this tool.
+ We have implemented the evaluation procedure in HOG, a software program to study the theory of traversals as well as higher-order pushdown automata generated from Higher-Order Grammars and lambda terms~\cite{BlumGalop2008,Blum-HogTool}.  Section~\ref{sec:examples} includes traversals of untyped lambda terms generated with this tool.
 
 \subsection{Related work}
 
@@ -435,7 +438,7 @@ Krivine and PAM machines encode names with De Bruijn indices
 and combinators removes variables altogether through \emph{abstraction elimination}.
 Just like graph-based reduction, the traversal reduction procedure involves a final ``read-back'' phase to reconstruct the resulting normal form: all the explored tree branches are assembled together to form the tree representation of the normal form. Those other reduction methods do not typically rely on eta-expansion, on the other hand they require transforming the term into some intermediate structure, such as a combinator expression or an interaction net, whereas traversals operate directly on the abstract syntax tree of the term. Unlike Lamping's graphs, traversal-based reduction is not optimal in Levy's sense~\cite{optimal-reduction-levy}.
 
-The relationship of traversals with proof-nets and the Geometry of Interaction (GoI) can perhaps be seen through the lenses of head-linear reduction, which they implement, or their correspondence with game semantics. In particular, the linear substitution performed by traversals corresponds to firing of an exponential branch of a proof-net~\cite{MASCARI1994111}. We can also point to the work of Danos and Regnier who established the connection with abstract machines and GoI~\cite{danosherbelinregnier1996}.
+The relationship of traversals with proof-nets and the Geometry of Interaction (GoI) can be seen through the lenses of head-linear reduction, which they implement, or their correspondence with game semantics. In particular, the linear substitution performed by traversals corresponds to firing of an exponential branch of a proof-net~\cite{MASCARI1994111}. We also point to the work of Danos and Regnier who established the connection with abstract machines and GoI~\cite{danosherbelinregnier1996}.
 
 \subsection{Rest of the paper}
 
@@ -1214,7 +1217,7 @@ $\cdots  \lambda\overline{x}^{[\overline{y}]} \cdots$ where $\overline{y}$ denot
 Some immediate properties follow:
 (i) The core of a justified sequence only contains external nodes therefore $\coresymbol$ is idempotent.
 (ii) If $M$ is in beta-normal form then all the nodes of
- $\exttree(M)$ are external, therefore the core projection is the identity function.
+ $\exttree(M)$ are external, so that the core projection coincides with the identity.
 (iii) When discharging new variable names onto a lambda node, core projection can cause variable name reuse, but the justification pointers from the underlying name-free structure prevent any possible ambiguity.
 
 \begin{example}Take traversal $t = \lambda w^{[y]} ~ @ ~ \lambda x y ~ x ~ \lambda ~ z$ of $\lambda w . (\lambda x y .x) z$.
@@ -1322,8 +1325,10 @@ The traversals $t_k$, $k\geq 0$, correspond to plays
 \begin{definition}
 \label{dfn:essential_traversals}
 The set of \defname{essential traversals} $\travsetes$ is the subset of $\travulc$ defined by induction with the rules of Table~\ref{tab:trav_rules} where the justifier node in the
-input-variable rule \rulenamet{IVar} is restricted to be necessarily the last node in the traversal: $m=n$ and the produced traversal is $\Pstr[0.5cm]{t \cdot (n){n} \, (l-n,25:i){\alpha}} \in \travsetes$.
-We will use the subscript `${}_\essential$' to refer to this system of rules.
+input-variable rule \rulenamet{IVar} is restricted to be the last occurrence of the traversal ($m=n$) so that the traversal produced is $\Pstr[0.5cm]{t \cdot (n){n} \, (l-n,25:i){\alpha}} \in \travsetes$.
+We write `${\rulename{IVar}}_\essential$' to refer to this modified
+version of the input-variable rule.
+%
 % The input variable rule can thus be stated by the following derivation rule:
 % \infrule[$\rulefont{IVar_\essential}$]
 %      {t \cdot n \in\travsetes
@@ -1333,14 +1338,14 @@ We will use the subscript `${}_\essential$' to refer to this system of rules.
 %      }
 %      {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:i){\alpha}} \in \travsetes}
 
-We write $\travsetcones$ to denote the set of
-\defname{concrete and essential} traversals ($\travsetes \inter \travsetcon$).
- That is, the traversals obtained by imposing the above restriction as well as restricting rules \rulenamet{Var} and \rulenamet{IVar} to their concrete sub-case (Definition~\ref{def:concrete_traversals}).
+We write $\travsetcones$ for the set of
+\defname{concrete and essential} traversals.
+That is the set of traversals $\travsetes \inter \travsetcon$ obtained by imposing the above restriction on \rulenamet{IVar} and additionally restricting  it to its concrete sub-case (Definition~\ref{def:concrete_traversals}).
 \end{definition}
 
 As traversals unfolds, a depth-first exploration of the tree of the beta-normal form takes place, where rule \rulenamet{IVar} implements the non-deterministic `branching points'. Since lambda-terms are pure of side-effects,
 it suffices to explore each possible branch only once.
-\emph{Essential traversals} implement this idea by restricting the rule \rulenamet{IVar} to only traverse nodes leading to paths in the tree that the traversal has so far not explored: when picking the lambda node to visit next, it forces choice `(J)' to be the \emph{latest} variable node in the traversal. \emph{Concrete} essential traversals further restrict choice `(L)' to be a structural child lambda node of that variable node.
+\emph{Essential traversals} implement this idea by restricting the rule $\rulenamet{IVar}_\essential$ to only traverse nodes leading to paths in the tree that the traversal has so far not explored: when picking the lambda node to visit next, it forces choice `(J)' to be the \emph{latest} variable node in the traversal. \emph{Concrete} essential traversals further restrict choice `(L)' to be a structural child lambda node of that variable node.
 
 Continuing with the game-semantics intuition: Lambda nodes correspond to opponent moves, and restricting the opponent moves limit the set of contexts in which a term can appear. The restriction imposed by essential traversals effectively excludes all contexts that apply a term $A$ to $M$ such that $A$ evaluates any two of its higher-order arguments in a nested fashion. This excludes contexts involving $F_k$, $k\geq 2$, or the Kierstead's terms $\lambda f .f (\lambda x .f (\lambda y.y))$ and $\lambda f .f (\lambda x .f (\lambda y.x))$ where $f$ occurs more than once, but also $\lambda f. \lambda g . f (\lambda f .(\lambda x . g (\lambda y . x)))$ where the two arguments $f$ and $g$ occur in a nested expression.
 
@@ -1393,7 +1398,7 @@ which equates $\pview{\core{u}}$ if we take $u = u' \cdot \lambda\overline{x} \c
 It remains to show that $u\in\travsetes$.
 If we write the occurrences of $ v \cdot t^\omega$ as $m_1 \ldots m_q$, for $q>0$ then a finite induction on $q$ shows that $u_{\leq m_q} \in\travsetes$ and $m_q$'s justifying node and label are the same in $u$ and $t$. The only non-trivial case is rule \rulenamet{Var}: by the Path-View correspondence, $\pview{u_{<m_q}}$ is a path in the tree from the root to $m_q$ therefore $m_q$'s binder necessarily occur in $u$, we can  conclude using the I.H.~on $u_{<m_q}$ and applying \rulenamet{Var} on $u_{<m_q}$ to get $u_{\leq m_q}$.
 %
-(ii) In essential traversals, non-initial occurrences of external lambda nodes must immediately follow their justifier by rule \rulenamet{IVar}, hence after removing internal nodes the P-view coincide with the identify function.
+(ii) In essential traversals, non-initial occurrences of external lambda nodes must immediately follow their justifier by rule $\rulenamet{IVar}_\essential$, hence after removing internal nodes the P-view coincide with the identify function.
 \endshortproof
 \proofatend
 %\begin{proof}
@@ -1478,7 +1483,7 @@ This yields the normalization procedure for simply-typed terms in eta-long form 
 \label{algo:stlc_normalization_by_traversals}
 \begin{algorithmic}
 \REQUIRE{Closed simply typed term $M^\tau$ of type $\tau$ in eta-long form.}
-\ENSURE{Tree of the beta-normal form of $M^\tau$.}
+\ENSURE{The beta-normal form of $M^\tau$.}
 \begin{enumerate}[nosep]
   \item Calculate $T = \core{\travsetcones^{\max}(M^\tau)}$
   \begin{itemize}[nosep]
@@ -1503,18 +1508,18 @@ This yields the normalization procedure for simply-typed terms in eta-long form 
     (ii) Rules that do not involve ghost nodes all have bounded non-determinism therefore a concrete traversal only has a finite number of immediate extensions. Since the traversals are finite, this implies that the set of traversals is itself finite.
 \end{proof}
 
-\begin{theorem}[Correctness]
-Algorithm~\ref{algo:stlc_normalization_by_traversals} terminates and returns the eta-long beta-normal form of the input term.
+\begin{theorem}
+Algorithm~\ref{algo:stlc_normalization_by_traversals} is correct.
 \end{theorem}
 \begin{proof}
 \emph{Soundness} A beta-normal term is uniquely determined by the set of maximal paths in its tree representation (Property~\ref{prop:tree_path_charact}).
 By Proposition~\ref{prop:path_charact_stlc}, this set corresponds precisely to the core P-views of \emph{concrete} traversals,
 and by Proposition~\ref{prop:essential_traversal_simcomplete} it is also given by the core of \emph{essential} concrete traversals.
 For eta-long forms, $\coresymbol$ coincides with filtering the internal nodes without altering the bound variables in lambda-nodes, therefore $\travsetcones$ is $\alpha$-consistent and we can use the
-readout procedure of Proposition~\ref{proposition:termtree_readout_from_justitied_paths} to reconstruct the term
-from its justified paths.
-
-
+readout procedure of Proposition~\ref{proposition:termtree_readout_from_justitied_paths} to reconstruct
+from the justified paths the
+eta-long beta-normal form of the input term.
+%
 \emph{Termination} By Property~\ref{prop:concrete_essential_trav_finite} the set of concrete essential traversals is finite and each traversal is itself finite, therefore the enumeration in Algorithm~\ref{algo:stlc_normalization_by_traversals} terminates.
 \end{proof}
 
@@ -1828,7 +1833,7 @@ shows correctness of the algorithm, in particular that the set of justified path
 \caption{Normalization by traversals for the Untyped Lambda Calculus}
 \label{algo:ulc_normalization_by_traversals}
 \REQUIRE{Untyped term $M$ having a beta-normal form}
-\ENSURE{Tree of the beta-normal form of $M$ modulo $\alpha$-conversion}
+\ENSURE{The beta-normal form of $M$ modulo $\alpha$-conversion}
 \begin{enumerate}[nosep]
   \item Calculate $T \leftarrow \core{\travsetnorm^{\max}(M)}$
   \begin{itemize}[leftmargin=0.5em,nosep]
@@ -2407,7 +2412,7 @@ is defined as $lloc_M(M)$ if it exists and the generalized redex it is involved 
 The \defname{leftmost linear reduction} strategy, written $\llred$, is defined as the strategy that linearly fires the generalized redex involving the leftmost linear variable occurrence.
 \end{definition}
 Leftmost linear reduction proceeds by first locating the left-most variable occurrence and, if it is involved in a redex, linearly fires it. In comparison, the standard left-most outermost reduction strategy first locates the leftmost redex and then fires it by substituting all the variables involved in it.
-
+%
 Since the \emph{lloc} is uniquely defined, a given term has a unique left-most linear reduction sequence $M \llred M_1 \llred M_2 \llred \ldots$ (also abbreviated as \defname{linear reduction sequence}).
 
 \begin{example}
@@ -2478,6 +2483,7 @@ So $M$ is in quasi-normal form, even though it has a non-trivial redex in the ar
 \begin{definition}%[Arguments of the hoc]
 Let $z$ be the \emph{hoc} of $M$.
 The \defname{arguments of the \emph{hoc} occurrence}, written ${\sf Args}(M)$, is a list of subterms of $M$ defined by induction:
+\iflongversion
 \begin{align*}
     & \begin{array}{ll}
         {\sf Args}(z) &= \epsilon \\
@@ -2490,7 +2496,15 @@ The \defname{arguments of the \emph{hoc} occurrence}, written ${\sf Args}(M)$, i
         {\sf Args}(U)         & \mbox{if } \lambda_l(U) \neq \epsilon.
     \end{cases}
 \end{align*}
-Note that the case of a variable $x\neq z$ is not needed since the induction proceeds by spinal descent to the head occurrence $z$.
+\else
+${\sf Args}(z) = \epsilon$,
+${\sf Args}(\lambda x . U ) = {\sf Args}(U)$,
+${\sf Args}(U V) =
+{\sf Args}(U) \cdot V$  if $\lambda_l(U) = \epsilon$,
+ and ${\sf Args}(U V) = {\sf Args}(U)$
+ if $\lambda_l(U) \neq \epsilon$.
+\fi
+The variable case $x\neq z$ is not needed since the definition proceeds by spinal descent to the head occurrence $z$.
 \end{definition}
 
 \iflongversion
@@ -2852,22 +2866,24 @@ A subsequence of a traversal is a
 %For any node $n$ of the tree of $M$ we write $M^{(n)}$ for the subterm of $M$ rooted at $n$, and $lloc_M(n)$ to denote $lloc_M(M^{(n)})$.
 \begin{definition}
 The \defname{lloc of a tree node} $n$, written
- $lloc_M(n)$, denotes $lloc_M(N)$ where $N$ is the subterm of $M$ rooted at $n$ and $lloc$ denotes the leftmost linear occurrence from Definition~\ref{def:leftmostlinearreduction}.
+ $lloc_M(n)$, denotes the leftmost linear occurrence $lloc_M(N)$ (from Definition~\ref{def:leftmostlinearreduction}) of the subterm $N$ of $M$ rooted at $n$.
 \end{definition}
 %We say that a traversal $t$ is \defname{head-normal} if it ends with a structural lambda node with undefined lloc (\ie, $t^\omega = \lambda\overline\eta$ and $lloc_M(t^\omega) = \bot$).
 
 \begin{property}
 \label{prop:strand_spinaldescent}
-Let $t$ be a traversal of $M$ and $u$ be a subsequence of $t$ of the form
-$u = \underline{\lambda \overline{x}} \cdot v \cdot \underline{x}$
-for some subsequence $v$, external structural variable node $x$ and external structural $\lambda$-node $\lambda \overline{x}$.
-If $v$ is empty then the node following $u$ in $t$, if it exists, is necessarily a structural child $\lambda$-node of $x$.
+Let $t= \ldots \underline{\lambda \overline{x}} \cdot v \cdot \underline{x} \ldots$
+be a traversal of $M$
+for some subsequence $v$,
+ external structural variable node $x$
+ and external structural $\lambda$-node $\lambda \overline{x}$.
+If $v$ is empty then the node following $x$ in $t$, if it exists, is necessarily a structural child $\lambda$-node of $x$.
 % (\ie, it cannot be a ghost node).
 \end{property}
 \begin{proof}
  If $v$ is empty then the strand ending at $x$
  is just $\underline{\lambda \overline{x}} \cdot \underline{x}$ therefore
- $t$'s dynamic arity is precisely $|x|$, in which case rule \rulenamet{IVar} can only visit a structural child of $x$.
+ the dynamic arity at $t_{\leq x}$ is precisely $|x|$, so that rule \rulenamet{IVar} can only visit a structural child of $x$.
 \end{proof}
 
 \begin{definition}[Strand types]
@@ -3158,9 +3174,9 @@ The same argument used in the \emph{structural argument} case shows that
     (G) [below right of=V] {$\ghostlmd$};
 
 \path (L) edge [bend right,->>]      node[right,xshift=-2em,text width=4cm]{Spinal descent to \emph{lloc} \rulenamet{App},\rulenamet{Lmd^{\sf var}},\rulenamet{Lmd^@}} (V)
-      (V) edge [bend right]  node[left,text width=3cm] {Concrete argument \rulenamet{IVar}} (L)
-          edge [bend left]   node[right, text width=3cm] {Imaginary argument \rulenamet{IVar}} (G)
-      (G) edge [->>]                 node[below,text width=4cm] {Pending argument look-up \rulenamet{Lmd^\theta}, \rulenamet{IVar}} (L)
+      (V) edge [bend right]  node[left,text width=3cm] {Concrete argument $\rulename{IVar}_\normalizing$} (L)
+          edge [bend left]   node[right, text width=3cm] {Imaginary argument $\rulename{IVar}_\normalizing$} (G)
+      (G) edge [->>]                 node[below,text width=4cm] {Pending argument look-up \rulenamet{Lmd^\theta}, $\rulename{Var}$} (L)
 ;
 \end{tikzpicture}
 \caption{Decomposition of normalizing traversals of a \emph{qnf}.
@@ -3283,92 +3299,13 @@ The proof of the opposite inclusion is symmetrical.
 \begin{proposition}%[Traversals are sound for linear reduction]
 \label{prop:ulctrav_impl_linear_reduction}
 %Let $M$ be an untyped term.
-If $M \llred N$ then $\coresymbol(\travsetscn(M))
-= \coresymbol(\travsetscn(N))$.
+If $M \llred N$ then $M$ and $N$ are bisimilar.
 \end{proposition}
 %\shortproof
 %\endshortproof
 %\begin{proof}
+\noindent \emph{Proof overview.}
 %\proofatend
-%%%%%%%%% Figure showing the substitution Case 1.
-\begin{wrapfigure}{L}{0.6\textwidth}
-    %\begin{figure}[htbp]
-        \centering
-        \begin{tikzpicture}[baseline=(root.base),level distance=4ex,inner ysep=0.5mm,sibling distance=7mm]
-        \node (root){}
-                child[dashed]{node{$@_{a}$}
-                    child[solid]{node{$\lambda\overline{\xi}_a$}
-                        child[dashed]{node{$@$}
-                            child{node{$\lambda\ldots$}
-                                child[solid]{node{$@$}
-                                    child[solid]{node{$\lambda\overline{z}$}
-                                        child[solid,level distance=5ex]{node {$x$}
-                                            child{node{$B_1$}}
-                                            child{node{$\ldots$}}
-                                            child{node{$B_{|x|}$}}
-                                            }
-                                        edge from parent %node[above left]{$0$}
-                                    }
-                                    child[dashed]{node{}}
-                                }
-                            }
-                            child[dashed]{node{}}
-                        }
-                        edge from parent %node[above left]{$0$}
-                    }
-                    child[dashed]{node{\ldots}}
-                    child[solid]{node{$\lambda\overline{y}$}
-                        child{node{$R$}}
-                    }
-                    child[dashed]{node{\ldots}}
-                }
-        ;
-        \node (root2) at (5.3,0) {}
-            child[dashed]{node{$@_{a}$}
-                child[solid]{node{$\lambda\overline{\xi}_a$}
-                    child[dashed]{node{$@$}
-                        child{node{$\lambda\ldots$}
-                            child[solid]{node{$@$}
-                                child[solid]{node{$\lambda\overline{z}$}
-                                    child[solid,level distance=5ex]{node {$@_x$}
-                                        child{node{$\lambda\overline{y}'$}
-                                            child{node{$R'$}}
-                                        }
-                                        child{node{$B_1$}}
-                                        child{node{$\ldots$}}
-                                        child{node{$B_{|x|}$}}
-                                        }
-                                    edge from parent %node[above left]{$0$}
-                                }
-                                child[dashed]{node{}}
-                            }
-                        }
-                        child[dashed]{node{}}
-                    }
-                    edge from parent %node[above left]{$0$}
-                }
-                child[dashed]{node{\ldots}}
-                child[solid]{node{$\lambda\overline{y}$}
-                    child{node{$R$}}
-                }
-                child[dashed]{node{\ldots}}
-            }
-        ;
-        \draw[<-] ([xshift=1.8cm,yshift=-2cm]root.east) -- +(1cm,0)
-        node[midway, above] {$\Phi$};
-        \draw[->] ([xshift=1.8cm,yshift=-1cm]root.east) -- +(1cm,0)
-        node[midway, above] {$\llred$};
-    \end{tikzpicture}
-    \caption{$M\llred N$, case where $|x|>0$, and the argument is an abstraction $\lambda\overline{y} . R$.
-     Linearly firing the generalized redex in $M$ (left)
-     yields $N$ (right) where $R'$ denotes a copy of $R$.
-    \iflongversion
-    $\Phi$ maps nodes from the reduct $N$ (right) to those of $M$ (left).
-    \fi
-    }
-    \label{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument}
-    \end{wrapfigure}
-    %\end{figure}
 Suppose that $M \llred N$. Let $x$ denote the leftmost linear variable occurrence in $M$ and $(\lambda x, A)$ be the generalized redex involving it, so that $N$ is the term obtained by firing $(\lambda x, A)$.
 A property of linear head reduction is that the reduct contains the original
 term itself
@@ -3407,7 +3344,97 @@ The linear substitution affects the term tree in three possible ways
 %   the reduct $N$ using the exact same traversal rules used to traverse $M$.
 %%%%%%%%%%%%%%%%%%
 {\bf Case 1:} $x$ has at least one operand ($|x|>0$) and $A$ is an
-abstraction (Figure~\ref{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument}).
+abstraction:
+
+%%%%%%%%% Figure showing the substitution Case 1.
+\iflongversion
+    (Figure~\ref{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument}).
+    \begin{figure}[htbp]
+    \centering
+\else
+    \begin{wrapfigure}{L}{0.6\textwidth}
+\fi
+%%%%%%%
+\begin{tikzpicture}[baseline=(root.base),level distance=3ex,inner ysep=0.5mm,sibling distance=7mm]
+\node (root){}
+        child[dashed]{node{$@_{a}$}
+            child[solid]{node{$\lambda\overline{\xi}_a$}
+                child[dashed]{node{$@$}
+                    child{node{$\lambda\ldots$}
+                        child[solid]{node{$@$}
+                            child[solid]{node{$\lambda\overline{z}$}
+                                child[solid,level distance=5ex]{node {$x$}
+                                    child{node{$B_1$}}
+                                    child{node{$\ldots$}}
+                                    child{node{$B_{|x|}$}}
+                                    }
+                                edge from parent %node[above left]{$0$}
+                            }
+                            child[dashed]{node{}}
+                        }
+                    }
+                    child[dashed]{node{}}
+                }
+                edge from parent %node[above left]{$0$}
+            }
+            child[dashed]{node{\ldots}}
+            child[solid]{node{$\lambda\overline{y}$}
+                child{node{$R$}}
+            }
+            child[dashed]{node{\ldots}}
+        }
+;
+\node (root2) at (5.2,0) {}
+    child[dashed]{node{$@_{a}$}
+        child[solid]{node{$\lambda\overline{\xi}_a$}
+            child[dashed]{node{$@$}
+                child{node{$\lambda\ldots$}
+                    child[solid]{node{$@$}
+                        child[solid]{node{$\lambda\overline{z}$}
+                            child[solid,level distance=5ex]{node {$@_x$}
+                                child{node{$\lambda\overline{y}'$}
+                                    child{node{$R'$}}
+                                }
+                                child{node{$B_1$}}
+                                child{node{$\ldots$}}
+                                child{node{$B_{|x|}$}}
+                                }
+                            edge from parent %node[above left]{$0$}
+                        }
+                        child[dashed]{node{}}
+                    }
+                }
+                child[dashed]{node{}}
+            }
+            edge from parent %node[above left]{$0$}
+        }
+        child[dashed]{node{\ldots}}
+        child[solid]{node{$\lambda\overline{y}$}
+            child{node{$R$}}
+        }
+        child[dashed]{node{\ldots}}
+    }
+;
+\draw[<-] ([xshift=1.7cm,yshift=-2cm]root.east) -- +(1cm,0)
+node[midway, above] {$\Phi$};
+\draw[->] ([xshift=1.7cm,yshift=-1cm]root.east) -- +(1cm,0)
+node[midway, above] {$\llred$};
+\end{tikzpicture}
+
+\iflongversion
+    \caption{$M\llred N$, case where $|x|>0$ and the argument is an abstraction $\lambda\overline{y} . R$.
+    Linearly firing the generalized redex in $M$ (left)
+    yields $N$ (right) where $R'$ denotes a copy of $R$.
+    $\Phi$ maps nodes from the reduct $N$ (right) to those of $M$ (left).
+    }
+    \label{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument}
+    \end{figure}
+\else
+\caption{
+$M\llred N$ Linearly firing the generalized redex in $M$ (left)
+yields $N$ (right) where $R'$ denotes a copy of $R$.}
+\end{wrapfigure}
+\fi
 %
 Let $@_j$ and $\lambda\overline{\xi_j}$ for $1\leq j\leq a$, $a\geq 1$
 denote respectively the @-nodes and $\lambda$-nodes in the spinal descent
@@ -3418,8 +3445,8 @@ Let $i$ denote $x$'s binding index in $\lambda\overline{\xi_1}$.
 %
 After reduction,
 node $x$ gets replaced by an application node $@_x$,  its existing children are preserved, and a new subterm $\lambda\overline{y}'. R'$, a copy of the subterm tree $A$, gets attached as the $0$th child tree of $@_x$.
-We preserve the original variable names from $R$, which does not cause capture of variables since the variable binding is uniquely determined by the enabling relation of the term tree.
-We write $\lambda\overline{y}'$ to distinguish the root node of $R'$ from the root $\lambda\overline{y}$ of $R$ (although they are both labelled with variable names $\overline{y}$).
+The copy preserves the original variable names from $R$, which does not cause capture since the variable binding is uniquely determined by the enabling relation.
+We use the prime notation $\lambda\overline{y}'$ to distinguish the root of $R'$ from that of $R$, although they are both labelled with variable names $\overline{y}$.
 %
 We thus have $\Phi(@_x) = x$, $\Phi(\lambda\overline{y}') = \lambda\overline{y}$, and $\Phi$ maps each node from subterm $\lambda\overline{y}'. R'$  to the corresponding node under $\lambda\overline{y}.R$.
 %
@@ -3590,38 +3617,37 @@ can also traverse the corresponding nodes in $N$, and reciprocally for traversal
 \end{itemize}
 
 %%%%%%%%
-{\bf Case 2:} $x$ has at least one operand ($|x|>0$) and $A$ is not an abstraction: $A = \lambda. R$ where $A$'s root node is the dummy lambda.
-The root node $r$ of $R$ is either a variable if $R$ is in head-normal form, or an $@$-node otherwise.
-The tree of the reduct $N$ is obtained from $\ctree(M)$
-by substituting $x$'s label with that of $r$ and prepending $r$'s children to existing $x$'s children. Other nodes, including $x$'s parent lambda node, remain untouched. Let $r'$ denote this updated node in the reduct $N$.
+{\bf Case 2:} $x$ has at least one operand ($|x|>0$) and $A = \lambda. R$ where $A$'s root node is the dummy lambda.
+The root node $r$ of $R$ is either a variable if it is in head-normal form, or an $@$-node.
+The tree $\ctree(N)$ is obtained from $\ctree(M)$
+by substituting $x$'s label with that of $r$ and prepending $r$'s children to existing $x$'s children. Other nodes, including $x$'s parent $\lambda$-node, remain untouched. Let $r'$ denote this updated node in the reduct $N$.
 This transformation yields an implicit mapping function $\Phi : \ExtendedNodes(N)\rightarrow \ExtendedNodes(N)$ such that $\Phi(r') = x$.
 Although $\Phi$ does not preserve the arity of $x$, it does not affect the dynamic arity of traversals since $|r'| = |x| + |r|$.
-We can then show by another case analysis that the two terms are bisimilar.
+We then show by case analysis on the rules that the two terms are bisimilar.
 
 %%%%%%% CASE 3
 {\bf Case 3:} $x$ is unapplied ($|x|=0$).
 %
-After reduction, node $x$ gets replaced by subterm $A$ and the label of $x$'s parent lambda node gets concatenated with the label of $A$'s root node:
-the parent lambda node $\lambda\overline{z}$ of $x$ in $M$ becomes $\lambda\overline{z}\overline{y}'$ in the reduct $N$.
-Like in the first case, it is easy to show that a traversals of $M$ of the form $\ldots \lambda\overline{z}\cdot x \cdot v \cdot \lambda\overline{y} \cdot \ldots$, where $v$ is an argument lookup, can be bisimulated by traversals in $N$ of the form $\ldots \cdot \lambda\overline{z}\overline{y}' \ldots$. Although the arity of $x$ is not preserved, this does not affect the dynamic arity because $|\lambda{\overline{z} \overline{y}'}| =
+After reduction, node $x$ gets replaced by subterm $A$ and the label of $x$'s parent $\lambda$-node gets concatenated with the label of $A$'s root node:
+the parent node $\lambda\overline{z}$ of $x$ in $M$ becomes $\lambda\overline{z}\overline{y}'$ in the reduct $N$.
+A traversals of $M$ of the form $\ldots \lambda\overline{z} \, x \cdot v \cdot \lambda\overline{y} \cdot \ldots$, where $v$ is an argument lookup, can be bisimulated by traversals in $N$ of the form $\ldots \cdot \lambda\overline{z}\overline{y}' \ldots$. The arity of $x$ is not preserved but it does not alter the dynamic arity because $|\lambda{\overline{z} \overline{y}'}| =
  |\lambda{\overline{z}}| +  |\lambda{\overline{y}}|$.
 %%%%%%%%%%%%%%%%% End of case where t ends with lloc variable occurrence x
-
-Hence $M$ and $N$ are bisimular and we conclude by Lemma~\ref{lem:bisimulation_isomorphism}.
 %\endproofatend
 %\end{proof}
+\qed
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{proposition}%[Traversals are sound for trivial reduction]
 \label{prop:ulctrav_sound_for_trivialreduction}
-    Let $M$ be an untyped term containing only trivial redexes, and $N$ the reduct obtained by firing the \emph{leftmost spinal-innermost} trivial redex, then $\coresymbol(\travsetscn(M)) = \coresymbol(\travsetscn(N))$.
+    Let $M$ be an untyped term containing only trivial redexes, and $N$ the reduct obtained by firing the \emph{leftmost spinal-innermost} trivial redex, then $M$ and $N$ are bisimilar.
 \end{proposition}
 \begin{proof}
     The figure below shows the tree structure at a subterm $(\lambda \overline{x} . T) A_1 \ldots A_r$ for $r\geq1$ where $(x_1, A_1)$ forms the leftmost spinal-innermost trivial redex.
     Two cases must be considered:
 
-    \begin{figure}[htbp]
-        \centering
+%    \begin{figure}[htbp]
+%        \centering
         \iflongversion
         \begin{tikzpicture}[baseline=(root.base),level distance=5ex,inner ysep=0.5mm,sibling distance=13mm]
         \node (root_rGt1_M){}
@@ -3679,6 +3705,7 @@ Hence $M$ and $N$ are bisimular and we conclude by Lemma~\ref{lem:bisimulation_i
         \caption{Reducing a (leftmost spinal-innermost) trivial redex. Case $r>1$ (top) and $r=1$ (bottom).}
             \else
 %%%%%%%%%%  short version
+\begin{center}
             \begin{tikzpicture}[baseline=(root.base),level distance=4ex,inner ysep=0.5mm,sibling distance=8mm]
                 \node (root_rGt1_M){}
                         child[dashed]{node{$\lambda\overline\eta$}
@@ -3708,7 +3735,7 @@ Hence $M$ and $N$ are bisimular and we conclude by Lemma~\ref{lem:bisimulation_i
                                 child{node{$A_r$}}
                             }
                         };
-                \node (root_rEq1_M) at (8.5,0) {}
+                \node (root_rEq1_M) at (8,0) {}
                         child[dashed]{node{$\lambda\overline\eta$}
                             child[solid]{node{$@$}
                                 child[solid]{
@@ -3720,7 +3747,7 @@ Hence $M$ and $N$ are bisimular and we conclude by Lemma~\ref{lem:bisimulation_i
                                 child{node{$A_1$}}
                             }
                         };
-                \node (root_rEq1_N) at (12.5,0) {}
+                \node (root_rEq1_N) at (12,0) {}
                         child[dashed]{node{$\lambda\overline\eta~x_2 \ldots x_n$}
                             child[solid]{node{$T$}
                             }
@@ -3728,20 +3755,19 @@ Hence $M$ and $N$ are bisimular and we conclude by Lemma~\ref{lem:bisimulation_i
                 ;
                 \draw[->] ([xshift=1.5cm,yshift=-1cm]root_rGt1_M.east) --
                 +(1.5cm,0)
-                node[midway, above, text width=1.5cm] {trivial reduction};
+                node[midway, above, text width=1.5cm,font=\small] {trivial reduction};
                 \draw[->] ([xshift=1cm,yshift=-1.5cm]root_rEq1_M.east) --
                  +(1.5cm,0)
-                    node[midway, above, text width=1.5cm] {trivial reduction} ;
+                    node[midway, above, text width=1.5cm,font=\small] {trivial reduction} ;
                 \end{tikzpicture}
-
-            \caption{Reducing the leftmost spinal-innermost trivial redex: $r>1$ (left) and $r=1$ (right).}
+            \end{center}
+ %           \caption{Reducing the leftmost spinal-innermost trivial redex: $r>1$ (left) and $r=1$ (right).}
 \fi
-
-\label{fig:reducing_trivialredex}
-    \end{figure}
+%\label{fig:reducing_trivialredex}
+%\end{figure}
 %%%%%%%%%%
 \noindent
-\emph{Case $r>1$} The reduct tree is a subtree of the original tree modulo minor relabelling.
+\emph{Case $r>1$ (left)} The reduct tree is a subtree of the original tree modulo minor relabelling.
 This induces an injection $\Phi$ from nodes of $N$ to nodes of $M$.
 Extending it occurrence-wise to justified sequences
 yields a bisimulation between $M$ and $N$.
@@ -3758,35 +3784,37 @@ not alter the dynamic arity of traversals.
 
 %%%%%%%
 \noindent
-\emph{Case $r>1$} The reduct tree is obtained by removing the @-node and argument $A_1$ and combining the two lambdas into $\lambda\overline{y}$,
+\emph{Case $r>1$ (right)} The reduct tree is obtained by removing the @-node and argument $A_1$ and combining the two lambdas into $\lambda\overline{y}$,
 where $\overline{y} = \overline\eta x_2 \ldots x_n$.
 %
 There is an implicit injection $\Phi$ from nodes of $N$, except $\lambda\overline{y}$, to nodes of $M$.
 %that maps $\lambda\overline{y}$ to $\lambda\overline\eta$.
-We extend $\Phi$ element-wise to $\phi$ on justified sequences
+We extend it element-wise to $\phi$ on justified sequences
 such that occurrences of $\lambda\overline{y}$ in $N$ gets replaced by the three occurrences $\lambda\overline\eta \cdot @ \cdot \lambda\overline{x}$ in $M$.
 %
 %%%%%%%%%%
-An induction on traversals shows that $\rightarrow_M$ can simulate $\rightarrow_N$ and reciprocally. One interesting case is when ghost nodes in $M$ get materialized into structural nodes in $N$:
+An induction on traversals shows that $\rightarrow_M$ simulates $\rightarrow_N$ and reciprocally.
+%
+Suppose $t_1$ simulates $u_1$ then a
+ traversal $u_1 \cdot \lambda\overline{y} \in \travsetnorm(N)$
+ending with $\lambda\overline{y}$
+gets simulated in $M$ by a traversal of the form
+$t_1 \cdot \lambda\overline{\eta} \cdot @ \cdot \lambda\overline{x}$.
+%
+One interesting case is when ghost nodes in $M$ get materialized into structural nodes in $N$:
 Consider the traversal
-$t = \Pstr[10pt]{
+$\Pstr[10pt]{\ldots
     (l){\lambda\overline\eta}  (a)@  (lx-a,25:0){\lambda\overline{x}} \ldots (gl-a,25:i)\ghostlmd  (gv-l,33:{|\eta|-1+i})\ghostvar }
-$ of $M$ for some $i\geq1$.
-If $i>n$ then the corresponding traversal in $N$
-is $u = \Pstr[10pt]{
+$ of $M$, $i\geq1$.
+If $i>n$ then it is simulated in $N$
+by $u = \Pstr[10pt]{\ldots
     (l){\lambda\overline y}  \ldots   (gv-l,32:{|\eta|-1+i})\ghostvar }
-$ which
-also ends with a ghost variable;
+$ which also ends with a ghost variable;
 but if $i\leq n$ then the $\ghostvar$ gets materialized into variable occurrence $x_i$ in $N$:
-$u = \Pstr[10pt]{
-    (l){\lambda\overline y} \ldots  (gv-l,32:{|\eta|+i-1}){x_i} }
+$\Pstr[10pt]{
+    \ldots  (l){\lambda\overline y} \ldots  (gv-l,32:{|\eta|+i-1}){x_i} }
 $.
 %
-A traversal $u = u_1 \cdot \lambda\overline{y} \in \travsetnorm(N)$
-ending with $\lambda\overline{y}$ for some $u_1$
-gets simulated in $M$ by a traversal of the form
-$t = t_1 \cdot \lambda\overline{\eta} \cdot @ \cdot \lambda\overline{x}$
-where $t_1$ simulates $u_1$.
 %%%%%%%%%%
     The simulation preserves the core because the simulation in $M$
     carries over the list of pending lambdas, and the core operation adequately merges $\lambda\overline\eta$ and $\lambda x_1 \ldots x_n$ into
@@ -3795,7 +3823,7 @@ and
     $|\lambda\overline{\eta}| - |@| + |\lambda\overline{x}|
     =|\lambda\overline{\eta}| - 1 + |\lambda\overline{x}|
     =|\lambda\overline{\eta}x_2\ldots x_n|
-    =|\lambda\overline{y}|
+%    =|\lambda\overline{y}|
     $
 \iflongversion
     There are two cases. Suppose $\lambda\overline\eta$ is internal, then:
@@ -3853,7 +3881,6 @@ and
         &= \coresymbol(u)
             & \mbox{(def.~of $u$)}
     \end{align*}
-    We can then conclude by Lemma~\ref{lem:bisimulation_isomorphism} that the two sets of traversals are isomorphic.
 \fi
 \end{proof}
 
@@ -3872,8 +3899,9 @@ By Proposition~\ref{prop:qnf_nf}(ii) %a \emph{qnf} reduces to its beta-nf:
  there is a reduction sequence $M = M_1 \rightarrow_\beta \ldots \rightarrow_\beta M_q$, $q\geq1$  where in each step, $M_{i+1}$ is obtained by reducing the leftmost spinal-innermost standard redex of $M_i$,
 %(of the form $(\lambda x . U) T$ such that $U$ does not contain any redex)
 and $M_q$ is $\alpha$-equivalent to $N$.
-By Proposition~\ref{prop:qnf_nf}(i), each such redex is trivial. By Proposition~\ref{prop:ulctrav_sound_for_trivialreduction}
-the set $\core{\travsetscn(\_)}$ is an invariant throughout this trivial reduction sequence. And since $M_q$ is $\alpha$-equivalent to $N$ we have the desired structure-preserving isomorphism.
+By Proposition~\ref{prop:qnf_nf}(i), each such redex is trivial, so by Proposition~\ref{prop:ulctrav_sound_for_trivialreduction}
+the reducts in the sequence are all bisimilar, and by Lemma~\ref{lem:bisimulation_isomorphism}
+$\core{\travsetscn(M)} = \core{\travsetscn(M_q)}$. Since $M_q$ is $\alpha$-equivalent to $N$ we have the desired structure-preserving isomorphism.
 \end{proof}
 
 \begin{proposition}
@@ -3908,13 +3936,18 @@ Let $M$ be an untyped term with normal form $T$. We have
 $\travsetscn(M)/{\sim} \, \structisomorphic\, \pathset(T)$.
 \end{theorem}
 \begin{proof}
-Let's first assume that $M$ is in beta-normal form. Then its tree does not contain any $@$-node and all nodes must be external.
+Suppose first that $M$ is in $\beta$-nf. Then its tree does not contain any $@$-node and all nodes must be external.
 Hence the dynamic arity of a traversal ending with external variable $x$ is precisely the arity of $x$. Since all nodes are external,
-rule \rulenamet{Var} is never used and we necessarily have
+rule \rulenamet{Var} is never used and we have
 $\travsetnorm(M) = \travsetscn(M) = \pathset(M)$, and further
 the projection $\coresymbol$ coincides with the identity thus $\core{\travsetnorm(M)} = \travsetnorm(M) = \pathset(M)$.
 %
-If $M$ is not a normal form then since $M$ has a beta-nf, by Theorem~\ref{thm:completeness_leftmostlinearred} its \emph{leftmost linear reduction sequence} terminates and yields a \emph{qnf}. By Proposition~\ref{prop:ulctrav_impl_linear_reduction} the traversal cores are preserved by \emph{linear reduction} thus the cores of traversals of the \emph{qnf} are isomorphic to the traversal cores of $M$. Corollary~\ref{cor:qnf_and_nf_traveset_invariant} permits us to conclude.
+If $M$ is not a normal form then since $M$ has a $\beta$-nf, by Theorem~\ref{thm:completeness_leftmostlinearred} its \emph{leftmost linear reduction sequence} terminates and yields a \emph{qnf}.
+By Proposition~\ref{prop:ulctrav_impl_linear_reduction}
+\emph{linear reduction} produces terms that are bisimilar with $M$,
+therefore $M$ and its \emph{qnf} are bisimilar.
+We can then conclude with Lemma~\ref{lem:bisimulation_isomorphism}
+and Corollary~\ref{cor:qnf_and_nf_traveset_invariant}.
 \end{proof}
 
 \begin{proposition}
