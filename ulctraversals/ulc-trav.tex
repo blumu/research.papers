@@ -1744,71 +1744,74 @@ where $\pview{\core{t}} = t$, is not equivalent to $\pview{\core{u}}$ for any $u
 \begin{table}[htbp]
     \begin{ruletablebox}{}%{Normalizing imaginary traversals of $\lambda$-calculus}
     \noindent {\bf PROGRAM - Structural rules}
-
     \infrule[$\rulefont{Root}$]
-        {r \mbox{ is the root of } \ctree(M)}
-        {\istraversal r}
+        {\lambda\overline{x} \mbox{ is the root of } \ctree(M)}
+        {\istraversal \lambda\overline{x}}
 
     \infrule[$\rulefont{App}$]
-        {\istraversal t \cdot @ \andalso @ \enables_0 \alpha }
-        {\istraversal \Pstr[0.4cm]{t \, (at) @  \, (a-at,40:0) \alpha} \andalso (\alpha\in\NodesLmd)}
+        {\istraversal t \cdot @ \andalso @ \enables_0 \lambda\overline{x} }
+        {\istraversal \Pstr[0.4cm]{t \, (at) @  \, (a-at,40:0) {\lambda\overline{x}}} \andalso (\lambda\overline{x}\in\NodesLmd)}
 
     \infrule[$\rulefont{Lam}^@$]
-         {\istraversal t \cdot \alpha
-         \andalso \alpha\in\NodesLmd
-         \andalso \child(\alpha) \in \NodesApp }
-         {\istraversal t \cdot \alpha ~ \child(\alpha)\andalso \mbox{$\child(\alpha)$ has no pointer}}
+         {\istraversal t \cdot \lambda\overline{x}
+         \andalso \lambda\overline{x}\in\NodesLmd
+         \andalso \child(\lambda\overline{x}) \in \NodesApp }
+         {\istraversal t \cdot \lambda\overline{x} ~ @
+         \andalso \mbox{@ has no pointer}}
 
     \infrule[$\rulefont{Lam}^{\sf var}$]
-         {\istraversal u \cdot \beta \cdot v \cdot \alpha
-         \quad \alpha\in\NodesLmd
-         \quad \child(\alpha) \in \NodesVar
-         \quad \beta \enables_i \child(\alpha), i \geq 1
-         \quad \beta \mbox{ visible at } \alpha }
-         {\istraversal \Pstr[0.5cm]{u \cdot (beta)\beta \cdot v \cdot \alpha \, (n-beta,30:i){\child(\alpha)
-         }}}
+         {\istraversal u \cdot \lambda\overline{y} \cdot v \cdot \lambda\overline{x}
+         \quad \lambda\overline{x}\in\NodesLmd
+         \quad y_i = \child(\lambda\overline{x}) \in \NodesVar
+         \quad \lambda\overline{y} \enables_i y_i, i \geq 1
+         \quad \lambda\overline{y} \mbox{ visible at } \lambda\overline{x} }
+         {\istraversal \Pstr[0.5cm]{u \cdot (ly){\lambda\overline{y}} \cdot v \cdot \lambda\overline{x} \, (n-ly,30:i){y_i}}}
 
     \infrule[$\rulefont{Lam^\ghostvar}$]
         {
-            \istraversal \Pstr[0.5cm]{ t \cdot(beta){\beta} (m){m} \ldots (gl-m,40:i){\ghostlmd}}
+            \istraversal \Pstr[0.5cm]{ t \cdot(lx){\lambda\overline{x}}\, (z){z} \cdot u \cdot  (gl-z,40:i){\ghostlmd}}
         }
         {
-            \Pstr[0.5cm]{ \istraversal t \cdot(beta){\beta} \,
-            (m){m}
-             \ldots
-            (gl-m,40:i){\ghostlmd}\, (al-beta,45:{|\beta| + i - |m|}){\ghostvar}
+            \Pstr[0.5cm]{ \istraversal t \cdot(lx){\lambda\overline{x}} \,
+            (z){z}
+            \cdot u \cdot
+            (gl-z,40:i){\ghostlmd}\, (al-lx,45:{|\lambda\overline{x}| + i - |z|}){\ghostvar}
                }
-            \andalso(\beta\in\ExtendedNodesLmd, m \in\ExtendedNodesVar\union\NodesApp)
+            \andalso(\lambda\overline{x}\in\ExtendedNodesLmd
+            \mbox{ and }
+             z \in\ExtendedNodesVar\union\NodesApp)
         }
 
     \emph{\bf PROGRAM - Copy-cat rule}
 
     \infrule[$\rulefont{Var}$]
         {
-            \istraversal \Pstr[0.5cm]{t \cdot m \, (beta){\beta}
-            \ldots (n-beta,50:i){n}}
-            \andalso n \in \ExtendedNodesVar \inter \InternalNodes
-            \andalso m \enables_i \alpha
+            \istraversal \Pstr[0.5cm]{t \cdot z \, (lx){\lambda\overline{x}}
+            \cdot u \cdot  (y-lx,50:i){y}}
+            \andalso y \in \ExtendedNodesVar \inter \InternalNodes
+            \andalso z \enables_i \lambda\overline{w}
             \andalso i>0
         }
         {
             \istraversal \Pstr[0.5cm]{
             t \cdot
-                (m){m} \, (a){\beta}  \ldots
-                (n-a,30:i){n} \, (letai-m,47:i){\alpha}
+                (z){z} \, (a){\lambda\overline{x}}  \cdot u \cdot
+                (y-a,30:i){y} \, (letai-z,47:i){\lambda\overline{w}}
                 }
-            \andalso (m \in \ExtendedNodesVar\union\NodesApp, \alpha\in\ExtendedNodesLmd,\beta\in\ExtendedNodesLmd)
+            \andalso (z \in \ExtendedNodesVar\union\NodesApp
+            \mbox{ and }
+             \lambda\overline{x},\lambda\overline{w}\in\ExtendedNodesLmd)
         }
 
     \emph{\bf DATA - Input-variable rule}
     \infrule[$\rulefont{IVar_\normalizing}$]
-         {\istraversal t \cdot n
-          \andalso n \in \ExtendedNodesVar\inter\ExternalNodes
-          \andalso n \enables_i \alpha
-          \andalso 1\leq i \leq\dynar(t)
+         {\istraversal t \cdot z
+          \andalso z \in \ExtendedNodesVar\inter\ExternalNodes
+          \andalso z \enables_i \lambda\overline{x}
+          \andalso 1\leq i \leq\dynar(t \cdot z)
          }
-         {\istraversal\Pstr[0.5cm]{t \cdot (n){n} \, (l-n,30:i){\alpha}}
-         \andalso(\alpha\in\NodesLmd)
+         {\istraversal\Pstr[0.5cm]{t \cdot (z){z} \, (l-z,30:i){\lambda\overline{x}}}
+         \andalso(\lambda\overline{x}\in\ExtendedNodesLmd)
          }
 
     where $t, u, v$ range over (sub-sequences of) justified sequences of nodes.
