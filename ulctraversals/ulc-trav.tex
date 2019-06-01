@@ -194,13 +194,14 @@
 \newcommand{\normalizing}{{\sf norm}}
 \newcommand{\essential}{{\sf ess}}
 \newcommand{\concrete}{{\sf con}}
+\newcommand{\concreteessential}{{\sf c.e.}}
 
 \newcommand\travsetshort{\mathcal{T}\!r}
 \newcommand{\travsetes}{{\travset_\essential}} % essential traversals
 \newcommand{\travsetcon}{{\travset_\concrete}} % concrete traversals
-\newcommand{\travsetcones}{\travset_{c.e.}} % concrete and essential traversals
+\newcommand{\travsetcones}{\travset_\concreteessential} % concrete and essential traversals
 \newcommand{\travsetnorm}{\travset_\normalizing} % normalizing traversals
-\newcommand{\travsetscn}{\travset_{s.c.n.}} % strand-complete normalizing traversals
+\newcommand{\travsetscn}{\travset_{\sf s.c.n.}} % strand-complete normalizing traversals
 
 \def\almostequal{\doteq}  % almost justified sequence equality
 %\def\almosteqisomorphic{\stackrel{.}{\cong}} % almost-equal isomorphism
@@ -407,7 +408,7 @@ A traversal starts, in a `leftmost-order'-like fashion, with a depth-first searc
 To find that node, traversals implement what Danos \etal call ``the gymnastics to find the argument of a subterm''~\cite{danos-head} via the mechanism of `weaving' (Proposition~\ref{prop:weaving}),
 where a traversal repeatedly traverses ghost lambda and variable nodes until the node representing the argument to be fetched materializes.
 The link label `$|\alpha|+i-|m|$' from the definition
-of the lambda rule in Table~\ref{tab:normalizing_trav_rules} effectively calculates the quantity $r-a+l$ that appear in step 2.(b) of the PAM transition from~\cite{danos-head}.
+of the lambda rule in Table~\ref{tab:trav_rules} effectively calculates the quantity $r-a+l$ that appear in step 2.(b) of the PAM transition from~\cite{danos-head}.
 After performing such a jump, a traversal continues its descent to look for the next head occurrence, as if that first head occurrence had been replaced by the redex argument; until it finds the variable that will become the head variable in the normal form. At this point, a PAM would stop, whereas a traversal forks  non-deterministically and recursively traverses every possible argument of the head variable.
 
 A property of head-linear reduction is that all the terms appearing in the reduction sequence consist of sub-terms of the original term.
@@ -931,53 +932,56 @@ Property~\ref{prop:tree_path_charact} they must be $\alpha$-equivalent.
 \subsection{Definition and properties}
 
 \begin{definition}
-The set $\travulc(M)$ of \defname{traversals} of an untyped lambda term $M$, abbreviated $\travulc$ when the term is clear from context, is the set of justified sequences of nodes over the extensional tree of $M$, recursively defined by the rules of Table~\ref{tab:trav_rules}.
+The set $\travulc(M)$ of \defname{traversals} of an untyped lambda term $M$, abbreviated $\travulc$ when the term is clear from context, is the set of justified sequences of nodes over the extensional tree of $M$, defined inductively by the derivation rules of Table~\ref{tab:trav_rules}:
+ $t \in \travulc(M)$ if and only if the judgement $\istraversal t$
+ is derivable.
 %
-We use interchangeably `\emph{imaginary traversal}' or just `\emph{traversal}' when referring to a traversal of an untyped term.
+ We use interchangeably `\emph{imaginary traversal}' or just `\emph{traversal}' when referring to a traversal of an untyped term.
 \end{definition}
 
 \begin{table}[!t]
 \begin{ruletablebox}{} %{Imaginary traversals of $\lambda$-calculus}
 \noindent {\bf PROGRAM -- Structural rules}
 \begin{itemize}[leftmargin=3em]
-    \item[\rulenamet{Root}] The singleton sequence $r$ is in $\travulc$ where $r$ is the root of the term tree.
+    \item[\rulenamet{Root}]
+    $\istraversal r$ where $r$ is the root of the term tree $\ctree(M)$.
 
-    \item[\rulenamet{App}] If $t \cdot @$ is a traversal, so is \Pstr[0.4cm]{t \cdot (at) @  \, (a-at,40:0) \alpha} where $\alpha\in\NodesLmd$ is the $0$th child $\lambda$-node of $@$.
+    \item[\rulenamet{App}] If $\istraversal t \cdot @$ then
+    $\istraversal \Pstr[0.4cm]{t \cdot (at) @  \, (a-at,40:0) \alpha}$ where $\alpha\in\NodesLmd$ is the $0$th child $\lambda$-node of $@$.
 
-    \item[\rulenamet{Lam}] If $t \cdot \alpha$ is a traversal for $\alpha\in\ExtendedNodesLmd$, so is $t \cdot \alpha ~ n$ where $n$ is the unique child of $\alpha$ and:
+    \item[\rulenamet{Lam}] If $\istraversal t \cdot \alpha$ for $\alpha\in\ExtendedNodesLmd$ then $\istraversal t \cdot \alpha ~ n$ where $n$ is the unique child of $\alpha$ and:
     \begin{compactitem}
         \item[\rulenamet{Lam^@}] If $n$ is an $@$-node then it has no justifier;
         \item[\rulenamet{Lam^{\sf var}}] If $n$ is a variable then it points to the only occurrence in $\pview{t\cdot \alpha}$ of a node $m$ verifying $m \enables_k n$ for some $k\geq 0$, and has link label $k$;
 
-        \item[\rulenamet{Lam^\ghostvar}] If $n$ is a ghost $\ghostvar$
+        \item[\rulenamet{Lam^\ghostvar}] If $n$ is a ghost variable $\ghostvar$
         %(\ie,~$\alpha = \ghostlmd$)
          with $t \cdot \alpha = \Pstr[0.5cm]{ u \cdot \beta \,
-        (m){m} \cdot v \cdot (gl-m,40:i){\ghostlmd}}$
-        and nodes
-        $\beta \in \ExtendedNodesLmd, m \in\ExtendedNodesVar \Union \NodesApp$
-        then $\Pstr[0.5cm]{ u \cdot(beta){\beta} \,
-    (m){m} \cdot v \cdot  (gl-m,30:i){\ghostlmd}\, (al-beta,40:{|\beta| + i - |m|}){\ghostvar} \in\travulc}$.
+        (m){m} \cdot v \cdot (gl-m,40:i){\ghostlmd}}$,
+        $\beta \in \ExtendedNodesLmd, m \in\ExtendedNodesVar \union \NodesApp$
+        then $\istraversal \Pstr[0.5cm]{ u \cdot(beta){\beta} \,
+    (m){m} \cdot v \cdot  (gl-m,30:i){\ghostlmd}\, (al-beta,40:{|\beta| + i - |m|}){\ghostvar}}$.
     \end{compactitem}
 \end{itemize}
 \emph{\bf PROGRAM -- Copy-cat rule}
 \begin{itemize}[leftmargin=3em]
-\item[\rulenamet{Var}] If \Pstr[0.5cm]{t\cdot(m){m}\, (beta){\beta}
-\cdot v \cdot (n-beta,50:i){n}\in\travulc} for $m \in\ExtendedNodesVar \union \NodesApp$, $\beta \in \ExtendedNodesLmd\inter\InternalNodes$, $n \in \ExtendedNodesVar\inter\InternalNodes$, $i>0$ then
-  $\Pstr[0.3cm]{ t  \cdot
+\item[\rulenamet{Var}] If $\istraversal \Pstr[0.5cm]{t\cdot(m){m}\, (beta){\beta}
+\cdot v \cdot (n-beta,50:i){n}}$ for $m \in\ExtendedNodesVar \union \NodesApp$, $\beta \in \ExtendedNodesLmd\inter\InternalNodes$, $n \in \ExtendedNodesVar\inter\InternalNodes$, $i>0$ then
+  $\istraversal \Pstr[0.3cm]{ t  \cdot
 (m){m} \, (lx){\beta}  \cdot v \cdot (x-lx,30:i){n}
-    \, (letai-m,45:i){\alpha} \in\travulc}$
+    \, (letai-m,45:i){\alpha}}$
     where $\alpha$ denotes the $i$th child of $m$.
 \end{itemize}
 
 \emph{\bf DATA -- Input-variable rule}
 \begin{itemize}[leftmargin=3em]
-\item[\rulenamet{IVar}] If $t \cdot n \in \travset$ with $n \in \ExtendedNodesVar \inter \ExternalNodes$ then
-$t \cdot n ~ \alpha\in\travulc$
-for every $i$th child $\alpha$ of any node $m \in \ExtendedNodesVar$ occurring in $\oview{t\cdot n}$, $i\geq1$, where $\alpha$ points to $m$ with label $i$.
+\item[\rulenamet{IVar}] If $\istraversal t \cdot n$ with $n \in \ExtendedNodesVar \inter \ExternalNodes$ then
+for every $i$th child $\alpha$ of any node $m \in \ExtendedNodesVar$ occurring in $\oview{t\cdot n}$, $i\geq1$, we have
+$\istraversal t \cdot n ~ \alpha$ where $\alpha$ points to $m$ with label $i$.
 \end{itemize}
 
 where $u,v$ denote sub-sequences of justified sequences of nodes.
-\caption{Imaginary traversals $\travulc$ of the untyped $\lambda$-calculus.}
+\caption{Derivation rules of the imaginary traversals $\travulc$ of the untyped $\lambda$-calculus.}
  \label{tab:trav_rules}
 \end{ruletablebox}
 \end{table}
@@ -1324,23 +1328,26 @@ The traversals $t_k$, $k\geq 0$, correspond to plays
 
 \begin{definition}
 \label{dfn:essential_traversals}
-The set of \defname{essential traversals} $\travsetes$ is the subset of $\travulc$ defined by induction with the rules of Table~\ref{tab:trav_rules} where the justifier node in the
-input-variable rule \rulenamet{IVar} is restricted to be the last occurrence of the traversal ($m=n$) so that the traversal produced is $\Pstr[0.5cm]{t \cdot (n){n} \, (l-n,25:i){\alpha}} \in \travsetes$.
-We write `${\rulename{IVar}}_\essential$' to refer to this modified
-version of the input-variable rule.
-%
-% The input variable rule can thus be stated by the following derivation rule:
-% \infrule[$\rulefont{IVar_\essential}$]
-%      {t \cdot n \in\travsetes
-%       \andalso n \in\ExternalNodes\inter\NodesVar
-%       \andalso n \enables_i\alpha
-%       \andalso i \geq 1
-%      }
-%      {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:i){\alpha}} \in \travsetes}
+The set of \defname{essential traversals} $\travsetes$ is the subset of $\travulc$ defined by the rules of Table~\ref{tab:trav_rules} where the justifier node in the input-variable rule \rulenamet{IVar} is restricted to be the last occurrence of the traversal. Written as a judgement derivation, the rule becomes:
+\infrule[$\rulefont{IVar_\essential}$]
+     {\istraversal t \cdot n
+      \andalso n \in\ExternalNodes\inter\NodesVar
+      \andalso \alpha \in\ExtendedNodesLmd
+      \andalso n \enables_i\alpha
+      \andalso i \geq 1
+     }
+     {\istraversal  \Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:i){\alpha}}}
 
-We write $\travsetcones$ for the set of
-\defname{concrete and essential} traversals.
-That is the set of traversals $\travsetes \inter \travsetcon$ obtained by imposing the above restriction on \rulenamet{IVar} and additionally restricting  it to its concrete sub-case (Definition~\ref{def:concrete_traversals}).
+The set $\travsetcones$ denote the subset of \defname{concrete and essential} traversals, that is the set $\travsetes \inter \travsetcon$ obtained by imposing the above restriction and additionally restricting the rule to its concrete sub-case (Definition~\ref{def:concrete_traversals}):
+\infrule[$\rulefont{IVar_\concreteessential}$]
+     {\istraversal t \cdot n
+      \andalso n \in\ExternalNodes\inter\NodesVar
+      \andalso \alpha \in\ExtendedNodesLmd
+      \andalso n \enables_i\alpha
+      \andalso 1 \leq i \leq |n|
+     }
+     {\istraversal  \Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:i){\alpha}}}
+
 \end{definition}
 
 As traversals unfolds, a depth-first exploration of the tree of the beta-normal form takes place, where rule \rulenamet{IVar} implements the non-deterministic `branching points'. Since lambda-terms are pure of side-effects,
@@ -1720,17 +1727,20 @@ Rule $\rulename{IVar_\essential}$ leaves infinitely many choices of value for th
 such that only ghost nodes are traversed from that point on, without ever materializing a structural node, and ultimately yielding a traversal that is not relevant for normalization. This suggests a stricter notion of traversals:
 \begin{definition}
 \label{def:normalizing_traversals}
-The set $\travsetnorm$ of \defname{normalizing traversals} is the subset of essential traversals obtained with the system of rules of Definition~\ref{dfn:essential_traversals} with the additional restriction in rule \rulenamet{IVar}
-that the argument index $i$ should not be greater than the dynamic arity of the traversal.
-% \infrule[$\rulefont{IVar_\normalizing}$]
-%      { t \cdot n \in\travsetnorm
-%      \andalso n \in\ExternalNodes\inter\ExtendedNodesVar
-%      \andalso n \enables_i \alpha
-%      \andalso 1 \leq i \leq\dynar(t)}
-%      {\Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:i){\alpha}}\in\travsetnorm}
-% where $\alpha = \ghostlmd$ just if $i>|n|$.
-Table~\ref{tab:normalizing_trav_rules} defines this system via
-judgement derivations, where the judgement `$\istraversal t$' means `$t\in\travsetnorm$'.
+The \defname{normalizing traversals} $\travsetnorm$ refers to the subset of essential traversals obtained by restricting \rulenamet{IVar_\essential}
+in the system of rules of Definition~\ref{dfn:essential_traversals}
+so that the argument index $i$ cannot be greater than the dynamic arity of the traversal. Written as a judgement derivation rule the rule becomes:
+ \infrule[$\rulefont{IVar_\normalizing}$]
+      { \istraversal t \cdot n
+      \andalso n \in\ExternalNodes\inter\ExtendedNodesVar
+      \andalso \alpha\in\ExtendedNodesLmd
+      \andalso n \enables_i \alpha
+      \andalso 1 \leq i \leq\dynar(t \cdot n)}
+      {\Pstr[0.5cm]{\istraversal t \cdot (n){n} \cdot (l-n,25:i){\alpha}}.}
+\iflongversion
+ Table~\ref{tab:normalizing_trav_rules} recapitulates
+ this system of derivation rules.
+\fi
 \end{definition}
 
 \iflongversion
@@ -1739,8 +1749,6 @@ Observe also that neither normalizing nor concrete traversals are $\travset$-com
 $t = \Pstr[0.5cm]{(l){\lambda x} \cdot (x-l){x} \cdot (gl-x){\ghostlmd} \cdot (gv-l){\ghostvar} }$ of  $\lambda x . x$
 where $\pview{\core{t}} = t$, is not equivalent to $\pview{\core{u}}$ for any $u$ in $\travsetnorm = \{ \epsilon, \lambda x, \lambda x \cdot x \}$.
 %%%%%%%%%
-\fi
-
 \begin{table}[htbp]
     \begin{ruletablebox}{}%{Normalizing imaginary traversals of $\lambda$-calculus}
     \noindent {\bf PROGRAM - Structural rules}
@@ -1821,6 +1829,8 @@ where $\pview{\core{t}} = t$, is not equivalent to $\pview{\core{u}}$ for any $u
     \label{tab:normalizing_trav_rules}
     \end{ruletablebox}
 \end{table}
+\fi
+%%%%%%%%% end of normalizing traversal rules table
 
 \subsection{Normalization procedure for ULC}
 
@@ -1840,7 +1850,7 @@ shows correctness of the algorithm, in particular that the set of justified path
 \begin{enumerate}[nosep]
   \item Calculate $T \leftarrow \core{\travsetnorm^{\max}(M)}$
   \begin{itemize}[leftmargin=0.5em,nosep]
-    \item Enumerate maximal \emph{normalizing} traversals $\travsetnorm(M)$ using the rules of Table~\ref{tab:normalizing_trav_rules};
+    \item Enumerate maximal \emph{normalizing} traversals $\travsetnorm(M)$ using the rules of Definition~\ref{def:normalizing_traversals};
     \item For each traversal, apply transformation $\coresymbol$ to get the traversal core.
   \end{itemize}
   \item Return $\readout[T]$ (See Proposition~\ref{proposition:termtree_readout_from_justitied_paths}).
@@ -1851,7 +1861,7 @@ shows correctness of the algorithm, in particular that the set of justified path
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Examples of Normalization by Traversals}
 \label{sec:examples}
-Let us walk through the ULC evaluation Algorithm~\ref{algo:ulc_normalization_by_traversals} via traversal enumeration of Table~\ref{tab:normalizing_trav_rules} on some examples of lambda terms. We write $t_\epsilon$  for the initial traversal up to the first non-deterministic choice; and for every $s \in \nat^*$, we write $t_{s \cdot k}$ for the maximal traversal obtained after extending $t_s$ using a single application of the imaginary sub-case of \rulenamet{IVar} with link-label $k \in \nat$. So that the subscript $s$ in $t_s$ records the non-deterministic choices made so far in rule \rulenamet{IVar}
+Let us walk through the ULC evaluation Algorithm~\ref{algo:ulc_normalization_by_traversals} via traversal enumeration on some examples of lambda terms. We write $t_\epsilon$  for the initial traversal up to the first non-deterministic choice; and for every $s \in \nat^*$, we write $t_{s \cdot k}$ for the maximal traversal obtained after extending $t_s$ using a single application of the imaginary sub-case of \rulenamet{IVar} with link-label $k \in \nat$. So that the subscript $s$ in $t_s$ records the non-deterministic choices made so far in rule \rulenamet{IVar}
 at the start of each strand.
 When representing justified sequences, we underline occurrences of external nodes to highlight the strands' boundaries.
 
@@ -3238,7 +3248,7 @@ By definition of $k$ we have $i_{k-1}\geq|@_{k-1}|$, therefore by definition of 
 
 \paragraph{Traversal bisimulation}
 \def\internalextension{\rightharpoondown}
-For $t, t' \in \travsetnorm(M)$ we write $t \rightarrow_M t'$ just if $t'$ is an immediate extension of $t$ in $\travsetnorm(M)$, that is $t'$ extends $t$ via a single rule instantiation from Table~\ref{tab:normalizing_trav_rules};
+For $t, t' \in \travsetnorm(M)$ we write $t \rightarrow_M t'$ just if $t'$ is an immediate extension of $t$ in $\travsetnorm(M)$, that is $t'$ extends $t$ via a single instantiation of the normalizing traversal rules;
 and $t \internalextension_M t'$ if the node traversed by $t'$ is an internal node.
 We write $\rightarrow_M^*$ and, $\internalextension_M^*$ to denote their reflexive transitive closure.
 %
