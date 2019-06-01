@@ -623,10 +623,18 @@ We write $\Nodes(M)$ to denote the set of nodes of $\ctree(M)$, or just $\Nodes$
 \centering
 \end{figure}
 
-We define the \defname{enabling relation} $\enables$ on tree nodes $\Nodes$ as the relation mapping (i) each lambda node to all the variable nodes that it binds; (ii) the root of the tree to all the free variable nodes; (iii) variable and application node to each one of their child node. We write $n \enables_k \lambda\overline{x}$, for $k\geq0$, to indicate that a lambda node $\lambda\overline{x}$ is the $k$th child of a variable or application node $n$; $\lambda\overline{x} \enables_k n$, for $k\geq1$, to indicate that the label of a bound variable node $n$ is precisely the name of the $k$th variable bound by  $\lambda\overline{x}$ , that is $n=x_k$; and if $r$ denotes the root of the tree then we take the convention $r \enables_k z$ for any free variable node $z$, where $k$ denotes the free variable index of $z$ according to some predefined numbering of free variables.
+We define the \defname{enabling relation} $\enables$ on tree nodes $\Nodes$ as the relation mapping (i) each $\lambda$-node to all the variable nodes that it binds; (ii) the root of the tree to all the free variable nodes; (iii) variable and application node to each one of their child node.
+We number children nodes starting from $0$ for @-nodes and from $1$ for variable nodes, so that the $0$th child denotes the operator of a redex, while other children represent operands of either an @-node or a variable node.
+%
+We write
+$n \enables_k \lambda\overline{x}$, for $k\geq0$, to indicate that
+lambda node $\lambda\overline{x}$ is the $k$th child of a variable or application node $n$;
+$\lambda\overline{x} \enables_k n$, for $k\geq1$, to indicate that the label of a bound variable node $n$ is the $k$th variable name bound in $\lambda\overline{x}$, that is node $n$ is labelled $x_k$;
+ and if $r$ denotes the root of the tree then we take the convention $r \enables_k z$ for any free variable node $z$, where $k$ denotes the free variable index of $z$ according to some predefined numbering of free variables.
+%
 We say that node $m$ \defname{hereditarily enables} $n$ if they relate by the reflexive transitive closure of $\enables$.
 
-A tree node is \defname{external} if it is hereditarily enabled by the root, otherwise it is \defname{internal}. We write $\ExternalNodes$ for the set of external nodes, that is the image of the tree root by the reflexive transitive closure of the enabling relation. Internal nodes are therefore precisely the nodes hereditarily justified by application nodes $@$. We write $\InternalNodes$ to denote the set of internal nodes.
+A tree node is \defname{external} if it is hereditarily enabled by the root, otherwise it is \defname{internal}. We write $\ExternalNodes$ for the set of external nodes, that is the image of the tree root by the reflexive transitive closure of the enabling relation. Internal nodes are therefore precisely the nodes hereditarily enabled by application nodes $@$. We write $\InternalNodes$ to denote the set of internal nodes.
 The \defname{arity} of a node $n$, written $|n|$,
 is defined for a variable node as the number of immediate arguments (\ie, children in the tree); for an application node, as the number of operands (\ie, number of children of the $@$-node minus 1); for a lambda node $\lambda x_1 \cdots x_k$, $k\geq 0$, as the number of bound variables $k$.
 
@@ -636,7 +644,7 @@ We extend the notion of tree by augmenting the
 with two countable sets of \defname{ghost nodes} representing fictitious tokens: The \emph{ghost lambda nodes}
 represent fictitious lambda abstractions
 and \emph{ghost variable nodes} represent fictitious
-occurrences of variables bound by either a structural or a ghost lambda node.
+occurrences of nameless variables bound by either a structural or a ghost lambda node.
 
 We simultaneously define ghost nodes and extend the enabling relation $\enables$ recursively as follows: for every (ghost) variable or application node $n$ with parent (ghost) lambda-node $\alpha$, and for all $k>|n|$, we define two new unique ghost nodes $\ghostlmd$ and $\ghostvar$
 such that
@@ -652,9 +660,9 @@ denoted $\exttree(M)$ over the \defname{extended nodes} $\ExtendedNodes = \Nodes
 \subsection{Justified sequence of nodes}
 \label{sec:justseq}
 
-A \defname{justified sequence} is defined a sequence of nodes in $\ExtendedNodes$ where every occurrence $n$ in the sequence may have an associated link called `justification pointer' pointing to some previous node occurrence $j$ in the sequence, called its `justifier', with an associated `link label' $l\geq0$; with the constraint that the justifier node $\enables$-enables the source node with the corresponding label; that is $j \enables_l n$ must hold. The \defname{link distance} is the number of occurrences separating $n$ from its justifier $j$ plus $1$, or $0$ of $n$ has not justifier; the \defname{link label} refers the label $i$ of the justification pointer.
+A \defname{justified sequence} is defined a sequence of nodes in $\ExtendedNodes$ where every occurrence $n$ in the sequence may have an associated link called `justification pointer' pointing to some previous node occurrence $j$ in the sequence, called its `justifier', with an associated \defname{link label} $l\geq0$; with the constraint that the justifier node $\enables$-enables the source node with the corresponding label; that is $j \enables_l n$ must hold. The \defname{link distance} is the number of occurrences separating $n$ from its justifier $j$ plus $1$, or $0$ if $n$ has no justifier.
 %
-We represent a justified sequence as a sequence of labelled node occurrences with back-pointing arrows representing justification pointers, for example: $\Pstr[10pt]{ s = \cdots (j){j} \ldots (n-j,25:l){n} }$ which we read `$n$ points to $j$', or `$n$ is justified by $j$' with link label $l$.
+We represent a justified sequence as a sequence of labelled node occurrences with back-pointing arrows for justification pointers. For example: $\Pstr[10pt]{ \ldots (j){j} \ldots (n-j,25:l){n} }$, which we read `$n$ points to $j$', or `$n$ is justified by $j$' with link label $l$.
 %
 For readability, we sometimes indicate the link label in exponent of the justified occurrence instead of above the pointer, or we even omit the justification pointers altogether.
 Note that the enabling relation is \emph{statically} induced by the term whereas the concept of justification is defined on node \emph{occurrences}, that is within a specific justified sequence. The \defname{set of justified sequences} over $M$, denoted $\justseqset(M)$, consists of all justified sequences over $\ExtendedNodes$.
@@ -667,11 +675,11 @@ A sequence $s$ is \defname{maximal} in $T\subseteq \justseqset(M)$ if there is n
 For any set $T\subseteq \justseqset(M)$ we write $T^{\max}$ for the subset of maximal sequences of $T$.
 %
 We borrow basic definitions from Game Semantics~\cite{Abr02}. A justified sequence verifies the \defname{alternation condition} if it starts with a lambda node and subsequently alternates between (i) a variable or application node (ii) a lambda node.
-An occurrence in a justified sequence is \defname{hereditarily justified by some other occurrence} if recursively following justification pointers starting from the first occurrence leads to the second one.
+An occurrence in $s$ is \defname{hereditarily justified by some other occurrence} if recursively following justification pointers starting from the first occurrence leads to the second one.
 Since justification pointers honor the enabling relation $\enables$, if an occurrence of node $n$ is hereditarily justified by occurrence of a node $m\in\Nodes$ then $n$ is necessarily hereditarily enabled by $m$. Further if $m$ occurs only once in $s$ then the occurrences hereditarily justified by $m$ are precisely the occurrences of nodes that are hereditarily \emph{enabled} by $m$ in $\ctree(M)$.
 %
-The \defname{projection} $s\filter n$ of $s$ with respect to $n$ is the subsequence consisting of occurrences hereditarily justified by $n$ in $s$. We write $s \filter A$ for the subsequence of $s$ consisting of occurrences of nodes from a subset $A \subseteq \Nodes$.
-In particular, $s\filter\ExternalNodes$ consists of occurrences of $s$ that are external nodes, or equivalently that are hereditarily justified by some occurrence of the root in $s$.
+The \defname{projection} $s\filter n$ of $s$ with respect to $n$ is the subsequence consisting of occurrences hereditarily justified by $n$ in $s$. We write $s \filter A$ for the subsequence of $s$ consisting of occurrences of nodes in a subset $A \subseteq \Nodes$.
+Hence $s\filter\ExternalNodes$ consists of occurrences of $s$ that are external nodes, or equivalently that are hereditarily justified by some occurrence of the root in $s$.
 
 The P-view is the sub-sequence obtained by reading a justified sequence backwards and skipping occurrences lying under the justification pointer of a lambda node:
 
@@ -758,8 +766,8 @@ $(j, i)$ represents a variable occurrence
 with link distance $j$ and link label $i$;
 and $@$ represents the occurrence of an application node.
 %
-Two sequences $s$ and $u$ over possibly two distinct terms are \defname{equivalent}, written $s \equiv u$ just if they have the same structure: the type (variable, @-node or lambda node), arity, link distance and link label of the underlying occurrences match pairwise. Two equivalent sequences are not necessarily equal since they may have different variable names.
-We say that two subsets $J_1\subseteq \justseqset(M_1)$ and $J_2\subseteq\justseqset(M_2)$ are isomorphic, written $J_1\structisomorphic J_2$, if  there exists a structure-preserving bijection between $J_1$ and $J_2$; that is a bijection $\phi :J_1\longrightarrow J_2$ such that $j\equiv\phi(j)$ for all $j\in J$.
+Two sequences $s$ and $u$ over possibly two distinct terms are \defname{equivalent}, written $s \equiv u$ just if they have the same structure: the type (variable, @-node or $\lambda$-node), arity, link distance and link label of the underlying occurrences match pairwise. Two equivalent sequences are not necessarily equal since they may have different variable names.
+Two subsets $J_1\subseteq \justseqset(M_1)$ and $J_2\subseteq\justseqset(M_2)$ are \defname{isomorphic}, written $J_1\structisomorphic J_2$, if  there exists a structure-preserving bijection between $J_1$ and $J_2$; that is a bijection $\phi :J_1\longrightarrow J_2$ such that $j\equiv\phi(j)$ for all $j\in J$.
 
 \begin{example}
     Alpha-conversion preserves the structure so for instance we have
@@ -776,8 +784,9 @@ $\nameencoding = (\mathcal{V}^*\times\nat\times\nat) +
  with link distance $j$ and link label $i$ gets encoded
  by $(\overline{x},j,i) \in \mathcal{E}$.
 %
-The name-preserving encoding of a justified sequence is obtained by just replacing the second component from the lambda-node encoding by its length.
-Reciprocally, given a fixed term, the list of $\lambda$-bound variables is uniquely recoverable from the structure via the enabling relation $\enables$ over $\exttree$.
+Replacing the second components of the lambda-nodes encoding by their length
+yields the name-free encoding.
+Reciprocally, given a fixed term, the list of variable names in each $\lambda$-occurrences is uniquely recoverable from the sequence structure and the enabling relation $\enables$ over $\exttree$.
 %
 %
 %%%%% clashfree concatanation
@@ -788,7 +797,7 @@ Reciprocally, given a fixed term, the list of $\lambda$-bound variables is uniqu
 % we write $\overline{x} \otimes \overline{y}$ for $((\ldots(\overline{x} \otimes y_1) \otimes y_2) \ldots \otimes y_m)$.
 %%%%%%
 The \emph{readout function} $\readout: \nameencoding^* \rightarrow \mathcal{L}^*$
-decodes a name-preserving encoding into a sequence of node labels in $\mathcal{L}$ (not necessarily present in $\ctree(M)$). It is defined by
+decodes a name-preserving encoding into a sequence of node labels in $\mathcal{L}$. It is defined by
 $\readout[\epsilon]= \epsilon$;
 $\readout[s \cdot @] = \readout[s] \cdot @$;
 $\readout[s \cdot (\overline{x}, j, i) ] = \readout[s] \cdot \lambda\overline{x}$
@@ -807,7 +816,8 @@ $\readout[s\cdot (j,i)]  = \readout[s] \cdot \ghostvar$ if $i> |\overline{x}|$.
 %      \mbox{if $i> |\overline{x}|$.}
 % \end{cases}
 % \end{array}$$
-The ghost lambda $\ghostlmd$ is covered by the case  $\lambda\overline{x}$, $\overline{x}=\epsilon$.
+The case $\lambda\overline{x}$ where $\overline{x}=\epsilon$
+covers both the ghost lambda $\ghostlmd$ and dummy lambda $\lambda$.
 We then define $\readout \colon \nameencoding^* \rightarrow \mathcal{L}^*$
 by point-wise extension.
 
@@ -843,9 +853,9 @@ by point-wise extension.
 
 %%%%%%%%%%%%%%%%% end of `name-preserving' presentation
 
-Note that both name-free and name-preserving encoding assimilate the ghost lambda `$\ghostlmd$' with the dummy lambda `$\lambda$'.
+Both name-free and name-preserving encoding assimilate the ghost lambda `$\ghostlmd$' with the dummy lambda `$\lambda$'.
 %
-The results presented in the paper apply to both the name-free and name-preserving encodings. As the name implies, the name-preserving presentation has the advantage of reusing variable names from the original terms when producing the normal form. We will thus adopt this more general encoding throughout the rest of the paper and take $\justseqset(M)$ to be a (strict) subset of $\nameencoding^*$.
+The results presented in the paper apply to both the name-free and name-preserving encodings. As the name implies, the name-preserving presentation has the advantage of reusing variable names from the original terms when producing the normal form. We will thus adopt this more general encoding in the rest of the paper and take $\justseqset(M)$ to be a (strict) subset of $\nameencoding^*$.
 
 
 \subsection{Justified paths of the term tree}
@@ -858,7 +868,7 @@ whose underlying sequences of nodes are those from the paths of the labelled-tre
  free variables point to the initial occurrence (the tree root) with link label  set to an index in $\nat$ uniquely identifying the
  free variable name;
  %
- and lambda nodes are justified by the immediate predecessor in the path sequence, its parent node by definition of a tree path, with label index given by its child index.
+ and lambda nodes are justified by the immediate predecessor in the path sequence, which is also its parent node by definition of a tree path, with label index given by its child index.
  %
 \begin{property}[Path Characterization]
 \label{prop:tree_path_charact}
@@ -892,7 +902,7 @@ Let $T\subset \nameencoding^*$ be a finite set of (name-preserving encoded) just
 If $T\structisomorphic \pathset(M)$ for some (a priori unknown) untyped term $M$ then one can effectively read out from $T$ an untyped
 term  $\readout[T]$ that is $\alpha$-equivalent to $M$.
 %
-Furthermore, provided that no variable capture situation occurs, the variable names occurring in $\readout[T]$ are the original names from lambda-occurrences from $T$.
+Furthermore, provided that no variable capture situation occurs, the variable  occurring in $\readout[T]$ preserves original names from lambda-occurrences in $T$.
 \end{proposition}
 %(Then $T$ is path-like, that is lambda-nodes are justified by their immediate predecessor in the sequence.)
 \begin{proof}
@@ -1037,7 +1047,9 @@ The last property generalizes a concept from the theory of traversals~\cite{OngL
 
 
 \paragraph{On-the-fly eta-expansion}
-It is the variable rules \rulenamet{Var} and \rulenamet{IVar} that perform `on-the-fly expansion'. When the variable arity is high enough, the tree statically dictates the structural node to traverse next: we have $i \leq |m|$ and $\alpha$ is a structural lambda node in $\NodesLmd$; we call this the \defname{concrete sub-case}. Otherwise, the variable arity is too low to statically determine the operand of an application: $i > |m|$ and $\alpha$ is a ghost lambda node $\ghostlmd$; we call this the \defname{imaginary sub-case}.
+The rules \rulenamet{Var} and \rulenamet{IVar} are responsible for
+performing the `on-the-fly expansion'.
+If the arity of the traversed variable is high enough, the tree statically dictates the structural node to traverse next: we have $i \leq |m|$ and $\alpha$ is a structural lambda node in $\NodesLmd$; we call this the \defname{concrete sub-case}. Otherwise, the variable arity is too low to statically determine the operand of an application: $i > |m|$ and $\alpha$ is a ghost lambda node $\ghostlmd$; we call this the \defname{imaginary sub-case}.
 
 \begin{definition}
     \defname{Ghost materialization} refers to the instantiation of a traversal rule where the last occurrence prior to applying the rule is a ghost
@@ -1269,10 +1281,9 @@ We consider a typed-term $M^\tau$ of simple type $\tau$ and without loss of gene
 
 \begin{definition}
     \label{def:concrete_traversals}
-The set $\travset_\concrete$ of \defname{concrete} traversals
-are precisely the imaginary traversals that contain no ghost occurrence.
-They are defined by the rules of Table~\ref{tab:trav_rules} without \rulenamet{Lam^\ghostvar} and such that \rulenamet{Var} and \rulenamet{IVar} are restricted to their concrete sub-case, that is the next node traversed must be structural (\ie, $i\leq|m|$).
-
+The \defname{concrete traversals} $\travset_\concrete$
+are the imaginary traversals that contain no ghost occurrence.
+They are defined by the rules of Table~\ref{tab:trav_rules} without \rulenamet{Lam^\ghostvar} and such that \rulenamet{Var} and \rulenamet{IVar} are restricted to their concrete sub-case, where the next node traversed must be structural (\ie, $i\leq|m|$).
 \end{definition}
 
 \begin{definition}[Reformulation of~\cite{BlumPhd}]
@@ -1303,7 +1314,7 @@ The challenge is that there are arbitrarily long traversals due to the generous 
 Even worse: even for terms with a beta-normal form
 there may be infinitely many maximal imaginary traversals!
 Fortunately, not all of them are needed: a traversal shall be considered redundant if there exist a shorter one with identical core P-views.
-With such consideration, it suffice to look for a subset covering every possible core P-view.
+With such consideration, it suffices to look for a subset covering every possible core P-view.
 
 We first consider the subset of \emph{essential traversals} which is complete with respect to core P-views.
 Its concrete subset if finitely enumerable, which yields the normalization procedure for eta-long simply-typed terms.
@@ -1328,7 +1339,7 @@ The traversals $t_k$, $k\geq 0$, correspond to plays
 
 \begin{definition}
 \label{dfn:essential_traversals}
-The set of \defname{essential traversals} $\travsetes$ is the subset of $\travulc$ defined by the rules of Table~\ref{tab:trav_rules} where the justifier node in the input-variable rule \rulenamet{IVar} is restricted to be the last occurrence of the traversal. Written as a judgement derivation, the rule becomes:
+The set of \defname{essential traversals} $\travsetes$ is the subset of $\travulc$ defined by the rules of Table~\ref{tab:trav_rules} where the justifier node in the input-variable rule \rulenamet{IVar} is restricted to be the second last occurrence in the traversal. Written as a judgement derivation, the rule becomes:
 \infrule[$\rulefont{IVar_\essential}$]
      {\istraversal t \cdot n
       \andalso n \in\ExternalNodes\inter\NodesVar
@@ -1338,7 +1349,7 @@ The set of \defname{essential traversals} $\travsetes$ is the subset of $\travul
      }
      {\istraversal  \Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:i){\alpha}}}
 
-The set $\travsetcones$ denote the subset of \defname{concrete and essential} traversals, that is the set $\travsetes \inter \travsetcon$ obtained by imposing the above restriction and additionally restricting the rule to its concrete sub-case (Definition~\ref{def:concrete_traversals}):
+The set of \defname{concrete and essential traversals} $\travsetcones$ refers to $\travsetes \inter \travsetcon$ which is obtained by imposing the above restriction and additionally restricting the rule to its concrete sub-case (Definition~\ref{def:concrete_traversals}):
 \infrule[$\rulefont{IVar_\concreteessential}$]
      {\istraversal t \cdot n
       \andalso n \in\ExternalNodes\inter\NodesVar
@@ -1347,12 +1358,11 @@ The set $\travsetcones$ denote the subset of \defname{concrete and essential} tr
       \andalso 1 \leq i \leq |n|
      }
      {\istraversal  \Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:i){\alpha}}}
-
 \end{definition}
 
 As traversals unfolds, a depth-first exploration of the tree of the beta-normal form takes place, where rule \rulenamet{IVar} implements the non-deterministic `branching points'. Since lambda-terms are pure of side-effects,
 it suffices to explore each possible branch only once.
-\emph{Essential traversals} implement this idea by restricting the rule $\rulenamet{IVar}_\essential$ to only traverse nodes leading to paths in the tree that the traversal has so far not explored: when picking the lambda node to visit next, it forces choice `(J)' to be the \emph{latest} variable node in the traversal. \emph{Concrete} essential traversals further restrict choice `(L)' to be a structural child lambda node of that variable node.
+\emph{Essential traversals} implement this idea by restricting the rule $\rulenamet{IVar}_\essential$ to only traverse nodes leading to paths in the tree that the traversal has so far not explored: when picking the lambda node to visit next, it forces choice `(J)' to be the \emph{latest} variable node in the traversal. \emph{Concrete essential} traversals further restrict choice `(L)' to be a structural child lambda node of that variable node.
 
 Continuing with the game-semantics intuition: Lambda nodes correspond to opponent moves, and restricting the opponent moves limit the set of contexts in which a term can appear. The restriction imposed by essential traversals effectively excludes all contexts that apply a term $A$ to $M$ such that $A$ evaluates any two of its higher-order arguments in a nested fashion. This excludes contexts involving $F_k$, $k\geq 2$, or the Kierstead's terms $\lambda f .f (\lambda x .f (\lambda y.y))$ and $\lambda f .f (\lambda x .f (\lambda y.x))$ where $f$ occurs more than once, but also $\lambda f. \lambda g . f (\lambda f .(\lambda x . g (\lambda y . x)))$ where the two arguments $f$ and $g$ occur in a nested expression.
 
@@ -1834,7 +1844,7 @@ where $\pview{\core{t}} = t$, is not equivalent to $\pview{\core{u}}$ for any $u
 
 \subsection{Normalization procedure for ULC}
 
-Algorithm~\ref{algo:ulc_normalization_by_traversals} describes the normalization procedure to compute the $\beta$-normal of an untyped lambda term if it exists.
+Algorithm~\ref{algo:ulc_normalization_by_traversals} gives the normalization procedure to compute the $\beta$-normal of an untyped lambda term if it exists.
 Observe that for simply-typed terms in eta-long form, the dynamic arity necessarily matches with the static arity, therefore \emph{concrete essential} traversals coincide with \emph{normalizing} traversals.
  Hence specializing  Algorithm~\ref{algo:ulc_normalization_by_traversals} to eta-long forms gives back Algorithm~\ref{algo:stlc_normalization_by_traversals}.
 Section~\ref{sec:correctness_ulc_normalization}
@@ -1872,7 +1882,7 @@ When representing justified sequences, we underline occurrences of external node
 
   $t_\epsilon = \Pstr[0.7cm]{(n0){\lambda}\,(n1){@}\,(n2-n1,20){\lambda x}\,(n3-n2,20){x}\,(n4-n1,20){\lambda y}\,(n5-n4,20){y}\,(n6-n3,20){\lambda}\,(n7-n2,20){x}\,(n8-n1,20){\lambda y}\,(n9-n8,20){y}\,(n10-n7,20){\ghostlmd^1}\,(n11-n6,20){\ghostvar^1}\,(n12-n5,20){\ghostlmd^{1}}\,(n13-n4,20){\ghostvar^2}\,(n14-n3,20){\ghostlmd^2}\,(n15-n2,20){\ghostvar^2}\,(n16-n1,20){\ghostlmd^2}\,(n17-n0,20){\ghostvar^1}}$. The last node is justified by the root thus it is an external variable. With \emph{imaginary} traversals,
   rule $\rulename{IVar}$ would let us extend $t_\epsilon$. But here the dynamic arity is $\dynar(t) = 0$, therefore there is no more \emph{normalizing} traversal to explore: $t_\epsilon$ is maximal.
-  The P-view core is $\pview{\core{t_\epsilon}} = \Pstr[0.7cm]{(n0){\lambda ^{[y]}}\,(n17-n0){\ghostvar^1}}$
+  The core is $\core{t_\epsilon} = \Pstr[0.7cm]{(n0){\lambda ^{[y]}}\,(n17-n0){\ghostvar^1}}$
   thus the beta-normal form of term is $\lambda y . y$ for some new variable name $y$.
 \end{example}
 
@@ -1887,7 +1897,7 @@ $t_\epsilon = \Pstr[0.7cm]{(n0){\underline\lambda }\,(n1){@}\,(n2-n1){\lambda x 
 We have $t_\epsilon\filter\ExternalNodes = \Pstr[0.7cm]{(n0){\lambda^{[y\,s\,z]}} \, (n9-n0){{\ghostvar^2}} }$
 so the core projection is
 $\core{t_\epsilon} = \Pstr[0.7cm]{(n0){\lambda y s z} \, (n9-n0){s} }$
-and $\pview{\core{t_\epsilon}} = \lambda y s z ~ z$ is a path in the normal form of $M$.
+and $\lambda y s z ~ z$ is a path in the normal form of $M$.
 The normal form must therefore have shape $\lambda y s z \ldots \cdot s N_1 \ldots N_q$ for $q\geq0$.
 %
 To determine the arguments $N_k$, we enumerate all the possible instantiations of $\rulename{IVar}$ for every non-deterministic choice of $k\geq 1$, and recursively unfold the strands of the traversal. How many values of $k$ shall be considered? We should not eta-expand beyond the point where further extensions are guaranteed to visit only ghost occurrences. That upper-bound is precisely given by the \emph{dynamic arity} of $t_\epsilon$.
@@ -2390,10 +2400,11 @@ A \defname{prime redex} ({\it \`a la} Danos-Regnier) is a generalized redex $(\l
 As the name indicates, the head-linear reduction is a linear version of the
 \emph{head} reduction. It thus only yields the quasi \emph{head}-normal form,
 not the normal form, and therefore is not complete for normalization.
-In the standard lambda calculus, normal-order reduction strategy is obtained by repeatedly applying head reduction to get to the head-normal form,
+In the standard lambda calculus, the normal-order reduction strategy consists in
+repeatedly applying head reduction to get to the head-normal form,
  and then continuously applying the head-reduction on each argument of the head variable.
 This ultimately yields the normal form of the term if it exists.
-We now define the linear counterpart of the normal-order reduction: Informally,
+We define the linear counterpart of the normal-order reduction:
  the \defname{leftmost linear reduction strategy} is the strategy that performs
  head-linear reduction if possible, and otherwise, if the term is in quasi-head
   normal form, continuously (and recursively) applies the head-linear reduction
@@ -2631,7 +2642,7 @@ The proof is like that of Theorem~\ref{thm:danosregnier_headlinred}. We adapt th
     \end{enumerate*}
 \end{property}
 \begin{proof}
-    (i) and (ii) Performing substitution in an operand of an application does not affect its $\lambda$-list; while substituting a variable in operator position in the application, effectively appends the $\lambda$-list of the substituted term to the $\lambda$-list of the application.
+    (i) and (ii) Performing substitution in an operand of an application does not affect its $\lambda$-list; while substituting a variable in operator position in the application effectively appends the $\lambda$-list of the substituted term to the $\lambda$-list of the application.
     (iii) follows trivially by definition of $\lambda_l$.
 \end{proof}
 \begin{example}
@@ -2650,7 +2661,7 @@ Take $N = (\lambda x . U) V$ where $x$ does not occur in $U$ then $N$ trivially 
 \end{property}
 \begin{proof}
 (i) If $M$ were an abstraction $\lambda x. N$ we would have $\lambda_l(M) = \lambda x$ which contradicts the assumption.
-(ii) By Proposition~\ref{prop:qnf_nf}(ii), we have that $M$ trivially reduces to
+(ii) By Proposition~\ref{prop:qnf_nf}(ii), $M$ trivially reduces to
 its beta-nf so by Property~\ref{property:lambdalist_linearred},
 $M$ and its normal form must have the same lambda list. We can then conclude using (i).
 \end{proof}
@@ -2667,7 +2678,7 @@ If $M$ has a beta-normal form then its left-most linear reduction terminates (an
 Suppose that $M$ has a $\beta$-nf. Then its head-reduction terminates and by Theorem~\ref{thm:danosregnier_headlinred} its $\hlred$-reduction
  also terminates and yields its \emph{qhnf}. Since $\hlred$ coincides with $\llred$, for terms not in \emph{qhnf}, we can without loss of generality assume that $M$ is in \emph{qhnf}.
 We prove by strong induction on the \emph{size} of $M$ that
-`{\bf (H1)} If $M$ has a $\beta$-nf then its linear reduction sequence terminates.'
+`\emph{(H1) If $M$ has a $\beta$-nf then its linear reduction sequence terminates.}'
 %
 The variable case is trivial, and the abstraction case follows
 immediately by induction. Suppose $M = U V$ and $M$ is not a \emph{qnf} then it has a \emph{lloc} that is distinct from the \emph{hoc}.
@@ -2677,7 +2688,7 @@ immediately by induction. Suppose $M = U V$ and $M$ is not a \emph{qnf} then it 
 Suppose that the \emph{lloc} of $M$ is in $U$.
 %($lloc_M(U) \ne \bot$).
     We show by finite \emph{structural} induction on subterms $T$ of $U$ that:
-    `{\bf (H2)} If $lloc_M(T) \neq \bot$ and $hoc(M)$ is in $T$ then there are at most a finite number of steps in the linear reduction sequence of $M$ that involve a linear substitutions in (reducts of) $T$.'
+    `\emph{(H2) If $lloc_M(T) \neq \bot$ and $hoc(M)$ is in $T$ then there are at most a finite number of steps in the linear reduction sequence of $M$ that involve a linear substitutions in (reducts of) $T$.}'
 %
     If $T$ is a variable, since it contains the \hoc\, it must be the
     \hoc~itself. Because $M$ is in \emph{qhnf}, the \hoc~is not involved in any generalized redex and therefore $T$ is not involved in any substitution of the linear reduction sequence of $M$.
@@ -2931,9 +2942,9 @@ A maximal traversal $t_{\max}$ of a term in \emph{qnf}
 starts with a strand of type $S$ and transitions to
  strands of type $S$ and $G$ according to this table:
 \begin{center}
-\begin{tabular}{r|ll l}
+\begin{tabular}{c|ll l}
 Strand type  & Strand shape & Transition & Next strand shape\\
-\hline \hline
+\hline
 \multirow{2}{*}{S}
     & \multirow{2}{*}{$\underline{\lambda\overline{\eta_1}} \cdot u_1 \cdot \underline{x_1} $}
     & $S \rightarrow G$
@@ -3983,8 +3994,7 @@ $\core{t_1}$ and $\core{t_2}$.
 \end{proof}
 
 \begin{proposition}[Correctness]
-    If the input lambda term in Algorithm~\ref{algo:ulc_normalization_by_traversals} has a beta-normal form then
-    the procedure terminates and returns the beta-normal form.
+    Algorithm~\ref{algo:ulc_normalization_by_traversals} is correct.
 \end{proposition}
 \begin{proof}
 \emph{Termination}  By Proposition~\ref{prop:ulc_travnorm_finite} there is a finite number of normalizing traversals and each of them can be obtained with finitely many applications of traversal rules.
