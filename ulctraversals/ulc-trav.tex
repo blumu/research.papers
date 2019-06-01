@@ -409,7 +409,7 @@ To find that node, traversals implement what Danos \etal call ``the gymnastics t
 where a traversal repeatedly traverses ghost lambda and variable nodes until the node representing the argument to be fetched materializes.
 The link label `$|\alpha|+i-|m|$' from the definition
 of the lambda rule in Table~\ref{tab:trav_rules} effectively calculates the quantity $r-a+l$ that appear in step 2.(b) of the PAM transition from~\cite{danos-head}.
-After performing such a jump, a traversal continues its descent to look for the next head occurrence, as if that first head occurrence had been replaced by the redex argument; until it finds the variable that will become the head variable in the normal form. At this point, a PAM would stop, whereas a traversal forks  non-deterministically and recursively traverses every possible argument of the head variable.
+After performing such a jump, a traversal continues its descent to look for the next head occurrence, as if that first head occurrence had been replaced by the redex argument; until it finds the variable that will become the head variable in the normal form. At this point, a PAM would stop, whereas a traversal forks  non-deterministically and recursively traverses all possible arguments of the head variable.
 
 A property of head-linear reduction is that all the terms appearing in the reduction sequence consist of sub-terms of the original term.
 Both the PAM and traversals exploit this property via systems of pointers to avoid the traditional notions of environments or closures when (linearly) reducing a term.
@@ -417,9 +417,11 @@ Both the PAM and traversals exploit this property via systems of pointers to avo
 \subsubsection{Berezun-Jones traversals}
 
 Daniil Berezun and Neil Jones were first to introduce a notion of traversals for the untyped lambda calculus~\cite{JonesBerezunLLL-PEPM17}.
-Although they took inspiration from the Game Semantic traversals of~\cite{OngLics2006,BlumGalop2008}, their definition is more operational in nature and does not directly relate to the game denotation of a term. Starting from an operational semantics of the untyped lambda calculus they derive a normalization method that, very much like the traversal of~\cite{OngLics2006, BlumPhd}, proceeds by traversing some tree representation of the term.
+Although they took inspiration from the Game Semantic traversals of~\cite{OngLics2006,BlumGalop2008}, their definition is more operational in nature and does not directly relate to the game denotation of a term. Starting from operational semantics they derive a normalization method that proceeds by traversing some tree representation of the term.
 %
-The traversed tree is the traditional notion of term tree for lambda terms where each node represents a token from the lambda calculus syntax,
+The connection between the two presentations lies in their respective correspondence with head-linear reduction: we have shown that imaginary traversals essentially implement the recursive application of the head-linear reduction. Berezun and Jones claim that a similar correspondence hold for their notion of traversal.
+
+Their traversals work on the traditional term tree where each node represents a token from the lambda calculus syntax,
 whereas the present paper uses a compressed form of term tree where consecutive lambdas nodes and consecutive applications nodes are merged into a single bulk node. Neither Berezun-Jones' traversals nor imaginary traversals require any prior syntactic transformation of the input term,
 unlike the original traversals from the typed setting.
 
@@ -428,9 +430,8 @@ In contrast, imaginary traversals necessitate a single justification pointer per
 
 Another notable difference is that the normalization algorithm of Berezun-Jones requires a single traversal of the term. Our algorithm, on the other hand, produces one traversal for every possible maximal path in the tree representation of the beta-normal form. Each branching point in the traversal enumeration corresponds to some occurrence of a variable in the normal form, where each branch corresponds to some operand of that variable. This non-deterministic branching may conceivably be eliminated using auxiliary pointers to implement backtracking: once a variable operand is fully evaluated, the traversal would return to that variable node and start exploring remaining operands.
 
-Their `read-out' procedure to reconstruct the normal form (shared by Berezun and Jones in private correspondence) involves recursively applying rewriting rules to the traversal. In contrast, our read-out algorithm reconstructs the normal form from the tree-paths extracted from the maximal traversals.
+Their `read-out' procedure to reconstruct the normal form (shared with the author in private correspondence) involves recursively applying rewriting rules to the traversal. In contrast, our read-out algorithm reconstructs the normal form from the tree-paths generated from maximal traversals.
 
-The connection between the two presentations lies in their respective correspondence with head-linear reduction: we have shown that imaginary traversals essentially implement the recursive application of the head-linear reduction. Berezun and Jones claim that a similar correspondence hold for their notion of traversal.
 
 \subsubsection{Lambda term evaluation}
 The evaluation procedure presented in this paper contrasts with term rewriting approaches that gradually transform and refine some representation of the term until reaching a normal form. In particular, it does not involve the ``capture-avoiding'' substitution used in the standard definition of beta reduction to avoid variable capture when reducing redexes. Other reduction methods exist in the literature with the same property such as combinators, Lamping's graphs, or their variant based on the geometry of interaction~\cite{Lamping:1989:AOL:96709.96711, Gonthier:1992:GOL:143165.143172, curry_combinatorylogic, Barendregt84, the-implementation-of-functional-programming-languages}.
@@ -438,6 +439,14 @@ Just like those methods, variable names are not essential to the reduction proce
 Krivine and PAM machines encode names with De Bruijn indices
 and combinators removes variables altogether through \emph{abstraction elimination}.
 Just like graph-based reduction, the traversal reduction procedure involves a final ``read-back'' phase to reconstruct the resulting normal form: all the explored tree branches are assembled together to form the tree representation of the normal form. Those other reduction methods do not typically rely on eta-expansion, on the other hand they require transforming the term into some intermediate structure, such as a combinator expression or an interaction net, whereas traversals operate directly on the abstract syntax tree of the term. Unlike Lamping's graphs, traversal-based reduction is not optimal in Levy's sense~\cite{optimal-reduction-levy}.
+
+\begin{todobox}
+    Optimality in L\'evy's sense: how to interpret in traversal world?
+    Traversals exhibit some sharing via their use of pointers, but this sharing is not exploited: in the term $(\lambda x. y x x) A$, both occurrences of variable $x$ get traversed by jumping to the argument $A$, the second occurrences lead to the same traversal unfolding without utilizing the result from the first occurrence of $x$.
+    %
+    Hyperlazy does not mean efficient: linear substitution ends up repeating same things several times. However, no useless work is done, unlike the traditional substitution. Could we recover optimality by adding some notion of caching to traversals?
+    It would perhaps require some additional caching mechanism to be able to reuse previous sections of traversals when traversing new occurrences of variables
+\end{todobox}
 
 The relationship of traversals with proof-nets and the Geometry of Interaction (GoI) can be seen through the lenses of head-linear reduction, which they implement, or their correspondence with game semantics. In particular, the linear substitution performed by traversals corresponds to firing of an exponential branch of a proof-net~\cite{MASCARI1994111}. We also point to the work of Danos and Regnier who established the connection with abstract machines and GoI~\cite{danosherbelinregnier1996}.
 
@@ -3502,10 +3511,10 @@ We thus have $\Phi(@_x) = x$, $\Phi(\lambda\overline{y}') = \lambda\overline{y}$
     map pairwise to the same node under $R$ in $M$.
 %\end{enumerate}
 
-We define $\phi$ on $\travsetnorm(N)$
-as the function that maps occurrences pointwise by $\Phi$;
+We define the function $\phi$ on $\travsetnorm(N)$
+that maps occurrences pointwise by $\Phi$,
 preserves all justification pointers except
-for $@_x$ and $\lambda\overline{y}'$;
+for $@_x$ and $\lambda\overline{y}'$,
 and inserts after each occurrence of the \emph{lloc} $x$, the corresponding \emph{argument lookup} of $x$.
 It adjusts justification pointers as follows:
 for $n\not\in \{ @_x, \lambda\overline{y} \}$, $\Phi(n)$ has same link distance and label as $n$;
@@ -3562,6 +3571,7 @@ Observe that the result holds trivially up until the traversal in $M$ reaches oc
 can also traverse the corresponding nodes in $N$, and reciprocally for traversals of $N$ until reaching node $@_x$. The crucial part of the induction takes place when traversing the \emph{lloc} variable $x$ in $M$ (resp.~$@_x$ in $N$).
 \fi
 
+\iflongversion
 \begin{itemize}[itemindent=0.1em, leftmargin=0.4em]
     \item $\rulename{App}$
     %
@@ -3639,6 +3649,7 @@ can also traverse the corresponding nodes in $N$, and reciprocally for traversal
     Further $\Phi$ preserves arity and maps external and internal nodes to external and internal nodes respectively, thus $\dynar(\phi(u))=\dynar(u)$.
     Hence the rule $\rulename{IVar_\normalizing}$ used to extend $u$ can extend $t$, and reciprocally.
 \end{itemize}
+\fi
 
 %%%%%%%%
 {\bf Case 2:} $x$ has at least one operand ($|x|>0$) and $A = \lambda. R$ where $A$'s root node is the dummy lambda.
@@ -4008,7 +4019,6 @@ apply the readout procedure of Proposition~\ref{proposition:termtree_readout_fro
 reconstruct the $\beta$-normal form.
 \end{proof}
 
-
 % \begin{remark}
 % The infinitary counterpart of the characterization theorem for lambda terms with no normal form (not shown in this paper) can be stated as:
 % $$ \Union_{k\geq0} \left(\travulc^k(M)/{\sim}\right) = \pathset(BT(M))$$
@@ -4017,19 +4027,7 @@ reconstruct the $\beta$-normal form.
 
 \section{Further directions}
 
-As we have seen, the traversal theory of the untyped lambda calculus implements leftmost linear reduction, a non-strict, ``hyper-lazy''~\cite{danosherbelinregnier1996}, reduction strategy that substitutes variables one at a time. This bring the question of whether alternative notions of traversals are definable for other evaluation strategies such as call-by-name and call-by-value~\cite{plotkin-75}. A call-by-name version of head-linear reduction, that does not reduce inside the body of an unapplied abstraction, would easily be accommodated in the traversal setting. A strict evaluation strategy like call-by-value, on the other hand, might require substantial changes. As for traditional reduction strategies, such as the normal order of lambda calculus, it is not immediately obvious how to implement simultaneous substitution with traversals since, by nature, they traverse the term tree one node at a time. Perhaps this can be modeled by non-deterministically spawning new traversals for every free occurrence of the variable to be substituted.
-
-
-\begin{todobox}
-- Optimality in L\'evy's sense: how to interpret in traversal world?
-Traversals exhibit some sharing via their use of pointers, but this sharing is not exploited: in the term $(\lambda x. y x x) A$, both occurrences of variable $x$ get traversed by jumping to the argument $A$, the second occurrences lead to the same traversal unfolding without utilizing the result from the first occurrence of $x$.
-
---- Optimality: hyperlazy does npt mean efficient: linear substitution ends up repeating same things several times. However, no useless work is done, unlike the traditional subsistution. Could we recover optimality by adding some notion of cachine to traversals?
-
-It would perhaps require some additional caching mechanism to be able to reuse previous sections of traversals when traversing new occurrences of variables
-
-\end{todobox}
-
+We have seen that the traversal theory of the untyped lambda calculus implements leftmost linear reduction, a non-strict, ``hyper-lazy''~\cite{danosherbelinregnier1996}, reduction strategy that substitutes variables one at a time. This bring the question of whether alternative notions of traversals are definable for other evaluation strategies such as call-by-name and call-by-value~\cite{plotkin-75}. A call-by-name version of head-linear reduction, that does not reduce inside the body of an unapplied abstraction, would easily be accommodated in the traversal setting. A strict evaluation strategy like call-by-value, on the other hand, might require substantial changes. As for traditional reduction strategies, such as the normal order of lambda calculus, it is not immediately obvious how to implement simultaneous substitution with traversals since, by nature, they traverse the term tree one node at a time. Perhaps this can be modeled by non-deterministically spawning new traversals for every free occurrence of the variable to be substituted.
 
 We conjecture that a Game Semantics correspondence similar
 to Theorem~\ref{thm:gamesem_correspondence_stlc} holds for
