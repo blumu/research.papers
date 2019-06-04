@@ -777,7 +777,7 @@ with link distance $j$ and link label $i$;
 and $@$ represents the occurrence of an application node.
 %
 Two sequences $s$ and $u$ over possibly two distinct terms are \defname{equivalent}, written $s \equiv u$ just if they have the same structure: the type (variable, @-node or $\lambda$-node), arity, link distance and link label of the underlying occurrences match pairwise. Two equivalent sequences are not necessarily equal since they may have different variable names.
-Two subsets $J_1\subseteq \justseqset(M_1)$ and $J_2\subseteq\justseqset(M_2)$ are \defname{isomorphic}, written $J_1\structisomorphic J_2$, if  there exists a structure-preserving bijection between $J_1$ and $J_2$; that is a bijection $\phi :J_1\longrightarrow J_2$ such that $j\equiv\phi(j)$ for all $j\in J$.
+Two subsets $J_1\subseteq \justseqset(M_1)$ and $J_2\subseteq\justseqset(M_2)$ are \defname{isomorphic}, written $J_1\structisomorphic J_2$, if  there exists a structure-preserving bijection between $J_1$ and $J_2$; that is a bijection $\phi :J_1\longrightarrow J_2$ such that $s\equiv\phi(s)$ for all $s\in J$.
 
 \begin{example}
     Alpha-conversion preserves the structure so for instance we have
@@ -964,7 +964,7 @@ The set $\travulc(M)$ of \defname{traversals} of an untyped lambda term $M$, abb
 \noindent {\bf PROGRAM -- Structural rules}
 \begin{itemize}[leftmargin=3em]
     \item[\rulenamet{Root}]
-    $\istraversal \alpha$ where $\alpha$ is the root $\lambda$-node of the term tree $\ctree(M)$.
+    $\istraversal \alpha$ if $\alpha$ is the root $\lambda$-node of the term tree $\ctree(M)$.
 
     \item[\rulenamet{App}] If $\istraversal t \cdot @$ then
     $\istraversal \Pstr[0.4cm]{t \cdot (at) @  \, (a-at,40:0) \alpha}$ where $\alpha\in\NodesLmd$ is the $0$th child $\lambda$-node of $@$.
@@ -972,7 +972,7 @@ The set $\travulc(M)$ of \defname{traversals} of an untyped lambda term $M$, abb
     \item[\rulenamet{Lam}] If $\istraversal t \cdot \alpha$ for $\alpha\in\ExtendedNodesLmd$ then $\istraversal t \cdot \alpha ~ n$ where $n$ is $\alpha$'s unique child and if $n$ is
     \begin{compactitem}
         \item[\rulenamet{Lam^@}] an $@$-node then it has no justifier;
-        \item[\rulenamet{Lam^{\sf var}}] a structural variable in $\NodesVar$ then it points to the only occurrence in $\pview{t\cdot \alpha}$ of a node $m$ verifying $m \enables_k n$ for some $k\geq 0$, and has link label $k$;
+        \item[\rulenamet{Lam^{\sf var}}] in $\NodesVar$ then it points to the only occurrence in $\pview{t\cdot \alpha}$ of a node $m$ verifying $m \enables_k n$ for some $k\geq 0$, and has link label $k$;
 
         \item[\rulenamet{Lam^\ghostvar}] a ghost variable $\ghostvar$
         (and thus $\alpha$ is $\ghostlmd$) then
@@ -3215,7 +3215,7 @@ The same argument used in the \emph{structural argument} case shows that
 \path (L) edge [bend right,->>]      node[right,xshift=-2em,text width=4cm]{Spinal descent to \emph{lloc} \rulenamet{App},\rulenamet{Lmd^{\sf var}},\rulenamet{Lmd^@}} (V)
       (V) edge [bend right]  node[left,text width=3cm] {Concrete argument $\rulename{IVar}_\normalizing$} (L)
           edge [bend left]   node[right, text width=3cm] {Imaginary argument $\rulename{IVar}_\normalizing$} (G)
-      (G) edge [->>]                 node[below,text width=4cm] {Pending argument look-up \rulenamet{Lmd^\theta}, $\rulename{Var}$} (L)
+      (G) edge [->>]                 node[below,text width=4cm] {Pending argument look-up \rulenamet{Lmd^\ghostvar}, $\rulename{Var}$} (L)
 ;
 \end{tikzpicture}
 \caption{Decomposition of normalizing traversals of a \emph{qnf}.
@@ -3393,11 +3393,11 @@ abstraction.
     \begin{wrapfigure}{L}{0.6\textwidth}
 \fi
 %%%%%%%
-\begin{tikzpicture}[baseline=(root.base),level distance=3ex,inner ysep=0.5mm,sibling distance=7mm]
+\begin{tikzpicture}[baseline=(root.base),level distance=16pt,inner ysep=0.5mm,sibling distance=7mm,font=\small]
 \node (root){}
         child[dashed]{node{$@_{a}$}
             child[solid]{node{$\lambda\overline{h}_a$}
-                child[dashed]{node{$@$}
+                child[dashed]{node{$@_{a-1}$}
                     child{node{$\lambda\ldots$}
                         child[solid]{node{$@$}
                             child[solid]{node{$\lambda\overline{z}$}
@@ -3425,7 +3425,7 @@ abstraction.
 \node (root2) at (5.2,0) {}
     child[dashed]{node{$@_{a}$}
         child[solid]{node{$\lambda\overline{h}_a$}
-            child[dashed]{node{$@$}
+            child[dashed]{node{$@_{a-1}$}
                 child{node{$\lambda\ldots$}
                     child[solid]{node{$@$}
                         child[solid]{node{$\lambda\overline{z}$}
@@ -3509,7 +3509,7 @@ We thus have $\Phi(@_x) = x$, $\Phi(\lambda\overline{y}') = \lambda\overline{y}$
     and structural nodes map to structural nodes;
 %
     %%% \item
-    (iii) $\Phi$ preserves arity. In particular $|x| = |@_x|$ since $@_x$'s operator does not contribute to its arity;
+    (iii) $\Phi$ preserves arity, in particular $|x| = |@_x|$ since $@_x$'s operator does not contribute to its arity;
 %
     %%% \item
     (iv) $\Phi$ is not injective: since nodes under $R$ and $R'$
@@ -3525,11 +3525,11 @@ It adjusts justification pointers as follows:
 for $n\not\in \{ @_x, \lambda\overline{y} \}$, $\Phi(n)$ has same link distance and label as $n$;
 if $n$ is an occurrences of $x$ then $\Phi(n)$ points to the first occurrence of $x$'s binder in $\pview{\phi(u)}$ and has link label $i$;
 if $n$ is an occurrences of $\lambda\overline{y}'$ then  $\Phi(n)$ points to the last occurrence of $@_a$ in $\pview{\phi(u)}$ with link label $i$.
-This is well-defined since by the P-view-path correspondence, $x$'s binder (resp.~$@_a$) necessarily occurs in the P-view at $x$ (resp.~$\lambda\overline{y}'$).
+This is well-defined since by the P-view-path correspondence, $x$'s binder (resp.\ $@_a$) necessarily occurs in the P-view at $x$ (resp.\ $\lambda\overline{y}'$).
 %
 Between every occurrence of the \emph{lloc} $x$ and $\lambda\overline{y}$,
 it inserts the \emph{argument lookup} sequence consisting of ghost
-nodes statically determined by the term tree and obtained by repeatedly instantiating rules \rulenamet{Lmd} and \rulenamet{Var} until reaching node $\lambda\overline{y}$.
+nodes statically determined by the term tree and obtained by repeatedly instantiating rules \rulenamet{Lmd} and \rulenamet{Var}.
 %
 \iflongversion
 So given a traversal $u \in \travset(N)$ involving $@_x$, $\phi(u)$ is given by:
@@ -3539,10 +3539,10 @@ So given a traversal $u \in \travset(N)$ involving $@_x$, $\phi(u)$ is given by:
     \phi(u) &=& \Pstr[10pt]{ \ldots (aa){@_a} \cdot (la){\bulklambda{h_a}} \cdot \ldots (a1){@_1} \cdot (l1){\bulklambda{h_1}} \cdot @ \ldots \bulklambda{z} \cdot (x-l1,30:i) x \cdot \ghostlmd \cdot \ghostvar \ldots \ghostlmd \cdot \ghostvar \cdot (ly-a,20:i_a){\bulklambda{y}} }
 \end{eqnarray*}
 \else
-So the image of a traversal of the shape
+So a traversal of the shape
 $u = \Pstr[10pt]{ \ldots @_a (la){\bulklambda{h_a}}
-  \ldots (a1){@_1} (l1){\bulklambda{h_1}} \, @ \ldots \bulklambda{z} \, (ax){@_x} \, (ly-ax,20:0){\bulklambda{y}'} } \in \travsetnorm(N)$
-is
+  \ldots (a1){@_1} (l1){\bulklambda{h_1}} \, @ \ldots \bulklambda{z} \, (ax){@_x} \, (ly-ax,20:0){\bulklambda{y}'} }$ of $N$
+maps to
 $\phi(u) = \Pstr[10pt]{ \ldots @_a \, (la){\bulklambda{h_a}}
 \ldots (a1){@_1} \, (l1){\bulklambda{h_1}} \, @ \ldots \bulklambda{z} \, (x-l1,25:i) x \, \ghostlmd \, \ghostvar \, \ghostlmd \, \ghostvar \, (ly-a,22:i_a){\bulklambda{y}}}$.
 \fi
@@ -3562,6 +3562,10 @@ $\rightarrow_N$ and that the simulating traversal in $M$ is the image
 by $\varphi$ of the simulated traversal of $N$, and reciprocally that
 $\rightarrow_N$ simulates $\rightarrow_M$ via $\varphi^{-1}$.
 %
+\ifshortversion
+The proof goes by induction on and case analysis on
+the rule used to extend the traversal.
+\else
 The case case $\rulename{Root}$ is immediate, using rule $\rulename{Root}$ itself for the simulation.
 %
 Let $u\in \travsetnorm(N)$ and $t\in\travsetnorm(M)$,
@@ -3569,8 +3573,6 @@ ending respectively with node $n, m$, so that $m = \Phi(n)$.
 We prove both directions by induction on
 and case analysis on the rule used to
 extend the traversal.
-%
-\iflongversion
 
 Observe that the result holds trivially up until the traversal in $M$ reaches occurrence $x$ since the exact same rules traversing $M$
 can also traverse the corresponding nodes in $N$, and reciprocally for traversals of $N$ until reaching node $@_x$. The crucial part of the induction takes place when traversing the \emph{lloc} variable $x$ in $M$ (resp.~$@_x$ in $N$).
@@ -3660,7 +3662,7 @@ can also traverse the corresponding nodes in $N$, and reciprocally for traversal
 {\bf Case 2:} $x$ has at least one operand ($|x|>0$) and $A = \lambda. R$ where $A$'s root node is the dummy lambda.
 The root node $r$ of $R$ is either a variable if it is in head-normal form, or an $@$-node.
 The tree $\ctree(N)$ is obtained from $\ctree(M)$
-by substituting $x$'s label with that of $r$ and prepending $r$'s children to existing $x$'s children. Other nodes, including $x$'s parent $\lambda$-node, remain untouched. Let $r'$ denote this updated node in the reduct $N$.
+by substituting $x$'s label with that of $r$ and prepending $r$'s children to existing $x$'s children. Other nodes, including $x$'s parent $\lambda$-node, remain untouched. Let $r'$ denote this node in the reduct $N$.
 This transformation yields an implicit mapping function $\Phi : \ExtendedNodes(N)\rightarrow \ExtendedNodes(N)$ such that $\Phi(r') = x$.
 Although $\Phi$ does not preserve the arity of $x$, it does not affect the dynamic arity of traversals since $|r'| = |x| + |r|$.
 We then show by case analysis on the rules that the two terms are bisimilar.
@@ -3670,7 +3672,7 @@ We then show by case analysis on the rules that the two terms are bisimilar.
 %
 After reduction, node $x$ gets replaced by subterm $A$ and the label of $x$'s parent $\lambda$-node gets concatenated with the label of $A$'s root node:
 the parent node $\lambda\overline{z}$ of $x$ in $M$ becomes $\lambda\overline{z}\overline{y}'$ in the reduct $N$.
-A traversals of $M$ of the form $\ldots \lambda\overline{z} \, x \cdot v \cdot \lambda\overline{y} \cdot \ldots$, where $v$ is an argument lookup, can be bisimulated by traversals in $N$ of the form $\ldots \cdot \lambda\overline{z}\overline{y}' \ldots$. The arity of $x$ is not preserved but it does not alter the dynamic arity because $|\lambda{\overline{z} \overline{y}'}| =
+A traversals of $M$ of the form $\ldots \lambda\overline{z} \cdot x \cdot v \cdot \lambda\overline{y} \ldots$, where $v$ is an argument lookup, can be bisimulated by traversals in $N$ of the form $\ldots \lambda\overline{z}\overline{y}' \ldots$ The arity of $x$ is not preserved but it does not alter the dynamic arity because $|\lambda{\overline{z} \overline{y}'}| =
  |\lambda{\overline{z}}| +  |\lambda{\overline{y}}|$.
 %%%%%%%%%%%%%%%%% End of case where t ends with lloc variable occurrence x
 %\endproofatend
@@ -3844,15 +3846,15 @@ $t_1 \cdot \lambda\overline{w} \cdot @ \cdot \lambda\overline{x}$.
 One interesting case is when ghost nodes in $M$ get materialized into structural nodes in $N$:
 Consider the traversal
 $\Pstr[10pt]{\ldots
-    (l){\lambda\overline{w}}  (a)@  (lx-a,25:0){\lambda\overline{x}} \ldots (gl-a,25:i)\ghostlmd  (gv-l,33:{|\eta|-1+i})\ghostvar }
+    (l){\lambda\overline{w}}  (a)@  (lx-a,25:0){\lambda\overline{x}} \ldots (gl-a,25:i)\ghostlmd  (gv-l,33:{|\overline{w}|-1+i})\ghostvar }
 $ of $M$, $i\geq1$.
 If $i>n$ then it is simulated in $N$
 by $u = \Pstr[10pt]{\ldots
-    (l){\lambda\overline y}  \ldots   (gv-l,32:{|\eta|-1+i})\ghostvar }
+    (l){\lambda\overline y}  \ldots   (gv-l,32:{|\overline{w}|-1+i})\ghostvar }
 $ which also ends with a ghost variable;
 but if $i\leq n$ then the $\ghostvar$ gets materialized into variable occurrence $x_i$ in $N$:
 $\Pstr[10pt]{
-    \ldots  (l){\lambda\overline y} \ldots  (gv-l,32:{|\eta|+i-1}){x_i} }
+    \ldots  (l){\lambda\overline y} \ldots  (gv-l,32:{|\overline{w}|+i-1}){x_i} }
 $.
 %
 %%%%%%%%%%
@@ -4032,7 +4034,11 @@ reconstruct the $\beta$-normal form.
 
 \section{Further directions}
 
-We have seen that the traversal theory of the untyped lambda calculus implements leftmost linear reduction, a non-strict, ``hyper-lazy''~\cite{danosherbelinregnier1996}, reduction strategy that substitutes variables one at a time. This bring the question of whether alternative notions of traversals are definable for other evaluation strategies such as call-by-name and call-by-value~\cite{plotkin-75}. A call-by-name version of head-linear reduction, that does not reduce inside the body of an unapplied abstraction, would easily be accommodated in the traversal setting. A strict evaluation strategy like call-by-value, on the other hand, might require substantial changes. As for traditional reduction strategies, such as the normal order of lambda calculus, it is not immediately obvious how to implement simultaneous substitution with traversals since, by nature, they traverse the term tree one node at a time. Perhaps this can be modeled by non-deterministically spawning new traversals for every free occurrence of the variable to be substituted.
+We have seen that imaginary traversals implements leftmost linear reduction,
+%in the untyped lambda calculus
+a non-strict, ``hyper-lazy''~\cite{danosherbelinregnier1996}, reduction strategy that substitutes variables one at a time. This bring the question of whether alternative notions of traversals are definable for other evaluation strategies such as call-by-name and call-by-value~\cite{plotkin-75}. A call-by-name version of head-linear reduction, that does not reduce inside the body of an unapplied abstraction, would easily be accommodated in the traversal setting. A strict evaluation strategy like call-by-value, on the other hand, might require substantial changes. As for traditional reduction strategies, such as the normal order of lambda calculus,
+%it is not immediately obvious how to implement simultaneous substitution with traversals since, by nature, they traverse the term tree one node at a time.
+perhaps this can be modeled by non-deterministically spawning new traversals for every free occurrence of the variable to be substituted.
 
 We conjecture that a Game Semantics correspondence similar
 to Theorem~\ref{thm:gamesem_correspondence_stlc} holds for
