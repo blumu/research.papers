@@ -467,9 +467,9 @@ The next section introduces basic definitions from the traversal theory. Section
  %
  The maximal directed paths $\Pi(t)$ of a $\mathcal{L}$-labelled-tree $t$ are the sequences over $\mathcal{L} + \nat$
  inductively defined as
- $\Pi(l \langle t_1, \ldots t_n \rangle) = \{ l \cdot i \cdot p \ |  \ p \in \Pi(t_i), 1\leq i \leq n \}$ and
+ $\Pi(l \langle t_1, \ldots t_m \rangle) = \{ l \cdot i \cdot p \ |  \ p \in \Pi(t_i), 1\leq i \leq m \}$ and
  $\Pi(l\langle \rangle) = \{ l \}$.
- The set of paths of a $\mathcal{L}$-labelled-tree $t$ is defined as the odd-prefix closure of its maximal paths.
+ The paths of a $\mathcal{L}$-labelled-tree $t$ are the odd-prefixes of its maximal paths.
 
 \subsection{Lambda calculus background and notations}
 \label{sec:lambdacalculus_basics}
@@ -480,7 +480,7 @@ where $x$ ranges over a countable set of variable names $\VarSet$.
 For conciseness we abbreviate consecutive lambda abstractions when writing lambda terms, so that $\lambda x_1 \ldots \lambda x_n . M$ for some $n\geq 0$ and term $M$ will be written $\lambda x_1 \ldots x_n . M$; or just
 $\lambda \overline{x} . M$ if $\overline{x} = x_1 \ldots x_n$.
 We will also drop brackets, and assume left-associative application so that $U\,V\,W$ means $(U\,V)\,W$. We says that two terms are $\alpha$-equivalent if they are equal up to variable renaming.
-In the rest of the paper, we use uppercase letters $M, N, T, U, V$ for lambda terms and lowercase $x,y,z$ to denote variables. Terms will all have variable names ranging in some fixed set $\VarSet$ of identifiers.
+In the rest of the paper, we use uppercase letters $M, N, T, U, V$ for lambda terms and lowercase $x,y,z$ to denote variable names. Terms will all have variable names ranging in some fixed set $\VarSet$ of identifiers.
 
 We recall standard results of the lambda calculus.
 A \defname{redex} is a sub-term of the form $(\lambda x. M) N$.
@@ -963,7 +963,7 @@ The set $\travulc(M)$ of \defname{traversals} of an untyped lambda term $M$, abb
 \noindent {\bf PROGRAM -- Structural rules}
 \begin{itemize}[leftmargin=3em]
     \item[\rulenamet{Root}]
-    $\istraversal r$ where $r$ is the root of the term tree $\ctree(M)$.
+    $\istraversal \alpha$ where $\alpha$ is the root $\lambda$-node of the term tree $\ctree(M)$.
 
     \item[\rulenamet{App}] If $\istraversal t \cdot @$ then
     $\istraversal \Pstr[0.4cm]{t \cdot (at) @  \, (a-at,40:0) \alpha}$ where $\alpha\in\NodesLmd$ is the $0$th child $\lambda$-node of $@$.
@@ -971,14 +971,16 @@ The set $\travulc(M)$ of \defname{traversals} of an untyped lambda term $M$, abb
     \item[\rulenamet{Lam}] If $\istraversal t \cdot \alpha$ for $\alpha\in\ExtendedNodesLmd$ then $\istraversal t \cdot \alpha ~ n$ where $n$ is the unique child of $\alpha$ and:
     \begin{compactitem}
         \item[\rulenamet{Lam^@}] If $n$ is an $@$-node then it has no justifier;
-        \item[\rulenamet{Lam^{\sf var}}] If $n$ is a variable then it points to the only occurrence in $\pview{t\cdot \alpha}$ of a node $m$ verifying $m \enables_k n$ for some $k\geq 0$, and has link label $k$;
+        \item[\rulenamet{Lam^{\sf var}}] If $n$ is a structure variable in $\NodesVar$ then it points to the only occurrence in $\pview{t\cdot \alpha}$ of a node $m$ verifying $m \enables_k n$ for some $k\geq 0$, and has link label $k$;
 
         \item[\rulenamet{Lam^\ghostvar}] If $n$ is a ghost variable $\ghostvar$
         %(\ie,~$\alpha = \ghostlmd$)
          with $t \cdot \alpha = \Pstr[0.5cm]{ u \cdot \beta \,
         (m){m} \cdot v \cdot (gl-m,40:i){\ghostlmd}}$,
         $\beta \in \ExtendedNodesLmd, m \in\ExtendedNodesVar \union \NodesApp$
-        then $\istraversal \Pstr[0.5cm]{ u \cdot(beta){\beta} \,
+        then it points to $\beta$ with label $|\beta| + i - |m|$
+        that is
+        $\istraversal \Pstr[0.5cm]{ u \cdot(beta){\beta} \,
     (m){m} \cdot v \cdot  (gl-m,30:i){\ghostlmd}\, (al-beta,40:{|\beta| + i - |m|}){\ghostvar}}$.
     \end{compactitem}
 \end{itemize}
@@ -989,7 +991,7 @@ The set $\travulc(M)$ of \defname{traversals} of an untyped lambda term $M$, abb
   $\istraversal \Pstr[0.3cm]{ t  \cdot
 (m){m} \, (lx){\beta}  \cdot v \cdot (x-lx,30:i){n}
     \, (letai-m,45:i){\alpha}}$
-    where $\alpha$ denotes the $i$th child of $m$.
+    where $\alpha$ denotes the $i$th child ($\lambda$-node) of $m$.
 \end{itemize}
 
 \emph{\bf DATA -- Input-variable rule}
@@ -1000,7 +1002,7 @@ $\istraversal t \cdot n ~ \alpha$ where $\alpha$ points to $m$ with label $i$.
 \end{itemize}
 
 where $u,v$ denote sub-sequences of justified sequences of nodes.
-\caption{Derivation rules of the imaginary traversals $\travulc$ of the untyped $\lambda$-calculus.}
+\caption{Derivation rules of imaginary traversals $\travulc$ of the untyped $\lambda$-calculus.}
  \label{tab:trav_rules}
 \end{ruletablebox}
 \end{table}
@@ -1213,10 +1215,10 @@ We define the partial function $\coresymbol_{\overline{y}}\colon \justseqset(M) 
     & \mbox{if } n\in(\ExtendedNodesVar\inter\InternalNodes)\union\NodesApp, \\
     \coresymbol_{\epsilon}(s) \cdot \lambda \overline{z}
     & \mbox{if $n  \in\ExtendedNodesLmd\inter\ExternalNodes$,
-     $n = \lambda\overline{x}$ and $\overline{z}=\overline{x}\cdot\overline{y}$} \\
+     $n$ is labelled $\lambda\overline{x}$ and $\overline{z}=\overline{x}\cdot\overline{y}$} \\
     \coresymbol_{\overline{x} \cdot \overline{y}}(s)
     & \mbox{if $n \in\ExtendedNodesLmd\inter\InternalNodes$
-         and $n = \lambda\overline{x}$.}
+         and $n$ is labelled $\lambda\overline{x}$.}
 %%%% Uncomment if want to make ghost lambda case explicit
 % \coresymbol_{\epsilon}(s) \cdot\lambda\overline{y}
 %     & \mbox{if } n\in\ghostlmd\inter\ExternalNodes, \\
@@ -2901,7 +2903,7 @@ A subsequence of a traversal is a
 The \defname{lloc of a tree node} $n$, written
  $lloc_M(n)$, denotes the leftmost linear occurrence $lloc_M(N)$ (from Definition~\ref{def:leftmostlinearreduction}) of the subterm $N$ of $M$ rooted at $n$.
 \end{definition}
-%We say that a traversal $t$ is \defname{head-normal} if it ends with a structural lambda node with undefined lloc (\ie, $t^\omega = \lambda\overline\eta$ and $lloc_M(t^\omega) = \bot$).
+%We say that a traversal $t$ is \defname{head-normal} if it ends with a structural lambda node with undefined lloc (\ie, $t^\omega = \lambda\overline{w}$ and $lloc_M(t^\omega) = \bot$).
 
 \begin{property}
 \label{prop:strand_spinaldescent}
@@ -2925,10 +2927,10 @@ If $v$ is empty then the node following $x$ in $t$, if it exists, is necessarily
     %\begin{itemize}[nosep]
       %  \item
 
-      \noindent (i) \emph{Structural-argument} strands (S) of the form $\underline{\lambda\overline{\eta}} \cdot u \cdot \underline{x}$
+      \noindent (i) \emph{Structural-argument} strands (S) of the form $\underline{\lambda\overline{w}} \cdot u \cdot \underline{x}$
             where
             \begin{itemize}[nosep]
-            \item $\lambda\overline{\eta}$ is an external structural lambda node verifying $lloc_M(\lambda\overline\eta) = \bot$,
+            \item $\lambda\overline{w}$ is an external structural lambda node verifying $lloc_M(\lambda\overline{w}) = \bot$,
             \item $u$ is a (possibly empty) \emph{spinal descents} of internal nodes,
             \item $x$ is an external structural variable node;
             \end{itemize}
@@ -2939,7 +2941,7 @@ If $v$ is empty then the node following $x$ in $t$, if it exists, is necessarily
         \begin{itemize}[nosep]
             \item $\ghostlmd$ is an external ghost lambda node,
             \item $v$ is a \emph{pending parameter lookup} (ghost nodes) of length shorter than $u$,
-            \item $\lambda\overline{y}$ is an internal lambda node verifying $lloc_M(\lambda\overline{y}) = \bot$,
+            \item $\lambda\overline{y}$ is an internal structural $\lambda$-node verifying $lloc_M(\lambda\overline{y}) = \bot$,
             \item $x$ is an external structural variable node.
         \end{itemize}
     %\end{itemize}
@@ -2955,18 +2957,18 @@ starts with a strand of type $S$ and transitions to
 Strand type  & Strand shape & Transition & Next strand shape\\
 \hline
 \multirow{2}{*}{S}
-    & \multirow{2}{*}{$\underline{\lambda\overline{\eta_1}} \cdot u_1 \cdot \underline{x_1} $}
-    & $S \rightarrow G$
-    & $\underline{\lambda\overline{\eta_2}} \cdot u_2 \cdot \underline{x_2}$  \\
-    &
+    & \multirow{2}{*}{$\underline{\lambda\overline{w_1}} \cdot u_1 \cdot \underline{x_1} $}
     & $S \rightarrow S$
+    & $\underline{\lambda\overline{w_2}} \cdot u_2 \cdot \underline{x_2}$  \\
+    &
+    & $S \rightarrow G$
     & $\underline{\ghostlmd} \cdot  v \cdot \lambda\overline{y_2} \cdot u_2 \cdot \underline{x_2}$
     \\
 \hline
 \multirow{2}{*}{G}
     & \multirow{2}{*}{$\underline{\ghostlmd} \cdot  v \cdot \lambda\overline{y_1} \cdot u_1 \cdot \underline{x_1}$}
     & $G \rightarrow S$
-    & $\underline{\lambda\overline{\eta_2}} \cdot u_2 \cdot \underline{x_2}$
+    & $\underline{\lambda\overline{w_2}} \cdot u_2 \cdot \underline{x_2}$
 \\
     &
     & $G \rightarrow G$
@@ -2981,29 +2983,29 @@ where in the 2nd and 4th transition, $\lambda\overline{y_2}$ in the `next strand
 By case analysis showing that for a \emph{qnf}, the rules of normalizing traversals unfold according to the state diagram of Figure~\ref{fig:qnf_strand_decomposition_statemachine} and therefore never traverses an internal variable. The three states represent the type of external nodes traversed (lambda, ghost lambda and variable). The bottom states represent the start of a new strand, the top state represent the end. The double arrows represent consecutive applications of deterministic traversal rules while regular arrows represent the two possible non-deterministic choices in rule \rulenamet{IVar}: one for structural child lambda nodes (left) and one for ghost children (right).
 
 \begin{enumerate}
-\item[(Init)] The first strand is obtained by applying the rule \rulenamet{Root} followed by repeated applications of \rulenamet{App} and \rulenamet{Lam}, which yields $u$, a path from the root $\lambda\overline{\eta}$ to some variable node $x$ in the tree of $M$, so that $u$ is a spinal descent consisting only of lambda nodes and application nodes.
+\item[(Init)] The first strand is obtained by applying the rule \rulenamet{Root} followed by repeated applications of \rulenamet{App} and \rulenamet{Lam}, which yields $u$, a path from the root $\lambda\overline{w}$ to some variable node $x$ in the tree of $M$, so that $u$ is a spinal descent consisting only of lambda nodes and application nodes.
 Suppose that $x$ is an internal variable then by definition it is
-involved in some generalized redex and therefore we have $lloc_M(\underline{\lambda\eta}) = x$, but since $M$ is in \emph{qnf} we have $lloc_M(\lambda \overline{\eta}) = lloc_M(M) = \bot$ which gives a contradiction.
+involved in some generalized redex and therefore we have $lloc_M(\underline{\lambda\overline{w}}) = x$, but since $M$ is in \emph{qnf} we have $lloc_M(\lambda \overline{w}) = lloc_M(M) = \bot$ which gives a contradiction.
 Hence $x$ is an external variable which ends the first strand of type $S$.
 
-\item[(Structural)] The previous strand is of form $\underline{\lambda\overline{\eta_1}} \cdot u_1 \cdot \underline{x_1} $.
+\item[(Structural)] The previous strand is of form $\underline{\lambda\overline{w_1}} \cdot u_1 \cdot \underline{x_1} $.
 
-If the node following $x_1$ is a structural node $\lambda\overline{\eta_2}$ then by rule \rulenamet{IVar}, it's a child lambda node of $x_1$.
-Because $u_1$ is a spinal descent, the subterm rooted at $\lambda \overline\eta_1$ is of the form $\lambda \overline\eta_1 . x_1 A_1 \ldots A_q$ for some $q\geq1$, therefore we have $lloc_M(\lambda \overline\eta_1 . x_1 A_1 \ldots A_q) = \bot$. Since $x_1$ is external, by Property~\ref{prop:qnf_longapply} we have $lloc_M(A_j)=\bot$ for all $1\leq j\leq q$, so in particular $lloc_M(\lambda\overline{\eta_2}) = \bot$. The same logic used in the \emph{Initialization} case lets us conclude that $u_2$ is a spinal descent to external node $x_2$. We have shown that the next strand is of type $S$.
+If the node following $x_1$ is a structural node $\lambda\overline{w_2}$ then by rule \rulenamet{IVar}, it's a child lambda node of $x_1$.
+Because $u_1$ is a spinal descent, the subterm rooted at $\lambda \overline{w_1}$ is of the form $\lambda \overline{w_1} . x_1 A_1 \ldots A_q$ for some $q\geq1$, therefore we have $lloc_M(\lambda \overline{w_1} . x_1 A_1 \ldots A_q) = \bot$. Since $x_1$ is external, by Property~\ref{prop:qnf_longapply} we have $lloc_M(A_j)=\bot$ for all $1\leq j\leq q$, so in particular $lloc_M(\lambda\overline{w_2}) = \bot$. The same logic used in the \emph{Initialization} case lets us conclude that $u_2$ is a spinal descent to external node $x_2$. We have shown that the next strand is of type $S$.
 \\
 
 Now suppose instead that the node following $x_1$ is a ghost node then by Property~\ref{prop:strand_spinaldescent}, $u_1$ is necessarily non-empty: we have $u_1 =
-@_1 \cdot\lambda\overline{\xi_1} \cdots @_q\cdot \lambda\overline{\xi_q}$ for some $q\geq 1$. The subterm at $@_r$,  represented on Figure~\ref{fig:strand_decomposition_proof_induction}, is of the form
-$$(\lambda\overline{\xi_r}. A_0) A_1 \ldots A_{k_{r}-1}\ (\lambda\overline{y_2}. \ldots)A_{k_{r}+1}\ \ldots A_{|@_r|} .$$
+@_1 \cdot\lambda\overline{h_1} \cdots @_q\cdot \lambda\overline{h_q}$ for some $q\geq 1$. The subterm at $@_r$,  represented on Figure~\ref{fig:strand_decomposition_proof_induction}, is of the form
+$$(\lambda\overline{h_r}. A_0) A_1 \ldots A_{k_{r}-1}\ (\lambda\overline{y_2}. \ldots)A_{k_{r}+1}\ \ldots A_{|@_r|} .$$
 By the weaving property of Proposition~\ref{prop:weaving}(iii), $x_1$ is followed by a \emph{pending parameter lookup} $v$ necessarily shorter than $u_1$ and terminated by a structural lambda node $\lambda\overline{y_2}$ justified by some application node $@_r$ in $u_1$ for some $1\leq r \leq q$:
 \begin{align*}
  t_{max} &= \cdots \Pstr[10pt]{
-(l){\underline{\lambda\overline{\eta_1}}} \cdot
-{@_1} \cdot \lambda\overline{\xi_1} \cdot
+(l){\underline{\lambda\overline{w_1}}} \cdot
+{@_1} \cdot \lambda\overline{h_1} \cdot
 \cdots
-(atr){@_r} \lambda\overline{\xi_r} \cdot
+(atr){@_r} \lambda\overline{h_r} \cdot
 \cdots
-{@_q} \cdot\lambda\overline{\xi_q} \cdot
+{@_q} \cdot\lambda\overline{h_q} \cdot
 (x){\underline{x_1}}\cdot
 (gl-x,25:k){\underline\ghostlmd}
 \cdot v
@@ -3018,25 +3020,25 @@ v &= \ghostvar_{k_q} \cdot \ghostlmd_{k_q} \cdot
 \ghostvar_{k_{r}}
 \end{align*}
 where, for all $i$ ranging from $r$ to $q$, ghost variable
-$\ghostvar_{k_i}$ and ghost lambda $\ghostlmd_{k_i}$ point respectively to $\lambda\overline{\xi_i}$ and $@_i$ with label $k_i\geq1$ defined by:
+$\ghostvar_{k_i}$ and ghost lambda $\ghostlmd_{k_i}$ point respectively to $\lambda\overline{h_i}$ and $@_i$ with label $k_i\geq1$ defined by:
 \begin{align*}
-  k_i &= k - |x| + |\lambda\overline{\xi}_q| + \sum_{i\leq j < q} (|\lambda\overline{\xi}_{j}| - |@_{j+1}|)
+  k_i &= k - |x| + |\lambda\overline{h}_q| + \sum_{i\leq j < q} (|\lambda\overline{h}_{j}| - |@_{j+1}|)
 %\\
-%  k_i &= k + |\lambda\overline{\xi}_q| - |x| +
-%  \sum_{j=i..q-1} |\lambda\overline{\xi}_{j}|
+%  k_i &= k + |\lambda\overline{h}_q| - |x| +
+%  \sum_{j=i..q-1} |\lambda\overline{h}_{j}|
 %  - \sum_{j=i..q-1} |@_{j+1}|
 %\\
-%  k_i &= k + |\lambda\overline{\xi}_q| - |x| +
-%  \sum_{j=i..q-1} |\lambda\overline{\xi}_{j}|
+%  k_i &= k + |\lambda\overline{h}_q| - |x| +
+%  \sum_{j=i..q-1} |\lambda\overline{h}_{j}|
 %  - \sum_{j=i+1..q} |@_{j}|
 %\\
-%  k_i &= k + |\lambda\overline{\xi}_q| - |x| +
-%  |\lambda\overline{\xi}_{i}| +
-%  \sum_{j=i+1..q-1} (|\lambda\overline{\xi}_{j}| - |@_{j}|) - |@_{q}|
+%  k_i &= k + |\lambda\overline{h}_q| - |x| +
+%  |\lambda\overline{h}_{i}| +
+%  \sum_{j=i+1..q-1} (|\lambda\overline{h}_{j}| - |@_{j}|) - |@_{q}|
 \\
    &= k - |x| +
-  |\lambda\overline{\xi}_{i}| +
-  \sum_{i< j\leq q} (|\lambda\overline{\xi}_j| - |@_j|)
+  |\lambda\overline{h}_{i}| +
+  \sum_{i< j\leq q} (|\lambda\overline{h}_j| - |@_j|)
 \end{align*}
 
 Since all the nodes in $v$ are ghost nodes, by Proposition~\ref{prop:ulctrav_welldefined_pathview} their justification label is greater than the justifier's arity; the opposite holds for $\lambda\overline{y_2}$ which is a structural node. Therefore:
@@ -3048,51 +3050,51 @@ k_r \leq |@_r|
 
 
 To prove that $lloc(\lambda\overline{y_2}) =\bot$ we first show that for all $i$ ranging from $r$ to $q$ we have
- $k_i>|\lambda_l(\lambda\overline{\xi_i})|$. We prove the result by a finite induction proceeding bottom-up from the lower tree node
- $\lambda\overline{\xi_q}$ up to $\lambda\overline{\xi_r}$.
+ $k_i>|\lambda_l(\lambda\overline{h_i})|$. We prove the result by a finite induction proceeding bottom-up from the lower tree node
+ $\lambda\overline{h_q}$ up to $\lambda\overline{h_r}$.
 
 \emph{Base case:} We have $i=q$. The subterm
-rooted at $\lambda\overline{\xi_q}$ is in head normal form
-$\lambda\overline{\xi_q}. x \cdots$ therefore its head lambda-list consists precisely of the lambda abstractions $\lambda\overline{\xi_q}$, and thus
-$|\lambda_s(\lambda\overline{\xi_q})| = |\lambda\overline{\xi_q}|$.
-We have $k_q = k -|x| + |\lambda\overline{\xi_q}|$ and by Equation~\ref{eqn:k_greater_than_x} we have $k>|x|$, hence $k_q >|\lambda\overline{\xi_q}|$.
+rooted at $\lambda\overline{h_q}$ is in head normal form
+$\lambda\overline{h_q}. x \cdots$ therefore its head lambda-list consists precisely of the lambda abstractions $\lambda\overline{h_q}$, and thus
+$|\lambda_s(\lambda\overline{h_q})| = |\lambda\overline{h_q}|$.
+We have $k_q = k -|x| + |\lambda\overline{h_q}|$ and by Equation~\ref{eqn:k_greater_than_x} we have $k>|x|$, hence $k_q >|\lambda\overline{h_q}|$.
 
 
-\emph{Induction case:} Let $r+1\leq i \leq q$. We suppose that the result holds for $i$ we show that it must hold for $i-1$. By definition, the head lambda-list at $\lambda\overline{\xi_i}$ is precisely given by the variables in the abstraction concatenated with the head lambda-list at $@_{i+1}$, thus $|\lambda_l(\lambda\overline{\xi_i})| =
-|\lambda\overline{\xi_i}| + |\lambda_l(@_{i+1})|$. The lambda-list at $@_i$, is by definition, obtained by popping $|@_i|$ lambdas from the lambda-list at $\lambda\overline{\xi_i}$; or is the empty list if the arity is greater than the number of pending lambdas. In terms of lengths this means:
+\emph{Induction case:} Let $r+1\leq i \leq q$. We suppose that the result holds for $i$ we show that it must hold for $i-1$. By definition, the head lambda-list at $\lambda\overline{h_i}$ is precisely given by the variables in the abstraction concatenated with the head lambda-list at $@_{i+1}$, thus $|\lambda_l(\lambda\overline{h_i})| =
+|\lambda\overline{h_i}| + |\lambda_l(@_{i+1})|$. The lambda-list at $@_i$, is by definition, obtained by popping $|@_i|$ lambdas from the lambda-list at $\lambda\overline{h_i}$; or is the empty list if the arity is greater than the number of pending lambdas. In terms of lengths this means:
 \begin{align*}
-    |\lambda_l(@_i)| &= \max(0, |\lambda_l(\lambda\overline{\xi_i})| - |@_i|) \\
-     &= \max\left( 0, |\lambda_l(@_{i+1})| + |\lambda\overline{\xi_i}| - |@_i| \right) & \mbox{for $r\leq i \leq q-1$.}
+    |\lambda_l(@_i)| &= \max(0, |\lambda_l(\lambda\overline{h_i})| - |@_i|) \\
+     &= \max\left( 0, |\lambda_l(@_{i+1})| + |\lambda\overline{h_i}| - |@_i| \right) & \mbox{for $r\leq i \leq q-1$.}
 \end{align*}
 
 Furthermore by definition of $k_{i-1}$ we have:
 \begin{equation}
-k_{i-1} = k_i + |\lambda\overline{\xi_{i-1}}| - |@_i| \label{eqn:ki_minus_one}
+k_{i-1} = k_i + |\lambda\overline{h_{i-1}}| - |@_i| \label{eqn:ki_minus_one}
 \end{equation}
 Hence,
 \begin{align*}
-    |\lambda_l(\lambda\overline{\xi_{i-1}})| - k_{i-1}
-    &= |\lambda\overline{\xi_{i-1}}| +|\lambda_l(@_i)| - k_{i-1} &\mbox{(Def~of $\lambda_l$)}\\
-    &= |\lambda\overline{\xi_{i-1}}| + \max\left( 0, |\lambda_l(\lambda\overline{\xi_i})| - |@_i| \right) - k_{i-1} &\mbox{(Def~of $\lambda_l$)}\\
-    &= \max\left( |\lambda\overline{\xi_{i-1}}| - k_{i-1},    |\lambda\overline{\xi_{i-1}}| + |\lambda_l(\lambda\overline{\xi_i})| - |@_i| - k_{i-1} \right) \\
-    &= \max\left(  |@_i|- k_i, |\lambda_l(\lambda\overline{\xi_i})| - k_i \right) &\mbox{(Eqn~\ref{eqn:ki_minus_one})}
+    |\lambda_l(\lambda\overline{h_{i-1}})| - k_{i-1}
+    &= |\lambda\overline{h_{i-1}}| +|\lambda_l(@_i)| - k_{i-1} &\mbox{(Def~of $\lambda_l$)}\\
+    &= |\lambda\overline{h_{i-1}}| + \max\left( 0, |\lambda_l(\lambda\overline{h_i})| - |@_i| \right) - k_{i-1} &\mbox{(Def~of $\lambda_l$)}\\
+    &= \max\left( |\lambda\overline{h_{i-1}}| - k_{i-1},    |\lambda\overline{h_{i-1}}| + |\lambda_l(\lambda\overline{h_i})| - |@_i| - k_{i-1} \right) \\
+    &= \max\left(  |@_i|- k_i, |\lambda_l(\lambda\overline{h_i})| - k_i \right) &\mbox{(Eqn~\ref{eqn:ki_minus_one})}
 \end{align*}
-By the induction hypothesis we have $|\lambda_l(\lambda\overline{\xi_i})| < k_i$, and by Equation~\ref{eqn:qnfdecomp_kj} we have $ |@_i|< k_i$, therefore the maximum of the two quantities in the last equation is negative which shows
-the desired result $|\lambda_l(\lambda\overline{\xi_{i-1}})| < k_{i-1}$.
+By the induction hypothesis we have $|\lambda_l(\lambda\overline{h_i})| < k_i$, and by Equation~\ref{eqn:qnfdecomp_kj} we have $ |@_i|< k_i$, therefore the maximum of the two quantities in the last equation is negative which shows
+the desired result $|\lambda_l(\lambda\overline{h_{i-1}})| < k_{i-1}$.
 
 \begin{figure}[htbp]
 \centering
 \begin{tikzpicture}[baseline=(root.base),level distance=6.5ex,inner ysep=0.5mm,sibling distance=15mm]
     \node (root){}
-    child[dashed] {node{$\lambda\overline{\eta_1}$}
+    child[dashed] {node{$\lambda\overline{w_1}$}
         child[solid] {node{$@_1$}
             child{node{$\ldots$}
                 child{node{$@_{r}$}
-                    child{node{$\lambda\overline{\xi_r}$}
+                    child{node{$\lambda\overline{h_r}$}
                         child[dashed]{node{$@_{q-1}$}
-                            child[solid]{node{$\lambda\overline{\xi_{q-1}}$}
+                            child[solid]{node{$\lambda\overline{h_{q-1}}$}
                                 child[solid]{node{$@_q$}
-                                    child{node{$\lambda\overline\xi_q$}
+                                    child{node{$\lambda\overlineh_q$}
                                         child{node {$x_1$}
                                             child[dashed,level distance=5ex]{node{}}}
                                         edge from parent node[above left]{$0$}
@@ -3127,8 +3129,8 @@ the desired result $|\lambda_l(\lambda\overline{\xi_{i-1}})| < k_{i-1}$.
 \end{figure}
 
 We now show that $lloc_M(\lambda\overline{y_2})=\bot$.
-By assumption we have that $lloc_M(\lambda\overline{\eta_1}) =\bot$ so since $@_r$ occurs in the spine of $M$, by definition of $lloc_M$ we must have $lloc_M(@_r) =\bot$, and thus also $lloc_M(\lambda\overline{\xi_r}) = \bot$. We have just shown that $|\lambda_l(\lambda\overline{\xi_r})| < k_r$, consequently, the sub-term $(\lambda\overline{\xi_r} . A_0) A_1 \ldots A_{k_r-1}$ has more operands than pending lambdas in the operator's lambda list. By definition of lambda list this implies that $\lambda_l((\lambda\overline{\xi_r} . A_0) A_1 \ldots A_{k_r-1})$ is empty. Hence, we necessarily have $lloc(\lambda\overline{y_2}) = \bot$, otherwise by definition of $lloc$ we would have
- $lloc((\lambda\overline{\xi_r} . A_0) A_1 \ldots A_{k_r-1} (\lambda\overline{y_2}. \ldots)) = lloc(\lambda\overline{y_2}) \ne \bot$, which subsequently implies $lloc(\lambda\overline{\eta_1})\ne\bot$, contradicting the assumption.
+By assumption we have that $lloc_M(\lambda\overline{w_1}) =\bot$ so since $@_r$ occurs in the spine of $M$, by definition of $lloc_M$ we must have $lloc_M(@_r) =\bot$, and thus also $lloc_M(\lambda\overline{h_r}) = \bot$. We have just shown that $|\lambda_l(\lambda\overline{h_r})| < k_r$, consequently, the sub-term $(\lambda\overline{h_r} . A_0) A_1 \ldots A_{k_r-1}$ has more operands than pending lambdas in the operator's lambda list. By definition of lambda list this implies that $\lambda_l((\lambda\overline{h_r} . A_0) A_1 \ldots A_{k_r-1})$ is empty. Hence, we necessarily have $lloc(\lambda\overline{y_2}) = \bot$, otherwise by definition of $lloc$ we would have
+ $lloc((\lambda\overline{h_r} . A_0) A_1 \ldots A_{k_r-1} (\lambda\overline{y_2}. \ldots)) = lloc(\lambda\overline{y_2}) \ne \bot$, which subsequently implies $lloc(\lambda\overline{w_1})\ne\bot$, contradicting the assumption.
 The sequence $u_2$ is shown to be a spinal descent by the same argument used in the \emph{structural argument} case above, using the fact that $lloc_M(\lambda\overline{y_2})=\bot$. We have thus shown that the next strand is of type $G$.
 
 \item[(Ghost)] If the node following $x_1$ is a structural node then, like we have shown in the previous case, the next strand is necessarily a spinal descent of type $S$.
@@ -3145,22 +3147,22 @@ $G$.
 A case analysis shows that for a \emph{qnf}, a normalizing traversal unfolds according to the state diagram of Figure~\ref{fig:qnf_strand_decomposition_statemachine} and never traverses an internal variable.
 It starts with a spinal descent to the linear head occurrence, whose $lloc_M$ must be $\bot$ since the term is a \emph{qnf} and so it is necessarily an external node. The initial strand is thus of type $S$. After a strand of type $S$, if the next node is a structural lambda then by Property~\ref{prop:qnf_longapply} its $lloc_M$ is necessarily $\bot$, another spinal descent follows which yields a strand of type $S$.
 We prove the third transition with the same argument.
-Let us consider the second transition (the fourth is proven similarly) where the node following the strand is a ghost lambda. The strand is of form $\underline{\lambda\overline{\eta_1}} \cdot u_1 \cdot \underline{x_1} $ where by Property~\ref{prop:strand_spinaldescent} $u_1$ is  non-empty: $u_1 =
-@_1 \cdot\lambda\overline{\xi_1} \cdots @_q\cdot \lambda\overline{\xi_q}$ for some $q\geq 1$. The subterm at $@_r$, is of the form
-$(\lambda\overline{\xi_r}. A_0) A_1 \ldots A_{k_{r}-1}\ (\lambda\overline{y_2}. \ldots)A_{k_{r}+1}\ \ldots A_{|@_r|}$.
+Let us consider the second transition (the fourth is proven similarly) where the node following the strand is a ghost lambda. The strand is of form $\underline{\lambda\overline{w_1}} \cdot u_1 \cdot \underline{x_1} $ where by Property~\ref{prop:strand_spinaldescent} $u_1$ is  non-empty: $u_1 =
+@_1 \cdot\lambda\overline{h_1} \cdots @_q\cdot \lambda\overline{h_q}$ for some $q\geq 1$. The subterm at $@_r$, is of the form
+$(\lambda\overline{h_r}. A_0) A_1 \ldots A_{k_{r}-1}\ (\lambda\overline{y_2}. \ldots)A_{k_{r}+1}\ \ldots A_{|@_r|}$.
 
 The Weaving Proposition~\ref{prop:weaving} shows that $x_1$ is followed by a \emph{pending parameter lookup} $v$ shorter than $u_1$ and terminated by a structural lambda node $\lambda\overline{y_2}$ justified by some node $@_r$ in $u_1$ with label $k_r$ for some $1\leq r \leq q$:
 $
    t_{max} = \cdots \Pstr[10pt]{
    %(l)
-   {\underline{\lambda\overline{\eta_1}}}
+   {\underline{\lambda\overline{w_1}}}
    \cdot {@_1}
-   \cdot \lambda\overline{\xi_1}
+   \cdot \lambda\overline{h_1}
    \cdots %(atr)
         {@_r}
-   \cdot \lambda\overline{\xi_r}
+   \cdot \lambda\overline{h_r}
    \cdots {@_q}
-   \cdot\lambda\overline{\xi_q}
+   \cdot\lambda\overline{h_q}
    \cdot %(x)
         {\underline{x_1}}
    \cdot %(gl-x,25:k)
@@ -3173,21 +3175,21 @@ $
 where
 $\ghostlmd$ points to $x_1$ with label $k$;
 $v$ consists of alternation of $2(q-r) +1$ ghost variable/lambda nodes, starting and ending with a ghost variable,
-where ghost variables point to $\lambda\overline{\xi_i}$ for
+where ghost variables point to $\lambda\overline{h_i}$ for
 $i \in \{ r..q \}$ with label $k_i\geq1$,
 ghost lambdas point to $@_i$ for $i \in \{ r-1..q \}$ with label $k_i\geq1$;
-where $k_q = k - |x| + |\lambda\overline{\xi}_q|$ and $ k_{i-1} = k_i + |\lambda\overline{\xi_{i-1}}| - |@_i|$, $k_i\geq1$.
+where $k_q = k - |x| + |\lambda\overline{h}_q|$ and $ k_{i-1} = k_i + |\lambda\overline{h_{i-1}}| - |@_i|$, $k_i\geq1$.
 
-We show by a finite induction on $i \in \{r, q\}$ proceeding bottom-up from the lower tree node $\lambda\overline{\xi_q}$ up to $\lambda\overline{\xi_r}$
-that $k_i>|\lambda_l(\lambda\overline{\xi_i})|$. Base case follows from $k>|x|$ since $\lambda\overline{y_2}$ is structural.
+We show by a finite induction on $i \in \{r, q\}$ proceeding bottom-up from the lower tree node $\lambda\overline{h_q}$ up to $\lambda\overline{h_r}$
+that $k_i>|\lambda_l(\lambda\overline{h_i})|$. Base case follows from $k>|x|$ since $\lambda\overline{y_2}$ is structural.
  %induction
 Suppose the result holds for $i\in\{r+1..q\}$.
-The lambda-list at $@_i$ is obtained by popping $|@_i|$ lambdas from the lambda-list at $\lambda\overline{\xi_i}$ and $\lambda_l(\lambda\overline{\xi_i})$ is by definition $\overline{\xi_i}$ concatenated with the lambda-list of $@_{i+1}$, hence $|\lambda_l(@_i)| = \max( 0, |\lambda_l(@_{i+1})| + |\lambda\overline{\xi_i}| - |@_i| )$.
-We thus have $|\lambda_l(\lambda\overline{\xi_{i-1}})| - k_{i-1}
-    = |\lambda\overline{\xi_{i-1}}| +|\lambda_l(@_i)| - k_{i-1}
-    = \max (  |@_i|- k_i, |\lambda_l(\lambda\overline{\xi_i})| - k_i )$.
-By the induction hypothesis we have $|\lambda_l(\lambda\overline{\xi_i})| < k_i$, and since nodes in $v$ are all ghosts we have $|@_i|< k_i$ thus the `$\max$' is negative which shows $|\lambda_l(\lambda\overline{\xi_{i-1}})| < k_{i-1}$.
-Since in particular $|\lambda_l(\lambda\overline{\xi_r})| < k_r$, the application $(\lambda\overline{\xi_r} . A_0) A_1 \ldots A_{k_r-1}$ has more operands than pending lambdas in the operator, thus its lambda list is empty. By assumption the strand is of type $S$ thus $lloc(\lambda\overline{\eta_1})=\bot$ and since there is no lloc ``left of'' $\lambda\overline{y_2}$, there cannot possibly be a lloc under $\lambda\overline{y_2}$. Hence $lloc(\lambda\overline{y_2}) =\bot$.
+The lambda-list at $@_i$ is obtained by popping $|@_i|$ lambdas from the lambda-list at $\lambda\overline{h_i}$ and $\lambda_l(\lambda\overline{h_i})$ is by definition $\overline{h_i}$ concatenated with the lambda-list of $@_{i+1}$, hence $|\lambda_l(@_i)| = \max( 0, |\lambda_l(@_{i+1})| + |\lambda\overline{h_i}| - |@_i| )$.
+We thus have $|\lambda_l(\lambda\overline{h_{i-1}})| - k_{i-1}
+    = |\lambda\overline{h_{i-1}}| +|\lambda_l(@_i)| - k_{i-1}
+    = \max (  |@_i|- k_i, |\lambda_l(\lambda\overline{h_i})| - k_i )$.
+By the induction hypothesis we have $|\lambda_l(\lambda\overline{h_i})| < k_i$, and since nodes in $v$ are all ghosts we have $|@_i|< k_i$ thus the `$\max$' is negative which shows $|\lambda_l(\lambda\overline{h_{i-1}})| < k_{i-1}$.
+Since in particular $|\lambda_l(\lambda\overline{h_r})| < k_r$, the application $(\lambda\overline{h_r} . A_0) A_1 \ldots A_{k_r-1}$ has more operands than pending lambdas in the operator, thus its lambda list is empty. By assumption the strand is of type $S$ thus $lloc(\lambda\overline{w_1})=\bot$ and since there is no lloc ``left of'' $\lambda\overline{y_2}$, there cannot possibly be a lloc under $\lambda\overline{y_2}$. Hence $lloc(\lambda\overline{y_2}) =\bot$.
 The same argument used in the \emph{structural argument} case shows that
  $u_2$ is a spinal descent. Hence the next strand is of type $G$.
 \endshortproof
@@ -3231,8 +3233,8 @@ Let $t \in \travsetnorm(M)$ for some \emph{quasi normal} term $M$. We have:
 \begin{proof}
 (a) and (b) are direct consequences of Proposition~\ref{prop:qnf_strand_decomposition}.
 For (c), let's consider each case of the strand decomposition of Proposition~\ref{prop:qnf_strand_decomposition}. For transitions $\rightarrow S$ and $S \rightarrow S$, because $u_1$ and $u_2$ are spinal descents, the last node in the next strand ($x_1$ or $x_2$) must be a descendant
-in $\ctree(M)$ of the first node ($\lambda\overline{\eta_1}$) from the previous strand.
-For transition $S\rightarrow G$, since both $u_1$ and $u_2$ are spinal descents, there are also paths in the tree, therefore since $\lambda\overline{y_2}$ points to $u_1$, $x_2$ must also be a descendant of $\lambda\overline{\eta_1}$. For transitions $G \rightarrow S$ and $G \rightarrow G$, since $u_1$ and $u_2$ are spinal descents, $x_2$ is a descendant of $\lambda\overline{y_2}$, itself a descendant of $\lambda\overline{y_1}$.
+in $\ctree(M)$ of the first node ($\lambda\overline{w_1}$) from the previous strand.
+For transition $S\rightarrow G$, since both $u_1$ and $u_2$ are spinal descents, there are also paths in the tree, therefore since $\lambda\overline{y_2}$ points to $u_1$, $x_2$ must also be a descendant of $\lambda\overline{w_1}$. For transitions $G \rightarrow S$ and $G \rightarrow G$, since $u_1$ and $u_2$ are spinal descents, $x_2$ is a descendant of $\lambda\overline{y_2}$, itself a descendant of $\lambda\overline{y_1}$.
 Suppose $t$ is infinite then from the strand decomposition we can construct an infinite path in the tree of $M$ which contradicts the fact that $M$ is a finitary term.
 \end{proof}
 
@@ -3391,7 +3393,7 @@ abstraction:
 \begin{tikzpicture}[baseline=(root.base),level distance=3ex,inner ysep=0.5mm,sibling distance=7mm]
 \node (root){}
         child[dashed]{node{$@_{a}$}
-            child[solid]{node{$\lambda\overline{\xi}_a$}
+            child[solid]{node{$\lambda\overline{h}_a$}
                 child[dashed]{node{$@$}
                     child{node{$\lambda\ldots$}
                         child[solid]{node{$@$}
@@ -3419,7 +3421,7 @@ abstraction:
 ;
 \node (root2) at (5.2,0) {}
     child[dashed]{node{$@_{a}$}
-        child[solid]{node{$\lambda\overline{\xi}_a$}
+        child[solid]{node{$\lambda\overline{h}_a$}
             child[dashed]{node{$@$}
                 child{node{$\lambda\ldots$}
                     child[solid]{node{$@$}
@@ -3469,12 +3471,12 @@ yields $N$ (right) where $R'$ denotes a copy of $R$.}
 \end{wrapfigure}
 \fi
 %
-Let $@_j$ and $\lambda\overline{\xi_j}$ for $1\leq j\leq a$, $a\geq 1$
+Let $@_j$ and $\lambda\overline{h_j}$ for $1\leq j\leq a$, $a\geq 1$
 denote respectively the @-nodes and $\lambda$-nodes in the spinal descent
 from $@_a$ to $x$'s binder where
 $@_a$ denotes the parent node of the argument $A = \lambda\overline{y}. R$.
-So that $\lambda\overline{\xi_1}$ is $x$'s binder and $@_1$ its parent.
-Let $i$ denote $x$'s binding index in $\lambda\overline{\xi_1}$.
+So that $\lambda\overline{h_1}$ is $x$'s binder and $@_1$ its parent.
+Let $i$ denote $x$'s binding index in $\lambda\overline{h_1}$.
 %
 After reduction,
 node $x$ gets replaced by an application node $@_x$,  its existing children are preserved, and a new subterm $\lambda\overline{y}'. R'$, a copy of the subterm tree $A$, gets attached as the $0$th child tree of $@_x$.
@@ -3529,17 +3531,17 @@ nodes statically determined by the term tree and obtained by repeatedly instanti
 \iflongversion
 So given a traversal $u \in \travset(N)$ involving $@_x$, $\phi(u)$ is given by:
 \begin{eqnarray*}
-    u &=& \Pstr[10pt]{ \ldots (aa){@_a} \cdot (la){\bulklambda{\xi_a}} \cdot \ldots (a1){@_1} \cdot (l1){\bulklambda{\xi_1}} \cdot @ \ldots \bulklambda{z} \cdot (ax){@_x} \cdot (ly-ax,20:0){\bulklambda{y}'} }
+    u &=& \Pstr[10pt]{ \ldots (aa){@_a} \cdot (la){\bulklambda{h_a}} \cdot \ldots (a1){@_1} \cdot (l1){\bulklambda{h_1}} \cdot @ \ldots \bulklambda{z} \cdot (ax){@_x} \cdot (ly-ax,20:0){\bulklambda{y}'} }
     \\
-    \phi(u) &=& \Pstr[10pt]{ \ldots (aa){@_a} \cdot (la){\bulklambda{\xi_a}} \cdot \ldots (a1){@_1} \cdot (l1){\bulklambda{\xi_1}} \cdot @ \ldots \bulklambda{z} \cdot (x-l1,30:i) x \cdot \ghostlmd \cdot \ghostvar \ldots \ghostlmd \cdot \ghostvar \cdot (ly-a,20:i_a){\bulklambda{y}} }
+    \phi(u) &=& \Pstr[10pt]{ \ldots (aa){@_a} \cdot (la){\bulklambda{h_a}} \cdot \ldots (a1){@_1} \cdot (l1){\bulklambda{h_1}} \cdot @ \ldots \bulklambda{z} \cdot (x-l1,30:i) x \cdot \ghostlmd \cdot \ghostvar \ldots \ghostlmd \cdot \ghostvar \cdot (ly-a,20:i_a){\bulklambda{y}} }
 \end{eqnarray*}
 \else
 So the image of a traversal of the shape
-$u = \Pstr[10pt]{ \ldots @_a (la){\bulklambda{\xi_a}}
-  \ldots (a1){@_1} (l1){\bulklambda{\xi_1}} \, @ \ldots \bulklambda{z} \, (ax){@_x} \, (ly-ax,20:0){\bulklambda{y}'} } \in \travsetnorm(N)$
+$u = \Pstr[10pt]{ \ldots @_a (la){\bulklambda{h_a}}
+  \ldots (a1){@_1} (l1){\bulklambda{h_1}} \, @ \ldots \bulklambda{z} \, (ax){@_x} \, (ly-ax,20:0){\bulklambda{y}'} } \in \travsetnorm(N)$
 is
-$\phi(u) = \Pstr[10pt]{ \ldots @_a \, (la){\bulklambda{\xi_a}}
-\ldots (a1){@_1} \, (l1){\bulklambda{\xi_1}} \, @ \ldots \bulklambda{z} \, (x-l1,25:i) x \, \ghostlmd \, \ghostvar \, \ghostlmd \, \ghostvar \, (ly-a,22:i_a){\bulklambda{y}}}$.
+$\phi(u) = \Pstr[10pt]{ \ldots @_a \, (la){\bulklambda{h_a}}
+\ldots (a1){@_1} \, (l1){\bulklambda{h_1}} \, @ \ldots \bulklambda{z} \, (x-l1,25:i) x \, \ghostlmd \, \ghostvar \, \ghostlmd \, \ghostvar \, (ly-a,22:i_a){\bulklambda{y}}}$.
 \fi
 The transformation does not affect the structure
 of the core projection
@@ -3585,8 +3587,8 @@ can also traverse the corresponding nodes in $N$, and reciprocally for traversal
     and $u' = u \cdot \lambda\overline{y}'$.
 %
     By Lemma~\ref{lemma:genredex_lookup}, $@_a$ is precisely the lowest application node in the spinal descent
-    from $@_a$ to $\lambda\overline{\xi_1}$ verifying $|@_a| >  i_a$,
-        where $i_a = i + \sum_{1\leq j< a} (|\lambda\overline{\xi_j}| - |@_j|)$.
+    from $@_a$ to $\lambda\overline{h_1}$ verifying $|@_a| >  i_a$,
+        where $i_a = i + \sum_{1\leq j< a} (|\lambda\overline{h_j}| - |@_j|)$.
     This formula precisely captures the ``pending argument lookup'' algorithm implicitly
     implemented by the rules \rulenamet{Lmd} and \rulenamet{Var}:
     with exactly $i_a$ instantiations of those two rules, traversal $t$ gets extended by $2(i_a-1)$ ghost nodes followed
@@ -3686,7 +3688,7 @@ A traversals of $M$ of the form $\ldots \lambda\overline{z} \, x \cdot v \cdot \
         \iflongversion
         \begin{tikzpicture}[baseline=(root.base),level distance=5ex,inner ysep=0.5mm,sibling distance=13mm]
         \node (root_rGt1_M){}
-                child[dashed]{node{$\lambda\overline\eta$}
+                child[dashed]{node{$\lambda\overline{w}$}
                     child[solid]{node{$@$}
                         child[solid]{
                             node{$\lambda x_1 x_2 \ldots x_n$}
@@ -3700,7 +3702,7 @@ A traversals of $M$ of the form $\ldots \lambda\overline{z} \, x \cdot v \cdot \
                     }
                 };
         \node (root_rGt1_N) at (7,0) {}
-                child[dashed]{node{$\lambda\overline\eta$}
+                child[dashed]{node{$\lambda\overline{w}$}
                     child[solid]{node{$@$}
                         child[solid]{
                             node{$\lambda x_2 \ldots x_n$}
@@ -3714,7 +3716,7 @@ A traversals of $M$ of the form $\ldots \lambda\overline{z} \, x \cdot v \cdot \
                     }
                 };
         \node (root_rEq1_M) at (0,-3) {}
-                child[dashed]{node{$\lambda\overline\eta$}
+                child[dashed]{node{$\lambda\overline{w}$}
                     child[solid]{node{$@$}
                         child[solid]{
                             node{$\lambda x_1 x_2 \ldots x_n$}
@@ -3726,7 +3728,7 @@ A traversals of $M$ of the form $\ldots \lambda\overline{z} \, x \cdot v \cdot \
                     }
                 };
         \node (root_rEq1_N) at (7,-4) {}
-                child[dashed]{node{$\lambda\overline\eta~x_2 \ldots x_n$}
+                child[dashed]{node{$\lambda\overline{w}~x_2 \ldots x_n$}
                     child[solid]{node{$N$}
                     }
                 }
@@ -3743,7 +3745,7 @@ A traversals of $M$ of the form $\ldots \lambda\overline{z} \, x \cdot v \cdot \
 \begin{center}
             \begin{tikzpicture}[baseline=(root.base),level distance=4ex,inner ysep=0.5mm,sibling distance=8mm]
                 \node (root_rGt1_M){}
-                        child[dashed]{node{$\lambda\overline\eta$}
+                        child[dashed]{node{$\lambda\overline{w}$}
                             child[solid]{node{$@$}
                                 child[solid]{
                                     node{$\lambda \overline{x}$}
@@ -3757,7 +3759,7 @@ A traversals of $M$ of the form $\ldots \lambda\overline{z} \, x \cdot v \cdot \
                             }
                         };
                 \node (root_rGt1_N) at (4.5,0) {}
-                        child[dashed]{node{$\lambda\overline\eta$}
+                        child[dashed]{node{$\lambda\overline{w}$}
                             child[solid]{node{$@$}
                                 child[solid]{
                                     node{$\lambda x_2 \ldots x_n\qquad $}
@@ -3771,7 +3773,7 @@ A traversals of $M$ of the form $\ldots \lambda\overline{z} \, x \cdot v \cdot \
                             }
                         };
                 \node (root_rEq1_M) at (8,0) {}
-                        child[dashed]{node{$\lambda\overline\eta$}
+                        child[dashed]{node{$\lambda\overline{w}$}
                             child[solid]{node{$@$}
                                 child[solid]{
                                     node{$\lambda \overline{x}$}
@@ -3783,7 +3785,7 @@ A traversals of $M$ of the form $\ldots \lambda\overline{z} \, x \cdot v \cdot \
                             }
                         };
                 \node (root_rEq1_N) at (12,0) {}
-                        child[dashed]{node{$\lambda\overline\eta~x_2 \ldots x_n$}
+                        child[dashed]{node{$\lambda\overline{w}~x_2 \ldots x_n$}
                             child[solid]{node{$T$}
                             }
                         }
@@ -3820,12 +3822,12 @@ not alter the dynamic arity of traversals.
 %%%%%%%
 \noindent
 \emph{Case $r>1$ (right)} The reduct tree is obtained by removing the @-node and argument $A_1$ and combining the two lambdas into $\lambda\overline{y}$,
-where $\overline{y} = \overline\eta x_2 \ldots x_n$.
+where $\overline{y} = \overline{w} x_2 \ldots x_n$.
 %
 There is an implicit injection $\Phi$ from nodes of $N$, except $\lambda\overline{y}$, to nodes of $M$.
-%that maps $\lambda\overline{y}$ to $\lambda\overline\eta$.
+%that maps $\lambda\overline{y}$ to $\lambda\overline{w}$.
 We extend it element-wise to $\phi$ on justified sequences
-such that occurrences of $\lambda\overline{y}$ in $N$ gets replaced by the three occurrences $\lambda\overline\eta \cdot @ \cdot \lambda\overline{x}$ in $M$.
+such that occurrences of $\lambda\overline{y}$ in $N$ gets replaced by the three occurrences $\lambda\overline{w} \cdot @ \cdot \lambda\overline{x}$ in $M$.
 %
 %%%%%%%%%%
 An induction on traversals shows that $\rightarrow_M$ simulates $\rightarrow_N$ and reciprocally.
@@ -3834,12 +3836,12 @@ Suppose $t_1$ simulates $u_1$ then a
  traversal $u_1 \cdot \lambda\overline{y} \in \travsetnorm(N)$
 ending with $\lambda\overline{y}$
 gets simulated in $M$ by a traversal of the form
-$t_1 \cdot \lambda\overline{\eta} \cdot @ \cdot \lambda\overline{x}$.
+$t_1 \cdot \lambda\overline{w} \cdot @ \cdot \lambda\overline{x}$.
 %
 One interesting case is when ghost nodes in $M$ get materialized into structural nodes in $N$:
 Consider the traversal
 $\Pstr[10pt]{\ldots
-    (l){\lambda\overline\eta}  (a)@  (lx-a,25:0){\lambda\overline{x}} \ldots (gl-a,25:i)\ghostlmd  (gv-l,33:{|\eta|-1+i})\ghostvar }
+    (l){\lambda\overline{w}}  (a)@  (lx-a,25:0){\lambda\overline{x}} \ldots (gl-a,25:i)\ghostlmd  (gv-l,33:{|\eta|-1+i})\ghostvar }
 $ of $M$, $i\geq1$.
 If $i>n$ then it is simulated in $N$
 by $u = \Pstr[10pt]{\ldots
@@ -3852,30 +3854,30 @@ $.
 %
 %%%%%%%%%%
     The simulation preserves the core because the simulation in $M$
-    carries over the list of pending lambdas, and the core operation adequately merges $\lambda\overline\eta$ and $\lambda x_1 \ldots x_n$ into
-    $\lambda\overline\eta x_2 \ldots x_n$
+    carries over the list of pending lambdas, and the core operation adequately merges $\lambda\overline{w}$ and $\lambda x_1 \ldots x_n$ into
+    $\lambda\overline{w} x_2 \ldots x_n$
 and
-    $|\lambda\overline{\eta}| - |@| + |\lambda\overline{x}|
-    =|\lambda\overline{\eta}| - 1 + |\lambda\overline{x}|
-    =|\lambda\overline{\eta}x_2\ldots x_n|
+    $|\lambda\overline{w}| - |@| + |\lambda\overline{x}|
+    =|\lambda\overline{w}| - 1 + |\lambda\overline{x}|
+    =|\lambda\overline{w}x_2\ldots x_n|
 %    =|\lambda\overline{y}|
     $
 \iflongversion
-    There are two cases. Suppose $\lambda\overline\eta$ is internal, then:
+    There are two cases. Suppose $\lambda\overline{w}$ is internal, then:
     \begin{align*}
         \coresymbol(t)
-        &=  \coresymbol(t_1 \cdot \lambda\overline{\eta} \cdot @ \cdot \lambda\overline{x})
+        &=  \coresymbol(t_1 \cdot \lambda\overline{w} \cdot @ \cdot \lambda\overline{x})
             & \mbox{(def.~of $t$)}
         \\
         &=  \coresymbol_{\overline{x}}(t_1 \cdot
-        \lambda\overline\eta \cdot @)
+        \lambda\overline{w} \cdot @)
             & \mbox{(def.~of $\coresymbol$)}
         \\
         &=  \coresymbol_{pop(\overline{x})}(t_1 \cdot
-        \lambda\overline{\eta})
+        \lambda\overline{w})
             & \mbox{(def.~of $\coresymbol$ and $|@|=1$)}
         \\
-        &=  \coresymbol_{\overline\eta \cdot pop(\overline{x})}(t_1)
+        &=  \coresymbol_{\overline{w} \cdot pop(\overline{x})}(t_1)
             & \mbox{(def.~of $\coresymbol$)}
         \\
         &=  \coresymbol_{\overline{y}}(t_1)
@@ -3888,23 +3890,23 @@ and
         &=  \coresymbol(u)
             & \mbox{(def.~of $u$).}
     \end{align*}
-    Suppose $\lambda\overline\eta$ is external, then:
+    Suppose $\lambda\overline{w}$ is external, then:
     \begin{align*}
         \coresymbol(t)
-        &=  \coresymbol(t_1 \cdot \lambda\overline{\eta} \cdot @ \cdot \lambda\overline{x})
+        &=  \coresymbol(t_1 \cdot \lambda\overline{w} \cdot @ \cdot \lambda\overline{x})
             & \mbox{(def.~of $\phi(u)$)}
         \\
         &=  \coresymbol_{\overline{x}}(t_1 \cdot
-        \lambda\overline\eta \cdot @)
+        \lambda\overline{w} \cdot @)
             & \mbox{(def.~of $\coresymbol$)}
         \\
-        &=  \coresymbol_{pop_1(\overline{x})}(t_1 \cdot \lambda\overline\eta)
+        &=  \coresymbol_{pop_1(\overline{x})}(t_1 \cdot \lambda\overline{w})
             & \mbox{(def.~of $\coresymbol$ and $|@|=1$)}
         \\
-        &=  \coresymbol_{x_2\ldots x_n}(t_1 \cdot \lambda\overline\eta)
+        &=  \coresymbol_{x_2\ldots x_n}(t_1 \cdot \lambda\overline{w})
         & \mbox{(def.~of $pop$)}
         \\
-        &=  \coresymbol_{\epsilon}(t_1) \cdot \lambda\overline\eta x_2\ldots x_n
+        &=  \coresymbol_{\epsilon}(t_1) \cdot \lambda\overline{w} x_2\ldots x_n
             & \mbox{(def.~of $\coresymbol$)}
         \\
             &= \coresymbol_{\epsilon}(u_1) \cdot \lambda\overline{y}
