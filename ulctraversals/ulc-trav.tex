@@ -36,6 +36,7 @@
 \usepackage{tcolorbox}
 \usepackage{wrapfig}
 \usepackage{url}
+\usepackage{halloweenmath}
 \usetikzlibrary{arrows,automata}
 
 
@@ -180,15 +181,17 @@
 \newcommand\NodesApp{\Nodes_@}% set of application nodes
 
 \newcommand{\ghostlmd}{{\lambda\!\!\lambda}}
-\newcommand{\ghostvar}{\theta}
+%\newcommand{\ghostvar}{\theta}
+\newcommand{\ghostvar}{{\mathghost}}
+
 
 % set of extended nodes of the extensional tree
 % (= structural + ghost nodes)
 \newcommand\ExtendedNodes{\tilde{\Nodes}}
 % set of extended variable nodes = structural + ghost variable nodes
-\newcommand\ExtendedNodesVar{\NodesVar^\ghostvar}
+\newcommand\ExtendedNodesVar{\tilde{\Nodes}_{\sf var}}
 % set of extended lambda nodes = structural + ghost lambda nodes
-\newcommand\ExtendedNodesLmd{\NodesLmd^\ghostlmd}
+\newcommand\ExtendedNodesLmd{\tilde{\Nodes}_{\lambda}}
 
 
 \newcommand{\normalizing}{{\sf norm}}
@@ -656,16 +659,18 @@ represent fictitious lambda abstractions
 and \emph{ghost variable nodes} represent fictitious
 occurrences of nameless variables bound by either a structural or a ghost lambda node.
 
-We simultaneously define ghost nodes and extend the enabling relation $\enables$ recursively as follows: for every (ghost) variable or application node $n$ with parent (ghost) lambda-node $\alpha$, and for all $k>|n|$, we define two new unique ghost nodes $\ghostlmd$ and $\ghostvar$
-such that
-$\ghostvar$ is the unique child of $\ghostlmd$, itself defined as the $k$th-child of $n$;
+We define ghost nodes by simultaneously and recursively
+extending the tree's parent-child relationship and the enabling relation $\enables$: for every (ghost) variable or @-node $n$ with parent (ghost) lambda-node $\alpha$, and for all $k>|n|$, we introduce a ghost variable node $\ghostvar$ defined as the unique child of
+ghost lambda node $\ghostlmd$, itself defined as the $k$th-child of $n$;
 and we extend the enabling relation with $n \enables_k \ghostlmd$
-and $\alpha \enables_{|\alpha|+ k} \ghostvar$; where by convention ghost nodes have arity $0$, and the arity of structural nodes remains unchanged (\ie, given by their arity in the tree without ghost nodes).
-This enabling relation induces a binding relationship, between ghost variables and their (possibly ghost) lambda-node binder, which permits us to forgo the notion of variables names in ghost nodes: we will thus
+and $\alpha \enables_{|\alpha|+ k} \ghostvar$; where by convention ghost nodes have arity $0$, and the arity of structural nodes remains unchanged (\ie, given by their arity in the structural tree without ghost nodes).
+This extended enabling relation induces a binding relationship between ghost variables and their (possibly ghost) lambda-node binder, which lets us forgo the notion of variables names in ghost nodes: we will thus
 use respectively $\ghostlmd$ and $\ghostvar$ as a unique label for all ghost lambda and variable nodes.
 
 We call the infinite tree hereby defined the \defname{extensional tree} of $M$,
-denoted $\exttree(M)$ over the \defname{extended nodes} $\ExtendedNodes = \Nodes + \ghostvar + \ghostlmd$, where $+$ denotes disjoint set union. We use the shorthands $\ExtendedNodesLmd$ for $\NodesLmd + \ghostlmd$ and $\ExtendedNodesVar$ for $\NodesVar + \ghostvar$.
+denoted $\exttree(M)$ over the \defname{extended nodes} $\ExtendedNodes$,
+consisting of structural nodes of $\Nodes$ plus all ghost variables $\ghostvar$ and lambda nodes $\ghostlmd$ as defined above.
+ We use the shorthands $\ExtendedNodesLmd$ for the subset of lambda nodes (structural in $\NodesLmd$ or ghosts $\ghostlmd$) and $\ExtendedNodesVar$ for variable nodes (structural $\NodesVar$ or ghosts $\ghostvar$).
 
 \subsection{Justified sequence of nodes}
 \label{sec:justseq}
