@@ -273,7 +273,7 @@
 \ead{william.blum@microsoft.com}
 \address{Microsoft Research, One Microsoft Way, Redmond, WA, 98052, USA}
 
-\title{Evaluating Lambda Terms with Traversals (preprint)
+\title{Evaluating Lambda Terms with Traversals
 \\ \vspace*{1em}
 \today}
 % Traversing And Evaluating Untyped Lambda Terms(preprint)
@@ -380,7 +380,7 @@ Evaluating an untyped term boils down to enumerating traversals.
 We achieve this by restricting the non-determinism when traversing a variable: we bound the argument index by a critical quantity called the `dynamic arity', calculated in linear time from the traversal itself. It defines the number of arguments beyond which eta-expansions becomes unnecessary for the sake of finding a path in the normal form. This restricts both the breadth and depth of the traversal enumeration: only a finite number of on-the-fly eta-expansions are applied on a given traversal; and a traversal cannot unfold infinitely, provided that the term has a beta-normal form.
 On the other hand, traversing a non-terminating term like $(\lambda x. x\,x)(\lambda x. x\,x)$ leads to infinitely long traversals, as one would expect.
 
-The read out phase of the algorithm appeals to a correspondence property between the traversals and paths in the tree representation of the normal form. The term $M$, for instance, has a single traversal $t$, which via a suitable filtering, yields the path $\lambda z ~ z$; its beta-normal form is thus $\lambda z. z$, up to variable renaming.
+The read out phase of the algorithm appeals to a correspondence property between the traversals and paths in the tree representation of the normal form. The term $M$, for instance, has a single traversal $t$, which via a suitable filtering, yields the path $\lambda z \cdot z$; its beta-normal form is thus $\lambda z. z$, up to variable renaming.
 
  To prove correctness of the evaluation procedure, we show that traversals essentially implement a recursive version of \emph{head linear reduction}, a non-standard reduction strategy based on an alternative notion of redex
   where substitution occurs one variable occurrence at a time.
@@ -407,7 +407,7 @@ A notion that we formalize as the \emph{leftmost linear reduction} strategy, tha
 A traversal starts, in a `leftmost-order'-like fashion, with a depth-first search for \emph{head occurrence} of the `\emph{hoc redex}' as defined by Danos-Regnier. It performs linear substitution by ``jumping'' to the node in the tree representing the sub-term to be substituted for that head occurrence.
 To find that node, traversals implement what Danos \etal call ``the gymnastics to find the argument of a subterm''~\cite{danos-head} via the mechanism of `weaving' (Proposition~\ref{prop:weaving}),
 where a traversal repeatedly traverses ghost lambda and variable nodes until the node representing the argument to be fetched materializes.
-The link label `$|\alpha|+i-|m|$' from the definition
+The link label `$|\alpha'|+i-|m|$' from the definition
 of the lambda rule in Table~\ref{tab:trav_rules} effectively calculates the quantity $r-a+l$ that appear in step 2.(b) of the PAM transition from~\cite{danos-head}.
 After performing such a jump, a traversal continues its descent to look for the next head occurrence, as if that first head occurrence had been replaced by the redex argument; until it finds the variable that will become the head variable in the normal form. At this point, a PAM would stop, whereas a traversal forks  non-deterministically and recursively traverses all possible arguments of the head variable.
 
@@ -458,7 +458,8 @@ The next section introduces basic definitions from the traversal theory. Section
 \section{Terms, trees and justified sequences}
 \label{sec:basic_def}
 \subsection{Notations}
-\emph{Sequences:} For any alphabet $\Sigma$ we write $\Sigma^*$ to denote the set of (possibly infinite) sequences over elements of $\Sigma$.
+\emph{Sequences:} For any alphabet $\Sigma$ we write $\Sigma^*$ for the
+set of (possibly infinite) sequences over elements of $\Sigma$.
  We use the abbreviation $\overline{x}$ for the sequence of elements $x_1 \ldots x_n$ for some $n\geq0$, $\epsilon$ for the empty sequence, and for any two sequences $\overline{x}, \overline{y}$ of length $n,m\geq 0$, we write $\overline{x} \cdot \overline{y}$ for the concatenation $x_1 \ldots x_n y_1 \ldots y_m$. We write $|s|$ for the length of a sequence $s$.
 
  \emph{Labelled trees:} Given a set of labels $\mathcal{L}$, the expression `$l\langle t_1, \ldots, t_m \rangle$' for $m \geq 0$ denotes a $\mathcal{L}$-labelled tree with root labelled $l\in \mathcal{L}$. The case $m=0$ represents a leaf-node, and for $m>0$ a node labelled $l$ with $m$ ordered children trees $t_1$, \ldots, $t_m$.
@@ -521,7 +522,7 @@ With the implicit generalization of the above definition to infinitary terms,
 the trees without @-nodes are isomorphic to B\"ohm tree~\cite{Barendregt84}.
 Another property of this representation is the \defname{alternation} between lambda nodes and variable/application nodes at odd and even levels.
 
-We write $\Nodes(M)$ to denote the set of nodes of $\ctree(M)$, or just $\Nodes$ if the term is clear from context; $\NodesVar$ for the set of variable nodes; $\NodesLmd$ for lambda nodes, and $\NodesApp$ for  application nodes. For any lambda node $\alpha\in\NodesLmd$ we write $\child(\alpha)$ to denote its unique child node (either a variable node or $@$).
+We write $\Nodes(M)$ for the set of nodes of $\ctree(M)$, or just $\Nodes$ if the term is clear from context; $\NodesVar$ for the set of variable nodes; $\NodesLmd$ for lambda nodes, and $\NodesApp$ for  application nodes. For any lambda node $\alpha\in\NodesLmd$ we write $\child(\alpha)$ to denote its unique child node (either a variable node or $@$).
 \end{definition}
 
 \begin{figure}[hbtp]
@@ -968,28 +969,31 @@ The set $\travulc(M)$ of \defname{traversals} of an untyped lambda term $M$, abb
     \item[\rulenamet{App}] If $\istraversal t \cdot @$ then
     $\istraversal \Pstr[0.4cm]{t \cdot (at) @  \, (a-at,40:0) \alpha}$ where $\alpha\in\NodesLmd$ is the $0$th child $\lambda$-node of $@$.
 
-    \item[\rulenamet{Lam}] If $\istraversal t \cdot \alpha$ for $\alpha\in\ExtendedNodesLmd$ then $\istraversal t \cdot \alpha ~ n$ where $n$ is the unique child of $\alpha$ and:
+    \item[\rulenamet{Lam}] If $\istraversal t \cdot \alpha$ for $\alpha\in\ExtendedNodesLmd$ then $\istraversal t \cdot \alpha ~ n$ where $n$ is $\alpha$'s unique child and if $n$ is
     \begin{compactitem}
-        \item[\rulenamet{Lam^@}] If $n$ is an $@$-node then it has no justifier;
-        \item[\rulenamet{Lam^{\sf var}}] If $n$ is a structure variable in $\NodesVar$ then it points to the only occurrence in $\pview{t\cdot \alpha}$ of a node $m$ verifying $m \enables_k n$ for some $k\geq 0$, and has link label $k$;
+        \item[\rulenamet{Lam^@}] an $@$-node then it has no justifier;
+        \item[\rulenamet{Lam^{\sf var}}] a structural variable in $\NodesVar$ then it points to the only occurrence in $\pview{t\cdot \alpha}$ of a node $m$ verifying $m \enables_k n$ for some $k\geq 0$, and has link label $k$;
 
-        \item[\rulenamet{Lam^\ghostvar}] If $n$ is a ghost variable $\ghostvar$
-        %(\ie,~$\alpha = \ghostlmd$)
-         with $t \cdot \alpha = \Pstr[0.5cm]{ u \cdot \beta \,
-        (m){m} \cdot v \cdot (gl-m,40:i){\ghostlmd}}$,
-        $\beta \in \ExtendedNodesLmd, m \in\ExtendedNodesVar \union \NodesApp$
-        then it points to $\beta$ with label $|\beta| + i - |m|$
+        \item[\rulenamet{Lam^\ghostvar}] a ghost variable $\ghostvar$
+        (and thus $\alpha$ is $\ghostlmd$) then
+        it points to the predecessor $\alpha'$ of $\alpha$'s justifier
+        and has label $|\alpha'| + i - |m|$,
         that is
-        $\istraversal \Pstr[0.5cm]{ u \cdot(beta){\beta} \,
-    (m){m} \cdot v \cdot  (gl-m,30:i){\ghostlmd}\, (al-beta,40:{|\beta| + i - |m|}){\ghostvar}}$.
+        $\istraversal \Pstr[0.5cm]{ u \cdot(alphaprime){\alpha'}
+    (m){m} \cdot v \cdot  (gl-m,30:i){\ghostlmd}\, (al-alphaprime,40:{|\alpha'| + i - |m|}){\ghostvar}}$
+    %
+        where $t \cdot \alpha = \Pstr[0.5cm]{ u \cdot \alpha'
+        (m){m} \cdot v \cdot (gl-m,40:i){\ghostlmd}}$,
+        $\alpha'  \in \ExtendedNodesLmd, m \in\ExtendedNodesVar \union \NodesApp$
     \end{compactitem}
 \end{itemize}
 \emph{\bf PROGRAM -- Copy-cat rule}
 \begin{itemize}[leftmargin=3em]
-\item[\rulenamet{Var}] If $\istraversal \Pstr[0.5cm]{t\cdot(m){m}\, (beta){\beta}
-\cdot v \cdot (n-beta,50:i){n}}$ for $m \in\ExtendedNodesVar \union \NodesApp$, $\beta \in \ExtendedNodesLmd\inter\InternalNodes$, $n \in \ExtendedNodesVar\inter\InternalNodes$, $i>0$ then
+\item[\rulenamet{Var}] If $\istraversal \Pstr[0.5cm]{t\cdot(m){m}
+ \, (alphaprime){\alpha'}
+\cdot v \cdot (n-alphaprime,50:i){n}}$ for $m \in\ExtendedNodesVar \union \NodesApp$, $\alpha' \in \ExtendedNodesLmd\inter\InternalNodes$, $n \in \ExtendedNodesVar\inter\InternalNodes$, $i>0$ then
   $\istraversal \Pstr[0.3cm]{ t  \cdot
-(m){m} \, (lx){\beta}  \cdot v \cdot (x-lx,30:i){n}
+(m){m}\, (lx){\alpha'}  \cdot v \cdot (x-lx,30:i){n}
     \, (letai-m,45:i){\alpha}}$
     where $\alpha$ denotes the $i$th child ($\lambda$-node) of $m$.
 \end{itemize}
@@ -1047,8 +1051,8 @@ So if $t$ does not contain ghost nodes then $\pview{t}$ is a structural path in 
 Proven simultaneously by induction on the traversal rules.
 For \rulenamet{Lam^{\sf var}}: By induction hypothesis (iii) the P-view is a path in the extensional tree of $M$. But the last node of $t$ is a structural node therefore, this path is necessarily a structural path with no ghost node. Consequently, if the last node is a bound variable node, its enabler is precisely its binding lambda node which necessarily occurs exactly once in the path to the root. If the variable is free then the enabler is the root itself and (i) holds. By definition, the justification pointer honors the enabling relation so (ii) holds. The node $n$ is by definition the unique child of $\alpha$ thus (iii) holds.
 %
-For \rulenamet{Lam^\ghostvar}, the induction hypothesis (ii) shows that $i>|m|$, which guarantees that $|\beta|+i-|m|>0$ is a valid justification label (i) and that (ii) holds for the traversed node $\ghostvar$.
-Finally (iii) holds because the node preceding $\ghostvar$ in the P-view is precisely $\beta$, its parent node.
+For \rulenamet{Lam^\ghostvar}, the induction hypothesis (ii) shows that $i>|m|$, which guarantees that $|\alpha'|+i-|m|>0$ is a valid justification label (i) and that (ii) holds for the traversed ghost node $\ghostvar$.
+Finally (iii) holds because the node preceding $\ghostvar$ in the P-view is precisely $\alpha'$, its parent node.
 %
 Other rules are straightforward.
 \endshortproof
@@ -1078,7 +1082,7 @@ If the arity of the traversed variable is high enough, the tree statically dicta
     %%%%%%%%
 \end{definition}
 
-Rule \rulenamet{Lam} traverses a lambda node by just visiting its unique child  in the tree, which is necessarily a structural node. Its counterpart \rulenamet{Lam^\ghostvar} traverses a ghost lambda by visiting the imaginary ghost variable that would be created if we were to eta-expand the sub-term under that lambda: the ghost placeholder $\ghostvar$ represents an occurrence of the $j$th variable bound by lambda node $\beta$ if the sub-term at node $\beta$ were eta-expanded $i-|n|$ times; hence $j = |\beta| + i - |m|$.
+Rule \rulenamet{Lam} traverses a lambda node by just visiting its unique child  in the tree, which is necessarily a structural node. Its counterpart \rulenamet{Lam^\ghostvar} traverses a ghost lambda by visiting the imaginary ghost variable that would be created if we were to eta-expand the sub-term under that lambda: the ghost placeholder $\ghostvar$ represents an occurrence of the $j$th variable bound by lambda node $\alpha'$ if the sub-term at node $\alpha'$ were eta-expanded $i-|n|$ times; hence $j = |\alpha'| + i - |m|$.
 Observe that we necessarily have $i>|n|$ since the $i$th child of $n$ is a ghost variable node.
 
 %%% analogy
@@ -1107,8 +1111,8 @@ It follows that $M$ is a sub-tree of $M^t$: paths in $\ctree(M)$ are also paths 
 
 \begin{example}
 The eta-expansion of $J = (\lambda u . u(x\,u)) (\lambda v . v\,y)$ with respect to traversal $t$ from Example~\ref{ex:ulctrav_sample} is
-$J^t = (\lambda u . u(x (\lambda \alpha. u (\lambda \beta.\alpha\,\beta))) (\lambda v . v\,y)$
-for some fresh variable names $\alpha, \beta$.
+$J^t = (\lambda u . u(x (\lambda \theta_1. u (\lambda \theta_2.\theta_1\,\theta_2))) (\lambda v . v\,y)$
+for some fresh variable names $\theta_1, \theta_2$.
 \end{example}
 
 
@@ -1157,14 +1161,14 @@ $\Pstr[0.7cm]{
  \, (n5-n4){v}
  \, (n6-n3){\bf \lambda}
  \, (n7-n0){x}
- \, (n8-n7){\bf \lambda}
+ \, (n8-n7){\bf \lambda \theta_1}
  \, (n9-n2){u}
  \, (n10-n1){\lambda v}
  \, (n11-n10){v}
- \, (n12-n9){\underline{\lambda\beta}}
- \, (n13-n8){\underline{\alpha}}
+ \, (n12-n9){\underline{\lambda\theta_2}}
+ \, (n13-n8){\underline{\theta_1}}
  \, (n14-n13){\underline{\lambda}}
- \, (n15-n12){\underline{\beta}}
+ \, (n15-n12){\underline{\theta_2}}
  \, (n16-n11){\lambda}
  \, (n17-n0,30){y} }$
  of $\ctree(J^t)$.
@@ -1247,8 +1251,8 @@ Some immediate properties follow:
  $\exttree(M)$ are external, so that the core projection coincides with the identity.
 (iii) When discharging new variable names onto a lambda node, core projection can cause variable name reuse, but the justification pointers from the underlying name-free structure prevent any possible ambiguity.
 
-\begin{example}Take traversal $t = \lambda w^{[y]} ~ @ ~ \lambda x y ~ x ~ \lambda ~ z$ of $\lambda w . (\lambda x y .x) z$.
-    Then $\coresymbol(t) = \lambda w y ~ z$.
+\begin{example}The traversal $t = \lambda w^{[y]} ~ @ ~ \lambda x y ~ x ~ \lambda ~ z$ of $\lambda w . (\lambda x y .x) z$
+    has core $\coresymbol(t) = \lambda w y ~ z$.
 \end{example}
 
 
@@ -1334,7 +1338,7 @@ we introduce \emph{normalizing traversals} which restrict the non-determinism of
 
 \subsection{Essential traversals}
 
-The traversals defined so far may be infinitely long. This is expected for non-normalizing terms such as $\Omega = (\lambda x. x x)(\lambda y. y y)$ which has an infinitely long traversal $\lambda x \cdot x \cdot \lambda y \cdot y \cdot x \cdot \lambda y \cdot y \cdot \ldots$. But this also occurs for terms with a normal form. Take for example $M = \lambda f . f (\lambda x. x)$, then for all $k\geq0$ the justified sequence $t_k = \lambda f \cdot f \cdot (\lambda x \cdot  x)^k$, where every occurrence of $\lambda x$ points to $f$ and every $x$ points to the preceding $\lambda x$, is a traversal.
+The traversals defined so far may be infinitely long. This is expected for non-normalizing terms such as $\Omega = (\lambda x. x x)(\lambda y. y y)$ which has an infinitely long traversal $\lambda x \cdot x \cdot \lambda y \cdot y \cdot x \cdot \lambda y \cdot y \cdot \ldots$ But this also occurs for terms with a normal form. Take for example $M = \lambda f . f (\lambda x. x)$, then for all $k\geq0$ the justified sequence $t_k = \lambda f \cdot f \cdot (\lambda x \cdot  x)^k$, where every occurrence of $\lambda x$ points to $f$ and every $x$ points to the preceding $\lambda x$, is a traversal.
 Infinity arises because \rulenamet{IVar} offers two non-deterministic choices when traversing a free variable:
 \begin{compactitem}
 \item[(J)] The justifier variable to pick in the O-view;
@@ -1350,25 +1354,25 @@ The traversals $t_k$, $k\geq 0$, correspond to plays
 
 \begin{definition}
 \label{dfn:essential_traversals}
-The set of \defname{essential traversals} $\travsetes$ is the subset of $\travulc$ defined by the rules of Table~\ref{tab:trav_rules} where the justifier node in the input-variable rule \rulenamet{IVar} is restricted to be the second last occurrence in the traversal. Written as a judgement derivation, the rule becomes:
+The set of \defname{essential traversals} $\travsetes$ is the subset of $\travulc$ defined by the rules of Table~\ref{tab:trav_rules} where the justifier node in the input-variable rule \rulenamet{IVar} is restricted to be the preceding occurrence in the traversal. Written as a judgement derivation, the rule becomes:
 \infrule[$\rulefont{IVar_\essential}$]
      {\istraversal t \cdot n
-      \andalso n \in\ExternalNodes\inter\NodesVar
+      \andalso n \in\ExternalNodes\inter\ExtendedNodesVar
       \andalso \alpha \in\ExtendedNodesLmd
       \andalso n \enables_i\alpha
       \andalso i \geq 1
      }
-     {\istraversal  \Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:i){\alpha}}}
+     {\istraversal  \Pstr[0.5cm]{t \cdot (n){n} \, (l-n,25:i){\alpha}}}
 
 The set of \defname{concrete and essential traversals} $\travsetcones$ refers to $\travsetes \inter \travsetcon$ which is obtained by imposing the above restriction and additionally restricting the rule to its concrete sub-case (Definition~\ref{def:concrete_traversals}):
 \infrule[$\rulefont{IVar_\concreteessential}$]
      {\istraversal t \cdot n
-      \andalso n \in\ExternalNodes\inter\NodesVar
+      \andalso n \in\ExternalNodes\inter\ExtendedNodesVar
       \andalso \alpha \in\ExtendedNodesLmd
       \andalso n \enables_i\alpha
       \andalso 1 \leq i \leq |n|
      }
-     {\istraversal  \Pstr[0.5cm]{t \cdot (n){n} \cdot (l-n,25:i){\alpha}}}
+     {\istraversal  \Pstr[0.5cm]{t \cdot (n){n} \, (l-n,25:i){\alpha}}}
 \end{definition}
 
 As traversals unfolds, a depth-first exploration of the tree of the beta-normal form takes place, where rule \rulenamet{IVar} implements the non-deterministic `branching points'. Since lambda-terms are pure of side-effects,
@@ -1558,11 +1562,11 @@ where the notion of compositionality matters,
 allowing for infinitely many eta-expansions
 in imaginary traversals is reasonable:
 each eta-expansion represents how the term would interact with its arguments if more arguments were to be applied to it.
-But with the goal of finding a normal form, eta-expanding subterms ad-infinitum is excessive: traversing ghost nodes only helps if it eventually leads to some structural node of the final normal term tree.
+But with the goal of finding a normal form, traversing ghost nodes only helps if it eventually terminates and leads to some structural node of the final normal term tree.
 
 For simply-typed terms in eta-long form,
-we showed that \emph{concrete} traversals
-characterize the paths in the normal form,
+we showed in the previous section that \emph{concrete} traversals
+characterize the paths of the normal form,
 so we could handle the infiniteness of traversals
 by restricting the enumeration to \emph{structural} ones.
 The \emph{concrete} restriction
@@ -1570,10 +1574,9 @@ is so strong that it eliminates ghost nodes entirely which prevents any such cha
 The set of essential traversals is infinite due to rule $\rulename{IVar}$ where the justification label of the traversed node is unbounded. In this section, we show that we can bound it by a quantity called the \emph{dynamic arity}, effectively limiting the number of eta-expansions
  performed by rule \rulenamet{IVar}. Section \ref{sec:correctness_ulc_normalization} shows that this suffices to characterize the normal form of a lambda term when it exists.
 
-
 Because the tree has a finite number of nodes, the nodes arities are bounded. Thus, beyond a certain value the
-justification pointer $i$ in the variable rule
- \rulenamet{IVar} is guaranteed to be greater than the arity $|m|$ of the variable, and therefore the next node to visit is necessarily a ghost node. The intuition supporting the dynamic arity is that after a sufficiently large number of eta-expansions, we are also guaranteed to \emph{continuously} traverse ghost nodes that never materialize to structural nodes.
+justification label $i$ in the variable rule
+ \rulenamet{IVar} is guaranteed to be greater than the arity $|m|$ of the variable, and therefore the next node to visit is necessarily a ghost node. The intuition supporting the dynamic arity is that after a sufficiently large number of eta-expansions, we are then guaranteed to \emph{continuously} traverse ghost nodes that never materialize to structural nodes.
 \iflongversion
  In other words, any further extension will necessarily be constructed using repeated applications of \rulenamet{Lam^\ghostvar} and the eta-expanded variants of \rulenamet{Var}, and will thus consists only of ghost occurrences.
 \fi
@@ -1600,7 +1603,7 @@ $\dynar(t) = \max_{q=1..k} \left( |\alpha_q| + \Delta_{q} \right)$.
 % = |n_1|-|\alpha_1| + |n_2|-|\alpha_2| + \cdots + |n_{q-1}|-|\alpha_{q-1}| + |n_q|$
 Equivalently, it is given by the maximal value in the sequence $b_1 = |n_1|$, $b_{q+1} = b_q + |n_{q+1}|-|\alpha_q|$ for $1 \leq q \leq k-1$.
 \fi
-We can thus calculate the dynamic arity by reading the strand backwards from the last variable occurrence and alternatively adding and subtracting the node arities until reaching an external $\lambda$-node. The maximal value observed throughout that summation gives the dynamic arity.
+We thus calculate the dynamic arity by reading the strand backwards from the last variable occurrence and alternatively adding and subtracting the node arities until reaching an external $\lambda$-node. The maximal value observed throughout that summation gives the dynamic arity.
 
 \iflongversion
 The rule $\rulename{IVar_\essential}$ leaves infinitely many choices of value for the link label. The following property shows that if that value exceeds the dynamic arity then only ghost nodes can be traversed from that point on, without ever materializing a structural node.
@@ -1639,7 +1642,7 @@ $$
 \item If $i\leq\dynar(t)$ then $t$ is followed in $t_{\max}$
  by $2r$ occurrences of ghost nodes, for some $0 \leq r <k$, and
  a structural internal lambda node $\lambda\overline{x}$ with respective link labels $i_1$, $i_2$, $i_2$,$\cdots$, $i_r$, $i_r$, $i_{r+1}$
- where $\lambda\overline{x}$ is structural (and therefore $i_{r+1} \leq |n_{r+1}|$):
+ (where since $\lambda\overline{x}$ is structural we have $i_{r+1} \leq |n_{r+1}|$):
 $$
 t_{\max} = \Pstr[0.3cm]{
     \underline{\alpha_k}
@@ -1750,14 +1753,14 @@ such that only ghost nodes are traversed from that point on, without ever materi
 \label{def:normalizing_traversals}
 The \defname{normalizing traversals} $\travsetnorm$ refers to the subset of essential traversals obtained by restricting \rulenamet{IVar_\essential}
 in the system of rules of Definition~\ref{dfn:essential_traversals}
-so that the argument index $i$ cannot be greater than the dynamic arity of the traversal. Written as a judgement derivation rule the rule becomes:
+so that the argument index $i$ cannot be greater than the dynamic arity of the traversal. Written as a judgement derivation rule:
  \infrule[$\rulefont{IVar_\normalizing}$]
       { \istraversal t \cdot n
       \andalso n \in\ExternalNodes\inter\ExtendedNodesVar
       \andalso \alpha\in\ExtendedNodesLmd
       \andalso n \enables_i \alpha
       \andalso 1 \leq i \leq\dynar(t \cdot n)}
-      {\Pstr[0.5cm]{\istraversal t \cdot (n){n} \cdot (l-n,25:i){\alpha}}.}
+      {\Pstr[0.5cm]{\istraversal t \cdot (n){n} \, (l-n,25:i){\alpha}}.}
 \iflongversion
  Table~\ref{tab:normalizing_trav_rules} recapitulates
  this system of derivation rules.
@@ -1939,12 +1942,12 @@ $t_1 = \Pstr[0.7cm]{(n0){\underline\lambda }
     \,(n18-n1){\ghostlmd^2}
     \,(n19-n0){\underline\ghostvar^1}
 }$
-where $t_1\filter\ExternalNodes = \lambda^{[y s z]} \cdot \ghostvar^2 \cdot{\ghostlmd^1} \cdot\ghostvar^1$ so the core is
-$\core{t_1} =  \lambda y s z \cdot s \cdot \lambda  \cdot y
+where $t_1\filter\ExternalNodes = \lambda^{[y s z]} \, \ghostvar^2 \,{\ghostlmd^1} \, \ghostvar^1$ so the core is
+$\core{t_1} =  \lambda y s z ~ s ~ \lambda ~ y
 $
-therefore the normal form is of the shape $\lambda y s z \ldots \cdot s (y \cdots)$.
+therefore the normal form is of the shape $\lambda y s z \cdots . s (y \cdots)$.
 The dynamic arity of $t_1$ is $\dynar(t_1) = \max \{ 0, 2,2,2,2,0 \} = 2$
-(where the $2$ comes from the arity of variable node $y$) hence the normal form is of the shape $\lambda y s z \ldots \cdot s (y R_1 R_2)$
+(where the $2$ comes from the arity of variable node $y$) hence the normal form is of the shape $\lambda y s z \cdots . s (y R_1 R_2)$
 for some terms $R_1$, $R_2$.
 We thus apply rule \rulenamet{IVar} with the child index ranging from $1$ to $2$ which gives the following two maximal traversals
 \ifshortversion
@@ -2066,7 +2069,7 @@ Their core projections are $\Pstr[0.7cm]{
 (n20-n19){\ghostlmd^2}
 (n25-n0) {\ghostvar^3}
 }$.
-The first one shows that $\betanf{M}$ must be of the form $\lambda y s z \ldots \cdot s (y\, s\, R_2)$, while the second one indicates that it must be of the form  $\lambda y s z \ldots \cdot s(y\, R_1\, z)$.
+The first one shows that $\betanf{M}$ must be of the form $\lambda y s z \cdots . s (y\, s\, R_2)$, while the second one indicates that it must be of the form  $\lambda y s z \cdots . s(y\, R_1\, z)$.
 Assembling those two maximal tree paths together yields the beta normal form $\lambda y s z . s(y\, s\, z)$.
 \end{example}
 
@@ -2075,43 +2078,44 @@ Assembling those two maximal tree paths together yields the beta normal form $\l
 This example, due to Neil D.~Jones, illustrates how `on-the-fly' eta-expansion handles the ``missing argument'' problem faced when using the concrete traversals. Take the term $J = (\lambda u . u (x\,u)) (\lambda v . v\, y)$ whose
  tree is represented in Figure~\ref{fig:comptree_examples},
 Its two maximal normalizing traversals are:
+\def\vtspace{\kern 0.1pt}
 \begin{eqnarray*}
 t_1 = \Pstr[4ex]{
     (n0){\underline{\lambda} }
-    (n1){@}
-    (n2-n1){\lambda u}
-    (n3-n2){u}
-    (n4-n1){\lambda v}
-    (n5-n4){v}
-    (n6-n3){\lambda }
-    (n7-n0){\underline{x}}
+    \vtspace (n1){@}
+    \vtspace (n2-n1){\lambda u}
+    \vtspace (n3-n2){u}
+    \vtspace (n4-n1){\lambda v}
+    \vtspace (n5-n4){v}
+    \vtspace (n6-n3){\lambda }
+    \vtspace (n7-n0){\underline{x}}
     %%%%
-    \, (n8-n7,35:1){\underline{\lambda} }
-    \, (n9-n2, 40){u}
-    \, (n10-n1){\lambda v}
-    \, (n11-n10){v}
-    \, (n12-n9){{\ghostlmd^{1}}}
-    \, (n13-n8){{\ghostvar^{1}}}
-    \, (n14-n13){{\ghostlmd^{1}}}
-    \, (n15-n12){{\ghostvar^{1}}}
-    \, (n16-n11){\lambda }
-    \, (n17-n0){\underline{y}}
+    \vtspace (n8-n7,35:1){\underline{\lambda} }
+    \vtspace (n9-n2, 40){u}
+    \vtspace (n10-n1){\lambda v}
+    \vtspace (n11-n10){v}
+    \vtspace (n12-n9){{\ghostlmd^{1}}}
+    \vtspace (n13-n8){{\ghostvar^{1}}}
+    \vtspace (n14-n13){{\ghostlmd^{1}}}
+    \vtspace (n15-n12){{\ghostvar^{1}}}
+    \vtspace (n16-n11,39){\lambda }
+    \vtspace (n17-n0){\underline{y}}
 }
-& \quad
+&
 t_2 = \Pstr[4ex]{
-    (n0){\underline{\lambda} }
-    (n1){@}
-    (n2-n1){\lambda u}
-    (n3-n2){u}
-    (n4-n1){\lambda v}
-    (n5-n4){v}
-    (n6-n3){\lambda }
-    (n7-n0){\underline{x}}
+    \vtspace (n0){\underline{\lambda} }
+    \vtspace (n1){@}
+    \vtspace (n2-n1){\lambda u}
+    \vtspace (n3-n2){u}
+    \vtspace (n4-n1){\lambda v}
+    \vtspace (n5-n4){v}
+    \vtspace (n6-n3){\lambda }
+    \vtspace (n7-n0){\underline{x}}
     %%%%
-    \, (n8-n7,35:2){\underline{\ghostlmd^{2}}}
-    \, (n9-n6,40){{\ghostvar^{1}}}
-    \, (n10-n5,40){\lambda }
-    \, (n11-n0){\underline{y}}
+    \vtspace (n8-n7,35:2){\underline{\ghostlmd^{2}}}
+    \vtspace (n9-n6,40){{\ghostvar^{1}}}
+    \vtspace (n10-n5,40){\lambda }
+    \vtspace (n11-n0){\underline{y}}
 }
 \end{eqnarray*}
 Traversing $J$ with concrete rules lets you follow $t_1$ until the second occurrence of $v$ in $t_1$, where the traversal gets stuck due to the second occurrence of $u$ lacking an operand. The imaginary traversal instantiates that missing operand on-the-fly, via the ghost child lambda node $\ghostlmd^1$ of $u$.
@@ -2264,9 +2268,9 @@ $
 
 \begin{example}[Neil Jones' varity example]
     \label{example:varity}
-Take the term $varity\, 2$ where
+Take the term ${\sf varity}\, 2$ where
 $2 = \lambda s_2 z_2 . s_2 (s_2\ z_2)$ and
-$varity = \lambda t.t (\lambda n a x . n (\lambda s z . a s (x s z))) (\lambda a. a) (\lambda z_0 . z_0)$.
+${\sf varity} = \lambda t.t (\lambda n a x . n (\lambda s z . a s (x s z))) (\lambda a. a) (\lambda z_0 . z_0)$.
 %To compute the set of normalizing traversals, we apply the traversal rules inductively until an input variable is reached, at which point we eta-expand with rule \rulenamet{IVar} for all possible values of $k$ ranging from $1$ to the dynamic arity of the traversal.
 The initial traversal strand $t_\epsilon$ is
 
@@ -2352,7 +2356,7 @@ where the ghost variables all point to the first lambda node in each sequence.
 % \Pstr[0.7cm]{(n0){\lambda }\ (n1-n0){{\ghostvar^{3}}}\ (n2-n1){{\ghostlmd^{1}}}\ (n3-n0){{\ghostvar^{1}}}\ (n4-n3){{\ghostlmd^{2}}}\ (n5-n0){{\ghostvar^{2}}}\ (n6-n5){{\ghostlmd^{2}}}\ (n7-n0){{\ghostvar^{4}}}}
 % \end{align*}
 %%%%%%%%%
-The beta-normal form of $varity\, 2$ is therefore $\lambda x' x s z . s (x' s (x s z))$.
+The beta-normal form of ${\sf varity}\, 2$ is therefore $\lambda x' x s z . s (x' s (x s z))$.
 \end{example}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2908,11 +2912,11 @@ The \defname{lloc of a tree node} $n$, written
 \begin{property}
 \label{prop:strand_spinaldescent}
 Let $t= \ldots \underline{\lambda \overline{x}} \cdot v \cdot \underline{x} \ldots$
-be a traversal of $M$
+be a traversal
 for some subsequence $v$,
  external structural variable node $x$
  and external structural $\lambda$-node $\lambda \overline{x}$.
-If $v$ is empty then the node following $x$ in $t$, if it exists, is necessarily a structural child $\lambda$-node of $x$.
+If $v$ is empty then the node following $x$ in $t$ is necessarily a structural child $\lambda$-node of $x$.
 % (\ie, it cannot be a ghost node).
 \end{property}
 \begin{proof}
@@ -3246,8 +3250,8 @@ Suppose $t$ is infinite then from the strand decomposition we can construct an i
 Let $x$ be a variable occurrence involved in a generalized redex in $gr(M)$.
 \begin{enumerate}[label=(\roman*), nosep]
     \item The path from the parent node of the redex argument down to $x$'s binder is of the form:
-$ @_r \cdot \lambda\overline{x_r} \cdots
-@_2 \cdot \lambda\overline{x_2} \cdot @_1 \cdot \lambda\overline{x}$
+$ @_r \, \lambda\overline{x_r} \cdots
+@_2 \, \lambda\overline{x_2} \, @_1 \, \lambda\overline{x}$
 for $r\geq0$, where $@_r$ denotes the parent node of the redex argument, and $\lambda\overline{x}$ denotes $x$'s binder, such that $\lambda x$ is the $i$th lambda in the bulk $\lambda\overline{x}$ for $i\geq0$.
 
 \item The argument of $x$ is precisely given by the $i_k$th child of node $@_k$ where $k$ is the smallest index verifying $i_k<|@_k|$ where: $i_1 = i$ and $i_{j+1} = i_j - |@_j| + |\lambda\overline{x_{j+1}}|$ for $j\geq 0$.
@@ -3379,8 +3383,7 @@ The linear substitution affects the term tree in three possible ways
 %   the reduct $N$ using the exact same traversal rules used to traverse $M$.
 %%%%%%%%%%%%%%%%%%
 {\bf Case 1:} $x$ has at least one operand ($|x|>0$) and $A$ is an
-abstraction:
-
+abstraction.
 %%%%%%%%% Figure showing the substitution Case 1.
 \iflongversion
     (Figure~\ref{fig:firing_genredex_effect_on_tree_with_operands_and_lambda_argument}).
@@ -4006,7 +4009,7 @@ and $\lambda\overline{y}$ are assigned the same list of variable names in
 $\core{t_1}$ and $\core{t_2}$.
 \end{proof}
 
-\begin{proposition}[Correctness]
+\begin{proposition}
     Algorithm~\ref{algo:ulc_normalization_by_traversals} is correct.
 \end{proposition}
 \begin{proof}
