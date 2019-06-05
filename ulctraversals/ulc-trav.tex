@@ -185,7 +185,7 @@
 \newcommand{\ghostvar}{{\mathghost}}
 
 
-% set of extended nodes of the extensional tree
+% set of nodes of the extensional tree
 % (= structural + ghost nodes)
 \newcommand\ExtendedNodes{\tilde{\Nodes}}
 % set of extended variable nodes = structural + ghost variable nodes
@@ -645,32 +645,35 @@ lambda node $\lambda\overline{x}$ is the $k$th child of a variable or applicatio
 $\lambda\overline{x} \enables_k n$, for $k\geq1$, to indicate that the label of a bound variable node $n$ is the $k$th variable name bound in $\lambda\overline{x}$, that is node $n$ is labelled $x_k$;
  and if $r$ denotes the root of the tree then we take the convention $r \enables_k z$ for any free variable node $z$, where $k$ denotes the free variable index of $z$ according to some predefined numbering of free variables.
 %
-We say that node $m$ \defname{hereditarily enables} $n$ if they relate by the reflexive transitive closure of $\enables$.
-
-A tree node is \defname{external} if it is hereditarily enabled by the root, otherwise it is \defname{internal}. We write $\ExternalNodes$ for the set of external nodes, that is the image of the tree root by the reflexive transitive closure of the enabling relation. Internal nodes are therefore precisely the nodes hereditarily enabled by application nodes $@$. We write $\InternalNodes$ to denote the set of internal nodes.
+We say that a node \defname{hereditarily enables} another node if the two nodes relate by the transitive closure of $\enables$.
+%
+A tree node is \defname{external} if it is hereditarily enabled by the root or it is the root itself, otherwise it is \defname{internal}. We write $\ExternalNodes$ for the set of external nodes.
+We write $\InternalNodes$ to denote the set of internal nodes, which are therefore @-nodes and nodes hereditarily enabled by @-nodes.
 The \defname{arity} of a node $n$, written $|n|$,
 is defined for a variable node as the number of immediate arguments (\ie, children in the tree); for an application node, as the number of operands (\ie, number of children of the $@$-node minus 1); for a lambda node $\lambda x_1 \cdots x_k$, $k\geq 0$, as the number of bound variables $k$.
 
 \subsection{Extensional tree}
-We extend the notion of tree by augmenting the
- \defname{structural nodes} $\Nodes$, representing tokens in the syntax representation of the lambda term,
-with two countable sets of \defname{ghost nodes} representing fictitious tokens: The \emph{ghost lambda nodes}
-represent fictitious lambda abstractions
-and \emph{ghost variable nodes} represent fictitious
-occurrences of nameless variables bound by either a structural or a ghost lambda node.
-
-We define ghost nodes by simultaneously and recursively
-extending the tree's parent-child relationship and the enabling relation $\enables$: for every (ghost) variable or @-node $n$ with parent (ghost) lambda-node $\alpha$, and for all $k>|n|$, we introduce a ghost variable node $\ghostvar$ defined as the unique child of
-ghost lambda node $\ghostlmd$, itself defined as the $k$th-child of $n$;
-and we extend the enabling relation with $n \enables_k \ghostlmd$
-and $\alpha \enables_{|\alpha|+ k} \ghostvar$; where by convention ghost nodes have arity $0$, and the arity of structural nodes remains unchanged (\ie, given by their arity in the structural tree without ghost nodes).
-This extended enabling relation induces a binding relationship between ghost variables and their (possibly ghost) lambda-node binder, which lets us forgo the notion of variables names in ghost nodes: we will thus
+We extend the notion of term tree by augmenting the
+ \defname{structural nodes} $\Nodes$ of $\ctree(M)$, representing tokens in the syntax representation of the lambda term,
+with two countable sets of \defname{ghost nodes} representing fictitious tokens: The \defname{ghost lambda nodes}  have a
+ unique label $\ghostlmd$ and represent fictitious lambda abstractions.
+The \defname{ghost variable nodes} have a unique label $\ghostvar$ and represent fictitious nameless variable nodes.
+%; they are bound by either a structural lambda node from $\ctree(M)$ or by some ghost lambda node.
+%
+We define them by simultaneously and recursively
+extending the parent-child node relationship and the enabling relation
+associated with the term tree: for every (ghost) variable or @-node $n$ with parent (ghost) lambda-node $\alpha$, and for all $k>|n|$,
+we introduce a new node $\ghostlmd$ as the $k$th-child of $n$,
+and a new node $\ghostvar$ as the unique child of that ghost lambda node.
+We extend the enabling relation with $n \enables_k \ghostlmd$
+and $\alpha \enables_{|\alpha|+ k} \ghostvar$; where by convention ghost nodes have arity $0$, and the arity of structural nodes remains unchanged (\ie, given by their arity in the structural tree $\ctree(M)$).
+%
+This extended enabling relation induces a binding relationship between ghost variables and their (possibly ghost) lambda-binder, which lets us forgo the notion of variables names in ghost nodes: we can thus
 use respectively $\ghostlmd$ and $\ghostvar$ as a unique label for all ghost lambda and variable nodes.
 
-We call the infinite tree hereby defined the \defname{extensional tree} of $M$,
-denoted $\exttree(M)$ over the \defname{extended nodes} $\ExtendedNodes$,
-consisting of structural nodes of $\Nodes$ plus all ghost variables $\ghostvar$ and lambda nodes $\ghostlmd$ as defined above.
- We use the shorthands $\ExtendedNodesLmd$ for the subset of lambda nodes (structural in $\NodesLmd$ or ghosts $\ghostlmd$) and $\ExtendedNodesVar$ for variable nodes (structural $\NodesVar$ or ghosts $\ghostvar$).
+The infinite tree hereby defined is called the \defname{extensional tree} $\exttree(M)$ over labels $\mathcal{L} \union \{ \ghostlmd, \ghostvar \}$.
+Its nodes $\ExtendedNodes$ consists of structural nodes of $\Nodes$ plus all ghost variables $\ghostvar$ and lambda nodes $\ghostlmd$ as defined above.
+We write $\ExtendedNodesLmd$ for the subset of lambda nodes (structural $\NodesLmd$ or ghosts $\ghostlmd$) and $\ExtendedNodesVar$ for variable nodes (structural $\NodesVar$ or ghosts $\ghostvar$).
 
 \subsection{Justified sequence of nodes}
 \label{sec:justseq}
@@ -680,6 +683,8 @@ A \defname{justified sequence} is defined a sequence of nodes in $\ExtendedNodes
 We represent a justified sequence as a sequence of labelled node occurrences with back-pointing arrows for justification pointers. For example: $\Pstr[10pt]{ \ldots (j){j} \ldots (n-j,25:l){n} }$, which we read `$n$ points to $j$', or `$n$ is justified by $j$' with link label $l$.
 %
 For readability, we sometimes indicate the link label in exponent of the justified occurrence instead of above the pointer, or we even omit the justification pointers altogether.
+By abuse of notation, we often represent occurrences in justification sequences by their corresponding node labels so that for instance $\ldots \lambda\overline{x} \cdot x \ldots$ refers to an occurrence of a node in $\ExtendedNodesLmd$ labelled $\lambda\overline{x}$ followed by an occurrence of a node in $\NodesVar$ with label $x \in \VarSet$.
+%
 Note that the enabling relation is \emph{statically} induced by the term whereas the concept of justification is defined on node \emph{occurrences}, that is within a specific justified sequence. The \defname{set of justified sequences} over $M$, denoted $\justseqset(M)$, consists of all justified sequences over $\ExtendedNodes$.
 
 Let $s$ denote a justified sequence. We write $s^\omega$ to denote the last occurrence of $s$. For any occurrence $n$ in $s$ we write $s_{\leq n}$ for the prefix of $s$ ending at $n$, and $s_{<n}$ for the prefix ending immediately before $n$.
@@ -1045,7 +1050,7 @@ where each justification label is indicated in exponent of the corresponding jus
 The traversal rules are well-defined, in particular for any sequence of nodes with pointers $t\in \travset$ we have:
 \begin{compactitem}
 \item[(i)] $t$ is a valid justified sequence, with respect to
-the enabling relation $\enables$ on extended nodes $\ExtendedNodes$, and verifies the alternation condition;
+the enabling relation $\enables$ on $\ExtendedNodes$, and verifies the alternation condition;
 %(ii) and if the last node in $t$ is external then so are all the nodes in $\oview{t}$. % By induction on \oview{t}
 \item[(ii)] For all occurrences $\Pstr[0.5cm]{(m){m} \cdots (n-m,30:i){n}}$, $n$ is a ghost node if and only if $i > |m|$;
 \item[(iii)] $\pview{t}$ is a (justified) path in the extensional tree $\exttree(M)$;
