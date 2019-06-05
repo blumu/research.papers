@@ -180,9 +180,11 @@
 \newcommand\NodesLmd{\Nodes_\lambda}% set of lambda nodes
 \newcommand\NodesApp{\Nodes_@}% set of application nodes
 
-\newcommand{\ghostlmd}{{\lambda\!\!\lambda}}
+\newcommand{\ghostlmd}{{\lambda\mkern-7mu \lambda}}
 %\newcommand{\ghostvar}{\theta}
-\newcommand{\ghostvar}{{\mathghost}}
+%\newcommand{\ghostvar}{{\mathghost}}
+\newcommand{\ghostvar}{\mathsf{x\!\!x}}
+
 
 
 % set of nodes of the extensional tree
@@ -422,18 +424,17 @@ Both the PAM and traversals exploit this property via systems of pointers to avo
 Daniil Berezun and Neil Jones were first to introduce a notion of traversals for the untyped lambda calculus~\cite{JonesBerezunLLL-PEPM17}.
 Although they took inspiration from the Game Semantic traversals of~\cite{OngLics2006,BlumGalop2008}, their definition is more operational in nature and does not directly relate to the game denotation of a term. Starting from operational semantics they derive a normalization method that proceeds by traversing some tree representation of the term.
 %
-The connection between the two presentations lies in their respective correspondence with head-linear reduction: we have shown that imaginary traversals essentially implement the recursive application of the head-linear reduction. Berezun and Jones claim that a similar correspondence hold for their notion of traversal.
-
-Their traversals work on the traditional term tree where each node represents a token from the lambda calculus syntax,
-whereas the present paper uses a compressed form of term tree where consecutive lambdas nodes and consecutive applications nodes are merged into a single bulk node. Neither Berezun-Jones' traversals nor imaginary traversals require any prior syntactic transformation of the input term,
-unlike the original traversals from the typed setting.
-
-Berezun-Jones' traversals distinctively rely on two justification pointers: each token of the traversal can have one \emph{binding pointer} as well as one \emph{control pointer}. The control pointers would be what Danos-Regnier call the ``price to pay for having no stacks or environments'' in the definition of the argument lookup transition of the Pointer Abstract Machine~\cite{danos-head}. They also involve the use of a `flag` boolean parameter associated with every token of the traversal.
-In contrast, imaginary traversals necessitate a single justification pointer per node occurrence.
+The connection between the two presentations lies in their respective correspondence with head-linear reduction: we show that imaginary traversals recursively implement head-linear reduction. Berezun and Jones claim that a similar correspondence hold for their notion of traversal.
+%
+Their traversals operate on the traditional term tree where each node represents a token from the lambda calculus syntax,
+whereas imaginary traversals operate on a compressed term tree that merges consecutive lambdas nodes and consecutive applications nodes into single bulk lambda node or bulk application node. Neither notion of traversals require any prior syntactic transformation of the input term, unlike the original traversals from the typed setting.
+%
+Berezun-Jones' traversals distinctively rely on two justification pointers for each token: a \emph{binding pointer} plus a \emph{control pointer}. The control pointers would be what Danos-Regnier call the ``price to pay for having no stacks or environments'' in the definition of the argument lookup transition of the Pointer Abstract Machine~\cite{danos-head}. They also involve a `flag` boolean parameter associated with every token of the traversal.
+In contrast, imaginary traversals necessitate a single justification pointer per node traversed.
 
 Another notable difference is that the normalization algorithm of Berezun-Jones requires a single traversal of the term. Our algorithm, on the other hand, produces one traversal for every possible maximal path in the tree representation of the beta-normal form. Each branching point in the traversal enumeration corresponds to some occurrence of a variable in the normal form, where each branch corresponds to some operand of that variable. This non-deterministic branching may conceivably be eliminated using auxiliary pointers to implement backtracking: once a variable operand is fully evaluated, the traversal would return to that variable node and start exploring remaining operands.
-
-Their `read-out' procedure to reconstruct the normal form (shared with the author in private correspondence) involves recursively applying rewriting rules to the traversal. In contrast, our read-out algorithm reconstructs the normal form from the tree-paths generated from maximal traversals.
+%
+Their `read-out' procedure to reconstruct the normal form (shared with the author in private correspondence) involves recursively applying rewriting rules to the traversal. In contrast, our read-out algorithm reconstructs the normal form from the tree-paths induced by the maximal traversals.
 
 
 \subsubsection{Lambda term evaluation}
@@ -441,7 +442,12 @@ The evaluation procedure presented in this paper contrasts with term rewriting a
 Just like those methods, variable names are not essential to the reduction procedure: traversals have explicit justification pointers from which variable bindings are entirely recoverable; variable names in Lamping's graphs are recoverable from their corresponding binding lambda;
 Krivine and PAM machines encode names with De Bruijn indices
 and combinators removes variables altogether through \emph{abstraction elimination}.
-Just like graph-based reduction, the traversal reduction procedure involves a final ``read-back'' phase to reconstruct the resulting normal form: all the explored tree branches are assembled together to form the tree representation of the normal form. Those other reduction methods do not typically rely on eta-expansion, on the other hand they require transforming the term into some intermediate structure, such as a combinator expression or an interaction net, whereas traversals operate directly on the abstract syntax tree of the term. Unlike Lamping's graphs, traversal-based reduction is not optimal in Levy's sense~\cite{optimal-reduction-levy}.
+Just like graph-based reduction, the traversal evaluation procedure involves a final \emph{readback} phase to reconstruct the resulting normal form, where
+all the explored paths in the term tree are assembled together to reconstruct
+the normal form.
+Unlike imaginary traversals, existing evaluation methods do not appeal to eta-expansion. On the other hand they typically require transforming the term into some intermediate structure, such as a combinator expression or an interaction net, whereas traversals operate directly on the abstract syntax tree of the term.
+
+Unlike Lamping's graphs, traversal-based reduction is not optimal in Levy's sense~\cite{optimal-reduction-levy}.
 
 \begin{todobox}
     Optimality in L\'evy's sense: how to interpret in traversal world?
@@ -1169,9 +1175,9 @@ $\Pstr[0.7cm]{
  \, (n3-n2){u}
  \, (n4-n1){\lambda v}
  \, (n5-n4){v}
- \, (n6-n3){\bf \lambda}
+ \, (n6-n3){\lambda}
  \, (n7-n0){x}
- \, (n8-n7){\bf \lambda \theta_1}
+ \, (n8-n7){\lambda \theta_1}
  \, (n9-n2){u}
  \, (n10-n1){\lambda v}
  \, (n11-n10){v}
