@@ -183,7 +183,9 @@
 \newcommand{\ghostlmd}{{\lambda\mkern-7mu \lambda}}
 %\newcommand{\ghostvar}{\theta}
 %\newcommand{\ghostvar}{{\mathghost}}
-\newcommand{\ghostvar}{\mathsf{x\!\!x}}
+%\newcommand{\ghostvar}{\mathsf{x\!\!x}}
+\newcommand{\ghostvar}{\mathsf{x\mkern-5mu x}}
+
 
 
 
@@ -301,7 +303,7 @@
 %%%%%% A longer abstract
 %%%%%%
 % \begin{abstract}
-%     We introduce a method to evaluate untyped lambda terms by combining the theory of traversals, a term-tree traversing technique inspired from Game Semantics~\cite{OngLics2006,BlumPhd}, with judicious use of the eta-conversion rule of the lambda calculus.
+%     We introduce a method to evaluate untyped lambda terms by combining the theory of traversals, a term-tree traversing technique inspired by Game Semantics~\cite{OngLics2006,BlumPhd}, with judicious use of the eta-conversion rule of the lambda calculus.
 
 %     The traversal theory of the simply-typed lambda calculus relies on the eta-long transform to ensure that when traversing an application, there exists a subterm representing every possible operator's argument~\cite{BlumPhd, OngLics2006}. In the untyped setting, we instead exhibit the missing operand via ad-hoc instantiation of the eta-expansion rule, which allows the traversal to proceed as if the operand existed in the original term. This gives rise to a more generic concept of traversals for lambda terms where no preliminary transformation is required: the original unaltered lambda term is traversed.
 
@@ -312,12 +314,12 @@
 
 
 \begin{abstract}
-    A method to evaluate untyped lambda terms based on a term-tree traversing technique inspired from Game Semantics and the judicious use of eta-expansion.
+    A method to evaluate untyped lambda terms based on a term-tree traversing technique inspired by Game Semantics and the judicious use of eta-expansion.
     As \emph{traversals} explore nodes of the term tree,
     some of the subterms are dynamically eta-expanded in order to locate their non-immediate arguments.
     The notion of \emph{dynamic arity} determines when ad-hoc eta-expansion is appropriate.
     % by limiting the number of arguments possibly applied to a variable within a given tree traversal.
-    The resulting traversals are finitely enumerable and characterize the paths in the tree representation of the beta-normal form, when it exists.
+    The resulting traversals are finitely enumerable and characterize the paths in the tree representation of the beta-normal form when it exists.
     Correctness follows from the fact that traversals implement \emph{leftmost linear reduction}, a generalization of the \emph{head linear reduction} of Danos-Regnier.
 \end{abstract}
 
@@ -328,28 +330,28 @@
 \section{Introduction}
 
 \subsection{Background}
-The theory of traversals was originally introduced in the context of higher-order recursion schemes~\cite{OngLics2006} as tree generators, and was
-then extended to simply-typed languages with higher-order free variables, such as the simply-typed lambda calculus (STLC)~\cite{BlumPhd}. A traversal consists of a sequence of nodes taken from a tree-representation of the \emph{eta-long expanded} term, where every node occurrence may have an associated labelled link, or ``justification pointer'', referring to some previous occurrence in the sequence. It always starts from the root of the tree and successively visits other nodes by either descending deeper into the tree structure, or jumping to other tree branches. A small set of rules formally defines how to extend a given traversal--what node to visit next with which justification pointer. This yields a prefix-closed set of justified sequences of nodes defining the set of traversals of the term.
+The theory of traversals was originally introduced in the context of tree generating higher-order recursion schemes~\cite{OngLics2006} and was
+then extended to simply-typed languages with higher-order free variables, such as the simply-typed lambda calculus (STLC)~\cite{BlumPhd}. A traversal consists of a sequence of nodes taken from a tree-representation of the \emph{eta-long expanded} term, where every node occurrence may have an associated labelled link, or ``justification pointer'', referring to some previous occurrence in the sequence. It always starts from the root of the tree and successively visits other nodes by either descending deeper into the tree structure or jumping to other tree branches. A small set of rules formally defines how to extend a given traversal--what node to visit next with which justification pointer. This yields a prefix-closed set of justified sequences of nodes defining the set of traversals of the term.
 
 In the typed setting, the traversal theory bears a strong connection with Game Semantics~\cite{BlumPhd}: The game denotation of an eta-long term is in bijection with the set of \emph{core projections} of its traversals (Theorem~\ref{thm:gamesem_correspondence_stlc}), where the core projection of a traversal is the subsequence obtained by keeping only occurrences that are
 transitively justified by the initial node.
 The set of traversals itself, on the other hand, corresponds to the game semantic denotation of a term where all the internal moves are revealed, also called ``interaction game semantics''~\cite{BlumPhd}.
 
 This correspondence gives rise to a method for finding the normal form of a simply-typed lambda term~\cite{BlumPhd,BlumGalop2008,Blum-LocalBeta2008}
-where traversals explore a branches in the tree representation of the normal form. The underlying sequences of nodes and pointers encode the unfolding of the normalization procedure over branches of the normal form. There are two kinds of nodes: the \emph{internal} nodes record intermediate steps of the reduction procedure, while \emph{external} nodes represent actual nodes from the tree representation of the normal form. The core projection acts as a `garbage collector' that removes all the internal nodes from the traversals,  yielding a path in the abstract syntax tree of the normal form.
+where traversals explore a branche in the tree representation of the normal form. The underlying sequences of nodes and pointers encode the unfolding of the normalization procedure over branches of the normal form. There are two kinds of nodes: the \emph{internal} nodes record intermediate steps of the reduction procedure, while \emph{external} nodes represent actual nodes from the tree representation of the normal form. The core projection acts as a `garbage collector' that removes all the internal nodes from the traversals,  yielding a path in the abstract syntax tree of the normal form.
 
 
 %%%%%%%%%%%%%%%
 \subsection{Overview}
 This paper
-(i) Generalizes the notion of traversals from the typed setting, referred as `\emph{concrete traversals}', to the untyped lambda calculus (ULC), which we name `\emph{imaginery traversals}';
+(i) Generalizes the notion of traversals from the typed setting, referred as `\emph{concrete traversals}', to the untyped lambda calculus (ULC), which we name `\emph{imaginary traversals}';
 (ii) Introduces a method to evaluate untyped lambda terms based on enumerating traversals;
 (iii) Establishes a connection between traversals and \emph{head linear reduction}.
 
 Attempting to traverse an untyped lambda term with the
 traversal rules of STLC causes the traversal to get stuck when the operator sub-term of an application has insufficiently many operands. In such a situation, there is no operand node in the term tree to traverse.
 A concrete traversal of the term $M = (\lambda f.f)(\lambda x.x)$ for example,  gives the sequence of nodes $\lambda f \cdot f \cdot \lambda x \cdot x$, at which point the traversal is stuck because there is no subterm representing the first argument of $f$.
-Similarly, a concrete traversal of $U = (\lambda x. x x)(\lambda y. y)$ gets  stuck at variable $y$ (See Example~\ref{examp:baby}). To take an analogy with abstract machine evaluators, this would be like a broken implementation of a Krivine machine~\cite{Krivine2007} attempting to lookup a variable from an empty environment, or a SECD machine~\cite{landin-secd} attempting to pop an argument from an empty stack when evaluating the application operator.
+Similarly, a concrete traversal of $U = (\lambda x. x x)(\lambda y. y)$ gets  stuck at variable $y$ (See Example~\ref{examp:baby}). To take an analogy with abstract machine evaluators, this would be like a broken implementation of a Krivine machine~\cite{Krivine2007} attempting to lookup a variable from an empty environment, or an SECD machine~\cite{landin-secd} attempting to pop an argument from an empty stack when evaluating the application operator.
 
 This situation never occurs in the typed setting where lambda terms are
 conveniently assumed to be \emph{eta-long expanded}, a transformation that recursively eta-expands the subterms with respect to their type,
@@ -357,20 +359,20 @@ which ensures that when traversing an application, there exists a subterm repres
 
 Untyped terms admitting a simple type, like $M$, can be traversed via eta-long expansion with respect to whichever type they inhabit.
 But this is not feasible in the general ULC case where untyped terms do not necessarily inhabit a simple type.
-Sometimes, well-chosen eta-expansions can still help, for instance the untyped term $U$, which has no simple type, is traversable if we eta-expand all its variable occurrences. This does not always work unfortunately: to traverse the
+Sometimes, well-chosen eta-expansions can still help, for instance the untyped term $U$, which has no simple type, is traversable if we eta-expand all its variable occurrences. This does not always work, unfortunately: to traverse the
 term $J = (\lambda u . u(x\, u)) (\lambda v . v\, y)$ from
  Example~\ref{ex:missingoperand}, nested eta-expansions are necessary:
  the fresh variable resulting from the eta-expansion of $x\, u$ needs to be itself eta-expanded to unblock a concrete traversal of the term.
  Eta-expanding all variables infinitely often is not feasible, so instead imaginary traversals exhibit the missing operand via ad-hoc dynamic eta-expansion, as they traverse the term.
  This allows the traversal to proceed as if the operand existed in the original term.
 
-So for instance in $M$, an imaginary traversal traverses node $x$ by jumping to a fictitious fresh node $y$ that would exist if $f$ were eta-expanded
+So, for instance in $M$, an imaginary traversal traverses node $x$ by jumping to a fictitious fresh node $y$ that would exist if $f$ were eta-expanded
 as $\lambda y.f\, y$. This trick allows the traversal to proceed with the usual traversal rules; until reaching that fictitious node $y$.
 A second eta-expansion, this time of the term itself to
 $\lambda z. (\lambda f y.f\, y)(\lambda x.x) z$,
 unblocks the traversal, until it reaches node $z$, at which point we have a maximal traversal per the concrete traversal rules. The final traversal of the eta-expanded term is given by the sequence $\lambda z \cdot @ \cdot \lambda f y \cdot f \cdot \lambda x \cdot x \cdot \lambda \cdot y \cdot \lambda \cdot z$, where `@` represents the application node in the abstract tree representation of the term, and the dummy lambda `$\lambda$' is syntactic sugar which can be ignored for now.
 
-Generalizing this idea, we realize that concrete traversals induce an implicit `eta-expansion strategy': at any given point where a traversal gets stuck, there is only one possible subterm expansion that exhibits nodes necessary for the traversal to resume. In the term $M$, the first expansion considered is that of $f$ because at that point, the concrete rules only lets us
+Generalizing this idea, we realize that concrete traversals induce an implicit `eta-expansion strategy': at any given point where a traversal gets stuck, there is only one possible subterm expansion that exhibits nodes necessary for the traversal to resume. In the term $M$, the first expansion considered is that of $f$ because, at that point, the concrete rules only let us
 traverse an immediate argument of $f$. If instead we were to eta-expand the term itself, it would yield $\lambda z. (\lambda f .f)(\lambda x.x) z$
 which a concrete traversal cannot traverse since $f$ does not have an immediate argument. More intuitively: at $x$ the traversal has figured out that the subterm $\lambda x.x$ should be substituted for variable $f$, therefore to determine what $x$ should be substituted for, it needs to look for the first argument of $f$. Since $f$ has no direct argument, we must eta-expand it. In this simple example, the jump into the realm of fictitious nodes is indefinite: nodes subsequently traversed are all absent from the original term. There are situations, however, such as in term $J$, where it eventually leads to traversing an actual node from the original term tree.
 
@@ -378,14 +380,14 @@ In practice, it is not necessary to rewrite the term or alter its syntax represe
 The eta-expansion occurs fictitiously and ``on the fly'' as the traversal unfolds so as to traverse the original unaltered lambda term, which leads to a more generic concept of traversals where no preliminary transformation is required.
 %
 %(Although imaginary traversals bare sufficient traces of those successive fictitious eta-expansions to reconstruct the expanded term effectively being traversed.)
-The ad-hoc expansion happens when traversing a variable node, where a non-deterministic choice of `argument index' determines which variable argument to traverse next. In concrete traversals, this index is bounded by the actual number of argument applied to the variable. In imaginary traversals, is is unbounded: if it is greater than the number of arguments applied to the variable then a fictitious eta-expansion takes place.
+The ad-hoc expansion happens when traversing a variable node, where a non-deterministic choice of `argument index' determines which variable argument to traverse next. In concrete traversals, this index is bounded by the actual number of arguments applied to the variable. In imaginary traversals, is unbounded: if it is greater than the number of arguments applied to the variable then a fictitious eta-expansion takes place.
 
 Evaluating an untyped term boils down to enumerating traversals.
  Although the set of imaginary traversals is infinite, we only need to consider an effectively computable subset with sufficiently enough traversals to characterize the normal form, when it exists.
 We achieve this by restricting the non-determinism when traversing a variable: we bound the argument index by a critical quantity called the `dynamic arity', calculated in linear time from the traversal itself. It defines the number of arguments beyond which eta-expansions becomes unnecessary for the sake of finding a path in the normal form. This restricts both the breadth and depth of the traversal enumeration: only a finite number of on-the-fly eta-expansions are applied on a given traversal; and a traversal cannot unfold infinitely, provided that the term has a beta-normal form.
 On the other hand, traversing a non-terminating term like $(\lambda x. x\,x)(\lambda x. x\,x)$ leads to infinitely long traversals, as one would expect.
 
-The read out phase of the algorithm appeals to a correspondence property between the traversals and paths in the tree representation of the normal form. The term $M$, for instance, has a single traversal $t$, which via a suitable filtering, yields the path $\lambda z \cdot z$; its beta-normal form is thus $\lambda z. z$, up to variable renaming.
+The read-out phase of the algorithm appeals to a correspondence property between the traversals and paths in the tree representation of the normal form. The term $M$, for instance, has a single traversal $t$, which via suitable filtering, yields the path $\lambda z \cdot z$; its beta-normal form is thus $\lambda z. z$, up to variable renaming.
 
  To prove correctness of the evaluation procedure, we show that traversals essentially implement a recursive version of \emph{head linear reduction}, a non-standard reduction strategy based on an alternative notion of redex
   where substitution occurs one variable occurrence at a time.
@@ -398,14 +400,14 @@ The read out phase of the algorithm appeals to a correspondence property between
 
 The original paper on the theory of traversals concerns higher-order recursion schemes and therefore does not deal with free variables of higher-order rank~\cite{OngLics2006}. In~\cite{BlumPhd} we extended the theory to the simply-typed lambda calculus and added traversal rule to model higher-order free variables. Both settings assume that the term or grammar is in eta-long form to guarantee that the operand of an application always exists.
 In the untyped setting, eta-long expansion would be an infinite process, so instead traversals must operate on the unmodified term tree.
-The present paper achieves this by eta-expanding subterms `on-the-fly' when there is insufficiently many operands in an application to continue the traversal. The term itself does not get altered: a traversal instantiates fictitious ``ghost'' nodes that would exist if the term were to be eta-expanded.
+The present paper achieves this by eta-expanding subterms `on-the-fly' when there are insufficiently many operands in an application to continue the traversal. The term itself does not get altered: a traversal instantiates fictitious ``ghost'' nodes that would exist if the term were to be eta-expanded.
 % and the traversal rules handle those fictitious nodes created in these ad-hoc eta-expansions.
 When restricted to simply-typed terms, the two notions of traversal conveniently coincide (Proposition~\ref{prop:ulc_and_stlc_trav_coincide}).
 
 For simply-typed terms in eta-long form, traversals were shown to correspond to the \emph{interaction game semantic denotation}, where all internal moves from strategy composition are revealed; while the standard game denotation was shown to correspond to the set of traversals `\emph{projected with respect to the tree root}', or also called `traversal cores'. Such a correspondence induces an evaluation method for simply-typed lambda-terms in eta-long form~\cite{BlumPhd,BlumGalop2008,Ong-NormByTrav2015} that was implemented in~\cite{Blum-HogTool}, and which we state in Algorithm~\ref{algo:ulc_normalization_by_traversals}. This paper generalizes this procedure to the untyped lambda calculus, based on a variant of the traversal core operation involving relabelling of lambda nodes. A notable improvement is that it produces the traditional beta-normal form rather than the beta-\emph{eta-long} normal form. Another difference is that we prove soundness of the procedure through a connection with \emph{head-linear reduction} rather than appealing to Game Semantics.
 
 \subsubsection{Head linear reduction}
-Danos \etal established the first connection between Game Semantics and the concept of \emph{head linear reduction} for simply-typed lambda terms in eta-long form~\cite{danosherbelinregnier1996}. It was was further studied in the context of untyped lambda terms in~\cite{danos-head}. The \emph{pointer abstract machine} (PAM) provides a virtual machine implementation of head linear reduction that yields the ``\emph{quasi-head normal form (qhn)}'' of the term. To obtain the normal form itself, the resulting term further needs to be reduced to head normal form (via head reduction), and then normalized using standard normal reduction.
+Danos \etal established the first connection between Game Semantics and the concept of \emph{head linear reduction} for simply-typed lambda terms in eta-long form~\cite{danosherbelinregnier1996}. It was further studied in the context of untyped lambda terms in~\cite{danos-head}. The \emph{pointer abstract machine} (PAM) provides a virtual machine implementation of head linear reduction that yields the ``\emph{quasi-head normal form (qhn)}'' of the term. To obtain the normal form itself, the resulting term further needs to be reduced to head normal form (via head reduction), and then normalized using standard normal reduction.
 
 Like the PAM, the imaginary traversals implement head-linear reduction, but in a recursive fashion so as to fully evaluate the term to its final normal form.
 A notion that we formalize as the \emph{leftmost linear reduction} strategy, that recursively applies head linear reduction; just like how the \emph{normal reduction} of the lambda calculus proceeds by recursively applying head reduction.
@@ -427,7 +429,7 @@ Although they took inspiration from the Game Semantic traversals of~\cite{OngLic
 The connection between the two presentations lies in their respective correspondence with head-linear reduction: we show that imaginary traversals recursively implement head-linear reduction. Berezun and Jones claim that a similar correspondence hold for their notion of traversal.
 %
 Their traversals operate on the traditional term tree where each node represents a token from the lambda calculus syntax,
-whereas imaginary traversals operate on a compressed term tree that merges consecutive lambdas nodes and consecutive applications nodes into single bulk lambda node or bulk application node. Neither notion of traversals require any prior syntactic transformation of the input term, unlike the original traversals from the typed setting.
+whereas imaginary traversals operate on a compressed term tree that merges consecutive lambdas nodes and consecutive applications nodes into single bulk lambda node or bulk application node. Neither notion of traversals requires any prior syntactic transformation of the input term, unlike the original traversals from the typed setting.
 %
 Berezun-Jones' traversals distinctively rely on two justification pointers for each token: a \emph{binding pointer} plus a \emph{control pointer}. The control pointers would be what Danos-Regnier call the ``price to pay for having no stacks or environments'' in the definition of the argument lookup transition of the Pointer Abstract Machine~\cite{danos-head}. They also involve a `flag` boolean parameter associated with every token of the traversal.
 In contrast, imaginary traversals necessitate a single justification pointer per node traversed.
@@ -445,22 +447,23 @@ and combinators removes variables altogether through \emph{abstraction eliminati
 Just like graph-based reduction, the traversal evaluation procedure involves a final \emph{readback} phase to reconstruct the resulting normal form, where
 all the explored paths in the term tree are assembled together to reconstruct
 the normal form.
-Unlike imaginary traversals, existing evaluation methods do not appeal to eta-expansion. On the other hand they typically require transforming the term into some intermediate structure, such as a combinator expression or an interaction net, whereas traversals operate directly on the abstract syntax tree of the term.
+Unlike imaginary traversals, existing evaluation methods do not appeal to eta-expansion. On the other hand, they typically require transforming the term into some intermediate structure, such as a combinator expression or an interaction net, whereas traversals operate directly on the abstract syntax tree of the term.
 
-\paragraph{GoI} The relationship of traversals with proof-nets and the Geometry of Interaction (GoI) can be seen through the lenses of head-linear reduction, which they implement, or their correspondence with game semantics. In particular, the linear substitution performed by traversals corresponds to firing of an exponential branch of a proof-net~\cite{MASCARI1994111}. We also point to the work of Danos and Regnier who established the connection with abstract machines and GoI~\cite{danosherbelinregnier1996}.
+\paragraph{GoI} The relationship of traversals with proof-nets and the Geometry of Interaction (GoI) can be seen through the lenses of head-linear reduction, which they implement, or their correspondence with game semantics. In particular, the linear substitution performed by traversals corresponds to
+the firing of an exponential branch of a proof-net~\cite{MASCARI1994111}. We also point to the work of Danos and Regnier who established the connection with abstract machines and GoI~\cite{danosherbelinregnier1996}.
 
 \paragraph{Optimality} Traversal-based evaluation is not L\'evy-optimal~\cite{optimal-reduction-levy}.
 Traversals do exhibit some sharing through their use of pointers, which avoids copying or rewriting subterms when evaluating redexes.
 But there is no attempt to exploit such sharing to avoid redundant work: in the term $(\lambda x. y x x) A$, each occurrence of $x$ involves re-traversing the argument $A$.
 If $A$ contains a redex then it will get traversed twice, without any attempt to exploit the shared redex.
 %
-On the other hand, just like head-linear reduction, traversals are  ``hyperlazy'' in nature: they only evaluate (linear) redexes one variable occurrence at a time and only when the value of that occurrence is needed. So beside the possible redundancy described above, no useless work is performed, as opposed to the traditional
+On the other hand, just like head-linear reduction, traversals are  ``hyper-lazy'' in nature: they only evaluate (linear) redexes one variable occurrence at a time and only when the value of that occurrence is needed. So besides the possible redundancy described above, no useless work is performed, as opposed to the traditional
 way of evaluating redexes which involves substituting all variable occurrences at once, regardless of whether some of those occurrences are dead-code.
 %
 Traversals may not be too far from optimality:
 we could conceivably augment traversals with some memoization mechanism
 to detect shared families of redexes, in L\'evy-sense, to give rise to
-a Levy-optimal notion of traversals, similarly to what is suggested by Danos and Regnier in~\cite{DANOS199979} to turn \emph{Jumping Abstract Machines} into optimal machines.
+a Levy-optimal notion of traversals, similarly to what is suggested by Danos and Regnier in~\cite{DANOS199979} to make \emph{Jumping Abstract Machines} optimal.
 
 %1 - Not the traditional notion of redex (linear)
 %2 - No sharing of redex, no simultaneous firing of redex with same Levy-label
@@ -469,7 +472,7 @@ a Levy-optimal notion of traversals, similarly to what is suggested by Danos and
 
 \subsection{Rest of the paper}
 
-The next section introduces basic definitions from the traversal theory. Section~\ref{sec:imaginary_traversals} defines the notion of \emph{imaginary traversals} for the untyped lambda calculus. We present in Section~\ref{sec:normalizing_trav} the reduction procedure for untyped lambda terms, and walk through examples in Section~\ref{sec:examples}. In Section~\ref{sec:leftmostlinearred}, we present \emph{head linear} and \emph{leftmost linear reduction}. Finally, Section~\ref{sec:correctness_ulc_normalization} shows correctness of the evaluation procedure.
+The next section introduces basic definitions from the traversal theory. Section~\ref{sec:imaginary_traversals} defines the notion of \emph{imaginary traversals} for the untyped lambda calculus. We present in Section~\ref{sec:normalizing_trav} the reduction procedure for untyped lambda terms and walk through examples in Section~\ref{sec:examples}. In Section~\ref{sec:leftmostlinearred}, we present \emph{head linear} and \emph{leftmost linear reduction}. Finally, Section~\ref{sec:correctness_ulc_normalization} shows correctness of the evaluation procedure.
 
 
 \section{Terms, trees and justified sequences}
@@ -502,7 +505,8 @@ In the rest of the paper, we use uppercase letters $M, N, T, U, V$ for lambda te
 
 We recall standard results of the lambda calculus.
 A \defname{redex} is a sub-term of the form $(\lambda x. M) N$.
-Reducing redex $(\lambda x. M) N$, or also \emph{firing} the redex, means substituting all free occurrences of $x$ in $M$ by the term $N$ using capture avoiding substitution (the bound variable is renamed afresh when recursively substituting under a lambda).
+Reducing redex $(\lambda x. M) N$, or also \emph{firing} the redex, means substituting all free occurrences of $x$ in $M$ by the term $N$
+using capture-avoiding substitution (the bound variable is renamed afresh when recursively substituting under a lambda).
 A term is said to be in \defname{$\beta$-normal form}, abbreviated $\beta$-nf, if it does not contain any redex.
 A term is in \defname{head normal form} if it can be written $\lambda x_1 \ldots x_n . y A_1 \ldots A_m$ for $n,m\geq0$. If a term is not in head normal form then its \defname{head beta-redex} is the left-most redex, otherwise the term does not have any head beta-redex. For any reduction relation $\rightarrow$ between terms we will write $\rightarrow^*$ to denote its reflexive transitive closure. The \defname{eta-expansion} of $M$ refers to some term $\lambda x. M x $ for some variable $x$ fresh in $M$.
 
@@ -510,11 +514,11 @@ The \defname{head reduction}, denoted $\rightarrow_{h}$, fires the head redex of
 
 \paragraph{Types} Simple types are generated from the grammar $\tau := o\, | \tau \rightarrow \tau$ where $o$ ranges over a fixed set of atomic types. Typed-annotated lambda-terms are generated from the grammar $E := \VarSet\, |\, (E\, E)\, |\, \lambda \VarSet \colon\tau. E $.
 We write $M^\tau$ to denote a closed (\ie, no free variable)
-type-annotated lambda-term of type $\tau$, typable with the judgement rules of the simply-typed lambda calculus~\cite{Barendregt84} and $M$ to denote the untyped term obtained by erasing its type annotations.
+type-annotated lambda-term of type $\tau$, typable with the judgment rules of the simply-typed lambda calculus~\cite{Barendregt84} and $M$ to denote the untyped term obtained by erasing its type annotations.
 
 \subsection{Term tree and enabling relation}
 
-We define a tree representation for untyped lambda terms where consecutive lambda abstractions are merged into a single `bulk' lambda-node and consecutive applications are represented by a single application node whose first child represents the operator, and subsequent children represents the operands.
+We define a tree representation for untyped lambda terms where consecutive lambda abstractions are merged into a single `bulk' lambda-node and consecutive applications are represented by a single application node whose first child represents the operator, and subsequent children represent the operands.
 This definition is similar to that of \emph{computation tree} from \cite{OngLics2006, BlumPhd} with the notable difference that we do not eta-long expand the term prior to constructing the tree.
 \begin{definition}
 The \defname{tree} $\ctree(M)$ of an
@@ -710,7 +714,7 @@ For any set $T\subseteq \justseqset(M)$ we write $T^{\max}$ for the subset of ma
 %
 We borrow basic definitions from Game Semantics~\cite{Abr02}. A justified sequence verifies the \defname{alternation condition} if it starts with a lambda node and subsequently alternates between (i) a variable or application node (ii) a lambda node.
 An occurrence in $s$ is \defname{hereditarily justified by some other occurrence} if recursively following justification pointers starting from the first occurrence leads to the second one.
-Since justification pointers honor the enabling relation $\enables$, if an occurrence of node $n$ is hereditarily justified by occurrence of a node $m\in\Nodes$ then $n$ is necessarily hereditarily enabled by $m$. Further if $m$ occurs only once in $s$ then the occurrences hereditarily justified by $m$ are precisely the occurrences of nodes that are hereditarily \emph{enabled} by $m$ in $\ctree(M)$.
+Since justification pointers honor the enabling relation $\enables$, if an occurrence of node $n$ is hereditarily justified by the occurrence of a node $m\in\Nodes$ then $n$ is necessarily hereditarily enabled by $m$. Further if $m$ occurs only once in $s$ then the occurrences hereditarily justified by $m$ are precisely the occurrences of nodes that are hereditarily \emph{enabled} by $m$ in $\ctree(M)$.
 %
 The \defname{projection} $s\filter n$ of $s$ with respect to $n$ is the subsequence consisting of occurrences hereditarily justified by $n$ in $s$. We write $s \filter A$ for the subsequence of $s$ consisting of occurrences of nodes in a subset $A \subseteq \Nodes$.
 Hence $s\filter\ExternalNodes$ consists of occurrences of $s$ that are external nodes, or equivalently that are hereditarily justified by some occurrence of the root in $s$.
@@ -942,7 +946,7 @@ Furthermore, provided that no variable capture situation occurs, the variable  o
 \begin{proof}
     Because $T \structisomorphic \pathset(M)$, the sequences in $T$ have the properties
 of justified paths of a term tree: they start with a lambda, alternate between lambda and variable/@, lambdas have
-a single-child, and are necessarily justified by their immediate predecessor in the sequence (their parent).
+a single child, and are necessarily justified by their immediate predecessor in the sequence (their parent).
 Furthermore, $T$ induces an arity for each occurrence of a sequence in $T$: the arity of a lambda-occurrence $(\overline{x},j,i)\in\nameencoding$ is $|\overline{x}|$, the arity of a variable or @-occurrence is the maximum
 child-index (given by the link label) of any lambda occurrence immediately following it in any sequence of $T$.
 
@@ -977,7 +981,7 @@ Property~\ref{prop:tree_path_charact} they must be $\alpha$-equivalent.
 
 \begin{definition}
 The set $\travulc(M)$ of \defname{traversals} of an untyped lambda term $M$, abbreviated $\travulc$ when the term is clear from context, is the set of justified sequences of nodes over the extensional tree of $M$, defined inductively by the derivation rules of Table~\ref{tab:trav_rules}:
- $t \in \travulc(M)$ if and only if the judgement $\istraversal t$
+ $t \in \travulc(M)$ if and only if the judgment $\istraversal t$
  is derivable.
 %
  We use interchangeably `\emph{imaginary traversal}' or just `\emph{traversal}' when referring to a traversal of an untyped term.
@@ -1214,14 +1218,14 @@ the external lambda $\alpha_k$ and external variable $n_1$ delimit the strand bo
 A traversal is \defname{strand-complete}
 if each strand initiated by an external lambda occurrence
 eventually ends with an occurrence of an external variable.
-Otherwise we say that the last strand in the traversal is \emph{incomplete}.
+Otherwise, we say that the last strand in the traversal is \emph{incomplete}.
 %
 A finite \emph{maximal} traversal is necessarily strand-complete for if it were not ending with an external variable we could extend it with either \rulenamet{App}, \rulenamet{Lmd} or \rulenamet{Var}.
 %
 
 \paragraph{Traversal core}
 
-In the typed setting the \emph{core of a traversal}~\cite{BlumPhd} is simply obtained by removing all internal occurrences from a traversal.
+In the typed setting, the \emph{core of a traversal}~\cite{BlumPhd} is simply obtained by removing all internal occurrences from a traversal.
 Generalizing this notion to the untyped setting requires
 additional relabelling of lambda nodes.
 
@@ -1345,14 +1349,14 @@ Since we explicitly exclude the imaginary sub-case of \rulenamet{IVar}, the rule
 
 The idea of using traversals to evaluate lambda terms stems from the \emph{Normalized Paths Characterization} result which states that the set of P-views of traversal cores captures what is strictly required from traversals to reconstruct the normal form of a term when it exists.
 This characterization was previously shown for simply-typed term in eta-long form via
-a correspondence with Game Semantics,
+correspondence with Game Semantics,
  and is recalled in Proposition~\ref{prop:path_charact_stlc};
  in Section~\ref{sec:correctness_ulc_normalization} we generalize it to all untyped terms with a normal form using instead a term-rewriting argument (Theorem~\ref{thm:path_charact_ulc}).
 This result suggests a normalization method consisting in simply enumerating all the maximal traversals.
 The challenge is that there are arbitrarily long traversals due to the generous non-determinism of the rule \rulenamet{IVar} that traverses free variables.
 Even worse: even for terms with a beta-normal form
 there may be infinitely many maximal imaginary traversals!
-Fortunately, not all of them are needed: a traversal shall be considered redundant if there exist a shorter one with identical core P-views.
+Fortunately, not all of them are needed: a traversal shall be considered redundant if there exists a shorter one with identical core P-views.
 With such consideration, it suffices to look for a subset covering every possible core P-view.
 
 We first consider the subset of \emph{essential traversals} which is complete with respect to core P-views.
@@ -1378,7 +1382,7 @@ The traversals $t_k$, $k\geq 0$, correspond to plays
 
 \begin{definition}
 \label{dfn:essential_traversals}
-The set of \defname{essential traversals} $\travsetes$ is the subset of $\travulc$ defined by the rules of Table~\ref{tab:trav_rules} where the justifier node in the input-variable rule \rulenamet{IVar} is restricted to be the preceding occurrence in the traversal. Written as a judgement derivation, the rule becomes:
+The set of \defname{essential traversals} $\travsetes$ is the subset of $\travulc$ defined by the rules of Table~\ref{tab:trav_rules} where the justifier node in the input-variable rule \rulenamet{IVar} is restricted to be the preceding occurrence in the traversal. Written as a judgment derivation, the rule becomes:
 \infrule[$\rulefont{IVar_\essential}$]
      {\istraversal t \cdot n
       \andalso n \in\ExternalNodes\inter\ExtendedNodesVar
@@ -1399,7 +1403,7 @@ The set of \defname{concrete and essential traversals} $\travsetcones$ refers to
      {\istraversal  \Pstr[0.5cm]{t \cdot (n){n} \, (l-n,25:i){\alpha}}}
 \end{definition}
 
-As traversals unfolds, a depth-first exploration of the tree of the beta-normal form takes place, where rule \rulenamet{IVar} implements the non-deterministic `branching points'. Since lambda-terms are pure of side-effects,
+As traversals unfold, a depth-first exploration of the tree of the beta-normal form takes place, where rule \rulenamet{IVar} implements the non-deterministic `branching points'. Since lambda-terms are pure of side-effects,
 it suffices to explore each possible branch only once.
 \emph{Essential traversals} implement this idea by restricting the rule $\rulenamet{IVar}_\essential$ to only traverse nodes leading to paths in the tree that the traversal has so far not explored: when picking the lambda node to visit next, it forces choice `(J)' to be the \emph{latest} variable node in the traversal. \emph{Concrete essential} traversals further restrict choice `(L)' to be a structural child lambda node of that variable node.
 
@@ -1415,7 +1419,7 @@ By an easy induction on $t$ using the fact that in the recursive calculation of 
 \end{proof}
 \fi
 
-We introduce a quotient relation to identify traversals with identical core P-views:
+We introduce a quotient relation identifying traversals with identical core P-views:
 \begin{definition}[Quotienting]
 The equivalence relation $\sim$ over $\travulc$ is defined by $t \sim u$ if and only if
 $\pview{\core{t'}} \equiv \pview{\core{u'}}$
@@ -1454,7 +1458,7 @@ which equates $\pview{\core{u}}$ if we take $u = u' \cdot \lambda\overline{x} \c
 It remains to show that $u\in\travsetes$.
 If we write the occurrences of $ v \cdot t^\omega$ as $m_1 \ldots m_q$, for $q>0$ then a finite induction on $q$ shows that $u_{\leq m_q} \in\travsetes$ and $m_q$'s justifying node and label are the same in $u$ and $t$. The only non-trivial case is rule \rulenamet{Var}: by the Path-View correspondence, $\pview{u_{<m_q}}$ is a path in the tree from the root to $m_q$ therefore $m_q$'s binder necessarily occur in $u$, we can  conclude using the I.H.~on $u_{<m_q}$ and applying \rulenamet{Var} on $u_{<m_q}$ to get $u_{\leq m_q}$.
 %
-(ii) In essential traversals, non-initial occurrences of external lambda nodes must immediately follow their justifier by rule $\rulenamet{IVar}_\essential$, hence after removing internal nodes the P-view coincide with the identify function.
+(ii) In essential traversals, non-initial occurrences of external lambda nodes must immediately follow their justifier by rule $\rulenamet{IVar}_\essential$, hence after removing internal nodes the P-view coincide with the identity function.
 \endshortproof
 \proofatend
 %\begin{proof}
@@ -1481,7 +1485,7 @@ To conclude it therefore suffices that to show that $u = u' \cdot m_1 \ldots m_q
 We prove by finite induction on $q$ that $u_{\leq m_q} \in\travsetes$ and $m_q$'s justifying node and label are the same in $u$ and $t$. For $q=0$, we just apply rule \rulenamet{Lam} on $u'$.
 For $q>0$: by case analysis on the rule used to visit $m_q$ in $t$.
 For structural rules \rulenamet{Root}, \rulenamet{App} and \rulenamet{Lam} it follows immediately by induction.
-Rule \rulenamet{Var}: If $m_q \in \NodesVar$ then by the Path-View correspondence, $\pview{u_{<m_q}}$ is a path in the tree from the root to $m_q$ therefore $m_q$'s binder necessarily occur in $u$, we can therefore conclude using the I.H.~on $u_{<m_q}$ and applying \rulenamet{Var} on $u_{<m_q}$ to get $u_{\leq m_q}$.
+Rule \rulenamet{Var}: If $m_q \in \NodesVar$ then by the Path-View correspondence, $\pview{u_{<m_q}}$ is a path in the tree from the root to $m_q$ therefore $m_q$'s binder necessarily occur in $u$, we thus conclude using the I.H.~on $u_{<m_q}$ and applying \rulenamet{Var} on $u_{<m_q}$ to get $u_{\leq m_q}$.
 \end{itemize}
 Suppose that $t$ contains ghost occurrences then we consider the term $M^t$.
 By Proposition~\ref{prop:eta_expanded_trav}(i), $\eta_t(t)$ is a traversal of $M^t$. Hence by the above, there exists $u'\in\travsetes(M^t)$ such that
@@ -1501,7 +1505,7 @@ Hence $\pview{\core{t}}=\pview{\core{\eta_t(t)}}=
 
 \subsection{Normalization procedure for eta-long forms (STLC)}
 
-For typed languages such as the STLC, PCF or Idealized Algol, the theory of eta-long traversals~\cite{OngLics2006} concretely relates to Game Semantics: they are in one to one correspondence with the plays of the game denotation in which all internal moves are revealed; and \emph{traversal cores} give the actual plays~\cite{BlumPhd}.
+For typed languages such as the STLC, PCF or Idealized Algol, the theory of eta-long traversals~\cite{OngLics2006} concretely relates to Game Semantics: they are in one to one correspondence with the plays of the game denotation in which all internal moves are revealed, and \emph{traversal cores} give the actual plays~\cite{BlumPhd}.
 \begin{theorem}[Eta-Long Game Semantics Correspondence--Theorem 4.96 in~\cite{BlumPhd}]
 \label{thm:gamesem_correspondence_stlc}
 For any (closed) simply-typed term $M^\tau$ in \emph{eta-long form},
@@ -1559,7 +1563,7 @@ This yields the normalization procedure for simply-typed terms in eta-long form 
     \end{enumerate*}
     \end{property}
     \begin{proof}
-    (i) It turns out that the rules of \emph{concrete and essential} traversals are precisely the ones used in \cite{OngLics2006} for recursion schemes (no free variables and term of ground type), where \rulenamet{IVar} is replaced by \rulenamet{Sig}. We can therefore appeal to the Spinal Decomposition
+    (i) It turns out that the rules of \emph{concrete and essential} traversals are precisely the ones used in \cite{OngLics2006} for recursion schemes (no free variables and term of ground type), where \rulenamet{IVar} is replaced by \rulenamet{Sig}. We can thus appeal to the Spinal Decomposition
     \cite[Lemma 8]{OngLics2006} which shows that if $t$ is infinite then there is an infinite sequence of prefixes of $t$ whose P-views (the \emph{spine} of $t$) is strictly increasing. By the P-view--Path correspondence there must be an infinite path in the structural tree which gives a contradiction. Hence $t$ is either finite or contains a ghost node.
     (ii) Rules that do not involve ghost nodes all have bounded non-determinism therefore a concrete traversal only has a finite number of immediate extensions. Since the traversals are finite, this implies that the set of traversals is itself finite.
 \end{proof}
@@ -1696,7 +1700,7 @@ The induction hypothesis gives
 $i_{q} = i - \Delta_{q-1} = i + |n_q| - (|n_q| + \Delta_{q-1} )$, which is greater or equal than $i + |n_q| - \max_{r=1..k} ( |n_r| + \Delta_{r-1})
 = i + |n_q| - \dynar(t) $.
 Since by assumption $i>\dynar(t)$ this implies that $i_{q} > |n_q|$.
-We can therefore use rule \rulenamet{Var}
+We can thus use rule \rulenamet{Var}
 to traverse a ghost lambda justified by  $n_{q}$ and labelled by $i_q$
 (since by the strand definition, $\alpha_{q-1}$ is an internal node).
 We then use rule \rulenamet{Lam^\ghostvar} to traverse the next ghost variable justified by $\alpha_q$ and labelled by $i_{q+1} = i_q + |\alpha_{q}| -|n_{q}|$.
@@ -1777,7 +1781,7 @@ such that only ghost nodes are traversed from that point on, without ever materi
 \label{def:normalizing_traversals}
 The \defname{normalizing traversals} $\travsetnorm$ refers to the subset of essential traversals obtained by restricting \rulenamet{IVar_\essential}
 in the system of rules of Definition~\ref{dfn:essential_traversals}
-so that the argument index $i$ cannot be greater than the dynamic arity of the traversal. Written as a judgement derivation rule:
+so that the argument index $i$ cannot be greater than the dynamic arity of the traversal. Written as a judgment derivation rule:
  \infrule[$\rulefont{IVar_\normalizing}$]
       { \istraversal t \cdot n
       \andalso n \in\ExternalNodes\inter\ExtendedNodesVar
@@ -1872,7 +1876,7 @@ where $\pview{\core{t}} = t$, is not equivalent to $\pview{\core{u}}$ for any $u
 
     where $t, u, v$ range over (sub-sequences of) justified sequences of nodes.
 
-    \caption{Normalizing traversals $\travsetnorm(M)$ of an untyped $\lambda$-term $M$, presented using judgement rules. They are a strict subset of imaginary traversals $\travulc(M)$ from Table \ref{tab:trav_rules}. The two systems only differ in rule  $\rulefont{IVar}$
+    \caption{Normalizing traversals $\travsetnorm(M)$ of an untyped $\lambda$-term $M$, presented using judgment rules. They are a strict subset of imaginary traversals $\travulc(M)$ from Table \ref{tab:trav_rules}. The two systems only differ in rule  $\rulefont{IVar}$
     where normalizing traversals further restrict the choice of justifier and link label $i$.}
     \label{tab:normalizing_trav_rules}
     \end{ruletablebox}
@@ -1921,7 +1925,7 @@ When representing justified sequences, we underline occurrences of external node
   $t_\epsilon = \Pstr[0.7cm]{(n0){\lambda}\,(n1){@}\,(n2-n1,20){\lambda x}\,(n3-n2,20){x}\,(n4-n1,20){\lambda y}\,(n5-n4,20){y}\,(n6-n3,20){\lambda}\,(n7-n2,20){x}\,(n8-n1,20){\lambda y}\,(n9-n8,20){y}\,(n10-n7,20){\ghostlmd^1}\,(n11-n6,20){\ghostvar^1}\,(n12-n5,20){\ghostlmd^{1}}\,(n13-n4,20){\ghostvar^2}\,(n14-n3,20){\ghostlmd^2}\,(n15-n2,20){\ghostvar^2}\,(n16-n1,20){\ghostlmd^2}\,(n17-n0,20){\ghostvar^1}}$. The last node is justified by the root thus it is an external variable. With \emph{imaginary} traversals,
   rule $\rulename{IVar}$ would let us extend $t_\epsilon$. But here the dynamic arity is $\dynar(t) = 0$, therefore there is no more \emph{normalizing} traversal to explore: $t_\epsilon$ is maximal.
   The core is $\core{t_\epsilon} = \Pstr[0.7cm]{(n0){\lambda ^{[y]}}\,(n17-n0){\ghostvar^1}}$
-  thus the beta-normal form of term is $\lambda y . y$ for some new variable name $y$.
+  thus the beta-normal form is $\lambda y . y$ for some new variable name $y$.
 \end{example}
 
 \begin{example}[Church increment]
@@ -1939,7 +1943,7 @@ and $\lambda y s z ~ z$ is a path in the normal form of $M$.
 The normal form must therefore have shape $\lambda y s z \ldots \cdot s N_1 \ldots N_q$ for $q\geq0$.
 %
 To determine the arguments $N_k$, we enumerate all the possible instantiations of $\rulename{IVar}$ for every non-deterministic choice of $k\geq 1$, and recursively unfold the strands of the traversal. How many values of $k$ shall be considered? We should not eta-expand beyond the point where further extensions are guaranteed to visit only ghost occurrences. That upper-bound is precisely given by the \emph{dynamic arity} of $t_\epsilon$.
-We lookup the node arities from the tree represented in Figure~\ref{fig:comptree_examples}. The arities of the traversal strand are
+We look up the node arities from the tree represented in Figure~\ref{fig:comptree_examples}. The arities of the traversal strand are
  $0,1,4,2,2,1,0,0,0,0$ so the dynamic arity is given by the maximum of the intermediate values generated from the summation $(((((0) + -0+0) -0 +1) -2 + 2) -4 +1)$, hence $\dynar(t_\epsilon) = \max \{ 0,0,1,1,-2 \} = 1$.
  Hence this eliminates the cases $k>1$, so that the normal form must be of the shape $\lambda y s z \ldots \cdot s N_1$.
 %
@@ -2231,7 +2235,7 @@ The beta-normal form of $J$ is thus $x (\lambda v.v\,y) y$.
     $$
     }
 
-    Consider each section of the traversal starting with $y_1$ and ending with $y_2$ with no other variable occurrence in-between, and define its length as the number of ghost nodes in-between. Then the length of the successive sections follow the pattern: $2,6,14,30,62\ldots$
+    Consider each section of the traversal starting with $y_1$ and ending with $y_2$ with no other variable occurrence in-between, and define its length as the number of ghost nodes in-between. Then the length of the successive sections follows the pattern: $2,6,14,30,62\ldots$
     One can show that the length of the $i$th section is $2\times(2^i-1)$, for $i\geq1$.
     So as the term is being evaluated, it takes exponentially longer to determine that $y_2$ is the argument of $y_1$.
 \iflongversion
@@ -2581,7 +2585,7 @@ By Theorem~\ref{thm:danosregnier_headlinred}, the \emph{hoc} of a quasi-head nor
 \fi
 
 We now introduce a $\beta$-reduction strategy (in the standard sense).
-We define the \defname{leftmost spinal-innermost} standard $\beta$-redex of $M$ as the $\beta$-redex $(\lambda x . N) A$ such that there is no other redex in $M$ occurring left of it and such that $N$ contains no other redex; the argument $A$ on the other-hand, may contain other redexes.
+We define the \defname{leftmost spinal-innermost} standard $\beta$-redex of $M$ as the $\beta$-redex $(\lambda x . N) A$ such that there is no other redex in $M$ occurring left of it and such that $N$ contains no other redex; the argument $A$ on the other hand, may contain other redexes.
 The idea consists in reducing $M$'s redexes in `inside-out left-to-right' order.
 This definition should be distinguished from the \emph{leftmost innermost} reduction strategy from the lambda calculus literature.
 In particular $(\lambda x . y) \Omega$ reduces to $y$ with the leftmost spinal-innermost strategy, while the leftmost innermost strategy does not terminate.
@@ -2754,7 +2758,7 @@ Suppose that the \emph{lloc} of $M$ is in $U$.
     Let $M'$ denote the term obtained by replacing
     the subterm $T$ by $T_2$, the $\llred$-reduction sequence of $M$ coincides with that of $M'$.
     %
-    Now $M'$ must necessarily have a $\beta$-normal form. Otherwise it's standard $\beta$-reduction sequence would not terminate, which would imply that $\gamma(T_2)$ does not terminate, which contradicts the fact that $\gamma(T_2)$ is the argument of the head variable in the head normal form!
+    Now $M'$ must necessarily have a $\beta$-normal form. Otherwise, its standard $\beta$-reduction sequence would not terminate, which would imply that $\gamma(T_2)$ does not terminate, which contradicts the fact that $\gamma(T_2)$ is the argument of the head variable in the head normal form!
     %
     Since $M'$ is smaller than $M$, by H1, its linear-reduction sequence terminates. We can conclude since the linear reduction sequences of $M$ and $M'$ coincide.
 
@@ -2763,9 +2767,9 @@ Suppose that the \emph{lloc} of $M$ is in $U$.
      \emph{Inductive case of H3} Suppose H3  holds for terms with $n \geq 1$ \hoc\ arguments, and suppose ${\sf Args}(M) = n+1$.
    %
     Let $U_{n+1} V_{n+1}$ denote the subterm of $M$ such that $V_{n+1}$ is the last \hoc\ argument of $M$. We consider the term $M'$ obtained from $M$ by removing the last \hoc\ argument of $M$ (\ie~replacing $U_{n+1} V_{n+1}$ by $U_{n+1}$).
-    Observe that the last argument of the hoc cannot be possibly be argument of any generalized redex, therefore the linear reduction of $M$ must  coincide with that of $M'$ up until the \hoc\ of the reduct of $M$ lies under the last \hoc\ argument $U_{n+1}$.
+    Observe that the last argument of the hoc cannot possibly be the argument of any generalized redex, therefore the linear reduction of $M$ must  coincide with that of $M'$ up until the \hoc\ of the reduct of $M$ lies under the last \hoc\ argument $U_{n+1}$.
 %
-    By induction hypothesis (H3), the $\llred$-reductions sequences of $M'$ involves a finite number of substitutions under $T_2$. Consequently, the same holds in $M$.
+    By induction hypothesis (H3), the $\llred$-reductions sequences of $M'$ involve a finite number of substitutions under $T_2$. Consequently, the same holds in $M$.
     %\end{compactitem}
 %%%%
 
@@ -2777,7 +2781,7 @@ Suppose that the \emph{lloc} of $M$ is in $U$.
     %
     At $R$, if the \emph{lloc} is not under $T_2$ then none of the further steps in the linear reduction sequence of $R$ will involve $T_2$
     % (\ie, subsequent substitutions will occur outside of $T$ -- on its right,  more precisely).
-    We can therefore conclude.
+    We can thus conclude.
     %
     If instead at $R$ the \emph{lloc} lies under the subterm $T_2$
     %: $lloc_R(T2) \ne\bot$,
@@ -2872,9 +2876,9 @@ If $M = \lambda x . U$ then $U$ must also admit a beta-nf so we can conclude by 
 
             \item Suppose that $\emph{lloc}$ is in $T_1$. Then by the induction hypothesis (H2) there is a finite number of steps in the linear reduction sequence of $M$ that involve (reducts of) $T_1$. Let us consider the first reduct $R$ of $M$ in the $\llred$ reduction sequence such that the \emph{lloc} is not under a reduct of $T_1$.  Observe that in the linear reduction sequence of $T$, the subterm $T_2$ remains unmodified as long as the \emph{lloc} remains in (the reduct) of $T_1$.
 
-            At $R$, if the \emph{lloc} is not under $T_2$ then none of the further steps in the linear reduction sequence of $R$ will involve $T_2$ (\ie, subsequent substitutions will occur outside of $T$ -- on its right,  more precisely). We can therefore conclude.
+            At $R$, if the \emph{lloc} is not under $T_2$ then none of the further steps in the linear reduction sequence of $R$ will involve $T_2$ (\ie, subsequent substitutions will occur outside of $T$ -- on its right,  more precisely). We can thus conclude.
 
-            If instead at $R$ the \emph{lloc} lies under the subterm $T_2$: $lloc_R(T2) \ne\bot$, then $T_1$ cannot be a variable, otherwise it would be both the \emph{hoc} and the \emph{lloc} of $M$ which contradict the assumption. We can therefore conclude by applying the same reasoning as case (a) above to the reduct $R$.
+            If instead at $R$ the \emph{lloc} lies under the subterm $T_2$: $lloc_R(T2) \ne\bot$, then $T_1$ cannot be a variable, otherwise it would be both the \emph{hoc} and the \emph{lloc} of $M$ which contradict the assumption. We thus conclude by applying the same reasoning as case (a) above to the reduct $R$.
         \end{enumerate}
 
     \end{enumerate}
@@ -3157,7 +3161,7 @@ the desired result $|\lambda_l(\lambda\overline{h_{i-1}})| < k_{i-1}$.
 \end{figure}
 
 We now show that $lloc_M(\lambda\overline{y_2})=\bot$.
-By assumption we have that $lloc_M(\lambda\overline{w_1}) =\bot$ so since $@_r$ occurs in the spine of $M$, by definition of $lloc_M$ we must have $lloc_M(@_r) =\bot$, and thus also $lloc_M(\lambda\overline{h_r}) = \bot$. We have just shown that $|\lambda_l(\lambda\overline{h_r})| < k_r$, consequently, the sub-term $(\lambda\overline{h_r} . A_0) A_1 \ldots A_{k_r-1}$ has more operands than pending lambdas in the operator's lambda list. By definition of lambda list this implies that $\lambda_l((\lambda\overline{h_r} . A_0) A_1 \ldots A_{k_r-1})$ is empty. Hence, we necessarily have $lloc(\lambda\overline{y_2}) = \bot$, otherwise by definition of $lloc$ we would have
+By assumption, we have that $lloc_M(\lambda\overline{w_1}) =\bot$ so since $@_r$ occurs in the spine of $M$, by definition of $lloc_M$ we must have $lloc_M(@_r) =\bot$, and thus also $lloc_M(\lambda\overline{h_r}) = \bot$. We have just shown that $|\lambda_l(\lambda\overline{h_r})| < k_r$, consequently, the sub-term $(\lambda\overline{h_r} . A_0) A_1 \ldots A_{k_r-1}$ has more operands than pending lambdas in the operator's lambda list. By definition of lambda list this implies that $\lambda_l((\lambda\overline{h_r} . A_0) A_1 \ldots A_{k_r-1})$ is empty. Hence, we necessarily have $lloc(\lambda\overline{y_2}) = \bot$, otherwise by definition of $lloc$ we would have
  $lloc((\lambda\overline{h_r} . A_0) A_1 \ldots A_{k_r-1} (\lambda\overline{y_2}. \ldots)) = lloc(\lambda\overline{y_2}) \ne \bot$, which subsequently implies $lloc(\lambda\overline{w_1})\ne\bot$, contradicting the assumption.
 The sequence $u_2$ is shown to be a spinal descent by the same argument used in the \emph{structural argument} case above, using the fact that $lloc_M(\lambda\overline{y_2})=\bot$. We have thus shown that the next strand is of type $G$.
 
@@ -3217,7 +3221,7 @@ We thus have $|\lambda_l(\lambda\overline{h_{i-1}})| - k_{i-1}
     = |\lambda\overline{h_{i-1}}| +|\lambda_l(@_i)| - k_{i-1}
     = \max (  |@_i|- k_i, |\lambda_l(\lambda\overline{h_i})| - k_i )$.
 By the induction hypothesis we have $|\lambda_l(\lambda\overline{h_i})| < k_i$, and since nodes in $v$ are all ghosts we have $|@_i|< k_i$ thus the `$\max$' is negative which shows $|\lambda_l(\lambda\overline{h_{i-1}})| < k_{i-1}$.
-Since in particular $|\lambda_l(\lambda\overline{h_r})| < k_r$, the application $(\lambda\overline{h_r} . A_0) A_1 \ldots A_{k_r-1}$ has more operands than pending lambdas in the operator, thus its lambda list is empty. By assumption the strand is of type $S$ thus $lloc(\lambda\overline{w_1})=\bot$ and since there is no lloc ``left of'' $\lambda\overline{y_2}$, there cannot possibly be a lloc under $\lambda\overline{y_2}$. Hence $lloc(\lambda\overline{y_2}) =\bot$.
+Since in particular $|\lambda_l(\lambda\overline{h_r})| < k_r$, the application $(\lambda\overline{h_r} . A_0) A_1 \ldots A_{k_r-1}$ has more operands than pending lambdas in the operator, thus its lambda list is empty. By assumption, the strand is of type $S$ thus $lloc(\lambda\overline{w_1})=\bot$ and since there is no lloc ``left of'' $\lambda\overline{y_2}$, there cannot possibly be a lloc under $\lambda\overline{y_2}$. Hence $lloc(\lambda\overline{y_2}) =\bot$.
 The same argument used in the \emph{structural argument} case shows that
  $u_2$ is a spinal descent. Hence the next strand is of type $G$.
 \endshortproof
@@ -3244,7 +3248,7 @@ The same argument used in the \emph{structural argument} case shows that
 \end{tikzpicture}
 \caption{Decomposition of normalizing traversals of a \emph{qnf}.
 Bottom (lambda, ghost lambda) and top (variable) states
-represent the external nodes respectively delimiting the start and end of a strand. Double arrows represent multiple use of deterministic traversal rules; regular arrows represent a single rule instantiation.
+represent the external nodes respectively delimiting the start and end of a strand. Double arrows represent multiple uses of deterministic traversal rules; regular arrows represent a single rule instantiation.
 }
 \label{fig:qnf_strand_decomposition_statemachine}
 \end{figure}
@@ -3302,7 +3306,7 @@ For $t, t' \in \travsetnorm(M)$ we write $t \rightarrow_M t'$ just if $t'$ is an
 and $t \internalextension_M t'$ if the node traversed by $t'$ is an internal node.
 We write $\rightarrow_M^*$ and, $\internalextension_M^*$ to denote their reflexive transitive closure.
 %
-To simplify the definition of bisimulation, we now assume that $\travsetnorm$ also contain the empty justified sequence $\epsilon$, which was excluded in our presentation of traversal rules, so that $\travsetnorm(M)$
+To simplify the definition of bisimulation, we now assume that $\travsetnorm$ also contains the empty justified sequence $\epsilon$, which was excluded in our presentation of traversal rules, so that $\travsetnorm(M)$
 is precisely the transitive closure of $\{ \epsilon \}$ by $\rightarrow_M$.
 
 % We say that two justified sequences $u$ and $v$ are \defname{almost-equal},
@@ -3349,8 +3353,8 @@ $\travsetnorm(N)$ is by definition the transitive closure by $\rightarrow_N$ of 
 so for any $u$ of $\travsetscn(N) \subset \travsetnorm(N)$, repeatedly applying (B2) for each step of $u$'s $\rightarrow_N$ derivation shows that there is $u' \in \travsetnorm(N)$ and  $t' \in \travsetnorm(M)$
 such that $\core{u'} = \core{t'}$
 and $u \internalextension_N^* u'$.
-Take $t$ to be the longest-prefix of $t'$ ending with an external variable, then by definition $t$ belongs to $\travsetscn(M)$.
-And because the occurrences following $u$ in $u'$ are all internal, $u$ is also the longest-prefix of $u'$ ending with an external node.
+Take $t$ to be the longest prefix of $t'$ ending with an external variable, then by definition $t$ belongs to $\travsetscn(M)$.
+And because the occurrences following $u$ in $u'$ are all internal, $u$ is also the longest prefix of $u'$ ending with an external node.
 Hence since $\core{u'} = \core{t'}$, by the definition of
 $\coresymbol$ we necessarily have $\core{u} = \core{t}$, which shows that
 $\core{u}\in \core{\travsetscn(M)}$.
@@ -3546,9 +3550,9 @@ preserves all justification pointers except
 for $@_x$ and $\lambda\overline{y}'$,
 and inserts after each occurrence of the \emph{lloc} $x$, the corresponding \emph{argument lookup} of $x$.
 It adjusts justification pointers as follows:
-for $n\not\in \{ @_x, \lambda\overline{y} \}$, $\Phi(n)$ has same link distance and label as $n$;
-if $n$ is an occurrences of $x$ then $\Phi(n)$ points to the first occurrence of $x$'s binder in $\pview{\phi(u)}$ and has link label $i$;
-if $n$ is an occurrences of $\lambda\overline{y}'$ then  $\Phi(n)$ points to the last occurrence of $@_a$ in $\pview{\phi(u)}$ with link label $i$.
+for $n\not\in \{ @_x, \lambda\overline{y} \}$, $\Phi(n)$ has the same link distance and label as $n$;
+if $n$ is an occurrence of $x$ then $\Phi(n)$ points to the first occurrence of $x$'s binder in $\pview{\phi(u)}$ and has link label $i$;
+if $n$ is an occurrence of $\lambda\overline{y}'$ then  $\Phi(n)$ points to the last occurrence of $@_a$ in $\pview{\phi(u)}$ with link label $i$.
 This is well-defined since by the P-view-path correspondence, $x$'s binder (resp.\ $@_a$) necessarily occurs in the P-view at $x$ (resp.\ $\lambda\overline{y}'$).
 %
 Between every occurrence of the \emph{lloc} $x$ and $\lambda\overline{y}$,
@@ -3563,7 +3567,7 @@ So given a traversal $u \in \travset(N)$ involving $@_x$, $\phi(u)$ is given by:
     \phi(u) &=& \Pstr[10pt]{ \ldots (aa){@_a} \cdot (la){\bulklambda{h_a}} \cdot \ldots (a1){@_1} \cdot (l1){\bulklambda{h_1}} \cdot @ \ldots \bulklambda{z} \cdot (x-l1,30:i) x \cdot \ghostlmd \cdot \ghostvar \ldots \ghostlmd \cdot \ghostvar \cdot (ly-a,20:i_a){\bulklambda{y}} }
 \end{eqnarray*}
 \else
-So a traversal of the shape
+So that a traversal of the shape
 $u = \Pstr[10pt]{ \ldots @_a (la){\bulklambda{h_a}}
   \ldots (a1){@_1} (l1){\bulklambda{h_1}} \, @ \ldots \bulklambda{z} \, (ax){@_x} \, (ly-ax,20:0){\bulklambda{y}'} }$ of $N$
 maps to
@@ -3696,7 +3700,7 @@ We then show by case analysis on the rules that the two terms are bisimilar.
 %
 After reduction, node $x$ gets replaced by subterm $A$ and the label of $x$'s parent $\lambda$-node gets concatenated with the label of $A$'s root node:
 the parent node $\lambda\overline{z}$ of $x$ in $M$ becomes $\lambda\overline{z}\overline{y}'$ in the reduct $N$.
-A traversals of $M$ of the form $\ldots \lambda\overline{z} \cdot x \cdot v \cdot \lambda\overline{y} \ldots$, where $v$ is an argument lookup, can be bisimulated by traversals in $N$ of the form $\ldots \lambda\overline{z}\overline{y}' \ldots$ The arity of $x$ is not preserved but it does not alter the dynamic arity because $|\lambda{\overline{z} \overline{y}'}| =
+A traversal of $M$ of the form $\ldots \lambda\overline{z} \cdot x \cdot v \cdot \lambda\overline{y} \ldots$, where $v$ is an argument lookup, can be bisimulated by traversals in $N$ of the form $\ldots \lambda\overline{z}\overline{y}' \ldots$ The arity of $x$ is not preserved but it does not alter the dynamic arity because $|\lambda{\overline{z} \overline{y}'}| =
  |\lambda{\overline{z}}| +  |\lambda{\overline{y}}|$.
 %%%%%%%%%%%%%%%%% End of case where t ends with lloc variable occurrence x
 %\endproofatend
@@ -3979,7 +3983,7 @@ Let $M$ be an untyped term with a beta-normal form. Then
 \end{enumerate*}
 \end{proposition}
 \begin{proof}
-(i) If $M$ has a normal form then by Theorem~\ref{thm:completeness_leftmostlinearred} its linear reduction sequence yields a quasi-normal form $Q$ which by Theorem~\ref{thm:soundness_leftmostlinearred} is beta-equivalent to $M$. Thus by Proposition~\ref{prop:ulctrav_impl_linear_reduction} the maximal traversals of $M$ and $Q$ are isomorphic. So if $M$ has an infinite traversal then so does $Q$, which contradicts Proposition~\ref{prop:qnf_traversals_are_finite}.
+(i) If $M$ has a normal form then by Theorem~\ref{thm:completeness_leftmostlinearred} its linear reduction sequence yields a quasi-normal form $Q$ which by Theorem~\ref{thm:soundness_leftmostlinearred} is beta-equivalent to $M$. Thus, by Proposition~\ref{prop:ulctrav_impl_linear_reduction} the maximal traversals of $M$ and $Q$ are isomorphic. So if $M$ has an infinite traversal then so does $Q$, which contradicts Proposition~\ref{prop:qnf_traversals_are_finite}.
 (ii) Traversals rules defining $\travsetnorm$ all have bounded non-determinism therefore by (i) $\travsetnorm$ is finite.
 \end{proof}
 %%%% REMARK: (i) It would be possible to prove (i) directly without appealing to Theorem~\ref{thm:completeness_leftmostlinearred}. (In which case this theorem  would follow from the above proposition). The proof would follow a similar argument as that of Theorem~\ref{thm:completeness_leftmostlinearred}, by showing that traversals lead to the head variable in the beta-nf, and recursively to head variables of its arguments. So an i traversals would yield (through P-view) to an infinite sequence of paths in the beta-normal form, which is a contradiction since beta-nf have a finite tree representation.
@@ -4058,9 +4062,9 @@ reconstruct the $\beta$-normal form.
 
 \section{Further directions}
 
-We have seen that imaginary traversals implements leftmost linear reduction,
+We have seen that imaginary traversals implement leftmost linear reduction,
 %in the untyped lambda calculus
-a non-strict, ``hyper-lazy''~\cite{danosherbelinregnier1996}, reduction strategy that substitutes variables one at a time. This bring the question of whether alternative notions of traversals are definable for other evaluation strategies such as call-by-name and call-by-value~\cite{plotkin-75}. A call-by-name version of head-linear reduction, that does not reduce inside the body of an unapplied abstraction, would easily be accommodated in the traversal setting. A strict evaluation strategy like call-by-value, on the other hand, might require substantial changes. As for traditional reduction strategies, such as the normal order of lambda calculus,
+a non-strict, ``hyper-lazy''~\cite{danosherbelinregnier1996}, reduction strategy that substitutes variables one at a time. This brings the question of whether alternative notions of traversals are definable for other evaluation strategies such as call-by-name and call-by-value~\cite{plotkin-75}. A call-by-name version of head-linear reduction, that does not reduce inside the body of an unapplied abstraction, would easily be accommodated in the traversal setting. A strict evaluation strategy like call-by-value, on the other hand, might require substantial changes. As for traditional reduction strategies, such as the normal order of lambda calculus,
 %it is not immediately obvious how to implement simultaneous substitution with traversals since, by nature, they traverse the term tree one node at a time.
 perhaps this can be modeled by non-deterministically spawning new traversals for every free occurrence of the variable to be substituted.
 
@@ -4107,7 +4111,7 @@ An anonymous referee has also provided valuable comments.
 % $t_{122} =
 \resizebox{1\hsize}{!}{$
 \Pstr[0.7cm]{(n0){\lambda }\,(n1){@}\,(n2-n1){\lambda t}\,(n3-n2){t}\,(n4-n1){\lambda s_2 z_2}\,(n5-n4){s_2}\,(n6-n3){\lambda n a x}\,(n7-n6){n}\,(n8-n5){\lambda }\,(n9-n4){s_2}\,(n10-n3){\lambda n a x}\,(n11-n10){n}\,(n12-n9){\lambda }\,(n13-n4){z_2}\,(n14-n3){\lambda a}\,(n15-n14){a}\,(n16-n13){{\ghostlmd^{1}}}\,(n17-n12){{\ghostvar^{1}}}\,(n18-n11){\lambda s z}\,(n19-n10){a}\,(n20-n9){{\ghostlmd^{2}}}\,(n21-n8){{\ghostvar^{1}}}\,(n22-n7){\lambda s z}\,(n23-n6){a}\,(n24-n5){{\ghostlmd^{2}}}\,(n25-n4){{\ghostvar^{3}}}\,(n26-n3){\lambda z_0}\,(n27-n26){z_0}\,(n28-n25){{\ghostlmd^{1}}}\,(n29-n24){{\ghostvar^{1}}}\,(n30-n23){\lambda }\,(n31-n22){s}\,(n32-n21){{\ghostlmd^{1}}}\,(n33-n20){{\ghostvar^{1}}}\,(n34-n19){\lambda }\,(n35-n18){s}\,(n36-n17){{\ghostlmd^{1}}}\,(n37-n16){{\ghostvar^{1}}}\,(n38-n15){{\ghostlmd^{1}}}\,(n39-n14){{\ghostvar^{2}}}\,(n40-n13){{\ghostlmd^{2}}}\,(n41-n12){{\ghostvar^{2}}}\,(n42-n11){{\ghostlmd^{2}}}\,(n43-n10){{\ghostvar^{4}}}\,(n44-n9){{\ghostlmd^{4}}}\,(n45-n8){{\ghostvar^{3}}}\,(n46-n7){{\ghostlmd^{3}}}\,(n47-n6){{\ghostvar^{5}}}\,(n48-n5){{\ghostlmd^{5}}}\,(n49-n4){{\ghostvar^{6}}}\,(n50-n3){{\ghostlmd^{6}}}\,(n51-n2){{\ghostvar^{4}}}\,(n52-n1){{\ghostlmd^{4}}}\,(n53-n0){{\ghostvar^{3}}}\,(n54-n53){{\ghostlmd^{1}}}\,(n55-n52){{\ghostvar^{1}}}\,(n56-n51){{\ghostlmd^{1}}}\,(n57-n50){{\ghostvar^{1}}}\,(n58-n49){{\ghostlmd^{1}}}\,(n59-n48){{\ghostvar^{1}}}\,(n60-n47){{\ghostlmd^{1}}}\,(n61-n46){{\ghostvar^{1}}}\,(n62-n45){{\ghostlmd^{1}}}\,(n63-n44){{\ghostvar^{1}}}\,(n64-n43){{\ghostlmd^{1}}}\,(n65-n42){{\ghostvar^{1}}}\,(n66-n41){{\ghostlmd^{1}}}\,(n67-n40){{\ghostvar^{1}}}\,(n68-n39){{\ghostlmd^{1}}}\,(n69-n38){{\ghostvar^{1}}}\,(n70-n37){{\ghostlmd^{1}}}\,(n71-n36){{\ghostvar^{1}}}\,(n72-n35){{\ghostlmd^{1}}}\,(n73-n34){{\ghostvar^{1}}}\,(n74-n33){{\ghostlmd^{1}}}\,(n75-n32){{\ghostvar^{1}}}\,(n76-n31){{\ghostlmd^{1}}}\,(n77-n30){{\ghostvar^{1}}}\,(n78-n29){{\ghostlmd^{1}}}\,(n79-n28){{\ghostvar^{1}}}\,(n80-n27){{\ghostlmd^{1}}}\,(n81-n26){{\ghostvar^{2}}}\,(n82-n25){{\ghostlmd^{2}}}\,(n83-n24){{\ghostvar^{2}}}\,(n84-n23){\lambda }\,(n85-n6){x}\,(n86-n5){{\ghostlmd^{3}}}\,(n87-n4){{\ghostvar^{4}}}\,(n88-n3){{\ghostlmd^{4}}}\,(n89-n2){{\ghostvar^{2}}}\,(n90-n1){{\ghostlmd^{2}}}\,(n91-n0){{\ghostvar^{1}}}\,(n92-n91){{\ghostlmd^{2}}}\,(n93-n90){{\ghostvar^{2}}}\,(n94-n89){{\ghostlmd^{2}}}\,(n95-n88){{\ghostvar^{2}}}\,(n96-n87){{\ghostlmd^{2}}}\,(n97-n86){{\ghostvar^{2}}}\,(n98-n85){\lambda }\,(n99-n22){z}\,(n100-n21){{\ghostlmd^{2}}}\,(n101-n20){{\ghostvar^{2}}}\,(n102-n19){\lambda }\,(n103-n10){x}\,(n104-n9){{\ghostlmd^{3}}}\,(n105-n8){{\ghostvar^{2}}}\,(n106-n7){{\ghostlmd^{2}}}\,(n107-n6){{\ghostvar^{4}}}\,(n108-n5){{\ghostlmd^{4}}}\,(n109-n4){{\ghostvar^{5}}}\,(n110-n3){{\ghostlmd^{5}}}\,(n111-n2){{\ghostvar^{3}}}\,(n112-n1){{\ghostlmd^{3}}}\,(n113-n0){{\ghostvar^{2}}}\,(n114-n113){{\ghostlmd^{2}}}\,(n115-n112){{\ghostvar^{2}}}\,(n116-n111){{\ghostlmd^{2}}}\,(n117-n110){{\ghostvar^{2}}}\,(n118-n109){{\ghostlmd^{2}}}\,(n119-n108){{\ghostvar^{2}}}\,(n120-n107){{\ghostlmd^{2}}}\,(n121-n106){{\ghostvar^{2}}}\,(n122-n105){{\ghostlmd^{2}}}\,(n123-n104){{\ghostvar^{2}}}\,(n124-n103){\lambda }\,(n125-n18){z}\,(n126-n17){{\ghostlmd^{2}}}\,(n127-n16){{\ghostvar^{2}}}\,(n128-n15){{\ghostlmd^{2}}}\,(n129-n14){{\ghostvar^{3}}}\,(n130-n13){{\ghostlmd^{3}}}\,(n131-n12){{\ghostvar^{3}}}\,(n132-n11){{\ghostlmd^{3}}}\,(n133-n10){{\ghostvar^{5}}}\,(n134-n9){{\ghostlmd^{5}}}\,(n135-n8){{\ghostvar^{4}}}\,(n136-n7){{\ghostlmd^{4}}}\,(n137-n6){{\ghostvar^{6}}}\,(n138-n5){{\ghostlmd^{6}}}\,(n139-n4){{\ghostvar^{7}}}\,(n140-n3){{\ghostlmd^{7}}}\,(n141-n2){{\ghostvar^{5}}}\,(n142-n1){{\ghostlmd^{5}}}\,(n143-n0){{\ghostvar^{4}}}}$}
-\caption{Maximal traversals $t_{11}$, $t_{121}$ and $t_{122}$ of $varity\,2$ from Example~\ref{example:varity} yielding the three maximal paths of the normal form $\lambda x y s z . s (x s (y s z))$}
+\caption{Maximal traversals $t_{11}$, $t_{121}$ and $t_{122}$ of $\mathsf{varity}\,2$ from Example~\ref{example:varity} yielding the three maximal paths of the normal form $\lambda x y s z . s (x s (y s z))$}
 \label{tab:varity2_trav}
 \end{table}
 \end{landscape}
@@ -4465,7 +4469,7 @@ t_{122} =
     (n143-n0){\underline{\ghostvar^{4}}}
 ]
     }$}
-\caption{Maximal traversals $t_{11}$, $t_{121}, t_{122}$ from Example~\ref{example:varity} yielding the maximal paths of the normal form $\lambda x' x s z . s (x' s (x s z))$ of $varity\,2$. Strands are delimited with brackets `[\ldots]'.}
+\caption{The maximal traversals $t_{11}$, $t_{121}, t_{122}$ yield the maximal paths of the normal form $\lambda x' x s z . s (x' s (x s z))$ of $\mathsf{varity}\,2$ from Example~\ref{example:varity}. Strands are delimited with `[\ldots]'.}
 \label{tab:varity2_trav}
 \end{table}
 \end{landscape}
