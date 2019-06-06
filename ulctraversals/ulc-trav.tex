@@ -447,17 +447,25 @@ all the explored paths in the term tree are assembled together to reconstruct
 the normal form.
 Unlike imaginary traversals, existing evaluation methods do not appeal to eta-expansion. On the other hand they typically require transforming the term into some intermediate structure, such as a combinator expression or an interaction net, whereas traversals operate directly on the abstract syntax tree of the term.
 
-Unlike Lamping's graphs, traversal-based reduction is not optimal in Levy's sense~\cite{optimal-reduction-levy}.
+\paragraph{GoI} The relationship of traversals with proof-nets and the Geometry of Interaction (GoI) can be seen through the lenses of head-linear reduction, which they implement, or their correspondence with game semantics. In particular, the linear substitution performed by traversals corresponds to firing of an exponential branch of a proof-net~\cite{MASCARI1994111}. We also point to the work of Danos and Regnier who established the connection with abstract machines and GoI~\cite{danosherbelinregnier1996}.
 
-\begin{todobox}
-    Optimality in L\'evy's sense: how to interpret in traversal world?
-    Traversals exhibit some sharing via their use of pointers, but this sharing is not exploited: in the term $(\lambda x. y x x) A$, both occurrences of variable $x$ get traversed by jumping to the argument $A$, the second occurrences lead to the same traversal unfolding without utilizing the result from the first occurrence of $x$.
-    %
-    Hyperlazy does not mean efficient: linear substitution ends up repeating same things several times. However, no useless work is done, unlike the traditional substitution. Could we recover optimality by adding some notion of caching to traversals?
-    It would perhaps require some additional caching mechanism to be able to reuse previous sections of traversals when traversing new occurrences of variables
-\end{todobox}
+\paragraph{Optimality} Traversal-based evaluation is not L\'evy-optimal~\cite{optimal-reduction-levy}.
+Traversals do exhibit some sharing through their use of pointers, which avoids copying or rewriting subterms when evaluating redexes.
+But there is no attempt to exploit such sharing to avoid redundant work: in the term $(\lambda x. y x x) A$, each occurrence of $x$ involves re-traversing the argument $A$.
+If $A$ contains a redex then it will get traversed twice, without any attempt to exploit the shared redex.
+%
+On the other hand, just like head-linear reduction, traversals are  ``hyperlazy'' in nature: they only evaluate (linear) redexes one variable occurrence at a time and only when the value of that occurrence is needed. So beside the possible redundancy described above, no useless work is performed, as opposed to the traditional
+way of evaluating redexes which involves substituting all variable occurrences at once, regardless of whether some of those occurrences are dead-code.
+%
+Traversals may not be too far from optimality:
+we could conceivably augment traversals with some memoization mechanism
+to detect shared families of redexes, in L\'evy-sense, to give rise to
+a Levy-optimal notion of traversals, similarly to what is suggested by Danos and Regnier in~\cite{DANOS199979} to turn \emph{Jumping Abstract Machines} into optimal machines.
 
-The relationship of traversals with proof-nets and the Geometry of Interaction (GoI) can be seen through the lenses of head-linear reduction, which they implement, or their correspondence with game semantics. In particular, the linear substitution performed by traversals corresponds to firing of an exponential branch of a proof-net~\cite{MASCARI1994111}. We also point to the work of Danos and Regnier who established the connection with abstract machines and GoI~\cite{danosherbelinregnier1996}.
+%1 - Not the traditional notion of redex (linear)
+%2 - No sharing of redex, no simultaneous firing of redex with same Levy-label
+%
+% Hyperlazy does not mean efficient: linear substitution ends up repeating same things several times. However, no useless work is done, unlike the traditional substitution.
 
 \subsection{Rest of the paper}
 
