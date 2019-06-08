@@ -50,7 +50,7 @@ Neil-Daniil's binding pointers represent the ``head $\lambda$-list'' notion in D
     \item Eta-expanded operands: When an operand is missing, a ghost lambda node is first introduced with rule \rulenamet{Var} (corresponding to the variable obtained after eta-expanding the operator). Then through repeated application of rule
         \rulenamet{Lam^\ghostvar} and \rulenamet{Var}, either a structural node gets eventually materialized, which then represents the operand of the application; or the traversal reaches a ghost variable hereditarily justified by the root. In the latter case, a new variable gets created through eta-expansion to represent the missing operand.
 
-        \emph{Note}: the ghost materialization loop implemented by rule \rulenamet{Lam^\ghostvar} and \rulenamet{Var} proceeds by calculating the quantity ``$|\alpha|+i-|m|$'' at each iteration which is the exact same quantity ($r-a+l$) used in step 2. (b) of the PAM transition~\cite{danos-head}, the ``price to pay for having no stacks or environments''.
+        \emph{Note}: the ghost materialization loop implemented by rule \rulenamet{Lam^\ghostvar} and \rulenamet{Var} proceeds by calculating the quantity ``$|\nu|+i-|m|$'' at each iteration which is the exact same quantity ($r-a+l$) used in step 2. (b) of the PAM transition~\cite{danos-head}, the ``price to pay for having no stacks or environments''.
     \end{itemize}
 
 \end{itemize}

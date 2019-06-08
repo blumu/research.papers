@@ -426,7 +426,7 @@ A notion that we formalize as the \emph{leftmost linear reduction} strategy, tha
 A traversal starts, in a `leftmost-order'-like fashion, with a depth-first search for \emph{head occurrence} of the `\emph{hoc redex}' as defined by Danos-Regnier. It performs linear substitution by ``jumping'' to the node in the tree representing the sub-term to be substituted for that head occurrence.
 To find that node, traversals implement what Danos-Regnier call ``the gymnastics to find the argument of a subterm''~\cite{danos-head} via the mechanism of `weaving' (Proposition~\ref{prop:weaving}),
 where a traversal repeatedly traverses ghost lambda and variable nodes until the node representing the argument to be fetched materializes.
-The link label `$|\alpha'|+i-|m|$' from the definition
+The link label `$|\mu|+i-|m|$' from the definition
 of the lambda rule in Table~\ref{tab:trav_rules} effectively calculates the quantity $r-a+l$ that appear in step 2.(b) of the PAM transition from~\cite{danos-head}.
 After performing such a jump, a traversal continues its descent to look for the next head occurrence, as if that first head occurrence had been replaced by the redex argument; until it finds the variable that will become the head variable in the normal form. At this point, a PAM would stop, whereas a traversal forks  non-deterministically and recursively traverses all possible arguments of the head variable.
 
@@ -556,7 +556,7 @@ With the implicit generalization of the above definition to infinitary terms,
 the trees without @-nodes are isomorphic to B\"ohm tree~\cite{Barendregt84}.
 Another property of this representation is the \defname{alternation} between lambda nodes and variable/application nodes at odd and even levels.
 
-We write $\Nodes(M)$ for the set of nodes of $\ctree(M)$, or just $\Nodes$ if the term is clear from context; $\NodesVar$ for the set of variable nodes; $\NodesLmd$ for lambda nodes, and $\NodesApp$ for  application nodes. For any lambda node $\alpha\in\NodesLmd$ we write $\child(\alpha)$ to denote its unique child node (either a variable node or $@$).
+We write $\Nodes(M)$ for the set of nodes of $\ctree(M)$, or just $\Nodes$ if the term is clear from context; $\NodesVar$ for the set of variable nodes; $\NodesLmd$ for lambda nodes, and $\NodesApp$ for  application nodes. For any lambda node $\nu\in\NodesLmd$ we write $\child(\nu)$ to denote its unique child node (either a variable node or $@$).
 \end{definition}
 
 \begin{figure}[hbtp]
@@ -693,11 +693,11 @@ The \defname{ghost variable nodes} have a unique label $\ghostvar$ and represent
 %
 We define them by simultaneously and recursively
 extending the parent-child node relation and the enabling relation
-associated with the term tree: for every (ghost) variable or @-node $n$ with parent (ghost) lambda-node $\alpha$, and for all $k>|n|$,
+associated with the term tree: for every (ghost) variable or @-node $n$ with parent (ghost) lambda-node $\nu$, and for all $k>|n|$,
 we introduce a new node $\ghostlmd$ as the $k$th-child of $n$,
 and a new node $\ghostvar$ as the unique child of that ghost lambda node.
 We extend the enabling relation with $n \enables_k \ghostlmd$
-and $\alpha \enables_{|\alpha|+ k} \ghostvar$; where by convention ghost nodes have arity $0$, and the arity of structural nodes remains unchanged (\ie, given by their arity in the structural tree $\ctree(M)$).
+and $\nu \enables_{|\nu|+ k} \ghostvar$; where by convention ghost nodes have arity $0$, and the arity of structural nodes remains unchanged (\ie, given by their arity in the structural tree $\ctree(M)$).
 %
 This extended enabling relation induces a binding relation between ghost variables and their (possibly ghost) lambda-binder, which lets us forgo the notion of variables names in ghost nodes: we can thus
 use respectively $\ghostlmd$ and $\ghostvar$ as a unique label for all ghost lambda and variable nodes.
@@ -1004,45 +1004,43 @@ The set $\travulc(M)$ of \defname{traversals} of an untyped lambda term $M$, abb
 \noindent {\bf PROGRAM -- Structural rules}
 \begin{itemize}[leftmargin=3em]
     \item[\rulenamet{Root}]
-    $\istraversal \alpha$ if $\alpha$ is the root $\lambda$-node of the term tree $\ctree(M)$.
+    $\istraversal \nu$ if $\nu$ is the root $\lambda$-node of the term tree $\ctree(M)$.
 
     \item[\rulenamet{App}] If $\istraversal t \cdot @$ then
-    $\istraversal \Pstr[0.4cm]{t \cdot (at) @  \, (a-at,40:0) \alpha}$ where $\alpha\in\NodesLmd$ is the $0$th child $\lambda$-node of $@$.
+    $\istraversal \Pstr[0.4cm]{t \cdot (at) @  \, (a-at,40:0) \nu}$ where $\nu\in\NodesLmd$ is the $0$th child $\lambda$-node of $@$.
 
-    \item[\rulenamet{Lam}] If $\istraversal t \cdot \alpha$ for $\alpha\in\ExtendedNodesLmd$ then $\istraversal t \cdot \alpha ~ n$ where $n$ is $\alpha$'s unique child and if $n$ is
+    \item[\rulenamet{Lam}] If $\istraversal t \cdot \nu$ for $\nu\in\ExtendedNodesLmd$ then $\istraversal t \cdot \nu ~ n$ where $n$ is $\nu$'s unique child and if $n$ is
     \begin{compactitem}
         \item[\rulenamet{Lam^@}] an $@$-node then it has no justifier;
-        \item[\rulenamet{Lam^{\sf var}}] in $\NodesVar$ then it points to the only occurrence in $\pview{t\cdot \alpha}$ of a node $m$ verifying $m \enables_k n$ for some $k\geq 0$, and has link label $k$;
+        \item[\rulenamet{Lam^{\sf var}}] in $\NodesVar$ then it points to the only occurrence in $\pview{t\cdot \nu}$ of a node $m$ verifying $m \enables_k n$ for some $k\geq 0$, and has link label $k$;
 
         \item[\rulenamet{Lam^\ghostvar}] a ghost variable $\ghostvar$
-        (and thus $\alpha$ is $\ghostlmd$) then
-        it points to the predecessor $\alpha'$ of $\alpha$'s justifier
-        and has label $|\alpha'| + i - |m|$,
-        that is
-        $\istraversal \Pstr[0.5cm]{ u \cdot(alphaprime){\alpha'}
-    (m){m} \cdot v \cdot  (gl-m,30:i){\ghostlmd}\, (al-alphaprime,40:{|\alpha'| + i - |m|}){\ghostvar}}$
-    %
-        where $t \cdot \alpha = \Pstr[0.5cm]{ u \cdot \alpha'
-        (m){m} \cdot v \cdot (gl-m,40:i){\ghostlmd}}$,
-        $\alpha'  \in \ExtendedNodesLmd, m \in\ExtendedNodesVar \union \NodesApp$
+        (thus $\nu$ is $\ghostlmd$) then
+        it points to the predecessor $\mu$ of $\nu$'s justifier $m$, and has link label $|\mu| + i - |m|$
+        where $i$ is the link label of $\nu$. That is
+        $\istraversal \Pstr[0.5cm]{ u \cdot(alphaprime){\mu}\, (m){m} \cdot v \cdot  (gl-m,30:i){\ghostlmd}\, (al-alphaprime,43:{|\mu| + i - |m|}){\ghostvar}}$
+    where
+        $t \cdot \nu = \Pstr[0.5cm]{ u \cdot
+        \mu \, (m){m} \cdot v \cdot (gl-m,40:i){\ghostlmd}}$,
+        $\mu  \in \ExtendedNodesLmd, m \in\ExtendedNodesVar \union \NodesApp$.
     \end{compactitem}
 \end{itemize}
 \emph{\bf PROGRAM -- Copy-cat rule}
 \begin{itemize}[leftmargin=3em]
 \item[\rulenamet{Var}] If $\istraversal \Pstr[0.5cm]{t\cdot(m){m}
- \, (alphaprime){\alpha'}
-\cdot v \cdot (n-alphaprime,50:i){n}}$ for $m \in\ExtendedNodesVar \union \NodesApp$, $\alpha' \in \ExtendedNodesLmd\inter\InternalNodes$, $n \in \ExtendedNodesVar\inter\InternalNodes$, $i>0$ then
+ \, (alphaprime){\mu}
+\cdot v \cdot (n-alphaprime,50:i){n}}$ for $m \in\ExtendedNodesVar \union \NodesApp$, $\mu \in \ExtendedNodesLmd\inter\InternalNodes$, $n \in \ExtendedNodesVar\inter\InternalNodes$, $i>0$ then
   $\istraversal \Pstr[0.3cm]{ t  \cdot
-(m){m}\, (lx){\alpha'}  \cdot v \cdot (x-lx,30:i){n}
-    \, (letai-m,45:i){\alpha}}$
-    where $\alpha$ denotes the $i$th child ($\lambda$-node) of $m$.
+(m){m}\, (lx){\mu}  \cdot v \cdot (x-lx,30:i){n}
+    \, (letai-m,45:i){\nu}}$
+    where $\nu$ denotes the $i$th child ($\lambda$-node) of $m$.
 \end{itemize}
 
 \emph{\bf DATA -- Input-variable rule}
 \begin{itemize}[leftmargin=3em]
 \item[\rulenamet{IVar}] If $\istraversal t \cdot n$ with $n \in \ExtendedNodesVar \inter \ExternalNodes$ then
-for every $i$th child $\alpha$ of any node $m \in \ExtendedNodesVar$ occurring in $\oview{t\cdot n}$, $i\geq1$, we have
-$\istraversal t \cdot n ~ \alpha$ where $\alpha$ points to $m$ with label $i$.
+for every $i$th child $\nu$ of any node $m \in \ExtendedNodesVar$ occurring in $\oview{t\cdot n}$, $i\geq1$, we have
+$\istraversal t \cdot n ~ \nu$ where $\nu$ points to $m$ with label $i$.
 \end{itemize}
 
 where $u,v$ denote sub-sequences of justified sequences of nodes.
@@ -1089,10 +1087,10 @@ So if $t$ does not contain ghost nodes then $\pview{t}$ is a structural path in 
 \end{proposition}
 \shortproof
 Proven simultaneously by induction on the traversal rules.
-For \rulenamet{Lam^{\sf var}}: By induction hypothesis (iii) the P-view is a path in the extensional tree of $M$. But the last node of $t$ is a structural node therefore, this path is necessarily a structural path with no ghost node. Consequently, if the last node is a bound variable node, its enabler is precisely its binding lambda node which necessarily occurs exactly once in the path to the root. If the variable is free then the enabler is the root itself and (i) holds. By definition, the justification pointer honors the enabling relation so (ii) holds. The node $n$ is by definition the unique child of $\alpha$ thus (iii) holds.
+For \rulenamet{Lam^{\sf var}}: By induction hypothesis (iii) the P-view is a path in the extensional tree of $M$. But the last node of $t$ is a structural node therefore, this path is necessarily a structural path with no ghost node. Consequently, if the last node is a bound variable node, its enabler is precisely its binding lambda node which necessarily occurs exactly once in the path to the root. If the variable is free then the enabler is the root itself and (i) holds. By definition, the justification pointer honors the enabling relation so (ii) holds. The node $n$ is by definition the unique child of $\nu$ thus (iii) holds.
 %
-For \rulenamet{Lam^\ghostvar}, the induction hypothesis (ii) shows that $i>|m|$, which guarantees that $|\alpha'|+i-|m|>0$ is a valid justification label (i) and that (ii) holds for the traversed ghost node $\ghostvar$.
-Finally (iii) holds because the node preceding $\ghostvar$ in the P-view is precisely $\alpha'$, its parent node.
+For \rulenamet{Lam^\ghostvar}, the induction hypothesis (ii) shows that $i>|m|$, which guarantees that $|\mu|+i-|m|>0$ is a valid justification label (i) and that (ii) holds for the traversed ghost node $\ghostvar$.
+Finally (iii) holds because the node preceding $\ghostvar$ in the P-view is precisely $\mu$, its parent node.
 %
 Other rules are straightforward.
 \endshortproof
@@ -1104,7 +1102,7 @@ The last property generalizes a concept from the theory of traversals~\cite{OngL
 \paragraph{On-the-fly eta-expansion}
 The rules \rulenamet{Var} and \rulenamet{IVar} are responsible for
 performing the `on-the-fly expansion'.
-If the arity of the traversed variable is sufficiently high, the tree statically dictates the structural node to traverse next: we have $i \leq |m|$ and $\alpha$ is a structural lambda node in $\NodesLmd$; we call this the \defname{concrete sub-case}. Otherwise, the variable arity is too low to statically determine the requested operand of the application: $i > |m|$ and $\alpha$ is a ghost lambda node $\ghostlmd$; we call this the \defname{imaginary sub-case}.
+If the arity of the traversed variable is sufficiently high, the tree statically dictates the structural node to traverse next: we have $i \leq |m|$ and $\nu$ is a structural lambda node in $\NodesLmd$; we call this the \defname{concrete sub-case}. Otherwise, the variable arity is too low to statically determine the requested operand of the application: $i > |m|$ and $\nu$ is a ghost lambda node $\ghostlmd$; we call this the \defname{imaginary sub-case}.
 
 \begin{definition}
     \defname{Ghost materialization} refers to the instantiation of a traversal rule where the last occurrence prior to applying the rule is a ghost
@@ -1113,16 +1111,16 @@ If the arity of the traversed variable is sufficiently high, the tree statically
     %
     Inspection of the traversal rules shows that this may only happen in rule \rulenamet{Var}, so that once a traversal starts traversing ghost nodes, the only way to `return' to structural nodes is via \rulenamet{Var} with a traversal of the form
     $
-    \Pstr[0.5cm]{ t \cdot (y){y} \, (l){\alpha}  \ldots (t-l,30:i){\ghostvar}
+    \Pstr[0.5cm]{ t \cdot (y){y} \, (l){\nu}  \ldots (t-l,30:i){\ghostvar}
         \, (lx-y,40:i){\lambda \overline{x}}}
     $
     where
      $\lambda \overline{x} \in \NodesLmd$ is the $i$th child lambda node of some structural variable node $y \in \NodesVar$,
-     and $\alpha$ is a $\lambda$-node verifying $0\leq |\alpha| < i \leq |y|$.
+     and $\nu$ is a $\lambda$-node verifying $0\leq |\nu| < i \leq |y|$.
     %%%%%%%%
 \end{definition}
 
-Rule \rulenamet{Lam} traverses a lambda node by just visiting its unique child  in the tree, which is necessarily a structural node. Its counterpart \rulenamet{Lam^\ghostvar} traverses a ghost lambda by visiting the imaginary ghost variable that would be created if we were to eta-expand the sub-term under that lambda: the ghost placeholder $\ghostvar$ represents an occurrence of the $j$th variable bound by lambda node $\alpha'$ if the sub-term at node $\alpha'$ were eta-expanded $i-|n|$ times; hence $j = |\alpha'| + i - |m|$.
+Rule \rulenamet{Lam} traverses a lambda node by just visiting its unique child  in the tree, which is necessarily a structural node. Its counterpart \rulenamet{Lam^\ghostvar} traverses a ghost lambda by visiting the imaginary ghost variable that would be created if we were to eta-expand the sub-term under that lambda: the ghost placeholder $\ghostvar$ represents an occurrence of the $j$th variable bound by lambda node $\mu$ if the sub-term at node $\mu$ were eta-expanded $i-|n|$ times; hence $j = |\mu| + i - |m|$.
 Observe that we necessarily have $i>|n|$ since the $i$th child of $n$ is a ghost variable node.
 
 The successive fictitious eta-expansions of $M$ can be reconstructed from the traversal itself:
@@ -1214,9 +1212,9 @@ $\Pstr[0.7cm]{
     A \defname{strand} of a traversal, is a sub-sequence of consecutive occurrences of even length, starting with an external lambda node and ending with an external variable node, with only internal node occurrences in-between.
 
     From the parity property of traversals, a strand must consist of alternations of lambda nodes and variable/application nodes. To highlight a strand within a traversal we sometimes underline its opening and closing occurrence as follows:
-     $ t = \cdots \underline{\alpha_k}\ n_k\ \alpha_{k-1}\ n_{k-1}\ \cdots\ \alpha_2\ n_2\ \alpha_1\ \underline{n_1} \cdots $
-for some $k\geq 1$ where for $1 \leq j \leq k$, $\alpha_j$ is in $\ExtendedNodesLmd$, $n_j$ is in $\ExtendedNodesVar\union\NodesApp$,
-the external lambda $\alpha_k$ and external variable $n_1$ delimit the strand boundaries and the $2k-2$ nodes in-between are all internal.
+     $ t = \cdots \underline{\nu_k}\ n_k\ \nu_{k-1}\ n_{k-1}\ \cdots\ \nu_2\ n_2\ \nu_1\ \underline{n_1} \cdots $
+for some $k\geq 1$ where for $1 \leq j \leq k$, $\nu_j$ is in $\ExtendedNodesLmd$, $n_j$ is in $\ExtendedNodesVar\union\NodesApp$,
+the external lambda $\nu_k$ and external variable $n_1$ delimit the strand boundaries and the $2k-2$ nodes in-between are all internal.
 \end{definition}
 
 A traversal has \defname{complete strands}
@@ -1394,11 +1392,11 @@ The set of \defname{essential traversals} $\travsetes$ is the subset of $\travul
 \infrule[$\rulefont{IVar_\essential}$]
      {\istraversal t \cdot n
       \andalso n \in\ExternalNodes\inter\ExtendedNodesVar
-      \andalso \alpha \in\ExtendedNodesLmd
-      \andalso n \enables_i\alpha
+      \andalso \nu \in\ExtendedNodesLmd
+      \andalso n \enables_i\nu
       \andalso i \geq 1
      }
-     {\istraversal  \Pstr[0.5cm]{t \cdot (n){n} \, (l-n,25:i){\alpha}}}
+     {\istraversal  \Pstr[0.5cm]{t \cdot (n){n} \, (l-n,25:i){\nu}}}
 \end{definition}
 
 As traversals unfold, a depth-first exploration of the tree of the beta-normal form takes place, where rule \rulenamet{IVar} implements the non-deterministic `branching points'. Since lambda-terms are pure of side-effects,
@@ -1419,11 +1417,11 @@ each eta-expansion represents how the term would interact with its arguments if 
     \infrule[$\rulefont{IVar_\concreteessential}$]
          {\istraversal t \cdot n
           \andalso n \in\ExternalNodes\inter\ExtendedNodesVar
-          \andalso \alpha \in\ExtendedNodesLmd
-          \andalso n \enables_i\alpha
+          \andalso \nu \in\ExtendedNodesLmd
+          \andalso n \enables_i\nu
           \andalso 1 \leq i \leq |n|
          }
-         {\istraversal  \Pstr[0.5cm]{t \cdot (n){n} \, (l-n,25:i){\alpha}}}
+         {\istraversal  \Pstr[0.5cm]{t \cdot (n){n} \, (l-n,25:i){\nu}}}
 \end{definition}
 
 
@@ -1626,24 +1624,24 @@ justification label $i$ in the variable rule
 \begin{definition} %[Traversal dynamic arity]
 \label{dfn:dynamic-arity}
 The \defname{dynamic arity} of a traversal $t$ that ends with a strand
- of the shape $\underline{\alpha_k} n_k \alpha_{k-1} n_{k-1}\cdots \alpha_2 n_2 \alpha_1 \underline{n_1}$ of length $2k$ for $k>0$ where $\alpha_j \in \ExtendedNodesLmd$, $n_j \in \ExtendedNodesVar\union\NodesApp$, $1\leq j\leq k$ is
+ of the shape $\underline{\nu_k} n_k \nu_{k-1} n_{k-1}\cdots \nu_2 n_2 \nu_1 \underline{n_1}$ of length $2k$ for $k>0$ where $\nu_j \in \ExtendedNodesLmd$, $n_j \in \ExtendedNodesVar\union\NodesApp$, $1\leq j\leq k$ is
 $$
 \dynar(t)
   = \max_{q=1..k} \left( |n_q| + \Delta_{q-1} \right)
   \qquad
   \mbox{ where }
-  \Delta_q = \sum_{j=1..q} (|n_j|-|\alpha_j|).
+  \Delta_q = \sum_{j=1..q} (|n_j|-|\nu_j|).
 $$
 % \begin{align*}
-%     \dynar(t) &= \max_{q=1..k} \left( |n_q| + \Delta_{q-1} \right)     = \max_{q=1..k} \left( |\alpha_q| + \Delta_{q}\right)
+%     \dynar(t) &= \max_{q=1..k} \left( |n_q| + \Delta_{q-1} \right)     = \max_{q=1..k} \left( |\nu_q| + \Delta_{q}\right)
 % \end{align*}
 \end{definition}
 
 \iflongversion
 We also have
-$\dynar(t) = \max_{q=1..k} \left( |\alpha_q| + \Delta_{q} \right)$.
-% = |n_1|-|\alpha_1| + |n_2|-|\alpha_2| + \cdots + |n_{q-1}|-|\alpha_{q-1}| + |n_q|$
-Equivalently, it is given by the maximal value in the sequence $b_1 = |n_1|$, $b_{q+1} = b_q + |n_{q+1}|-|\alpha_q|$ for $1 \leq q \leq k-1$.
+$\dynar(t) = \max_{q=1..k} \left( |\nu_q| + \Delta_{q} \right)$.
+% = |n_1|-|\nu_1| + |n_2|-|\nu_2| + \cdots + |n_{q-1}|-|\nu_{q-1}| + |n_q|$
+Equivalently, it is given by the maximal value in the sequence $b_1 = |n_1|$, $b_{q+1} = b_q + |n_{q+1}|-|\nu_q|$ for $1 \leq q \leq k-1$.
 \fi
 We thus calculate the dynamic arity by reading the strand backwards from the last variable occurrence and alternatively adding and subtracting the node arities until reaching an external $\lambda$-node. The maximal value observed throughout that summation gives the dynamic arity.
 
@@ -1653,22 +1651,22 @@ The rule $\rulename{IVar_\essential}$ leaves infinitely many choices of value fo
 \begin{proposition}[Weaving]
 \label{prop:weaving}
 Let $t$ be an essential traversal of $\travsetes$ ending with a strand of the form
-$\underline{\alpha_k}\,n_k\,\alpha_{k-1}\, n_{k-1}\cdots\alpha_2\,n_2\, \alpha_1\,\underline{n_1}$ for some $k\geq1$, and $t_{\max}$ be a maximal essential extension of $t$. By rule $\rulename{IVar_\essential}$, $t$ is immediately followed in $t_{\max}$ by an external $\lambda$-node justified by $t^\omega$ with label $i\geq 1$.
+$\underline{\nu_k}\,n_k\,\nu_{k-1}\, n_{k-1}\cdots\nu_2\,n_2\, \nu_1\,\underline{n_1}$ for some $k\geq1$, and $t_{\max}$ be a maximal essential extension of $t$. By rule $\rulename{IVar_\essential}$, $t$ is immediately followed in $t_{\max}$ by an external $\lambda$-node justified by $t^\omega$ with label $i\geq 1$.
 We consider the indices
-$i_{q+1} = i - \Delta_q$ where $\Delta_q = \sum_{j=1..q} (|n_j| - |\alpha_j|)$
+$i_{q+1} = i - \Delta_q$ where $\Delta_q = \sum_{j=1..q} (|n_j| - |\nu_j|)$
 for $0\leq q\leq k$.
 \begin{enumerate}[label=(\roman*)]
 \item If $i>\dynar(t)$ then $t$ is followed in $t_{\max}$ by a strand of length $2k$ consisting of ghost nodes only with justification labels
 $i_1$, $i_2$, $i_2$, $i_3$, $i_3$, $\cdots$, $i_{k}$, $i_{k}$, $i_{k+1}$:
 $$
 t_{\max} = \Pstr[0.3cm]{ \cdots
- (alpha){\underline{\alpha_k}}
+ (alpha){\underline{\nu_k}}
  \,(nk){n_k}
- \,(alphakm1){\alpha_{k-1}}
+ \,(alphakm1){\nu_{k-1}}
  \,\cdots
- \,(a2){\alpha_2}
+ \,(a2){\nu_2}
  \,(n2){n_2}
- \,(a1){\alpha_1}
+ \,(a1){\nu_1}
  \,(n1){\underline{t^\omega}}
  \,(l1-n1,30:i_1){\underline{\ghostlmd}}
  \,(t1-a1,47:i_2){\ghostvar}
@@ -1687,14 +1685,14 @@ $$
  (where since $\lambda\overline{x}$ is structural we have $i_{r+1} \leq |n_{r+1}|$):
 $$
 t_{\max} = \Pstr[0.3cm]{
-    \underline{\alpha_k}
+    \underline{\nu_k}
     \, n_k
-    \, \cdots (alphar){\alpha_r}
+    \, \cdots (alphar){\nu_r}
     \, (nr){n_r}
-    \, (alpharm1){\alpha_{r-1}}
+    \, (alpharm1){\nu_{r-1}}
     \, \cdots
-    \, (a2){\alpha_2}
-    \, (n2){n_2}\ (a1){\alpha_1}
+    \, (a2){\nu_2}
+    \, (n2){n_2}\ (a1){\nu_1}
     \, (n1){\underline{t^\omega}}
     \, (l1-n1,30:i_1){\underline{\ghostlmd}}
     \, (t1-a1,47:i_2){\ghostvar}
@@ -1709,15 +1707,15 @@ $$
 (i) By finite induction on $q\in\{1..k\}$. Base case $q=1$ is taken care of by rule \rulenamet{IVar_\essential} followed by
 \rulenamet{Lam^\ghostvar}.
 For $1<q\leq k$, the induction hypothesis shows that $t_{max}$ has the desired until the pair $\ghostlmd \cdot \ghostvar$ respectively justified by
-$n_{q-1}$ with label $i_{q-1}$, and $\alpha_{q-1}$ with labels $i_q$.
+$n_{q-1}$ with label $i_{q-1}$, and $\nu_{q-1}$ with labels $i_q$.
 The induction hypothesis gives
 $i_{q} = i - \Delta_{q-1} = i + |n_q| - (|n_q| + \Delta_{q-1} )$, which is greater or equal than $i + |n_q| - \max_{r=1..k} ( |n_r| + \Delta_{r-1})
 = i + |n_q| - \dynar(t) $.
 Since by assumption $i>\dynar(t)$ this implies that $i_{q} > |n_q|$.
 We can thus use rule \rulenamet{Var}
 to traverse a ghost lambda justified by  $n_{q}$ and labelled by $i_q$
-(since by the strand definition, $\alpha_{q-1}$ is an internal node).
-We then use rule \rulenamet{Lam^\ghostvar} to traverse the next ghost variable justified by $\alpha_q$ and labelled by $i_{q+1} = i_q + |\alpha_{q}| -|n_{q}|$.
+(since by the strand definition, $\nu_{q-1}$ is an internal node).
+We then use rule \rulenamet{Lam^\ghostvar} to traverse the next ghost variable justified by $\nu_q$ and labelled by $i_{q+1} = i_q + |\nu_{q}| -|n_{q}|$.
 
 (ii) By repeatedly applying (i), observing that since ghost nodes have arity $0$, the dynamic arity at $t$ must be $0$. Hence, any link label $j>0$ chosen to extend the traversal at that point will be strictly greater than the dynamic arity.
 
@@ -1728,30 +1726,30 @@ and since $k\geq 1$, the set $\{1..k\}$ is not empty so there is at least one $q
 \endshortproof
 \proofatend
 %\begin{proof}
-(i) By the alternation property of traversals, the last strand of $t$ consists of a succession of lambda nodes $\alpha_q$ and variable or $@$-nodes $n_q$, with indices in $\{1..k\}$.
+(i) By the alternation property of traversals, the last strand of $t$ consists of a succession of lambda nodes $\nu_q$ and variable or $@$-nodes $n_q$, with indices in $\{1..k\}$.
 
-We show by finite induction on $q\in\{1..k\}$ that the first $2k$ nodes after $t^\omega$ are successive pairs of ghost lambda and ghost variable nodes justified in order by $n_1, \alpha_1, n_2, \alpha_2, n_3, \ldots, n_k, \alpha_k$ with respective labels $i_1, i_2, i_2, i_3, i_3, \ldots, i_k, i_k, i_{k+1}$ defined by:
+We show by finite induction on $q\in\{1..k\}$ that the first $2k$ nodes after $t^\omega$ are successive pairs of ghost lambda and ghost variable nodes justified in order by $n_1, \nu_1, n_2, \nu_2, n_3, \ldots, n_k, \nu_k$ with respective labels $i_1, i_2, i_2, i_3, i_3, \ldots, i_k, i_k, i_{k+1}$ defined by:
 \begin{equation*}
 \left\{
     \begin{aligned}
     i_1 &= i \\
-    i_{q+1} &= i_q + |\alpha_q| - |n_q| \hbox{, $1\leq q \leq k$}.
+    i_{q+1} &= i_q + |\nu_q| - |n_q| \hbox{, $1\leq q \leq k$}.
     \end{aligned}
 \right.
 \end{equation*}
 
 \begin{itemize}
-\item Base case $q=1$: Because $t^\omega$ is a ghost external variable node, the only rule to apply is \rulenamet{IVar_\essential}, and by assumption the following node is a ghost lambda node justified by $t^\omega$ with label $i_1 = i$. By rule \rulenamet{Lam^\ghostvar} the next node is a ghost variable justified by $\alpha$ with label $i_2 = i + |\alpha_1| - |t^\omega|$.
+\item Base case $q=1$: Because $t^\omega$ is a ghost external variable node, the only rule to apply is \rulenamet{IVar_\essential}, and by assumption the following node is a ghost lambda node justified by $t^\omega$ with label $i_1 = i$. By rule \rulenamet{Lam^\ghostvar} the next node is a ghost variable justified by $\nu$ with label $i_2 = i + |\nu_1| - |t^\omega|$.
 
-$$ t_{\max} = \Pstr[0.3cm]{ \cdots (alpha){\alpha_1}\ (m){t^\omega}\ (l-m,30:i){\ghostlmd}\ (t-alpha,45:i_2){\ghostvar} \cdots} $$
+$$ t_{\max} = \Pstr[0.3cm]{ \cdots (alpha){\nu_1}\ (m){t^\omega}\ (l-m,30:i){\ghostlmd}\ (t-alpha,45:i_2){\ghostvar} \cdots} $$
 
 \item Let $1<q\leq k$, applying the induction hypothesis on $q$ gives:
 $$
 t_{\max} = \Pstr[0.3cm]{
    \cdots
-  (aq){\alpha_q}\
+  (aq){\nu_q}\
   (nq){n_q} \
-  (aqm1){\alpha_{q-1}}\
+  (aqm1){\nu_{q-1}}\
   (nqm1){n_{q-1}}
  \cdots
  t^\omega\ \cdots
@@ -1776,8 +1774,8 @@ i_{q} &= i - \Delta_{q-1}
 \end{align*}
 
 
-By definition of the strand, $\alpha_{q-1}$ is hereditarily justified by an $@$ node.
-Since $i_q > |n_q|$, by rule \rulenamet{Var} the next node is necessarily a ghost lambda node justified by $n_q$ with label $i_q$. With rule \rulenamet{Lam^\ghostvar} the following node is a ghost variable node $\ghostvar$ justified by $\alpha_q$ and labelled by $i_{q+1} = i_q + |\alpha_{q}| -|n_{q}|$.
+By definition of the strand, $\nu_{q-1}$ is hereditarily justified by an $@$ node.
+Since $i_q > |n_q|$, by rule \rulenamet{Var} the next node is necessarily a ghost lambda node justified by $n_q$ with label $i_q$. With rule \rulenamet{Lam^\ghostvar} the following node is a ghost variable node $\ghostvar$ justified by $\nu_q$ and labelled by $i_{q+1} = i_q + |\nu_{q}| -|n_{q}|$.
 \end{itemize}
 
 (ii) By (i) the next strand following $t$ consists solely of ghost nodes and ends with a ghost variable $\ghostvar$ hereditarily justified by the root. Since ghost nodes have arity $0$, the dynamic arity at that point is $0$. Hence, any label value $j$ chosen to extend the traversal at that point will be strictly greater than the dynamic arity: thus by (i) the next strand consists solely of ghost nodes.
@@ -1799,10 +1797,10 @@ so that the argument index $i$ cannot be greater than the dynamic arity of the t
  \infrule[$\rulefont{IVar_\normalizing}$]
       { \istraversal t \cdot n
       \andalso n \in\ExternalNodes\inter\ExtendedNodesVar
-      \andalso \alpha\in\ExtendedNodesLmd
-      \andalso n \enables_i \alpha
+      \andalso \nu\in\ExtendedNodesLmd
+      \andalso n \enables_i \nu
       \andalso 1 \leq i \leq\dynar(t \cdot n)}
-      {\Pstr[0.5cm]{\istraversal t \cdot (n){n} \, (l-n,25:i){\alpha}}.}
+      {\Pstr[0.5cm]{\istraversal t \cdot (n){n} \, (l-n,25:i){\nu}}.}
 \iflongversion
  Table~\ref{tab:normalizing_trav_rules} recapitulates
  this system of derivation rules.
@@ -3271,7 +3269,7 @@ represent the external nodes respectively delimiting the start and end of a stra
 \label{prop:qnf_traversals_are_finite}
 Let $t \in \travsetnorm(M)$ for some \emph{quasi normal} term $M$. We have:
 \begin{enumerate}[label=(\alph*), nosep]
-\item $lloc_M(\alpha) = \bot$ for all external lambda node $\alpha \in \NodesLmd$ occurring in $t$;
+\item $lloc_M(\nu) = \bot$ for all external lambda node $\nu \in \NodesLmd$ occurring in $t$;
 \item $t$ does not contain any internal variable node (\ie, all the internal nodes are $@$ nodes);
 \item $t$ is finite.
 \end{enumerate}
