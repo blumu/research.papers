@@ -339,7 +339,7 @@ transitively justified by the initial node.
 The set of traversals itself, on the other hand, corresponds to the game semantic denotation of a term where all the internal moves are revealed, also called ``interaction game semantics''~\cite{BlumPhd}.
 
 This correspondence gives rise to a method for finding the normal form of a simply-typed lambda term~\cite{BlumPhd,BlumGalop2008,Blum-LocalBeta2008}
-where traversals explore a branch in the tree representation of the normal form. The underlying sequences of nodes and pointers encode the unfolding of the normalization procedure over branches of the normal form. There are two kinds of nodes: the \emph{internal} nodes record intermediate steps of the reduction procedure, while \emph{external} nodes represent actual nodes from the tree representation of the normal form. The core projection performs
+where each traversal explores a branch in the tree representation of the normal form. The underlying sequences of nodes and pointers encode the unfolding of the normalization procedure over branches of the normal form. There are two kinds of nodes: the \emph{internal} nodes record intermediate steps of the reduction procedure, while \emph{external} nodes represent actual nodes from the tree representation of the normal form. The core projection performs
 `garbage collection' by removing all the internal nodes from the traversals,  yielding a path in the abstract syntax tree of the normal form.
 
 
@@ -404,7 +404,7 @@ The read-out phase of the algorithm appeals to a correspondence property between
  To prove correctness of the evaluation procedure, we show that traversals essentially implement a recursive version of \emph{head linear reduction}, a non-standard reduction strategy based on an alternative notion of redex
   where substitution occurs one variable occurrence at a time.
 
- We have implemented the evaluation procedure in HOG, a software program to study the theory of traversals and pushdown automata generated from Higher-Order Grammars and lambda terms~\cite{BlumGalop2008,Blum-HogTool}.  Section~\ref{sec:examples} includes traversals of untyped lambda terms generated with this tool.
+ We have implemented the evaluation procedure in HOG, a tool to study the theory of traversals and pushdown automata generated from Higher-Order Grammars and lambda terms~\cite{BlumGalop2008,Blum-HogTool}.  Section~\ref{sec:examples} includes traversals of untyped lambda terms generated with this tool.
 
 \subsection{Related work}
 
@@ -3252,15 +3252,15 @@ The same argument used in the \emph{structural argument} case shows that
 \node[state] %,node distance=7cm
     (G) [below right of=V] {$\ghostlmd$};
 
-\path (L) edge [bend right,->>]      node[right,xshift=-2em,text width=4cm]{Spinal descent to \emph{lloc} \rulenamet{App},\rulenamet{Lmd^{\sf var}},\rulenamet{Lmd^@}} (V)
+\path (L) edge [bend right,->>]      node[right,xshift=-2.5em,text width=4cm]{Spinal descent to \emph{lloc} \rulenamet{App},\rulenamet{Lmd^{\sf var}},\rulenamet{Lmd^@}} (V)
       (V) edge [bend right]  node[left,text width=3cm] {Concrete argument $\rulename{IVar}_\normalizing$} (L)
-          edge [bend left]   node[right, text width=3cm] {Imaginary argument $\rulename{IVar}_\normalizing$} (G)
+          edge [bend left]   node[right, xshift=1em, text width=3cm] {Imaginary argument $\rulename{IVar}_\normalizing$} (G)
       (G) edge [->>]                 node[below,text width=4cm] {Pending argument look-up \rulenamet{Lmd^\ghostvar}, $\rulename{Var}$} (L)
 ;
 \end{tikzpicture}
 \caption{Decomposition of normalizing traversals of a \emph{qnf}.
-Bottom (lambda, ghost lambda) and top (variable) states
-represent the external nodes respectively delimiting the start and end of a strand. Double arrows represent multiple uses of deterministic traversal rules; regular arrows represent a single rule instantiation.
+Bottom states (lambda/ghost lambda) and top state (variable)
+produce the external nodes respectively delimiting the start and end of a strand. A double arrow represents multiple uses of deterministic rules; a single arrow represents a single rule instantiation of a non-deterministic rule.
 }
 \label{fig:qnf_strand_decomposition_statemachine}
 \end{figure}
@@ -3289,12 +3289,12 @@ Suppose $t$ is infinite then from the strand decomposition we can construct an i
 \label{lemma:genredex_lookup}
 Let $x$ be a variable occurrence involved in a generalized redex in $gr(M)$.
 \begin{enumerate}[label=(\roman*), nosep]
-    \item The path from the parent node of the redex argument down to $x$'s binder is of the form:
-$ @_r \, \lambda\overline{x_r} \cdots
-@_2 \, \lambda\overline{x_2} \, @_1 \, \lambda\overline{x}$
+    \item The path from the parent node of the redex argument down to $x$'s binder is of the form
+$ @_r \; \lambda\overline{x_r} \cdots
+@_2 \; \lambda\overline{x_2} \; @_1 \; \lambda\overline{x}$
 for $r\geq0$, where $@_r$ denotes the parent node of the redex argument, and $\lambda\overline{x}$ denotes $x$'s binder, such that $\lambda x$ is the $i$th lambda in the bulk $\lambda\overline{x}$ for $i\geq0$.
 
-\item The argument of $x$ is precisely given by the $i_k$th child of node $@_k$ where $k$ is the smallest index verifying $i_k<|@_k|$ where: $i_1 = i$ and $i_{j+1} = i_j - |@_j| + |\lambda\overline{x_{j+1}}|$ for $j\geq 0$.
+\item The argument of $x$ is precisely given by the $i_k$th child of node $@_k$ where $k$ is the smallest index verifying $i_k<|@_k|$ where $i_1 = i$ and $i_{j+1} = i_j - |@_j| + |\lambda\overline{x_{j+1}}|$ for $j\geq 0$.
 \end{enumerate}
 \end{lemma}
 \shortproof
@@ -4078,7 +4078,7 @@ We have seen that imaginary traversals implement leftmost linear reduction,
 %in the untyped lambda calculus
 a non-strict, ``hyper-lazy''~\cite{danosherbelinregnier1996}, reduction strategy that substitutes variables one at a time. This brings the question of whether alternative notions of traversals are definable for other evaluation strategies such as call-by-name and call-by-value~\cite{plotkin-75}. A call-by-name version of head-linear reduction, that does not reduce inside the body of an unapplied abstraction, would easily be accommodated in the traversal setting. A strict evaluation strategy like call-by-value, on the other hand, might require substantial changes. As for traditional reduction strategies, such as the normal order of lambda calculus,
 %it is not immediately obvious how to implement simultaneous substitution with traversals since, by nature, they traverse the term tree one node at a time.
-perhaps this can be modeled by non-deterministically spawning new traversals for every free occurrence of the variable to be substituted.
+perhaps they can be modeled by non-deterministically spawning new traversals for every free occurrence of the variable to be substituted.
 
 We conjecture that a Game Semantics correspondence similar
 to Theorem~\ref{thm:gamesem_correspondence_stlc} holds for
@@ -4096,8 +4096,8 @@ the untyped lambda calculus: that there is an isomorphism between the cores of i
 %  The generated tree would be an order-$0$ tree representation of the beta-normal of a term: each terminal symbol of the automaton would correspond to a ``token'' of the lambda term: either a lambda node (represented by non-terminal of type $o\rightarrow o$), or a variable node (represented by a non-terminal of type $o^k\rightarrow o$ where $k\geq0$ is the number of operands applied to the variable in the beta normal form of the term.
 
 \subsection*{Acknowledgement}
-This work got inspired by the slides of the Galop 2016 presentation by Daniil Berezun and Neil D. Jones~\cite{berezunjones_partialevalbytraversals}. It benefited from email communications with the authors as well as memorable discussion with Neil D. Jones during his visit at Microsoft in May 2017.
-An anonymous referee has also provided valuable comments.
+This work got inspired by the Galop 2016 presentation by Daniil Berezun and Neil D. Jones~\cite{berezunjones_partialevalbytraversals}. It benefited from email communications with the authors as well as memorable discussion with Neil D. Jones during his visit at Microsoft in May 2017.
+An anonymous referee provided valuable comments.
 \bibliographystyle{abbrv}
 \bibliography{ulc-trav}
 
