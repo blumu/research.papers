@@ -36,7 +36,7 @@
 \usepackage{tcolorbox}
 \usepackage{wrapfig}
 \usepackage{url}
-\usepackage{halloweenmath}
+%\usepackage{halloweenmath}
 \usetikzlibrary{arrows,automata}
 
 
@@ -360,7 +360,7 @@ detailed in Example~\ref{examp:baby}, gets stuck after traversing $y$. To take a
 This situation never occurs in the typed setting where lambda terms are
 conveniently assumed to be \emph{eta-long expanded}, a transformation that recursively eta-expands the subterms with respect to their type,
 which ensures that when traversing an application, there exists a subterm representing every possible operator's argument.
-
+%
 Untyped terms admitting a simple type, like $M$, can be traversed via eta-long expansion with respect to whichever type they inhabit.
 But this is not feasible in the general ULC case where untyped terms do not necessarily inhabit a simple type.
 Sometimes, well-chosen eta-expansions can help, for instance the untyped term $U$, which has no simple type, is traversable if we eta-expand all its variable occurrences. This does not always work, unfortunately: to traverse the
@@ -401,8 +401,9 @@ On the other hand, traversing a non-terminating term like $(\lambda x. x\,x)(\la
 
 The read-out phase of the algorithm appeals to a correspondence property between the traversals and paths in the tree representation of the normal form. The term $M$, for instance, has a single traversal $t$, which via suitable filtering, yields the path $\lambda z \cdot z$; its beta-normal form is thus $\lambda z. z$, up to variable renaming.
 
- To prove correctness of the evaluation procedure, we show that traversals essentially implement a recursive version of \emph{head linear reduction}, a non-standard reduction strategy based on an alternative notion of redex
-  where substitution occurs one variable occurrence at a time.
+ To prove correctness of the evaluation procedure, we show that traversals recursively implement \emph{head linear reduction}, a term reduction method
+ based on an non-standard notion of redex that are reduced
+ by substituting one variable occurrence at a time.
 
  We have implemented the evaluation procedure in HOG, a tool to study the theory of traversals and pushdown automata generated from Higher-Order Grammars and lambda terms~\cite{BlumGalop2008,Blum-HogTool}.  Section~\ref{sec:examples} includes traversals of untyped lambda terms generated with this tool.
 
@@ -464,24 +465,6 @@ Unlike imaginary traversals, existing evaluation methods do not appeal to eta-ex
 
 \paragraph{GoI} The relationship of traversals with proof-nets and the Geometry of Interaction (GoI) can be seen through the lenses of head-linear reduction, which they implement, or their correspondence with game semantics. In particular, the linear substitution performed by traversals corresponds to
 the firing of an exponential branch of a proof-net~\cite{MASCARI1994111}. We also point to the work of Danos and Regnier who established the connection with abstract machines and GoI~\cite{danosherbelinregnier1996}.
-
-\paragraph{Optimality} Traversal-based evaluation is not L\'evy-optimal~\cite{optimal-reduction-levy}.
-Traversals do exhibit some sharing through their use of pointers, which avoids copying or rewriting subterms when evaluating redexes.
-But there is no attempt to exploit such sharing to avoid redundant work: in the term $(\lambda x. y x x) A$, each occurrence of $x$ involves re-traversing the argument $A$.
-If a redex is traversed in $A$ the first time then it will get traversed again the second time, without any attempt to exploit the shared redex.
-%
-On the other hand, just like head-linear reduction, traversals are  ``hyper-lazy'' in nature: they only evaluate (linear) redexes one variable occurrence at a time and only when the value of that occurrence is needed. So besides the possible redundancy described above, no useless work is performed, as opposed to the traditional
-way of evaluating redexes which involves substituting all variable occurrences at once, regardless of whether some of those occurrences are dead-code.
-%
-Traversals may not be too far from being optimal:
-we can conceivably augment traversals with some memoization mechanism
-to detect shared families of redexes, in L\'evy-sense, to give rise to
-a L\'evy-optimal notion of traversals, similarly to what is suggested by Danos and Regnier in~\cite{DANOS199979} to make \emph{Jumping Abstract Machines} optimal.
-
-%1 - Not the traditional notion of redex (linear)
-%2 - No sharing of redex, no simultaneous firing of redex with same Levy-label
-%
-% Hyperlazy does not mean efficient: linear substitution ends up repeating same things several times. However, no useless work is done, unlike the traditional substitution.
 
 \subsection{Rest of the paper}
 
@@ -1111,7 +1094,7 @@ If the arity of the traversed variable is sufficiently high, the tree statically
     %
     Inspection of the traversal rules shows that this may only happen in rule \rulenamet{Var}, so that once a traversal starts traversing ghost nodes, the only way to `return' to structural nodes is via \rulenamet{Var} with a traversal of the form
     $
-    \Pstr[0.5cm]{ t \cdot (y){y} \, (l){\nu}  \ldots (t-l,30:i){\ghostvar}
+    \Pstr[0.5cm]{ t \cdot (y){y} \, (l){\nu}  \cdots (t-l,30:i){\ghostvar}
         \, (lx-y,40:i){\lambda \overline{x}}}
     $
     where
@@ -1325,10 +1308,13 @@ With this assumption, the definition of traversals from the typed settings \cite
 We consider a typed-term $M^\tau$ of simple type $\tau$ and without loss of generality, and to simplify notations, we assume that it is closed (no free variable).
 
 \begin{definition}
-    \label{def:concrete_traversals}
-The \defname{concrete traversals} $\travset_\concrete$
-are the imaginary traversals that contain no ghost occurrence.
-They are defined by the rules of Table~\ref{tab:trav_rules} without \rulenamet{Lam^\ghostvar} and such that \rulenamet{Var} and \rulenamet{IVar} are restricted to their concrete sub-case, where the next node traversed must be structural (\ie, $i\leq|m|$).
+\label{def:concrete_traversals}
+A \defname{concrete traversal} is an imaginary traversal that does not contain
+any ghost occurrence.
+%
+The set $\travset_\concrete$ of \defname{concrete traversals}
+is defined by the rules of Table~\ref{tab:trav_rules}
+with the exclusion of \rulenamet{Lam^\ghostvar} and by restricting rules \rulenamet{Var} and \rulenamet{IVar} to their concrete sub-case where the traversed node must be structural (\ie, $i\leq|m|$).
 \end{definition}
 
 \begin{definition}[Reformulation of~\cite{BlumPhd}]
@@ -1350,23 +1336,27 @@ Since we explicitly exclude the imaginary sub-case of \rulenamet{IVar}, the rule
 \label{sec:normalizing_trav}
 
 The idea of evaluating lambda terms with traversals stems from the \emph{Normalized Paths Characterization} which states that the set of P-views of traversal cores captures what is strictly required from traversals to reconstruct the normal form of a term when it exists.
-This characterization was previously shown for simply-typed term in eta-long form via
-correspondence with Game Semantics,
- and is recalled in Proposition~\ref{prop:path_charact_stlc}.
-In Section~\ref{sec:correctness_ulc_normalization} we generalize it to all untyped terms with a normal form using instead a term-rewriting argument (Theorem~\ref{thm:path_charact_ulc}).
-This result suggests a normalization method consisting in simply enumerating all the maximal traversals.
-The challenge is to deal with arbitrarily long traversals due to the generous non-determinism of rule \rulenamet{IVar}.
-Even worse: there may be infinitely many maximal imaginary traversals, even for terms with a beta-normal form!
+This was previously shown for simply-typed terms in eta-long form via
+correspondence with Game Semantics.
+We recall this result
+in Proposition~\ref{prop:path_charact_stlc},
+and prove its untyped counterpart in
+Section~\ref{sec:correctness_ulc_normalization} using instead a term-rewriting argument (Theorem~\ref{thm:path_charact_ulc}).
+This characterization suggests a normalization method by simply enumerating all the maximal traversals.
+The challenge is to deal with arbitrarily long traversals as well as the infinite number of finite traversals (even for terms with a normal form!),
+two situations caused by the generous non-determinism of rule \rulenamet{IVar}.
+%
 Fortunately, not all traversals are needed: a traversal shall be considered redundant if there exists a shorter one with identical core P-view.
 In other words, we just need a subset covering
 every possible core P-view.
 %
 We first consider the subset of \emph{essential traversals} which
 meets this requirement.
-Its concrete subset if finitely enumerable, which yields the normalization procedure for eta-long simply-typed terms.
+Since its concrete subset is finitely enumerable, it gives
+a normalization procedure for eta-long simply-typed terms.
 To address the general untyped case,
-we introduce \emph{normalizing traversals}, another subset of essential traversals with a more relaxed
-non-determinism in rule \rulenamet{IVar} than the concrete restriction.
+we introduce \emph{normalizing traversals}, a larger subset
+with a more relaxed non-determinism in \rulenamet{IVar} than the concrete restriction.
 
 \subsection{Essential traversals}
 
@@ -1440,11 +1430,12 @@ We introduce a quotient relation identifying traversals with identical core P-vi
 The equivalence relation $\sim$ over $\travulc$ is defined by $t \sim u$ if and only if
 $\pview{\core{t'}} \equiv \pview{\core{u'}}$
 where $t'$ and $u'$ denote respectively the longest finite prefix of $t$ and $u$ ending with an external variable node.
-For any subset $T\subseteq \travulc$ of traversals, we write $T/{\sim}$ for the equivalence classes of $T$.
+For any subset $T\subseteq \travulc$, we write $T/{\sim}$ for the equivalence classes of $T$.
 %
 For any subset $U\subseteq T$ we say that $U$ is \defname{$T$-complete} if it contains at least one element for each $\sim$-equivalence class of $T$; that is if $U$ and $T$ have the same equivalence classes.
 \end{definition}
-The definition considers only finite prefixes ending with an external variable because $\coresymbol$ generates the pending lambdas of an external lambda node from the entire sequence of nodes following it until the next external variable.
+Because the core operation $\coresymbol$ calculates the pending lambdas
+from the entire strand following an external lambda node, comparing incomplete strands would not be adequate. This is why we define $\sim$ with respect to finite prefixes ending with an external variable.
 
 \begin{proposition}
 \label{prop:essential_traversal_simcomplete}
@@ -1659,20 +1650,22 @@ for $0\leq q\leq k$.
 \item If $i>\dynar(t)$ then $t$ is followed in $t_{\max}$ by a strand of length $2k$ consisting of ghost nodes only with justification labels
 $i_1$, $i_2$, $i_2$, $i_3$, $i_3$, $\cdots$, $i_{k}$, $i_{k}$, $i_{k+1}$:
 $$
-t_{\max} = \Pstr[0.3cm]{ \cdots
+t_{\max} = \Pstr[0.3cm]{
+  \cdots
  (alpha){\underline{\nu_k}}
  \,(nk){n_k}
  \,(alphakm1){\nu_{k-1}}
- \,\cdots
+ \cdots
  \,(a2){\nu_2}
  \,(n2){n_2}
  \,(a1){\nu_1}
  \,(n1){\underline{t^\omega}}
  \,(l1-n1,30:i_1){\underline{\ghostlmd}}
- \,(t1-a1,47:i_2){\ghostvar}
- \,(l2-n2,48:i_2){\ghostlmd}
- \,(t2-a2,49:i_3){\ghostvar}
- \cdots (tkm1-alphakm1,42:i_{k}){\ghostvar}
+ \,(t1-a1,51:i_2){\ghostvar}
+ \,(l2-n2,47:i_2){\ghostlmd}
+ \,(t2-a2,50:i_3){\ghostvar}
+ \cdots
+   (tkm1-alphakm1,44:i_{k}){\ghostvar}
  \,(lkm1-nk,43:i_{k}){\ghostlmd}
  \, (tk-alpha,45:i_{k+1}){\underline{\ghostvar}} \cdots }
 $$
@@ -1687,19 +1680,22 @@ $$
 t_{\max} = \Pstr[0.3cm]{
     \underline{\nu_k}
     \, n_k
-    \, \cdots (alphar){\nu_r}
+    \cdots
+    (alphar){\nu_r}
     \, (nr){n_r}
     \, (alpharm1){\nu_{r-1}}
-    \, \cdots
+    \cdots
     \, (a2){\nu_2}
     \, (n2){n_2}\ (a1){\nu_1}
     \, (n1){\underline{t^\omega}}
     \, (l1-n1,30:i_1){\underline{\ghostlmd}}
-    \, (t1-a1,47:i_2){\ghostvar}
-    \, (l2-n2,48:i_2){\ghostlmd}
+    \, (t1-a1,51:i_2){\ghostvar}
+    \, (l2-n2,47:i_2){\ghostlmd}
     \, (t2-a2,49:i_3){\ghostvar}
-    \cdots(tkm1-alpharm1,43:i_{r}){\ghostvar}
-    \, (lkm1-nr,43:i_{r+1}){\lambda\overline{x}} \cdots }
+    \cdots
+    (tkm1-alpharm1,44:i_{r}){\ghostvar}
+    \, (lkm1-nr,43:i_{r+1}){\lambda\overline{x}}
+    \cdots }
 $$
 \end{enumerate}
 \end{proposition}
@@ -2596,11 +2592,20 @@ By Theorem~\ref{thm:danosregnier_headlinred}, the \emph{hoc} of a quasi-head nor
 \end{proof}
 \fi
 
-We now introduce a $\beta$-reduction strategy (in the standard sense).
-We define the \defname{leftmost spinal-innermost} standard $\beta$-redex of $M$ as the $\beta$-redex $(\lambda x . N) A$ such that there is no other redex in $M$ occurring left of it and such that $N$ contains no other redex; the argument $A$ on the other hand, may contain other redexes.
-The idea consists in reducing $M$'s redexes in `inside-out left-to-right' order.
-This definition should be distinguished from the \emph{leftmost innermost} reduction strategy from the lambda calculus literature.
-In particular $(\lambda x . y) \Omega$ reduces to $y$ with the leftmost spinal-innermost strategy, while the leftmost innermost strategy does not terminate.
+We now introduce a $\beta$-reduction strategy (in the standard sense)
+that reduces redexes in `inside-out left-to-right' order.
+A standard redex $(\lambda x . N) A$ of the lambda calculus is said to be \emph{innermost} if neither the abstraction $(\lambda x . N)$ nor the argument $A$  contains any other redex.
+We say that a redex is \defname{spinal-innermost} if the abstraction part of the redex contains no other redex, but the argument, on the other hand, may contain other redexes.
+A redex is on \emph{the left of} another if their respective $\lambda$-abstraction occurs in that order in the textual representation of the term's syntax.
+%
+We define the \defname{leftmost spinal-innermost} $\beta$-redex as the
+spinal-innermost redex that has no other spinal-innermost redex left of it.
+%
+It differs from the \emph{leftmost innermost} strategy from the lambda calculus literature: the leftmost spinal-innermost strategy reduces
+$(\lambda x . y) \Omega$ to $y$ while the leftmost innermost strategy does not normalize it.
+It also differs from \emph{leftmost outermost} reduction which reduces
+$(\lambda x . x \Omega)(\lambda y z . z)$ to $z$, while
+leftmost (spinal-)innermost reduction does not normalize it.
 % See http://www.cs.columbia.edu/~verma/classes/fa17/coms3261/lec/L24-Lambda_Calculus_II.html: the leftmost innermost strategy reduces any redex in the argument first, whereas here the "inner" only refers to the body of the operator.
 
 % NOTE: may be related to the `hybrid normal order reduction'
@@ -2625,8 +2630,8 @@ Let $M$ be a term in \emph{qnf}.
 Also, it is at least $lloc_R(R)$ since
 $lloc_R(R) \sqsubseteq lloc_M(R)$ by
 Property~\ref{prop:lloc_properties}(i).
-Now suppose that $x$ occurs freely in $N$ then it is involved in the generalized redex $(\lambda x, A)$; and there cannot be on the left of $x$ in the term tree of $N$, any subterm with a non-empty lambda-list (otherwise there would either be a beta-redex left of $x$ or $x$ itself would be the argument of a redex in $N$, which contradicts the assumption that
- $N$ contains no beta-redex), hence by bottom-up evaluation of the $lloc$, $lloc_R(R)$ must be at least $x$: it is not $\bot$. So $lloc_M(M) \ne \bot$ which contradicts that $M$ is in \emph{qnf}.
+Now suppose that $x$ occurs freely in $N$ then it is involved in the generalized redex $(\lambda x, A)$, and there cannot be on the left of $x$ in, the term tree of $N$, any subterm with a non-empty lambda-list. (Otherwise there would either be a beta-redex left of $x$ or $x$ itself would be the argument of a redex in $N$, which contradicts the assumption that
+ $N$ contains no beta-redex.) Hence by bottom-up evaluation of the $lloc$, $lloc_R(R)$ must be at least $x$ and thus cannot be $\bot$. So $lloc_M(M) \ne \bot$ which contradicts that $M$ is in \emph{qnf}.
 (ii) Each reduction is trivial by (i) and
 since trivial reductions preserve the $lloc$
 and do not introduce $\beta$-redexes,
@@ -3039,17 +3044,17 @@ Because $u_1$ is a spinal descent, the subterm rooted at $\lambda \overline{w_1}
 \\
 
 Now suppose instead that the node following $x_1$ is a ghost node then by Property~\ref{prop:strand_spinaldescent}, $u_1$ is necessarily non-empty: we have $u_1 =
-@_1 \cdot\lambda\overline{h_1} \cdots @_q\cdot \lambda\overline{h_q}$ for some $q\geq 1$. The subterm at $@_r$,  represented on Figure~\ref{fig:strand_decomposition_proof_induction}, is of the form
-$$(\lambda\overline{h_r}. A_0) A_1 \ldots A_{k_{r}-1}\ (\lambda\overline{y_2}. \ldots)A_{k_{r}+1}\ \ldots A_{|@_r|} .$$
+@_1 \cdot\lambda\overline{z_1} \cdots @_q\cdot \lambda\overline{z_q}$ for some $q\geq 1$. The subterm at $@_r$,  represented on Figure~\ref{fig:strand_decomposition_proof_induction}, is of the form
+$$(\lambda\overline{z_r}. A_0) A_1 \ldots A_{k_{r}-1}\ (\lambda\overline{y_2}. \ldots)A_{k_{r}+1}\ \ldots A_{|@_r|} .$$
 By the weaving property of Proposition~\ref{prop:weaving}(iii), $x_1$ is followed by a \emph{pending parameter lookup} $v$ necessarily shorter than $u_1$ and terminated by a structural lambda node $\lambda\overline{y_2}$ justified by some application node $@_r$ in $u_1$ for some $1\leq r \leq q$:
 \begin{align*}
  t_{max} &= \cdots \Pstr[10pt]{
 (l){\underline{\lambda\overline{w_1}}} \cdot
-{@_1} \cdot \lambda\overline{h_1} \cdot
+{@_1} \cdot \lambda\overline{z_1} \cdot
 \cdots
-(atr){@_r} \lambda\overline{h_r} \cdot
+(atr){@_r} \lambda\overline{z_r} \cdot
 \cdots
-{@_q} \cdot\lambda\overline{h_q} \cdot
+{@_q} \cdot\lambda\overline{z_q} \cdot
 (x){\underline{x_1}}\cdot
 (gl-x,25:k){\underline\ghostlmd}
 \cdot v
@@ -3064,25 +3069,25 @@ v &= \ghostvar_{k_q} \cdot \ghostlmd_{k_q} \cdot
 \ghostvar_{k_{r}}
 \end{align*}
 where, for all $i$ ranging from $r$ to $q$, ghost variable
-$\ghostvar_{k_i}$ and ghost lambda $\ghostlmd_{k_i}$ point respectively to $\lambda\overline{h_i}$ and $@_i$ with label $k_i\geq1$ defined by:
+$\ghostvar_{k_i}$ and ghost lambda $\ghostlmd_{k_i}$ point respectively to $\lambda\overline{z_i}$ and $@_i$ with label $k_i\geq1$ defined by:
 \begin{align*}
-  k_i &= k - |x| + |\lambda\overline{h}_q| + \sum_{i\leq j < q} (|\lambda\overline{h}_{j}| - |@_{j+1}|)
+  k_i &= k - |x| + |\lambda\overline{z_q}| + \sum_{i\leq j < q} (|\lambda\overline{z_j}| - |@_{j+1}|)
 %\\
-%  k_i &= k + |\lambda\overline{h}_q| - |x| +
-%  \sum_{j=i..q-1} |\lambda\overline{h}_{j}|
+%  k_i &= k + |\lambda\overline{z_q}| - |x| +
+%  \sum_{j=i..q-1} |\lambda\overline{z_j}|
 %  - \sum_{j=i..q-1} |@_{j+1}|
 %\\
-%  k_i &= k + |\lambda\overline{h}_q| - |x| +
-%  \sum_{j=i..q-1} |\lambda\overline{h}_{j}|
+%  k_i &= k + |\lambda\overline{z_q}| - |x| +
+%  \sum_{j=i..q-1} |\lambda\overline{z_j}|
 %  - \sum_{j=i+1..q} |@_{j}|
 %\\
-%  k_i &= k + |\lambda\overline{h}_q| - |x| +
-%  |\lambda\overline{h}_{i}| +
-%  \sum_{j=i+1..q-1} (|\lambda\overline{h}_{j}| - |@_{j}|) - |@_{q}|
+%  k_i &= k + |\lambda\overline{z_q}| - |x| +
+%  |\lambda\overline{z_i}| +
+%  \sum_{j=i+1..q-1} (|\lambda\overline{z_j}| - |@_{j}|) - |@_{q}|
 \\
    &= k - |x| +
-  |\lambda\overline{h}_{i}| +
-  \sum_{i< j\leq q} (|\lambda\overline{h}_j| - |@_j|)
+  |\lambda\overline{z_i}| +
+  \sum_{i< j\leq q} (|\lambda\overline{z_j}| - |@_j|)
 \end{align*}
 
 Since all the nodes in $v$ are ghost nodes, by Proposition~\ref{prop:ulctrav_welldefined_pathview} their justification label is greater than the justifier's arity; the opposite holds for $\lambda\overline{y_2}$ which is a structural node. Therefore:
@@ -3094,37 +3099,37 @@ k_r \leq |@_r|
 
 
 To prove that $lloc(\lambda\overline{y_2}) =\bot$ we first show that for all $i$ ranging from $r$ to $q$ we have
- $k_i>|\lambda_l(\lambda\overline{h_i})|$. We prove the result by a finite induction proceeding bottom-up from the lower tree node
- $\lambda\overline{h_q}$ up to $\lambda\overline{h_r}$.
+ $k_i>|\lambda_l(\lambda\overline{z_i})|$. We prove the result by a finite induction proceeding bottom-up from the lower tree node
+ $\lambda\overline{z_q}$ up to $\lambda\overline{z_r}$.
 
 \emph{Base case:} We have $i=q$. The subterm
-rooted at $\lambda\overline{h_q}$ is in head normal form
-$\lambda\overline{h_q}. x \cdots$ therefore its head lambda-list consists precisely of the lambda abstractions $\lambda\overline{h_q}$, and thus
-$|\lambda_s(\lambda\overline{h_q})| = |\lambda\overline{h_q}|$.
-We have $k_q = k -|x| + |\lambda\overline{h_q}|$ and by Equation~\ref{eqn:k_greater_than_x} we have $k>|x|$, hence $k_q >|\lambda\overline{h_q}|$.
+rooted at $\lambda\overline{z_q}$ is in head normal form
+$\lambda\overline{z_q}. x \cdots$ therefore its head lambda-list consists precisely of the lambda abstractions $\lambda\overline{z_q}$, and thus
+$|\lambda_s(\lambda\overline{z_q})| = |\lambda\overline{z_q}|$.
+We have $k_q = k -|x| + |\lambda\overline{z_q}|$ and by Equation~\ref{eqn:k_greater_than_x} we have $k>|x|$, hence $k_q >|\lambda\overline{z_q}|$.
 
 
-\emph{Induction case:} Let $r+1\leq i \leq q$. We suppose that the result holds for $i$ we show that it must hold for $i-1$. By definition, the head lambda-list at $\lambda\overline{h_i}$ is precisely given by the variables in the abstraction concatenated with the head lambda-list at $@_{i+1}$, thus $|\lambda_l(\lambda\overline{h_i})| =
-|\lambda\overline{h_i}| + |\lambda_l(@_{i+1})|$. The lambda-list at $@_i$, is by definition, obtained by popping $|@_i|$ lambdas from the lambda-list at $\lambda\overline{h_i}$; or is the empty list if the arity is greater than the number of pending lambdas. In terms of lengths this means:
+\emph{Induction case:} Let $r+1\leq i \leq q$. We suppose that the result holds for $i$ we show that it must hold for $i-1$. By definition, the head lambda-list at $\lambda\overline{z_i}$ is precisely given by the variables in the abstraction concatenated with the head lambda-list at $@_{i+1}$, thus $|\lambda_l(\lambda\overline{z_i})| =
+|\lambda\overline{z_i}| + |\lambda_l(@_{i+1})|$. The lambda-list at $@_i$, is by definition, obtained by popping $|@_i|$ lambdas from the lambda-list at $\lambda\overline{z_i}$; or is the empty list if the arity is greater than the number of pending lambdas. In terms of lengths this means:
 \begin{align*}
-    |\lambda_l(@_i)| &= \max(0, |\lambda_l(\lambda\overline{h_i})| - |@_i|) \\
-     &= \max\left( 0, |\lambda_l(@_{i+1})| + |\lambda\overline{h_i}| - |@_i| \right) & \mbox{for $r\leq i \leq q-1$.}
+    |\lambda_l(@_i)| &= \max(0, |\lambda_l(\lambda\overline{z_i})| - |@_i|) \\
+     &= \max\left( 0, |\lambda_l(@_{i+1})| + |\lambda\overline{z_i}| - |@_i| \right) & \mbox{for $r\leq i \leq q-1$.}
 \end{align*}
 
 Furthermore by definition of $k_{i-1}$ we have:
 \begin{equation}
-k_{i-1} = k_i + |\lambda\overline{h_{i-1}}| - |@_i| \label{eqn:ki_minus_one}
+k_{i-1} = k_i + |\lambda\overline{z_{i-1}}| - |@_i| \label{eqn:ki_minus_one}
 \end{equation}
 Hence,
 \begin{align*}
-    |\lambda_l(\lambda\overline{h_{i-1}})| - k_{i-1}
-    &= |\lambda\overline{h_{i-1}}| +|\lambda_l(@_i)| - k_{i-1} &\mbox{(Def~of $\lambda_l$)}\\
-    &= |\lambda\overline{h_{i-1}}| + \max\left( 0, |\lambda_l(\lambda\overline{h_i})| - |@_i| \right) - k_{i-1} &\mbox{(Def~of $\lambda_l$)}\\
-    &= \max\left( |\lambda\overline{h_{i-1}}| - k_{i-1},    |\lambda\overline{h_{i-1}}| + |\lambda_l(\lambda\overline{h_i})| - |@_i| - k_{i-1} \right) \\
-    &= \max\left(  |@_i|- k_i, |\lambda_l(\lambda\overline{h_i})| - k_i \right) &\mbox{(Eqn~\ref{eqn:ki_minus_one})}
+    |\lambda_l(\lambda\overline{z_{i-1}})| - k_{i-1}
+    &= |\lambda\overline{z_{i-1}}| +|\lambda_l(@_i)| - k_{i-1} &\mbox{(Def~of $\lambda_l$)}\\
+    &= |\lambda\overline{z_{i-1}}| + \max\left( 0, |\lambda_l(\lambda\overline{z_i})| - |@_i| \right) - k_{i-1} &\mbox{(Def~of $\lambda_l$)}\\
+    &= \max\left( |\lambda\overline{z_{i-1}}| - k_{i-1},    |\lambda\overline{z_{i-1}}| + |\lambda_l(\lambda\overline{z_i})| - |@_i| - k_{i-1} \right) \\
+    &= \max\left(  |@_i|- k_i, |\lambda_l(\lambda\overline{z_i})| - k_i \right) &\mbox{(Eqn~\ref{eqn:ki_minus_one})}
 \end{align*}
-By the induction hypothesis we have $|\lambda_l(\lambda\overline{h_i})| < k_i$, and by Equation~\ref{eqn:qnfdecomp_kj} we have $ |@_i|< k_i$, therefore the maximum of the two quantities in the last equation is negative which shows
-the desired result $|\lambda_l(\lambda\overline{h_{i-1}})| < k_{i-1}$.
+By the induction hypothesis we have $|\lambda_l(\lambda\overline{z_i})| < k_i$, and by Equation~\ref{eqn:qnfdecomp_kj} we have $ |@_i|< k_i$, therefore the maximum of the two quantities in the last equation is negative which shows
+the desired result $|\lambda_l(\lambda\overline{z_{i-1}})| < k_{i-1}$.
 
 \begin{figure}[htbp]
 \centering
@@ -3134,9 +3139,9 @@ the desired result $|\lambda_l(\lambda\overline{h_{i-1}})| < k_{i-1}$.
         child[solid] {node{$@_1$}
             child{node{$\ldots$}
                 child{node{$@_{r}$}
-                    child{node{$\lambda\overline{h_r}$}
+                    child{node{$\lambda\overline{z_r}$}
                         child[dashed]{node{$@_{q-1}$}
-                            child[solid]{node{$\lambda\overline{h_{q-1}}$}
+                            child[solid]{node{$\lambda\overline{z_{q-1}}$}
                                 child[solid]{node{$@_q$}
                                     child{node{$\lambda\overlineh_q$}
                                         child{node {$x_1$}
@@ -3173,8 +3178,8 @@ the desired result $|\lambda_l(\lambda\overline{h_{i-1}})| < k_{i-1}$.
 \end{figure}
 
 We now show that $lloc_M(\lambda\overline{y_2})=\bot$.
-By assumption, we have that $lloc_M(\lambda\overline{w_1}) =\bot$ so since $@_r$ occurs in the spine of $M$, by definition of $lloc_M$ we must have $lloc_M(@_r) =\bot$, and thus also $lloc_M(\lambda\overline{h_r}) = \bot$. We have just shown that $|\lambda_l(\lambda\overline{h_r})| < k_r$, consequently, the sub-term $(\lambda\overline{h_r} . A_0) A_1 \ldots A_{k_r-1}$ has more operands than pending lambdas in the operator's lambda list. By definition of lambda list this implies that $\lambda_l((\lambda\overline{h_r} . A_0) A_1 \ldots A_{k_r-1})$ is empty. Hence, we necessarily have $lloc(\lambda\overline{y_2}) = \bot$, otherwise by definition of $lloc$ we would have
- $lloc((\lambda\overline{h_r} . A_0) A_1 \ldots A_{k_r-1} (\lambda\overline{y_2}. \ldots)) = lloc(\lambda\overline{y_2}) \ne \bot$, which subsequently implies $lloc(\lambda\overline{w_1})\ne\bot$, contradicting the assumption.
+By assumption, we have that $lloc_M(\lambda\overline{w_1}) =\bot$ so since $@_r$ occurs in the spine of $M$, by definition of $lloc_M$ we must have $lloc_M(@_r) =\bot$, and thus also $lloc_M(\lambda\overline{z_r}) = \bot$. We have just shown that $|\lambda_l(\lambda\overline{z_r})| < k_r$, consequently, the sub-term $(\lambda\overline{z_r} . A_0) A_1 \ldots A_{k_r-1}$ has more operands than pending lambdas in the operator's lambda list. By definition of lambda list this implies that $\lambda_l((\lambda\overline{z_r} . A_0) A_1 \ldots A_{k_r-1})$ is empty. Hence, we necessarily have $lloc(\lambda\overline{y_2}) = \bot$, otherwise by definition of $lloc$ we would have
+ $lloc((\lambda\overline{z_r} . A_0) A_1 \ldots A_{k_r-1} (\lambda\overline{y_2}. \ldots)) = lloc(\lambda\overline{y_2}) \ne \bot$, which subsequently implies $lloc(\lambda\overline{w_1})\ne\bot$, contradicting the assumption.
 The sequence $u_2$ is shown to be a spinal descent by the same argument used in the \emph{structural argument} case above, using the fact that $lloc_M(\lambda\overline{y_2})=\bot$. We have thus shown that the next strand is of type $G$.
 
 \item[(Ghost)] If the node following $x_1$ is a structural node then, like we have shown in the previous case, the next strand is necessarily a spinal descent of type $S$.
@@ -3192,8 +3197,8 @@ A case analysis shows that for a \emph{qnf}, a normalizing traversal unfolds acc
 It starts with a spinal descent to the linear head occurrence, whose $lloc_M$ must be $\bot$ since the term is a \emph{qnf} and so it is necessarily an external node. The initial strand is thus of type $S$. After a strand of type $S$, if the next node is a structural lambda then by Property~\ref{prop:qnf_longapply} its $lloc_M$ is necessarily $\bot$, another spinal descent follows which yields a strand of type $S$.
 We prove the third transition with the same argument.
 Let us consider the second transition (the fourth is proven similarly) where the node following the strand is a ghost lambda. The strand is of form $\underline{\lambda\overline{w_1}} \cdot u_1 \cdot \underline{x_1} $ where by Property~\ref{prop:strand_spinaldescent} $u_1$ is  non-empty: $u_1 =
-@_1 \cdot\lambda\overline{h_1} \cdots @_q\cdot \lambda\overline{h_q}$ for some $q\geq 1$. The subterm at $@_r$, is of the form
-$(\lambda\overline{h_r}. A_0) A_1 \ldots A_{k_{r}-1}\ (\lambda\overline{y_2}. \ldots)A_{k_{r}+1}\ \ldots A_{|@_r|}$.
+@_1 \cdot\lambda\overline{z_1} \cdots @_q\cdot \lambda\overline{z_q}$ for some $q\geq 1$. The subterm at $@_r$, is of the form
+$(\lambda\overline{z_r}. A_0) A_1 \ldots A_{k_{r}-1}\ (\lambda\overline{y_2}. \ldots)A_{k_{r}+1}\ \ldots A_{|@_r|}$.
 
 The Weaving Proposition~\ref{prop:weaving} shows that $x_1$ is followed by a \emph{pending parameter lookup} $v$ shorter than $u_1$ and terminated by a structural lambda node $\lambda\overline{y_2}$ justified by some node $@_r$ in $u_1$ with label $k_r$ for some $1\leq r \leq q$:
 $
@@ -3201,12 +3206,12 @@ $
    %(l)
    {\underline{\lambda\overline{w_1}}}
    \cdot {@_1}
-   \cdot \lambda\overline{h_1}
+   \cdot \lambda\overline{z_1}
    \cdots %(atr)
         {@_r}
-   \cdot \lambda\overline{h_r}
+   \cdot \lambda\overline{z_r}
    \cdots {@_q}
-   \cdot\lambda\overline{h_q}
+   \cdot\lambda\overline{z_q}
    \cdot %(x)
         {\underline{x_1}}
    \cdot %(gl-x,25:k)
@@ -3219,21 +3224,21 @@ $
 where
 $\ghostlmd$ points to $x_1$ with label $k$;
 $v$ consists of alternation of $2(q-r) +1$ ghost variable/lambda nodes, starting and ending with a ghost variable,
-where ghost variables point to $\lambda\overline{h_i}$ for
+where ghost variables point to $\lambda\overline{z_i}$ for
 $i \in \{ r..q \}$ with label $k_i\geq1$,
 ghost lambdas point to $@_i$ for $i \in \{ r-1..q \}$ with label $k_i\geq1$;
-where $k_q = k - |x| + |\lambda\overline{h}_q|$ and $ k_{i-1} = k_i + |\lambda\overline{h_{i-1}}| - |@_i|$, $k_i\geq1$.
+where $k_q = k - |x| + |\lambda\overline{z_q}|$ and $ k_{i-1} = k_i + |\lambda\overline{z_{i-1}}| - |@_i|$, $k_i\geq1$.
 
-We show by a finite induction on $i \in \{r, q\}$ proceeding bottom-up from the lower tree node $\lambda\overline{h_q}$ up to $\lambda\overline{h_r}$
-that $k_i>|\lambda_l(\lambda\overline{h_i})|$. Base case follows from $k>|x|$ since $\lambda\overline{y_2}$ is structural.
+We show by a finite induction on $i \in \{r, q\}$ proceeding bottom-up from the lower tree node $\lambda\overline{z_q}$ up to $\lambda\overline{z_r}$
+that $k_i>|\lambda_l(\lambda\overline{z_i})|$. Base case follows from $k>|x|$ since $\lambda\overline{y_2}$ is structural.
  %induction
 Suppose the result holds for $i\in\{r+1..q\}$.
-The lambda-list at $@_i$ is obtained by popping $|@_i|$ lambdas from the lambda-list at $\lambda\overline{h_i}$ and $\lambda_l(\lambda\overline{h_i})$ is by definition $\overline{h_i}$ concatenated with the lambda-list of $@_{i+1}$, hence $|\lambda_l(@_i)| = \max( 0, |\lambda_l(@_{i+1})| + |\lambda\overline{h_i}| - |@_i| )$.
-We thus have $|\lambda_l(\lambda\overline{h_{i-1}})| - k_{i-1}
-    = |\lambda\overline{h_{i-1}}| +|\lambda_l(@_i)| - k_{i-1}
-    = \max (  |@_i|- k_i, |\lambda_l(\lambda\overline{h_i})| - k_i )$.
-By the induction hypothesis we have $|\lambda_l(\lambda\overline{h_i})| < k_i$, and since nodes in $v$ are all ghosts we have $|@_i|< k_i$ thus the `$\max$' is negative which shows $|\lambda_l(\lambda\overline{h_{i-1}})| < k_{i-1}$.
-Since in particular $|\lambda_l(\lambda\overline{h_r})| < k_r$, the application $(\lambda\overline{h_r} . A_0) A_1 \ldots A_{k_r-1}$ has more operands than pending lambdas in the operator, thus its lambda list is empty. By assumption, the strand is of type $S$ thus $lloc(\lambda\overline{w_1})=\bot$ and since there is no lloc ``left of'' $\lambda\overline{y_2}$, there cannot possibly be a lloc under $\lambda\overline{y_2}$. Hence $lloc(\lambda\overline{y_2}) =\bot$.
+The lambda-list at $@_i$ is obtained by popping $|@_i|$ lambdas from the lambda-list at $\lambda\overline{z_i}$ and $\lambda_l(\lambda\overline{z_i})$ is by definition $\overline{z_i}$ concatenated with the lambda-list of $@_{i+1}$, hence $|\lambda_l(@_i)| = \max( 0, |\lambda_l(@_{i+1})| + |\lambda\overline{z_i}| - |@_i| )$.
+We thus have $|\lambda_l(\lambda\overline{z_{i-1}})| - k_{i-1}
+    = |\lambda\overline{z_{i-1}}| +|\lambda_l(@_i)| - k_{i-1}
+    = \max (  |@_i|- k_i, |\lambda_l(\lambda\overline{z_i})| - k_i )$.
+By the induction hypothesis we have $|\lambda_l(\lambda\overline{z_i})| < k_i$, and since nodes in $v$ are all ghosts we have $|@_i|< k_i$ thus the `$\max$' is negative which shows $|\lambda_l(\lambda\overline{z_{i-1}})| < k_{i-1}$.
+Since in particular $|\lambda_l(\lambda\overline{z_r})| < k_r$, the application $(\lambda\overline{z_r} . A_0) A_1 \ldots A_{k_r-1}$ has more operands than pending lambdas in the operator, thus its lambda list is empty. By assumption, the strand is of type $S$ thus $lloc(\lambda\overline{w_1})=\bot$ and since there is no lloc ``left of'' $\lambda\overline{y_2}$, there cannot possibly be a lloc under $\lambda\overline{y_2}$. Hence $lloc(\lambda\overline{y_2}) =\bot$.
 The same argument used in the \emph{structural argument} case shows that
  $u_2$ is a spinal descent. Hence the next strand is of type $G$.
 \endshortproof
@@ -3436,7 +3441,7 @@ abstraction.
 \begin{tikzpicture}[baseline=(root.base),level distance=16pt,inner ysep=0.5mm,sibling distance=7mm,font=\small]
 \node (root){}
         child[dashed]{node{$@_{a}$}
-            child[solid]{node{$\lambda\overline{h}_a$}
+            child[solid]{node{$\lambda\overline{w_a}$}
                 child[dashed]{node{$@_{a-1}$}
                     child{node{$\lambda\ldots$}
                         child[solid]{node{$@$}
@@ -3464,7 +3469,7 @@ abstraction.
 ;
 \node (root2) at (5.2,0) {}
     child[dashed]{node{$@_{a}$}
-        child[solid]{node{$\lambda\overline{h}_a$}
+        child[solid]{node{$\lambda\overline{w_a}$}
             child[dashed]{node{$@_{a-1}$}
                 child{node{$\lambda\ldots$}
                     child[solid]{node{$@$}
@@ -3514,12 +3519,12 @@ yields $N$ (right) where $R'$ denotes a copy of $R$.}
 \end{wrapfigure}
 \fi
 %
-Let $@_j$ and $\lambda\overline{h_j}$ for $1\leq j\leq a$, $a\geq 1$
+Let $@_j$ and $\lambda\overline{w_j}$ for $1\leq j\leq a$, $a\geq 1$
 denote respectively the @-nodes and $\lambda$-nodes in the spinal descent
 from $@_a$ to $x$'s binder where
 $@_a$ denotes the parent node of the argument $A = \lambda\overline{y}. R$.
-So that $\lambda\overline{h_1}$ is $x$'s binder and $@_1$ its parent.
-Let $i$ denote $x$'s binding index in $\lambda\overline{h_1}$.
+So that $\lambda\overline{w_1}$ is $x$'s binder and $@_1$ its parent.
+Let $i$ denote $x$'s binding index in $\lambda\overline{w_1}$.
 %
 After reduction,
 node $x$ gets replaced by an application node $@_x$,  its existing children are preserved, and a new subterm $\lambda\overline{y}'. R'$, a copy of the subterm tree $A$, gets attached as the $0$th child tree of $@_x$.
@@ -3572,19 +3577,19 @@ it inserts the \emph{argument lookup} sequence consisting of ghost
 nodes statically determined by the term tree and obtained by repeatedly instantiating rules \rulenamet{Lmd} and \rulenamet{Var}.
 %
 \iflongversion
-So given a traversal $u \in \travset(N)$ involving $@_x$, $\phi(u)$ is given by:
+Take a traversal $u \in \travset(N)$ involving $@_x$, its image $\phi(u)$ is given by:
 \begin{eqnarray*}
-    u &=& \Pstr[10pt]{ \ldots (aa){@_a} \cdot (la){\bulklambda{h_a}} \cdot \ldots (a1){@_1} \cdot (l1){\bulklambda{h_1}} \cdot @ \ldots \bulklambda{z} \cdot (ax){@_x} \cdot (ly-ax,20:0){\bulklambda{y}'} }
+    u &=& \Pstr[10pt]{ \ldots (aa){@_a} \cdot (la){\bulklambda{w_a}} \cdot \ldots (a1){@_1} \cdot (l1){\bulklambda{w_1}} \cdot @ \ldots \bulklambda{z} \cdot (ax){@_x} \cdot (ly-ax,20:0){\bulklambda{y}'} }
     \\
-    \phi(u) &=& \Pstr[10pt]{ \ldots (aa){@_a} \cdot (la){\bulklambda{h_a}} \cdot \ldots (a1){@_1} \cdot (l1){\bulklambda{h_1}} \cdot @ \ldots \bulklambda{z} \cdot (x-l1,30:i) x \cdot \ghostlmd \cdot \ghostvar \ldots \ghostlmd \cdot \ghostvar \cdot (ly-a,20:i_a){\bulklambda{y}} }
+    \phi(u) &=& \Pstr[10pt]{ \ldots (aa){@_a} \cdot (la){\bulklambda{w_a}} \cdot \ldots (a1){@_1} \cdot (l1){\bulklambda{w_1}} \cdot @ \ldots \bulklambda{z} \cdot (x-l1,30:i) x \cdot \ghostlmd \cdot \ghostvar \ldots \ghostlmd \cdot \ghostvar \cdot (ly-a,20:i_a){\bulklambda{y}} }
 \end{eqnarray*}
 \else
 So that a traversal of the shape
-$u = \Pstr[10pt]{ \ldots @_a (la){\bulklambda{h_a}}
-  \ldots (a1){@_1} (l1){\bulklambda{h_1}} \, @ \ldots \bulklambda{z} \, (ax){@_x} \, (ly-ax,20:0){\bulklambda{y}'} }$ of $N$
+$u = \Pstr[10pt]{ \ldots @_a (la){\bulklambda{w_a}}
+  \ldots (a1){@_1} (l1){\bulklambda{w_1}} \, @ \ldots \bulklambda{z} \, (ax){@_x} \, (ly-ax,20:0){\bulklambda{y}'} }$ of $N$
 maps to
-$\phi(u) = \Pstr[10pt]{ \ldots @_a \, (la){\bulklambda{h_a}}
-\ldots (a1){@_1} \, (l1){\bulklambda{h_1}} \, @ \ldots \bulklambda{z} \, (x-l1,25:i) x \, \ghostlmd \, \ghostvar \, \ghostlmd \, \ghostvar \, (ly-a,22:i_a){\bulklambda{y}}}$.
+$\phi(u) = \Pstr[10pt]{ \ldots @_a \, (la){\bulklambda{w_a}}
+\ldots (a1){@_1} \, (l1){\bulklambda{w_1}} \, @ \ldots \bulklambda{z} \, (x-l1,25:i) x \, \ghostlmd \, \ghostvar \, \ghostlmd \, \ghostvar \, (ly-a,22:i_a){\bulklambda{y}}}$.
 \fi
 The transformation does not affect the structure
 of the core projection
@@ -3632,8 +3637,8 @@ can also traverse the corresponding nodes in $N$, and reciprocally for traversal
     and $u' = u \cdot \lambda\overline{y}'$.
 %
     By Lemma~\ref{lemma:genredex_lookup}, $@_a$ is precisely the lowest application node in the spinal descent
-    from $@_a$ to $\lambda\overline{h_1}$ verifying $|@_a| >  i_a$,
-        where $i_a = i + \sum_{1\leq j< a} (|\lambda\overline{h_j}| - |@_j|)$.
+    from $@_a$ to $\lambda\overline{w_1}$ verifying $|@_a| >  i_a$,
+        where $i_a = i + \sum_{1\leq j< a} (|\lambda\overline{w_j}| - |@_j|)$.
     This formula precisely captures the ``pending argument lookup'' algorithm implicitly
     implemented by the rules \rulenamet{Lmd} and \rulenamet{Var}:
     with exactly $i_a$ instantiations of those two rules, traversal $t$ gets extended by $2(i_a-1)$ ghost nodes followed
@@ -4084,6 +4089,24 @@ We conjecture that a Game Semantics correspondence similar
 to Theorem~\ref{thm:gamesem_correspondence_stlc} holds for
 the untyped lambda calculus: that there is an isomorphism between the cores of imaginary traversals from Table~\ref{tab:trav_rules} and the innocent \emph{effectively almost everywhere copycat (EAC)} game denotation of untyped lambda terms~\cite{KerThesis}; as well as an isomorphism between the imaginary traversals and the EAC game denotation where internal moves are not hidden during strategy composition. We suspect that a connection exists between the `on-the-fly' eta-expansion performed by imaginary traversals and the morphism $Fun : U \rightarrow (U \Rightarrow U)$ of Ker's game category, where $U$ denotes the maximal game arena of the EAC strategies.
 %%%%%%%%%%%%%%%%%
+
+\paragraph{Optimality} Traversal-based evaluation is not L\'evy-optimal~\cite{optimal-reduction-levy}.
+Traversals do exhibit some sharing through their use of pointers, which avoids copying or rewriting subterms when evaluating redexes.
+But there is no attempt to exploit such sharing to avoid redundant work: in the term $(\lambda x. y x x) A$, each occurrence of $x$ involves re-traversing the argument $A$.
+If a redex is traversed in $A$ the first time then it will get traversed again the second time, without any attempt to exploit the shared redex.
+%
+On the other hand, just like head-linear reduction, traversals are  ``hyper-lazy'' in nature: they only evaluate (linear) redexes one variable occurrence at a time and only when the value of that occurrence is needed. So besides the possible redundancy described above, no useless work is performed, as opposed to the traditional
+way of evaluating redexes which involves substituting all variable occurrences at once, regardless of whether some of those occurrences are dead-code.
+%
+Traversals may not be too far from being optimal:
+we can conceivably augment traversals with some memoization mechanism
+to detect shared families of redexes, in L\'evy-sense, to give rise to
+a L\'evy-optimal notion of traversals, similarly to what is suggested by Danos and Regnier in~\cite{DANOS199979} to make \emph{Jumping Abstract Machines} optimal.
+
+%1 - Not the traditional notion of redex (linear)
+%2 - No sharing of redex, no simultaneous firing of redex with same Levy-label
+%
+% Hyperlazy does not mean efficient: linear substitution ends up repeating same things several times. However, no useless work is done, unlike the traditional substitution.
 
 
 % \subsection*{Higher-order collapsible pushdown automata}
