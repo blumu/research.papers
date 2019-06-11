@@ -2392,7 +2392,7 @@ where the ghost variables all point to the first lambda node in each sequence.
 % \Pstr[0.7cm]{(n0){\lambda }\ (n1-n0){{\ghostvar^{3}}}\ (n2-n1){{\ghostlmd^{1}}}\ (n3-n0){{\ghostvar^{1}}}\ (n4-n3){{\ghostlmd^{2}}}\ (n5-n0){{\ghostvar^{2}}}\ (n6-n5){{\ghostlmd^{2}}}\ (n7-n0){{\ghostvar^{4}}}}
 % \end{align*}
 %%%%%%%%%
-The beta-normal form of ${\sf varity}\, 2$ is therefore $\lambda x' x s z . s (x' s (x s z))$.
+The beta-normal form of ${\sf varity}\, 2$ is therefore $\lambda x x' s z . s (x s (x' s z))$.
 \end{example}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -4079,23 +4079,26 @@ reconstruct the $\beta$-normal form.
 
 \section{Further directions}
 
-We have seen that imaginary traversals implement leftmost linear reduction,
-%in the untyped lambda calculus
-a non-strict, ``hyper-lazy''~\cite{danosherbelinregnier1996}, reduction strategy that substitutes variables one at a time. This brings the question of whether alternative notions of traversals are definable for other evaluation strategies such as call-by-name and call-by-value~\cite{plotkin-75}. A call-by-name version of head-linear reduction, that does not reduce inside the body of an unapplied abstraction, would easily be accommodated in the traversal setting. A strict evaluation strategy like call-by-value, on the other hand, might require substantial changes. As for traditional reduction strategies, such as the normal order of lambda calculus,
-%it is not immediately obvious how to implement simultaneous substitution with traversals since, by nature, they traverse the term tree one node at a time.
+\paragraph{Reduction strategies} We have seen how traversals implement leftmost linear reduction,
+a non-strict non-standard reduction strategy that substitutes variables one at a time. This begs the question of whether other notions of traversals
+exist for other evaluation strategies such as call-by-name and call-by-value~\cite{plotkin-75}. A call-by-name version of head-linear reduction, that does not reduce inside the body of an unapplied abstraction, would easily be accommodated for. A strict evaluation strategy like call-by-value, on the other hand, might require substantial changes. As for traditional reduction strategies, such as the normal order of lambda calculus,
 perhaps they can be modeled by non-deterministically spawning new traversals for every free occurrence of the variable to be substituted.
 
-We conjecture that a Game Semantics correspondence similar
+\paragraph{Game semantics} We conjecture that a correspondence similar
 to Theorem~\ref{thm:gamesem_correspondence_stlc} holds for
 the untyped lambda calculus: that there is an isomorphism between the cores of imaginary traversals from Table~\ref{tab:trav_rules} and the innocent \emph{effectively almost everywhere copycat (EAC)} game denotation of untyped lambda terms~\cite{KerThesis}; as well as an isomorphism between the imaginary traversals and the EAC game denotation where internal moves are not hidden during strategy composition. We suspect that a connection exists between the `on-the-fly' eta-expansion performed by imaginary traversals and the morphism $Fun : U \rightarrow (U \Rightarrow U)$ of Ker's game category, where $U$ denotes the maximal game arena of the EAC strategies.
 %%%%%%%%%%%%%%%%%
 
-\paragraph{Optimality} Traversal-based evaluation is not L\'evy-optimal~\cite{optimal-reduction-levy}.
+\paragraph{Compilation}
+It clearly appears from Example~\ref{tab:varity2_trav} that even for relatively simple terms,
+ traversals can easily get very long, which is not surprising
+given that they were not designed with efficiency nor optimality in mind, but rather derived from the game-semantic analogy.
+In fact, traversal-based evaluation is not L\'evy-optimal~\cite{optimal-reduction-levy}.
 Traversals do exhibit some sharing through their use of pointers, which avoids copying or rewriting subterms when evaluating redexes.
-But there is no attempt to exploit such sharing to avoid redundant work: in the term $(\lambda x. y x x) A$, each occurrence of $x$ involves re-traversing the argument $A$.
-If a redex is traversed in $A$ the first time then it will get traversed again the second time, without any attempt to exploit the shared redex.
+But they make no attempt to exploit such sharing to avoid redundant work: in the term $(\lambda x. y x x) A$, each occurrence of $x$ involves re-traversing the argument $A$.
+If a redex is traversed in $A$ the first time then it will get traversed again the second time, without reusing any work from the first traversal.
 %
-On the other hand, just like head-linear reduction, traversals are  ``hyper-lazy'' in nature: they only evaluate (linear) redexes one variable occurrence at a time and only when the value of that occurrence is needed. So besides the possible redundancy described above, no useless work is performed, as opposed to the traditional
+On the other hand, just like head-linear reduction, traversals are  ``hyper-lazy'' in nature~\cite{danosherbelinregnier1996}: they only evaluate (linear) redexes one variable occurrence at a time and only when the value of that occurrence is needed. So besides the possible redundancy described above, no useless work is performed, as opposed to the traditional
 way of evaluating redexes which involves substituting all variable occurrences at once, regardless of whether some of those occurrences are dead-code.
 %
 Traversals may not be too far from being optimal:
@@ -4103,10 +4106,14 @@ we can conceivably augment traversals with some memoization mechanism
 to detect shared families of redexes, in L\'evy-sense, to give rise to
 a L\'evy-optimal notion of traversals, similarly to what is suggested by Danos and Regnier in~\cite{DANOS199979} to make \emph{Jumping Abstract Machines} optimal.
 
+Despite the lack of optimality, traversals are straightforward to implement which suggest possible application to program compilation, such as partial evaluation, an avenue pursued by Berezun and Jones in \cite{berezunjones_partialevalbytraversals} for their own notion of traversals.
+
+
 %1 - Not the traditional notion of redex (linear)
 %2 - No sharing of redex, no simultaneous firing of redex with same Levy-label
 %
 % Hyperlazy does not mean efficient: linear substitution ends up repeating same things several times. However, no useless work is done, unlike the traditional substitution.
+%%%%%
 
 
 % \subsection*{Higher-order collapsible pushdown automata}
@@ -4504,7 +4511,7 @@ t_{122} =
     (n143-n0){\underline{\ghostvar^{4}}}
 ]
     }$}
-\caption{The maximal traversals $t_{11}$, $t_{121}, t_{122}$ yield the maximal paths of the normal form $\lambda x' x s z . s (x' s (x s z))$ of $\mathsf{varity}\,2$ from Example~\ref{example:varity}. Strands are delimited with `[\ldots]'.}
+\caption{The maximal traversals $t_{11}$, $t_{121}, t_{122}$ yield the maximal paths of the normal form $\lambda x x' s z . s (x s (x' s z))$ of $\mathsf{varity}\,2$ from Example~\ref{example:varity}. Strands are delimited with `[\ldots]'.}
 \label{tab:varity2_trav}
 \end{table}
 \end{landscape}
