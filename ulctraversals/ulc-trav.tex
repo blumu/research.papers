@@ -363,7 +363,7 @@ which ensures that when traversing an application, there exists a subterm repres
 %
 Untyped terms admitting a simple type, like $M$, can be traversed via eta-long expansion with respect to whichever type they inhabit.
 But this is not feasible in the general ULC case where untyped terms do not necessarily inhabit a simple type.
-Sometimes, well-chosen eta-expansions can help, for instance the untyped term $U$, which has no simple type, is traversable if we eta-expand all its variable occurrences. This does not always work, unfortunately: to traverse the
+Sometimes, well-chosen eta-expansions can help. For instance, the untyped term $U$, which has no simple type, is traversable if we eta-expand all its variable occurrences. This does not always work, unfortunately: to traverse the
 term $J = (\lambda u . u(x\, u)) (\lambda v . v\, y)$ from
  Example~\ref{ex:missingoperand}, nested eta-expansions are necessary:
  the fresh variable resulting from the eta-expansion of $(x\, u)$ needs to be itself eta-expanded to unblock a concrete traversal of the term.
@@ -393,14 +393,14 @@ traversals use ghost nodes to evaluate lambda terms but they eventually material
 %%%%end of analogy
 
 Evaluating an untyped term boils down to enumerating traversals.
- Although the set of imaginary traversals is infinite, and can be themselves infinitely long, we only need to consider an effectively computable subset with sufficiently enough traversals to characterize the normal form, when it exists.
+ Although the set of imaginary traversals is infinite and the traversals  themselves can be infinitely long, we only need to consider an effectively computable subset with sufficiently enough traversals to characterize the normal form, when it exists.
 We achieve this by restricting the non-determinism when traversing a variable: we bound the argument index by a critical quantity called the `dynamic arity', calculated in linear time from the traversal itself. It determines the number of arguments beyond which eta-expansions becomes unnecessary for the sake of finding a path in the normal form. This restricts both the breadth and depth of the traversal enumeration: only a finite number of on-the-fly eta-expansions are applied on a given traversal; and a traversal cannot unfold infinitely, provided that the term has a beta-normal form.
 On the other hand, traversing a non-terminating term like $(\lambda x. x\,x)(\lambda x. x\,x)$ leads to infinitely long traversals, as one would expect.
 
 The read-out phase of the algorithm appeals to a correspondence property between the traversals and paths in the tree representation of the normal form. The term $M$, for instance, has a single traversal which via suitable filtering, yields the path $\lambda z \cdot z$, therefore its beta-normal form is $\lambda z. z$, up to variable renaming.
 
  To prove correctness of the evaluation procedure, we show that traversals recursively implement \emph{head linear reduction}, a term reduction method
- based on an non-standard notion of redex that are reduced
+ based on a non-standard notion of redex that is reduced
  by substituting one variable occurrence at a time.
 
  We have implemented the evaluation procedure in HOG, a tool to study the theory of traversals and pushdown automata generated from Higher-Order Grammars and lambda terms~\cite{BlumGalop2008,Blum-HogTool}.  Section~\ref{sec:examples} includes traversals of untyped lambda terms generated with this tool.
@@ -426,7 +426,7 @@ A traversal starts, in a `leftmost-order'-like fashion, with a depth-first searc
 To find that node, traversals implement what Danos-Regnier call ``the gymnastics to find the argument of a subterm''~\cite{danos-head} via the mechanism of `weaving' (Proposition~\ref{prop:weaving}),
 where a traversal repeatedly traverses ghost lambda and variable nodes until the node representing the argument to be fetched materializes.
 The link label `$|\mu|+i-|m|$' from the definition
-of the lambda rule in Table~\ref{tab:trav_rules} effectively calculates the quantity $r-a+l$ that appear in step 2.(b) of the PAM transition from~\cite{danos-head}.
+of the lambda rule in Table~\ref{tab:trav_rules} effectively calculates the quantity $r-a+l$ that appears in step 2.(b) of the PAM transition from~\cite{danos-head}.
 After performing such a jump, a traversal continues its descent to look for the next head occurrence, as if that first head occurrence had been replaced by the redex argument; until it finds the variable that will become the head variable in the normal form. At this point, a PAM would stop, whereas a traversal forks  non-deterministically and recursively traverses all possible arguments of the head variable.
 
 A property of head-linear reduction is that all the terms appearing in the reduction sequence consist of sub-terms of the original term.
@@ -708,7 +708,7 @@ For any set $T\subseteq \justseqset(M)$ we write $T^{\max}$ for the subset of ma
 %
 We borrow basic definitions from Game Semantics~\cite{Abr02}. A justified sequence verifies the \defname{alternation condition} if it starts with a lambda node and subsequently alternates between (i) a variable or application node (ii) a lambda node.
 An occurrence in $s$ is \defname{hereditarily justified by some other occurrence} if recursively following justification pointers starting from the first occurrence leads to the second one.
-Since justification pointers honor the enabling relation $\enables$, if an occurrence of node $n$ is hereditarily justified by the occurrence of a node $m\in\Nodes$ then $n$ is necessarily hereditarily enabled by $m$. Further if $m$ occurs only once in $s$ then the occurrences hereditarily justified by $m$ are precisely the occurrences of nodes that are hereditarily \emph{enabled} by $m$ in $\ctree(M)$.
+Since justification pointers honor the enabling relation $\enables$, if an occurrence of node $n$ is hereditarily justified by the occurrence of a node $m\in\Nodes$ then $n$ is necessarily hereditarily enabled by $m$. Further, if $m$ occurs only once in $s$ then the occurrences hereditarily justified by $m$ are precisely the occurrences of nodes that are hereditarily \emph{enabled} by $m$ in $\ctree(M)$.
 %
 The \defname{projection} $s\filter n$ of $s$ with respect to $n$ is the subsequence consisting of occurrences hereditarily justified by $n$ in $s$. We write $s \filter A$ for the subsequence of $s$ consisting of occurrences of nodes in a subset $A \subseteq \Nodes$.
 Hence $s\filter\ExternalNodes$ consists of occurrences of $s$ that are external nodes, or equivalently that are hereditarily justified by some occurrence of the root in $s$.
@@ -848,7 +848,7 @@ $\readout[s\cdot (j,i)]  = \readout[s] \cdot \ghostvar$ if $i> |\overline{x}|$.
 %      \mbox{if $i> |\overline{x}|$.}
 % \end{cases}
 % \end{array}$$
-Just like the name-free encoding, this encoding assimilate the ghost lambda `$\ghostlmd$' with the dummy lambda `$\lambda$', so that the case $\lambda\overline{x}$ where $\overline{x}=\epsilon$ covers both the ghost lambda and dummy lambda.
+Just like the name-free encoding, this encoding assimilates the ghost lambda `$\ghostlmd$' with the dummy lambda `$\lambda$', so that the case $\lambda\overline{x}$ where $\overline{x}=\epsilon$ covers both the ghost lambda and dummy lambda.
 %
 We then define $\readout \colon \nameencoding^* \rightarrow \mathcal{L}^*$
 by point-wise extension.
@@ -949,11 +949,11 @@ We first inductively construct a $\mathcal{L^-}$-labelled tree with
 $\mathcal{L^-} = \{ @ \} + \{
     \lambda \overline{x} \ | \
     \overline{x} \in \mathcal{V}^* \} + \nat\times\nat$,
-where a De Bruijn pair $(j,i)\in \nat\times\nat$ represents a variable node such that the link distance $j$ identifies the binder lambda-node, and the link label $i$ gives the bound variable index in that binding lambda node. Since $T$ is $\alpha$-consistent, there is only choice of variable names $\overline{x}$ to assign to a given lambda-node.
+where a De Bruijn pair $(j,i)\in \nat\times\nat$ represents a variable node such that the link distance $j$ identifies the binder lambda-node, and the link label $i$ gives the bound variable index in that binding lambda node. Since $T$ is $\alpha$-consistent, there is a single choice of variable names $\overline{x}$ to assign to a given lambda-node.
 
 An important step at this point is to rename variables to avoid any potential variable capture when we finally replace the De Bruijn pairs by the variable names they refer to.
 %
-Firstly, the variable names $\overline{x}$ from lambda-occurrences in sequences in $T$ may contain duplicates. We resolve this by renaming names that are repeated within the same lambda node, provided that some variable occurrence under that node refers to the first variable name: this is the situation of a justified path  $\cdots \lambda x x y \cdots (j,1)$ where the De Bruijn pair $(j,1)$ refers to the first $x$ of the lambda node. In this case the lambda node becomes $\lambda x x' y$.
+Firstly, the variable names $\overline{x}$ from lambda-occurrences in sequences in $T$ may contain duplicates. We resolve this by renaming names that are repeated within the same lambda node, provided that some variable occurrence under that node refers to the first variable name: this is the situation of a justified path  $\cdots \lambda x x y \cdots (j,1)$ where the De Bruijn pair $(j,1)$ refers to the first $x$ of the lambda node. In this case, the lambda node becomes $\lambda x x' y$.
 %
 Secondly, two distinct nested lambdas in a given justified path may bind the same variable name. If this introduces a clash, \ie, the variable occurs freely under the nested lambda, then we rename the bound variable in the nested lambda. This is the situation of a justified path of the form $\cdots \lambda{xyz} \cdots \lambda {xuv} \cdots (j,1) \cdots$
  where the De Bruijn pair $(j,1)$ refers to the $x$ from the first lambda $\lambda{x y z}$.
@@ -1316,7 +1316,7 @@ with the exclusion of \rulenamet{Lam^\ghostvar} and by restricting rules \rulena
 \end{definition}
 
 \begin{definition}[Reformulation of~\cite{BlumPhd}]
-The \defname{eta-long traversals} of a simply-typed term $M^\tau$ with eta-long form $N^\tau$ is defined as $\travset_{\concrete}(N^\tau)$, the concrete traversals of its eta-long form.
+The \defname{eta-long traversals} of a simply-typed term $M^\tau$ with eta-long form $N^\tau$ are defined as $\travset_{\concrete}(N^\tau)$, the concrete traversals of its eta-long form.
 \end{definition}
 
 \begin{proposition}
@@ -1392,7 +1392,7 @@ it suffices to explore each possible branch only once.
 \emph{Essential traversals} implement this idea by restricting the rule $\rulenamet{IVar}_\essential$ to only traverse nodes leading to paths in the tree that the traversal has so far not explored: when picking the lambda node to visit next, it forces choice `(J)' to be the \emph{latest} variable node in the traversal.
 
 Continuing with the game-semantics intuition: Lambda nodes correspond to opponent moves, and restricting the opponent moves limit the contexts in which a term can appear.
-Essential traversals effectively excludes all contexts that apply a term $A$ to $M$ such that $A$ evaluates any two of its higher-order arguments in a nested fashion. This excludes contexts involving $F_k$, $k\geq 2$, or the Kierstead's terms $\lambda f .f (\lambda x .f (\lambda y.y))$ and $\lambda f .f (\lambda x .f (\lambda y.x))$, but also $\lambda f. \lambda g . f (\lambda f .(\lambda x . g (\lambda y . x)))$ where the two arguments $f$ and $g$ occur in a nested expression.
+Essential traversals effectively exclude all contexts that apply a term $A$ to $M$ such that $A$ evaluates any two of its higher-order arguments in a nested fashion. This excludes contexts involving $F_k$, $k\geq 2$, or the Kierstead's terms $\lambda f .f (\lambda x .f (\lambda y.y))$ and $\lambda f .f (\lambda x .f (\lambda y.x))$, but also $\lambda f. \lambda g . f (\lambda f .(\lambda x . g (\lambda y . x)))$ where the two arguments $f$ and $g$ occur in a nested expression.
 
 
 Because essential traversals still allow for infinitely many eta-expansions, there can be infinitely many of them. From a denotational semantics stand-point, where the notion of compositionality matters, this is reasonable:
@@ -1463,7 +1463,7 @@ which equates $\pview{\core{u}}$ if we take $u = u' \cdot \lambda\overline{x} \c
 It remains to show that $u\in\travsetes$.
 If we write the occurrences of $ v \cdot t^\omega$ as $m_1 \ldots m_q$, for $q>0$ then a finite induction on $q$ shows that $u_{\leq m_q} \in\travsetes$ and $m_q$'s justifying node and label are the same in $u$ and $t$. The only non-trivial case is rule \rulenamet{Var}: by the Path-View correspondence, $\pview{u_{<m_q}}$ is a path in the tree from the root to $m_q$ therefore $m_q$'s binder necessarily occur in $u$, we can  conclude using the I.H.~on $u_{<m_q}$ and applying \rulenamet{Var} on $u_{<m_q}$ to get $u_{\leq m_q}$.
 %
-(ii) In essential traversals, non-initial occurrences of external lambda nodes must immediately follow their justifier by rule $\rulenamet{IVar}_\essential$, hence after removing internal nodes the P-view coincide with the identity function.
+(ii) In essential traversals, non-initial occurrences of external lambda nodes must immediately follow their justifier by rule $\rulenamet{IVar}_\essential$, hence after removing internal nodes, the P-view coincide with the identity function.
 \endshortproof
 \proofatend
 %\begin{proof}
@@ -2424,11 +2424,11 @@ $gr((\lambda x \lambda y . M) A_1 A_2) = \{ (\lambda x, A_1), (\lambda y, A_2)\}
  $gr((\lambda z . (\lambda x \lambda y . M) N) A_1 A_2) = \{ (\lambda z, A_1), (\lambda x, N), (\lambda y, A_2)\}$.
 \end{example}
 
-To define head-linear reduction, one needs to consider specific \emph{occurrences} of variables and sub-terms in a given term. In particular, let's emphasize that a generalized redex  $(\lambda x, A)$ refers to specific \emph{occurrence} of $\lambda x$ and subterm $A$.
+To define head-linear reduction, one needs to consider specific \emph{occurrences} of variables and sub-terms in a given term. In particular, let's emphasize that a generalized redex  $(\lambda x, A)$ refers to a specific \emph{occurrence} of $\lambda x$ and subterm $A$.
 %
 We say that a variable occurrence is \defname{involved} in the generalized redex $(\lambda x, A)$ if the variable occurrence is bound by $\lambda x$. A variable occurrence can therefore be involved in at most one generalized redex. We define the \defname{linear substitution} of $x$ for $A$ as the term obtained by performing capture-avoiding substitution of that single occurrence of $x$ by $A$. (Compare this to the standard substitution that applies to \emph{every} occurrence of $x$ in $M$.) When performing such substitution we say that we \defname{linearly fire} the generalized redex $(\lambda x, A)$ for that occurrence of $x$.
 %
-The \defname{head variable occurrence}, abbreviated \defname{hoc}, of a term is the left-most variable occurring in the term (\ie, the first variable found by depth-first traversal of the term tree.) If the head variable occurrence of a term is involved in a generalized redex then we call that redex the \defname{head-linear redex}.
+The \defname{head variable occurrence}, abbreviated \defname{hoc}, of a term is the left-most variable occurring in the term (\ie, the first variable found by a depth-first traversal of the term tree.) If the head variable occurrence of a term is involved in a generalized redex then we call that redex the \defname{head-linear redex}.
 A term that does not have a head-linear redex is said to be in \defname{quasi head-normal form}.
 The \defname{head-linear reduction} $\hlred$ is the reduction that linearly fires the head linear redex, if it exists. It can be shown that the reflexive transitive closure $\rightarrow^*_{hl}$ yields the quasi head-normal form~\cite{danos-head,danosherbelinregnier1996}.
 
@@ -2764,7 +2764,7 @@ Suppose that the \emph{lloc} of $M$ is in $U$.
     \emph{Base case of H3}: $z$ has a single argument which must be $T_2$.
     By Theorem~\ref{thm:danosregnier_headlinred}, reducing all the prime redexes in $M$ yields its head-normal form
     with head variable $x$.
-    Let $\gamma$ denotes the sequence of substitutions performed on $M$ to reduce the prime redexes, so that $\gamma(M)$ is the head normal form of $M$.  Then $\gamma(T_2)$ will becomes the (unique) argument of $x$ in the head normal form. And because $M$ has a $\beta$-nf, the term $\gamma(T_2)$ must also have a $\beta$-nf.
+    Let $\gamma$ denotes the sequence of substitutions performed on $M$ to reduce the prime redexes, so that $\gamma(M)$ is the head normal form of $M$.  Then $\gamma(T_2)$ will become the (unique) argument of $x$ in the head normal form. And because $M$ has a $\beta$-nf, the term $\gamma(T_2)$ must also have a $\beta$-nf.
     %
     Because $z$ has a single hoc argument, all the subsequent linear substitutions in $M$ must necessarily occur under $T_2$ and its reducts: the \emph{lloc} will never get out of $T_2$.
     %%%% not needed in short proof
@@ -3390,9 +3390,9 @@ If $M \llred N$ then $M$ and $N$ are bisimilar.
 %\proofatend
 Suppose that $M \llred N$. Let $x$ denote the leftmost linear variable occurrence in $M$ and $(\lambda x, A)$ be the generalized redex involving it, so that $N$ is the term obtained by firing $(\lambda x, A)$.
 A property of linear head reduction is that the reduct contains the original
-term itself
-%, modulo alpha conversion and relabelling of the \emph{lloc} node
-. This induces an implicit map  $\Phi : \ExtendedNodes(N)  \rightarrow \ExtendedNodes(M)$ from reduct's nodes to the term's nodes,
+term itself.
+%, modulo alpha conversion and relabelling of the \emph{lloc} node.
+This induces an implicit map  $\Phi : \ExtendedNodes(N)  \rightarrow \ExtendedNodes(M)$ from reduct's nodes to the term's nodes,
 that maps nodes under the substituted subterm in $N$ to the corresponding nodes under argument $A$ in $M$, and every node in $N$ that is not involved in the substitution, to its counterpart in $M$.
 %
 The linear substitution affects the term tree in three possible ways
