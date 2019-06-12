@@ -378,16 +378,14 @@ unblocks the traversal, until it reaches node $z$, at which point we have a maxi
 
 Generalizing this idea, we realize that concrete traversals induce an implicit `eta-expansion strategy': at any given point where a traversal gets stuck, there is only one possible subterm expansion that exhibits nodes necessary for the traversal to resume. In the term $M$, the first expansion considered is that of $f$ because, at that point, the concrete rules only let us
 traverse an immediate argument of $f$. If instead we were to eta-expand the term itself, it would yield $\lambda z. (\lambda f .f)(\lambda x.x) z$
-which a concrete traversal cannot traverse since $f$ does not have an immediate argument. More intuitively: at $x$ the traversal has figured out that the subterm $\lambda x.x$ should be substituted for variable $f$, therefore to determine what $x$ should be substituted for, it needs to look for the first argument of $f$. Since $f$ has no direct argument, we must eta-expand it. In this simple example, the jump into the realm of fictitious nodes is indefinite: nodes subsequently traversed are all absent from the original term. There are situations, however, such as in term $J$, where it eventually leads to traversing an actual node from the original term tree.
+which a concrete traversal cannot traverse since $f$ does not have an immediate argument. More intuitively: at $x$ the traversal has figured out that the subterm $\lambda x.x$ should be substituted for variable $f$, therefore to determine what $x$ should be substituted for, it needs to look for the first argument of $f$. Since $f$ has no direct argument, we must eta-expand it. In this simple example, the jump into the realm of fictitious nodes is indefinite: nodes subsequently traversed are all absent from the original term. There are situations, however, such as in the term $J$, where it eventually leads to traversing an actual node from the original term tree.
 
-In practice, it is not necessary to rewrite the term or alter its syntax representation to traverse it.
-The eta-expansion occurs fictitiously and ``on the fly'' as the traversal unfolds so as to traverse the original unaltered lambda term, which leads to a more generic concept of traversals where no preliminary transformation is required.
-%
-%(Although imaginary traversals bare sufficient traces of those successive fictitious eta-expansions to reconstruct the expanded term effectively being traversed.)
-The ad-hoc expansion happens when traversing a variable node, where a non-deterministic choice of `argument index' determines which variable argument to traverse next. In concrete traversals, this index is bounded by the actual number of arguments applied to the variable. In imaginary traversals, is unbounded: if it is greater than the number of static arguments applied to the variable then a fictitious eta-expansion takes place.
+In practice, it is not necessary to rewrite the term in any way in order to traverse it.
+The eta-expansion occurs fictitiously and ``on the fly'' as the traversal unfolds over the original unaltered lambda term.
+The ad-hoc expansion occurs when traversing a variable node, where a non-deterministic choice of `argument index' determines which variable argument to traverse next. In concrete traversals, this index is bounded by the actual number of arguments applied to the variable. In imaginary traversals, is unbounded: if it is greater than the number of static arguments applied to the variable then a fictitious eta-expansion takes place.
 
 %%% analogy
-The tree nodes resulting from such fictitious eta-expansion
+Tree nodes resulting from such fictitious eta-expansions
 are called  \emph{ghost lambda} and \emph{ghost variable} nodes.
 To give an analogy, just like the imaginary number $i$ in mathematics was invented from the impossibility of calculating the square root of $-1$, we introduce ghost nodes from the impossibility of resolving the argument of a variable when traversing a lambda term: they start to appear when the arity of a variable is too low to structurally traverse it.
 And just like complex numbers are sometimes used intermediately in a calculation without necessarily appearing in the final result (\eg, using De Moivre's Theorem to prove trigonometry identities on real numbers),
@@ -395,11 +393,11 @@ traversals use ghost nodes to evaluate lambda terms but they eventually material
 %%%%end of analogy
 
 Evaluating an untyped term boils down to enumerating traversals.
- Although the set of imaginary traversals is infinite, we only need to consider an effectively computable subset with sufficiently enough traversals to characterize the normal form, when it exists.
-We achieve this by restricting the non-determinism when traversing a variable: we bound the argument index by a critical quantity called the `dynamic arity', calculated in linear time from the traversal itself. It defines the number of arguments beyond which eta-expansions becomes unnecessary for the sake of finding a path in the normal form. This restricts both the breadth and depth of the traversal enumeration: only a finite number of on-the-fly eta-expansions are applied on a given traversal; and a traversal cannot unfold infinitely, provided that the term has a beta-normal form.
+ Although the set of imaginary traversals is infinite, and can be themselves infinitely long, we only need to consider an effectively computable subset with sufficiently enough traversals to characterize the normal form, when it exists.
+We achieve this by restricting the non-determinism when traversing a variable: we bound the argument index by a critical quantity called the `dynamic arity', calculated in linear time from the traversal itself. It determines the number of arguments beyond which eta-expansions becomes unnecessary for the sake of finding a path in the normal form. This restricts both the breadth and depth of the traversal enumeration: only a finite number of on-the-fly eta-expansions are applied on a given traversal; and a traversal cannot unfold infinitely, provided that the term has a beta-normal form.
 On the other hand, traversing a non-terminating term like $(\lambda x. x\,x)(\lambda x. x\,x)$ leads to infinitely long traversals, as one would expect.
 
-The read-out phase of the algorithm appeals to a correspondence property between the traversals and paths in the tree representation of the normal form. The term $M$, for instance, has a single traversal $t$, which via suitable filtering, yields the path $\lambda z \cdot z$; its beta-normal form is thus $\lambda z. z$, up to variable renaming.
+The read-out phase of the algorithm appeals to a correspondence property between the traversals and paths in the tree representation of the normal form. The term $M$, for instance, has a single traversal which via suitable filtering, yields the path $\lambda z \cdot z$, therefore its beta-normal form is $\lambda z. z$, up to variable renaming.
 
  To prove correctness of the evaluation procedure, we show that traversals recursively implement \emph{head linear reduction}, a term reduction method
  based on an non-standard notion of redex that are reduced
@@ -420,7 +418,7 @@ When restricted to simply-typed terms, the two notions of traversal nicely coinc
 For simply-typed terms in eta-long form, traversals were shown to correspond to the \emph{interaction game semantic denotation}, where all internal moves from strategy composition are revealed; while the standard game denotation was shown to correspond to the set of traversals `\emph{projected with respect to the tree root}', or also called `traversal cores'. Such a correspondence induces an evaluation method for simply-typed lambda-terms in eta-long form~\cite{BlumPhd,BlumGalop2008,Ong-NormByTrav2015} that was implemented in~\cite{Blum-HogTool}, and which we state in Algorithm~\ref{algo:ulc_normalization_by_traversals}. This paper generalizes this procedure to the untyped lambda calculus, based on a variant of the traversal core operation involving relabelling of lambda nodes. A notable improvement is that it produces the traditional beta-normal form rather than the beta-\emph{eta-long} normal form. Another difference is that we prove soundness of the procedure through a connection with \emph{head-linear reduction} rather than appealing to Game Semantics.
 
 \subsubsection{Head linear reduction}
-Danos \etal established the first connection between Game Semantics and the concept of \emph{head linear reduction} for simply-typed lambda terms in eta-long form~\cite{danosherbelinregnier1996}. It was further studied in the context of untyped lambda terms in~\cite{danos-head}. The \emph{pointer abstract machine} (PAM) provides a virtual machine implementation of head linear reduction that yields the ``\emph{quasi-head normal form (qhn)}'' of the term. To obtain the normal form itself, the resulting term further needs to be reduced to head normal form (via head reduction), and then normalized using standard normal reduction.
+Danos \etal established the first connection between Game Semantics and the concept of \emph{head linear reduction} for simply-typed lambda terms in eta-long form~\cite{danosherbelinregnier1996}. It was further studied in the context of untyped lambda terms~\cite{danos-head}. The \emph{pointer abstract machine} (PAM) provides a virtual machine implementation of head linear reduction that yields the ``\emph{quasi-head normal form (qhn)}'' of the term. To obtain the normal form itself, the resulting term further needs to be reduced to head normal form (via head reduction), and then normalized using standard normal reduction.
 
 Like the PAM, the imaginary traversals implement head-linear reduction, but in a recursive fashion so as to fully evaluate the term to its final normal form.
 A notion that we formalize as the \emph{leftmost linear reduction} strategy, that recursively applies head linear reduction just like how the \emph{normal reduction} of the lambda calculus proceeds by recursively applying head reduction.
@@ -2131,8 +2129,8 @@ t_1 = \Pstr[4ex]{
     \vtspace (n10-n1){\lambda v}
     \vtspace (n11-n10){v}
     \vtspace (n12-n9){{\ghostlmd^{1}}}
-    \vtspace (n13-n8){{\ghostvar^{1}}}
-    \vtspace (n14-n13){{\ghostlmd^{1}}}
+    \vtspace (n13-n8){\underline{\ghostvar^{1}}}
+    \vtspace (n14-n13){\underline{\ghostlmd^{1}}}
     \vtspace (n15-n12){{\ghostvar^{1}}}
     \vtspace (n16-n11,39){\lambda }
     \vtspace (n17-n0){\underline{y}}
@@ -2305,7 +2303,7 @@ $
 \begin{example}[Neil Jones' varity example]
     \label{example:varity}
 Take the term ${\sf varity}\, 2$ where
-$2 = \lambda s_2 z_2 . s_2 (s_2\ z_2)$ and
+$2 = \lambda s_2 z_2 . s_2 (s_2\, z_2)$ and
 ${\sf varity} = \lambda t.t (\lambda n a x . n (\lambda s z . a s (x s z))) (\lambda a. a) (\lambda z_0 . z_0)$.
 %To compute the set of normalizing traversals, we apply the traversal rules inductively until an input variable is reached, at which point we eta-expand with rule \rulenamet{IVar} for all possible values of $k$ ranging from $1$ to the dynamic arity of the traversal.
 The initial traversal strand $t_\epsilon$ is
@@ -4086,27 +4084,25 @@ perhaps they can be modeled by non-deterministically spawning new traversals for
 
 \paragraph{Game semantics} We conjecture that a correspondence similar
 to Theorem~\ref{thm:gamesem_correspondence_stlc} holds for
-the untyped lambda calculus: that there is an isomorphism between the cores of imaginary traversals from Table~\ref{tab:trav_rules} and the innocent \emph{effectively almost everywhere copycat (EAC)} game denotation of untyped lambda terms~\cite{KerThesis}; as well as an isomorphism between the imaginary traversals and the EAC game denotation where internal moves are not hidden during strategy composition. We suspect that a connection exists between the `on-the-fly' eta-expansion performed by imaginary traversals and the morphism $Fun : U \rightarrow (U \Rightarrow U)$ of Ker's game category, where $U$ denotes the maximal game arena of the EAC strategies.
+the untyped lambda calculus: that there is an isomorphism between the cores of imaginary traversals and the innocent \emph{effectively almost everywhere copycat (EAC)} game denotation of untyped lambda terms~\cite{KerThesis}, as well as an isomorphism between the imaginary traversals and the EAC game denotation where internal moves are not hidden during strategy composition. We suspect that a connection exists between the `on-the-fly' eta-expansion  and the morphism $Fun : U \rightarrow (U \Rightarrow U)$ of Ker's game category, where $U$ denotes the maximal game arena of the EAC strategies.
 %%%%%%%%%%%%%%%%%
 
-\paragraph{Compilation}
-It clearly appears from Example~\ref{tab:varity2_trav} that even for relatively simple terms,
- traversals can easily get very long, which is not surprising
-given that they were not designed with efficiency nor optimality in mind, but rather derived from the game-semantic analogy.
-In fact, traversal-based evaluation is not L\'evy-optimal~\cite{optimal-reduction-levy}.
-Traversals do exhibit some sharing through their use of pointers, which avoids copying or rewriting subterms when evaluating redexes.
-But they make no attempt to exploit such sharing to avoid redundant work: in the term $(\lambda x. y x x) A$, each occurrence of $x$ involves re-traversing the argument $A$.
+\paragraph{Optimality and compilation}
+It clearly appears from Example~\ref{tab:varity2_trav} that even for relatively simple terms, traversals can easily get very long, which is not surprising given that they were not designed with efficiency nor optimality in mind, but rather derived from the game-semantic analogy.
+Traversals are clearly not L\'evy-optimal~\cite{optimal-reduction-levy}: they do exhibit some sharing through their use of pointers, which avoids copying or rewriting subterms when evaluating redexes, but they make no attempt to exploit such sharing to avoid redundant work: in the term $(\lambda x. y x x) A$, each occurrence of $x$ involves re-traversing the argument $A$.
 If a redex is traversed in $A$ the first time then it will get traversed again the second time, without reusing any work from the first traversal.
 %
 On the other hand, just like head-linear reduction, traversals are  ``hyper-lazy'' in nature~\cite{danosherbelinregnier1996}: they only evaluate (linear) redexes one variable occurrence at a time and only when the value of that occurrence is needed. So besides the possible redundancy described above, no useless work is performed, as opposed to the traditional
-way of evaluating redexes which involves substituting all variable occurrences at once, regardless of whether some of those occurrences are dead-code.
+way of evaluating redexes which involves substituting all variable occurrences at once including those that might be dead-code.
 %
 Traversals may not be too far from being optimal:
-we can conceivably augment traversals with some memoization mechanism
-to detect shared families of redexes, in L\'evy-sense, to give rise to
-a L\'evy-optimal notion of traversals, similarly to what is suggested by Danos and Regnier in~\cite{DANOS199979} to make \emph{Jumping Abstract Machines} optimal.
+memoization techniques may conceivably help shorten traversals
+and potentially give rise to a L\'evy-optimal notion of traversals
+by detecting shared L\'evy-families of redexes as traversals unfold.
+This perhaps relates to the remark by Danos and Regnier that memoization
+techniques can make \emph{Jumping Abstract Machines} optimal~\cite{DANOS199979}.
 
-Despite the lack of optimality, traversals are straightforward to implement which suggest possible application to program compilation, such as partial evaluation, an avenue pursued by Berezun and Jones in \cite{berezunjones_partialevalbytraversals} for their own notion of traversals.
+Despite the lack of optimality, traversals are straightforward to implement which suggests potential applications to program compilation, such as partial evaluation, an avenue pursued by Berezun and Jones in \cite{berezunjones_partialevalbytraversals} for their own notion of traversals.
 
 
 %1 - Not the traditional notion of redex (linear)
