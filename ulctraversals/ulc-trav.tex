@@ -1813,6 +1813,22 @@ so that the argument index $i$ cannot be greater than the dynamic arity of the t
 \fi
 \end{definition}
 
+\begin{property}
+    \label{prop:strand_spinaldescent}
+    Let $t$ be a normalizing traversal of the form $\ldots \underline{\lambda \overline{x}} \cdot \underline{x} \ldots$
+    where
+    $\lambda \overline{x}$ is an external structural $\lambda$-node
+    and $x$ is an external structural variable node.
+    Then the node following $x$ in $t$ is necessarily a structural child $\lambda$-node of $x$.
+    % (\ie, it cannot be a ghost node).
+\end{property}
+\begin{proof}
+     The strand ending at $x$
+     is just $\underline{\lambda \overline{x}} \cdot \underline{x}$ therefore
+     the dynamic arity at $t_{\leq x}$ is precisely $|x|$ and the rule
+     $\rulename{IVar}_\normalizing$ can only visit a structural child of $x$.
+\end{proof}
+
 \iflongversion
 %%%% remark 2: traversal-completeness
 Observe also that neither normalizing nor concrete traversals are $\travset$-complete. Since for instance, the imaginary traversal
@@ -2513,7 +2529,7 @@ The \emph{lloc} generalizes the notion of \emph{hoc} to arguments of the head va
 On the other hand, if the \emph{hoc} is involved in a generalized redex then by definition it must coincide with the \emph{lloc}.
 
 \begin{property}
-If $M$ has a $\beta$-normal form and $\lambda_l(M) = \langle \lambda x_1 \ldots \lambda x_n \rangle$ then its beta-normal form starts with at least $n$ lambda abstractions, \ie, it is of the shape $\lambda x_1 \ldots x_n . M'$ for some beta-normal term $M'$, up to variable renaming.
+If $M$ has a $\beta$-normal form and $\lambda_l(M) = \lambda x_1 \cdot \ldots \cdot \lambda x_n$ then its beta-normal form starts with at least $n$ lambda abstractions, \ie, it is of the shape $\lambda x_1 \ldots x_n . M'$ for some beta-normal term $M'$, up to variable renaming.
 \end{property}
 \begin{proof}
 From the definition of $\lambda_l$, capture-avoiding substitution can only increase the length of the head lambda list of the overall term: if the substituted variable occurs in head position in a context of the form $C[x U_1 \ldots U_n]$ then because the head lambda list of $x U_1 \ldots U_n$ is empty, after substituting $x$ with another term, the head lambda list of $x U_1 \ldots U_n$ can only get bigger. If $x$ is in operand position then by definition the head lambda list of the term is not altered. A structural induction permits to conclude.
@@ -2536,7 +2552,7 @@ Now if $M$ has a beta-normal form then the result follows by a straightforward i
     Immediate from the definition of $lloc$ since $\lambda_l(y) = \epsilon$.
 \end{proof}
 
-We say that a standard redex $(\lambda x. N) A$ is \defname{trivial} if $x$ does not occur freely in $N$ in which case the redex can be \emph{trivially reduced} to just $N$.
+We say that a standard redex $(\lambda x. N) A$ is \defname{trivial} if $x$ does not occur freely in $N$ in which case the redex \emph{trivially reduces} to just $N$.
 
 \begin{property}
 \label{prop:lloc_properties}
@@ -2644,11 +2660,10 @@ $lloc_R(R) \sqsubseteq lloc_M(R)$ by
 Property~\ref{prop:lloc_properties}(i).
 Now suppose that $x$ occurs freely in $N$ then it is involved in the generalized redex $(\lambda x, A)$, and there cannot be on the left of $x$ in, the term tree of $N$, any subterm with a non-empty lambda-list. (Otherwise there would either be a beta-redex left of $x$ or $x$ itself would be the argument of a redex in $N$, which contradicts the assumption that
  $N$ contains no beta-redex.) Hence by bottom-up evaluation of the $lloc$, $lloc_R(R)$ must be at least $x$ and thus cannot be $\bot$. So $lloc_M(M) \ne \bot$ which contradicts that $M$ is in \emph{qnf}.
-(ii) Each reduction is trivial by (i) and
-since trivial reductions preserve the $lloc$
-and do not introduce $\beta$-redexes,
+(ii) We reduce $M$ using the leftmost spinal-innermost reduction strategy.
+Each reduction is trivial by (i), and since trivial reductions preserve the $lloc$ and do not introduce $\beta$-redexes,
  each reduct is in \emph{qnf}, and the reduction sequence terminates and yields the $\beta$-normal form.
- \endshortproof
+\endshortproof
 \proofatend
 \begin{compactitem}
 % \item[(X)] By induction on $M$. Suppose $M = v$ for some variable $v$ then the result trivially holds since $M$ has no generalized redex. Suppose $M = \lambda x . U$ then by Property~\ref{prop:lloc_properties}(iv) $U$ is in \emph{qnf} and we conclude by the induction hypothesis.
@@ -2684,7 +2699,7 @@ The term $M = (\lambda x . u) ((\lambda z .z) y)$ is in \emph{qnf} and trivially
 
 \begin{example}
     Take $M = (\lambda x . z ((\lambda w y . y)x)) U$ for any term $U$.
-    Then $M$ is in quasi-head normal form with one prime spine redex $(x,U)$.
+    Then $M$ is in quasi-head normal form with one prime spine redex $(\lambda x,U)$.
     Performing one head reduction gives $M \rightarrow_h z ((\lambda w y. y) U)$
     which brings the \emph{hoc} in head position.
 $M$ is also in quasi normal form. Indeed $lloc_M(M) = lloc_M (\lambda w y . y) = \bot$. Reducing the term with the leftmost spinal-innermost reduction strategy gives  $M \rightarrow (\lambda x . z (\lambda y . y)) U
@@ -2693,10 +2708,10 @@ $M$ is also in quasi normal form. Indeed $lloc_M(M) = lloc_M (\lambda w y . y) =
 
 \begin{theorem}[Soundness of leftmost linear reduction]
 \label{thm:soundness_leftmostlinearred}
-If $M \rightarrow_{l} N$ then $M$ and $N$ are beta-equivalent.
+If $M \rightarrow_{ll} N$ then $M$ and $N$ are beta-equivalent.
 \end{theorem}
 \begin{proof}
-The proof is like that of Theorem~\ref{thm:danosregnier_headlinred}. We adapt the notion of \emph{consecutive redex} from~\cite{danos-head} to  leftmost-linear reduction: Let $r = (\lambda x, V)$ and  $s =(\lambda y, W)$ be two generalized redexes. We say that $r$ contains $s$ if the node $\lambda y$ lies in the scope of $\lambda x$. We say that $r$ and $s$ are \emph{consecutive} if $r$ contains $s$; no other generalized redex other than $r$ and $s$ is contained in $r$ and contains $s$; and $s$ is the leftmost generalized redex contained in $r$ (\ie, any other redex $t$ contained in $r$ resides on the left of node $\lambda y$ in the usual tree representation of the term). Let $r_0, \ldots, r_p$ denote the consecutive generalized redexes for $p\geq 0$ where $r_0$ is not contained in any other generalized redexes and $r_p$ is the \emph{lloc redex}. (This sequence necessarily exists by definition of \emph{lloc}.) An induction on $p$ shows that $M$ and $N$ reduce to the same term by exactly $p-1$ standard reduction steps (\ie, the strategy reducing the leftmost outermost redex), observing that at every step, no redex can be introduced above or on the left of the \emph{lloc}.
+The proof is like that of Theorem~\ref{thm:danosregnier_headlinred}. We adapt the notion of \emph{consecutive redex} from~\cite{danos-head} to  leftmost-linear reduction: Let $r = (\lambda x, V)$ and  $s =(\lambda y, W)$ be two generalized redexes. We say that $r$ contains $s$ if the node $\lambda y$ lies in the scope of $\lambda x$. We say that $r$ and $s$ are \emph{consecutive} if $r$ contains $s$; no other generalized redex other than $r$ and $s$ is contained in $r$ and contains $s$; and $s$ is the leftmost generalized redex contained in $r$ (\ie, any other redex $t$ contained in $r$ resides on the left of node $\lambda y$ in the standard term tree representation). Let $r_0, \ldots, r_p$ denote the consecutive generalized redexes for $p\geq 0$ where $r_0$ is not contained in any other generalized redexes and $r_p$ is the \emph{lloc redex}. (This sequence necessarily exists by definition of \emph{lloc}.) An induction on $p$ shows that $M$ and $N$ reduce to the same term by exactly $p-1$ standard reduction steps (\ie, the strategy reducing the leftmost outermost redex), observing that at every step, no redex can be introduced above or on the left of the \emph{lloc}.
 \end{proof}
 
 % REMARK: We chose to prove the following termination result directly, and use it in the next section to show that normalizing traversals are necessarily finite. Observe that if we were to show independently that traversals are finite, the following theorem would follow from it.
@@ -2720,7 +2735,7 @@ The proof is like that of Theorem~\ref{thm:danosregnier_headlinred}. We adapt th
 \begin{example}
 Take $M_1 = (\lambda x . x) (\lambda y z . y)$. We have $\lambda_l(M_1) = \epsilon$ but $M \rightarrow_\beta \lambda y z . y = M_2$,
 $M_1 \llred (\lambda x . (\lambda y z . y)) (\lambda y z . y) = M_3$ and
-and $\lambda_l(M_2) = \lambda_l(M_3) = (\lambda y, \lambda z)$.
+and $\lambda_l(M_2) = \lambda_l(M_3) = \lambda y \cdot \lambda z$.
 Take $N = (\lambda x . U) V$ where $x$ does not occur in $U$ then $N$ trivially reduces to $U$ and $\lambda_l(N) = \lambda_l(U)$.
 \end{example}
 
@@ -2946,7 +2961,7 @@ If $M = \lambda x . U$ then $U$ must also admit a beta-nf so we can conclude by 
 %%%%%%%%%%%%%%%%%
 \section{Correctness of ULC evaluation}
 \label{sec:correctness_ulc_normalization}
-Correctness of the evaluation procedure relies, like in the STLC case, on a Path Characterization Theorem.
+Correctness of the evaluation procedure relies, like in the typed setting, on a Path Characterization Theorem.
 For ULC, however, we prove this characterization without appealing to Game Semantics.
 We show instead that traversal cores are preserved by the \emph{leftmost-linear reduction}, defined in Section~\ref{sec:leftmostlinearred}, using a bisimulation argument and a careful analysis of the traversals structure.
 
@@ -2966,22 +2981,6 @@ The \defname{lloc of a tree node} $n$, written
  $lloc_M(n)$, denotes the leftmost linear occurrence $lloc_M(N)$ (from Definition~\ref{def:leftmostlinearreduction}) of the subterm $N$ of $M$ rooted at $n$.
 \end{definition}
 %We say that a traversal $t$ is \defname{head-normal} if it ends with a structural lambda node with undefined lloc (\ie, $t^\omega = \lambda\overline{w}$ and $lloc_M(t^\omega) = \bot$).
-
-\begin{property}
-\label{prop:strand_spinaldescent}
-Let $t= \ldots \underline{\lambda \overline{x}} \cdot v \cdot \underline{x} \ldots$
-be a traversal
-for some subsequence $v$,
- external structural variable node $x$
- and external structural $\lambda$-node $\lambda \overline{x}$.
-If $v$ is empty then the node following $x$ in $t$ is necessarily a structural child $\lambda$-node of $x$.
-% (\ie, it cannot be a ghost node).
-\end{property}
-\begin{proof}
- If $v$ is empty then the strand ending at $x$
- is just $\underline{\lambda \overline{x}} \cdot \underline{x}$ therefore
- the dynamic arity at $t_{\leq x}$ is precisely $|x|$, so that rule \rulenamet{IVar} can only visit a structural child of $x$.
-\end{proof}
 
 \begin{definition}[Strand types]
     \label{def:strandtypes}
@@ -3037,7 +3036,7 @@ Strand type  & Strand shape & Transition & Next strand shape\\
     & $\underline{\ghostlmd} \cdot v \cdot \lambda\overline{y_2} \cdot u_2 \cdot \underline{x_2}$
 \end{tabular}
 \end{center}
-where in the 2nd and 4th transition, $\lambda\overline{y_2}$ in the `next strand' points to an $@$-node occurring in $u_1$.
+where in the 2nd and 4th transition, the lambda-occurrence $\lambda\overline{y_2}$ from the next strand points to some $@$-occurrence in $u_1$.
 % in the current strand.
 \end{proposition}
 %\begin{proof}
@@ -3209,7 +3208,7 @@ $G$.
 A case analysis shows that for a \emph{qnf}, a normalizing traversal unfolds according to the state diagram of Figure~\ref{fig:qnf_strand_decomposition_statemachine} and never traverses an internal variable.
 It starts with a spinal descent to the linear head occurrence, whose $lloc_M$ must be $\bot$ since the term is a \emph{qnf} and so it is necessarily an external node. The initial strand is thus of type $S$. After a strand of type $S$, if the next node is a structural lambda then by Property~\ref{prop:qnf_longapply} its $lloc_M$ is necessarily $\bot$, another spinal descent follows which yields a strand of type $S$.
 We prove the third transition with the same argument.
-Let us consider the second transition (the fourth is proven similarly) where the node following the strand is a ghost lambda. The strand is of form $\underline{\lambda\overline{w_1}} \cdot u_1 \cdot \underline{x_1} $ where by Property~\ref{prop:strand_spinaldescent} $u_1$ is  non-empty: $u_1 =
+Let us consider the second transition (the fourth is proven similarly) where the node following the strand is a ghost lambda. The strand is of form $\underline{\lambda\overline{w_1}} \cdot u_1 \cdot \underline{x_1} $ where by Property~\ref{prop:strand_spinaldescent} $u_1$ is necessarily non-empty: $u_1 =
 @_1 \cdot\lambda\overline{z_1} \cdots @_q\cdot \lambda\overline{z_q}$ for some $q\geq 1$. The subterm at $@_r$, is of the form
 $(\lambda\overline{z_r}. A_0) A_1 \ldots A_{k_{r}-1}\ (\lambda\overline{y_2}. \ldots)A_{k_{r}+1}\ \ldots A_{|@_r|}$.
 
@@ -3540,7 +3539,7 @@ So that $\lambda\overline{w_1}$ is $x$'s binder and $@_1$ its parent.
 Let $i$ denote $x$'s binding index in $\lambda\overline{w_1}$.
 %
 After reduction,
-node $x$ gets replaced by an application node $@_x$,  its existing children are preserved, and a new subterm $\lambda\overline{y}'. R'$, a copy of the subterm tree $A$, gets attached as the $0$th child tree of $@_x$.
+node $x$ gets replaced by an application node $@_x$; its existing children are preserved; and a new subterm $\lambda\overline{y}'. R'$, a copy of the subterm tree $A$, gets attached as the $0$th child tree of $@_x$.
 The copy preserves the original variable names from $R$, which does not cause capture since the variable binding is uniquely determined by the enabling relation.
 We use the prime notation $\lambda\overline{y}'$ to distinguish the root of $R'$ from that of $R$, although they are both labelled with variable names $\overline{y}$.
 %
@@ -3602,11 +3601,11 @@ $u = \Pstr[10pt]{ \ldots @_a (la){\bulklambda{w_a}}
   \ldots (a1){@_1} (l1){\bulklambda{w_1}} \, @ \ldots \bulklambda{z} \, (ax){@_x} \, (ly-ax,20:0){\bulklambda{y}'} }$ of $N$
 maps to
 $\phi(u) = \Pstr[10pt]{ \ldots @_a \, (la){\bulklambda{w_a}}
-\ldots (a1){@_1} \, (l1){\bulklambda{w_1}} \, @ \ldots \bulklambda{z} \, (x-l1,25:i) x \, \ghostlmd \, \ghostvar \, \ghostlmd \, \ghostvar \, (ly-a,22:i_a){\bulklambda{y}}}$.
+\ldots (a1){@_1} \, (l1){\bulklambda{w_1}} \, @ \ldots \bulklambda{z} \, (x-l1,25:i) x \, \ghostlmd \, \ghostvar \ldots \ghostlmd \, \ghostvar \, (ly-a,22:i_a){\bulklambda{y}}}$.
 \fi
 The transformation does not affect the structure
 of the core projection
-because it only adds internal nodes and alters justification pointers of occurrences of internal nodes $@_x$ and $\lambda\overline y$,
+because it only adds internal nodes and alters the justification pointers of occurrences of internal nodes $@_x$ and $\lambda\overline y$ only,
 whereas justified sequences in $\coresymbol(\travsetnorm(N))$ do not contain any internal node.
 %
 We define $\varphi^{-1}$ as the reverse transformation
@@ -3723,7 +3722,7 @@ The tree $\ctree(N)$ is obtained from $\ctree(M)$
 by substituting $x$'s label with that of $r$ and prepending $r$'s children to existing $x$'s children. Other nodes, including $x$'s parent $\lambda$-node, remain untouched. Let $r'$ denote this node in the reduct $N$.
 This transformation yields an implicit mapping function $\Phi : \ExtendedNodes(N)\rightarrow \ExtendedNodes(N)$ such that $\Phi(r') = x$.
 Although $\Phi$ does not preserve the arity of $x$, it does not affect the dynamic arity of traversals since $|r'| = |x| + |r|$.
-We then show by case analysis on the rules that the two terms are bisimilar.
+We then show by induction and case analysis on the rules that the two terms are bisimilar.
 
 %%%%%%% CASE 3
 {\bf Case 3:} $x$ is unapplied ($|x|=0$).
@@ -3884,41 +3883,57 @@ not alter the dynamic arity of traversals.
 
 %%%%%%%
 \noindent
-\emph{Case $r>1$ (right)} The reduct tree is obtained by removing the @-node and argument $A_1$ and combining the two lambdas into $\lambda\overline{y}$,
-where $\overline{y} = \overline{w} x_2 \ldots x_n$.
+\emph{Case $r>1$ (right)} The reduct tree is obtained by removing the @-node and argument $A_1$ and combining the two lambda-nodes into $\lambda\overline{y}$ where we define $\overline{y} = \overline{w} x_2 \ldots x_n$.
 %
-There is an implicit injection $\Phi$ from nodes of $N$, except $\lambda\overline{y}$, to nodes of $M$.
+There is an implicit injection $\Phi$ from nodes of $N$ but $\lambda\overline{y}$ to nodes of $M$.
 %that maps $\lambda\overline{y}$ to $\lambda\overline{w}$.
-We extend it element-wise to $\phi$ on justified sequences
-such that occurrences of $\lambda\overline{y}$ in $N$ gets replaced by the three occurrences $\lambda\overline{w} \cdot @ \cdot \lambda\overline{x}$ in $M$.
+%We extend it element-wise to $\phi$ on justified sequences
+% such that occurrences of $\lambda\overline{y}$ in $N$ gets replaced by the three occurrences $\lambda\overline{w} \cdot @ \cdot \lambda\overline{x}$ in $M$.
 %
 %%%%%%%%%%
-An induction on traversals shows that $\rightarrow_M$ simulates $\rightarrow_N$ and reciprocally.
-%
-Suppose $t_1$ simulates $u_1$ then a
- traversal $u_1 \cdot \lambda\overline{y} \in \travsetnorm(N)$
-ending with $\lambda\overline{y}$
-gets simulated in $M$ by a traversal of the form
+We show by induction on traversals that $\rightarrow_M$ simulates $\rightarrow_N$ and reciprocally.
+We only treat the relevant case here:
+A traversal ending with $\lambda\overline{y}$
+ of the form $u_1 \cdot \lambda\overline{y} \in \travsetnorm(N)$
+ such that $u_1$ is simulated in $M$ by $t_1$,
+ is simulated in $M$ by traversal
 $t_1 \cdot \lambda\overline{w} \cdot @ \cdot \lambda\overline{x}$.
 %
-One interesting case is when ghost nodes in $M$ get materialized into structural nodes in $N$:
-Consider the traversal
+Any further extension of $u_1 \cdot \lambda\overline{y}$ in $N$ is of the form
+$u' = u_1 \cdot \lambda\overline{y} \cdot s \cdot z$ where $s$ is the spinal descent in $T$ and $z$ is the \emph{hoc} of $T$.
+This gets simulated in $M$ by $t' = t_1 \cdot \lambda\overline{w} \cdot @ \cdot \lambda\overline{x} \cdot \varphi(s) \cdot \Phi(z)$
+where $\varphi$ denotes the pointwise-extension of $\Phi$ to justified sequences.
+%
+If $z$ is internal then since $s$ and $\varphi(s)$ have the same node type and arities, we have $\core{u'} = \core{t'}$.
+(i) If $z$ is external and its justifier is not $\lambda\overline{w}$ then
+$\Phi(z)$ is also external and therefore $\core{u'} = \core{t'}$.
+(ii) If $z$ is external and is justified by $\lambda\overline{w}$ with link label
+$j<|\overline{w}|$ then $\Phi(z)$ is necessarily external and $\core{u'} = \core{t'}$.
+(iii) If $z$ is external and is justified by $\lambda\overline{w}$ with link label
+$|\overline{w}|<j\leq |\overline{w}| + n -1$ then $z$ and $\Phi(z)$ are both labelled by the variable $x_i$ where $i=j-|\overline{w}|+1$, and therefore node $\Phi(z)$ in $M$ is bound by node $\lambda\overline{x}$ and is thus external.
+%
+We then simulate $u'$ by extending traversal $t'$ in $M$
+into $t = t' \cdot (\ghostlmd\, \ghostvar)^k$ for some $k>0$, where
+$(\ghostlmd\, \ghostvar)^k$ denotes the argument lookup of $z$ and
+where the last $\ghostvar$ points to $\lambda\overline{w}$ with label $j$. We then have $t' \internalextension_M t$  and $\core{u'} = \core{t}$.
+%
+Reciprocally, take a traversal of $M$ of the form
 $\Pstr[10pt]{\ldots
-    (l){\lambda\overline{w}}  (a)@  (lx-a,25:0){\lambda\overline{x}} \ldots (gl-a,25:i)\ghostlmd  (gv-l,33:{|\overline{w}|-1+i})\ghostvar }
-$ of $M$, $i\geq1$.
+    (l){\lambda\overline{w}}  (a)@  (lx-a,25:0){\lambda\overline{x}} \ldots (gl-a,25:i)\ghostlmd  (gv-l,35:{|\overline{w}|-1+i})\ghostvar }
+$ where $i\geq1$.
 If $i>n$ then it is simulated in $N$
 by $u = \Pstr[10pt]{\ldots
     (l){\lambda\overline y}  \ldots   (gv-l,32:{|\overline{w}|-1+i})\ghostvar }
-$ which also ends with a ghost variable;
-but if $i\leq n$ then the $\ghostvar$ gets materialized into variable occurrence $x_i$ in $N$:
+$ which also ends with a ghost variable.
+If $i\leq n$ then the the ghost $\ghostvar$ gets materialized into variable occurrence $x_i$ in $N$:
 $\Pstr[10pt]{
     \ldots  (l){\lambda\overline y} \ldots  (gv-l,32:{|\overline{w}|+i-1}){x_i} }
 $.
 %
 %%%%%%%%%%
     The simulation preserves the core because the simulation in $M$
-    carries over the list of pending lambdas, and the core operation adequately merges $\lambda\overline{w}$ and $\lambda x_1 \ldots x_n$ into
-    $\lambda\overline{w} x_2 \ldots x_n$
+    carries over the list of pending lambdas, the core operation adequately merges nodes $\lambda\overline{w}$ and $\lambda x_1 \ldots x_n$ into
+    $\lambda\overline{w} x_2 \ldots x_n$,
 and
     $|\lambda\overline{w}| - |@| + |\lambda\overline{x}|
     =|\lambda\overline{w}| - 1 + |\lambda\overline{x}|
@@ -3985,8 +4000,8 @@ and
 \end{proof}
 
 \begin{example}
-    Take the term $M = \lambda x. (\lambda y z.z) u$, which trivially reduces to $N = \lambda x z . z$, and its traversal $t$ from Example~\ref{examp:ghost_materialization}.
-    We have $\coresymbol(t) = \Pstr[10pt]{ (l){\lambda x z} \, (gv-l,32:2){z} } \in \travsetnorm(N)$.
+    Take the term $M = \lambda x. (\lambda y z.z) u$, which trivially reduces to $N = \lambda x z . z$. The traversal $t$ given in Example~\ref{examp:ghost_materialization}
+    is simulated in $N$ by $u = \Pstr[10pt]{ (l){\lambda x z} \, (gv-l,32:2){z} } \in \travsetnorm(N)$.
 \end{example}
 
 
@@ -4095,15 +4110,15 @@ reconstruct the $\beta$-normal form.
 \paragraph{Reduction strategies} We have seen how traversals implement leftmost linear reduction,
 a non-strict non-standard reduction strategy that substitutes variables one at a time. This begs the question of whether other notions of traversals
 exist for other evaluation strategies such as call-by-name and call-by-value~\cite{plotkin-75}. A call-by-name version of head-linear reduction, which does not reduce inside the body of an unapplied abstraction, would easily be accommodated for. A strict evaluation strategy like call-by-value, on the other hand, might require substantial changes. As for traditional reduction strategies, such as the normal order of lambda calculus,
-perhaps they can be modeled by non-deterministically spawning new traversals for every occurrence of the variable to be substituted.
+perhaps they can be modeled by non-deterministically spawning new traversals for every occurrence of the variable involved in the redex.
 
 \paragraph{Game semantics} We conjecture that a correspondence similar
 to Theorem~\ref{thm:gamesem_correspondence_stlc} holds for
-the untyped lambda calculus: there is an isomorphism between the cores of imaginary traversals and the innocent \emph{effectively almost everywhere copycat (EAC)} game denotation of untyped lambda terms~\cite{KerThesis}, as well as an isomorphism between the imaginary traversals and the EAC game denotation where internal moves are not hidden during strategy composition. We suspect that a connection exists between the `on-the-fly' eta-expansion  and the morphism $Fun : U \rightarrow (U \Rightarrow U)$ of Ker's game category, where $U$ denotes the maximal game arena of the EAC strategies.
+the untyped lambda calculus: there is an isomorphism between the cores of imaginary traversals and the innocent \emph{effectively almost everywhere copycat (EAC)} game denotation of untyped lambda terms~\cite{KerThesis}, as well as an isomorphism between the imaginary traversals and the EAC game denotation where internal moves are not hidden during strategy composition. We suspect that a connection exists between the `on-the-fly' eta-expansion performed by traversals and the morphism $Fun : U \rightarrow (U \Rightarrow U)$ of Ker's game category, where $U$ denotes the maximal game arena of the EAC strategies.
 %%%%%%%%%%%%%%%%%
 
 \paragraph{Optimality and compilation}
-It clearly appears from Example~\ref{tab:varity2_trav} that even for relatively simple terms, traversals can easily get very long. This is not surprising given that they were not designed with efficiency nor optimality in mind, but rather derived from the game-semantic analogy.
+Example~\ref{tab:varity2_trav} shows that even for relatively simple terms, traversals can easily get very long. This is not surprising given that they were not designed with efficiency nor optimality in mind, but rather derived from the game-semantic analogy.
 Traversals are clearly not L\'evy-optimal~\cite{optimal-reduction-levy}: they do exhibit some sharing through their use of pointers, which avoids copying or rewriting subterms when evaluating redexes, but they make no attempt to exploit such sharing to avoid redundant work: in the term $(\lambda x. y x x) A$, each occurrence of $x$ involves re-traversing the argument $A$.
 If a redex is traversed in $A$ the first time then it will get traversed again the second time, without reusing any work from the first traversal.
 %
