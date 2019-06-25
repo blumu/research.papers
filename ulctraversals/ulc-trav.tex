@@ -3883,63 +3883,69 @@ not alter the dynamic arity of traversals.
 
 %%%%%%%
 \noindent
-\emph{Case $r>1$ (right)} The reduct tree is obtained by removing the @-node and argument $A_1$ and combining the two lambda-nodes into $\lambda\overline{y}$ where we define $\overline{y} = \overline{w} x_2 \ldots x_n$.
-%
-There is an implicit injection $\Phi$ from nodes of $N$ but $\lambda\overline{y}$ to nodes of $M$.
+\emph{Case $r>1$ (right)} The tree of the reduct $N$ is obtained by removing the @-node and argument $A_1$ and combining the two $\lambda$-nodes into $\lambda\overline{y}$ where $\overline{y} = \overline{w} x_2 \ldots x_n$.
+This gives an implicit injection $\Phi$ from nodes of $N$ to nodes of $M$.
 %that maps $\lambda\overline{y}$ to $\lambda\overline{w}$.
 %We extend it element-wise to $\phi$ on justified sequences
 % such that occurrences of $\lambda\overline{y}$ in $N$ gets replaced by the three occurrences $\lambda\overline{w} \cdot @ \cdot \lambda\overline{x}$ in $M$.
 %
 %%%%%%%%%%
-We show by induction on traversals that $\rightarrow_M$ simulates $\rightarrow_N$ and reciprocally.
-We only treat the relevant case here:
-A traversal ending with $\lambda\overline{y}$
- of the form $u_1 \cdot \lambda\overline{y} \in \travsetnorm(N)$
- such that $u_1$ is simulated in $M$ by $t_1$,
- is simulated in $M$ by traversal
-$t_1 \cdot \lambda\overline{w} \cdot @ \cdot \lambda\overline{x}$.
+We simultaneously and inductively define
+a partial function $\varphi\colon\travset_\normalizing(N) \rightarrow\travset_\normalizing(M)$ and inverse $\varphi^{-1}$ and show by induction that $\rightarrow_M$ simulates $\rightarrow_N$ via $\varphi$ and reciprocally.
+We treat here the interesting case:
+Let $u_1$ be a traversal of $N$ and $t_1=\varphi(u_1)$ be a traversal of $M$ such that $\core{u_1} = \core{t_1}$.
+Suppose that $u_1 \rightarrow_N u_1 \cdot \lambda\overline{y} = u'$. We further extend it as $u' \internalextension_N u_1 \cdot \lambda\overline{y} \cdot s \cdot z = u$ where $s$ is the spinal descent in $T$ and $z$ is the \emph{hoc} of $T$.
+The sequence $t' = t_1 \cdot \lambda\overline{w} ~ @ ~ \lambda\overline{x} \cdot \Phi(s) \cdot \Phi(z)$
+where $\Phi(s)$ denotes the pointer-preserving pointwise extension of $\Phi$, is clearly a traversal extension of $t_1$ in $M$.
 %
-Any further extension of $u_1 \cdot \lambda\overline{y}$ in $N$ is of the form
-$u' = u_1 \cdot \lambda\overline{y} \cdot s \cdot z$ where $s$ is the spinal descent in $T$ and $z$ is the \emph{hoc} of $T$.
-This gets simulated in $M$ by $t' = t_1 \cdot \lambda\overline{w} \cdot @ \cdot \lambda\overline{x} \cdot \varphi(s) \cdot \Phi(z)$
-where $\varphi$ denotes the pointwise-extension of $\Phi$ to justified sequences.
+Because
+$|\lambda\overline{w}| - |@| + |\lambda\overline{x}|
+=|\lambda\overline{w}| - 1 + |\lambda\overline{x}|
+%=|\lambda\overline{w}x_2\ldots x_n|
+=|\lambda\overline{y}|
+$, the core calculation
+on $t'_{\leq \lambda\overline{x}}$ adequately generates pending lambdas from variable names $x_2 \ldots x_n$ and discharge them onto node $\lambda\overline{w}$. Thus proving
+that the core projection is preserved by the simulation
+amounts to showing that occurrences following
+$\lambda\overline{x}$ in $t'$ produce the same pending lambdas as the occurrences following $\lambda\overline{y}$ in $u$, and that their last occurrence are either both internal or both external.
 %
-If $z$ is internal then since $s$ and $\varphi(s)$ have the same node type and arities, we have $\core{u'} = \core{t'}$.
-(i) If $z$ is external and its justifier is not $\lambda\overline{w}$ then
-$\Phi(z)$ is also external and therefore $\core{u'} = \core{t'}$.
-(ii) If $z$ is external and is justified by $\lambda\overline{w}$ with link label
-$j<|\overline{w}|$ then $\Phi(z)$ is necessarily external and $\core{u'} = \core{t'}$.
-(iii) If $z$ is external and is justified by $\lambda\overline{w}$ with link label
+If $z$ is internal then since $s$ and $\varphi(s)$ are both  spinal descent of $T$, they have the same bound variables and arities therefore we have $\core{u} = \core{t'}$.
+If $z$ is external and its justifier is not $\lambda\overline{w}$ then
+$\Phi(z)$ is also external and again $\core{u} = \core{t'}$.
+If $z$ is external and is justified by $\lambda\overline{w}$ with link label
+$j<|\overline{w}|$ then $\Phi(z)$ is necessarily external and $\core{u} = \core{t'}$.
+For those three cases we define $\varphi(u) = t'$.
+%
+If $z$ is external and is justified by $\lambda\overline{w}$ with link label
 $|\overline{w}|<j\leq |\overline{w}| + n -1$ then $z$ and $\Phi(z)$ are both labelled by the variable $x_i$ where $i=j-|\overline{w}|+1$, and therefore node $\Phi(z)$ in $M$ is bound by node $\lambda\overline{x}$ and is thus external.
 %
-We then simulate $u'$ by extending traversal $t'$ in $M$
-into $t = t' \cdot (\ghostlmd\, \ghostvar)^k$ for some $k>0$, where
+We simulate $u'$ by extending traversal $t'$
+to $t = t' \cdot (\ghostlmd\, \ghostvar)^k$ for some $k>0$, where
 $(\ghostlmd\, \ghostvar)^k$ denotes the argument lookup of $z$ and
-where the last $\ghostvar$ points to $\lambda\overline{w}$ with label $j$. We then have $t' \internalextension_M t$  and $\core{u'} = \core{t}$.
+where the last $\ghostvar$ points to $\lambda\overline{w}$ with label $j$. We then have $t_1 \rightarrow^*_M t$, $u'\internalextension_N u$
+and since ghosts do not produce pending lambdas in the core calculation
+we have $\core{u} = \core{t}$. We define $\varphi(u) = t$.
+This is the situation where a ghost variable in $M$ gets materialized into a variable occurrence ($x_i$) in $N$.
 %
-Reciprocally, take a traversal of $M$ of the form
-$\Pstr[10pt]{\ldots
-    (l){\lambda\overline{w}}  (a)@  (lx-a,25:0){\lambda\overline{x}} \ldots (gl-a,25:i)\ghostlmd  (gv-l,35:{|\overline{w}|-1+i})\ghostvar }
-$ where $i\geq1$.
-If $i>n$ then it is simulated in $N$
-by $u = \Pstr[10pt]{\ldots
-    (l){\lambda\overline y}  \ldots   (gv-l,32:{|\overline{w}|-1+i})\ghostvar }
-$ which also ends with a ghost variable.
-If $i\leq n$ then the the ghost $\ghostvar$ gets materialized into variable occurrence $x_i$ in $N$:
-$\Pstr[10pt]{
-    \ldots  (l){\lambda\overline y} \ldots  (gv-l,32:{|\overline{w}|+i-1}){x_i} }
-$.
+
+Reciprocally,
+if $t_1 \rightarrow_M t_1 \cdot \lambda\overline{w}$
+then $t \internalextension_M t'$
+with
+$t' = \Pstr[10pt]{t_1 \cdot
+    (l){\lambda\overline{w}} \, (a)@ \, (lx-a,25){\lambda\overline{x}} \cdot s \cdot l \cdot (gl-a,20:i)\ghostlmd  (gv-l,33:{|\overline{w}|-1+i})\ghostvar }
+$ where
+$i\geq1$,
+$s$ is the spinal descent in $M$ to the \emph{hoc}
+and $l \cdot \ghostlmd\, \ghostvar$ is the argument lookup.
+It is simulated by
+$\phi^{-1}(t') = \Pstr[10pt]{u_1 \cdot
+    (l){\lambda\overline y} \cdot {\Phi^{-1}(s)} \cdot (gv-l,32:{|\overline{w}|-1+i}) v }
+$
+where $v = \ghostvar$ if $i>n$, and
+$v = x_i$ otherwise.
 %
 %%%%%%%%%%
-    The simulation preserves the core because the simulation in $M$
-    carries over the list of pending lambdas, the core operation adequately merges nodes $\lambda\overline{w}$ and $\lambda x_1 \ldots x_n$ into
-    $\lambda\overline{w} x_2 \ldots x_n$,
-and
-    $|\lambda\overline{w}| - |@| + |\lambda\overline{x}|
-    =|\lambda\overline{w}| - 1 + |\lambda\overline{x}|
-    =|\lambda\overline{w}x_2\ldots x_n|
-%    =|\lambda\overline{y}|
-    $
 \iflongversion
     There are two cases. Suppose $\lambda\overline{w}$ is internal, then:
     \begin{align*}
@@ -4001,7 +4007,7 @@ and
 
 \begin{example}
     Take the term $M = \lambda x. (\lambda y z.z) u$, which trivially reduces to $N = \lambda x z . z$. The traversal $t$ given in Example~\ref{examp:ghost_materialization}
-    is simulated in $N$ by $u = \Pstr[10pt]{ (l){\lambda x z} \, (gv-l,32:2){z} } \in \travsetnorm(N)$.
+    is simulated in $N$ by $\Pstr[10pt]{ (l){\lambda x z} \, (gv-l,32:2){z} } \in \travsetnorm(N)$.
 \end{example}
 
 
