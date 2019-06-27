@@ -400,7 +400,7 @@ We achieve this by restricting the non-determinism when traversing a variable: w
 On the other hand, traversing a non-terminating term like $(\lambda x. x\,x)(\lambda x. x\,x)$ leads to infinitely long traversals, as one would expect.
 
 The read-out phase of the algorithm appeals to a correspondence property between the traversals and paths in the tree representation of the normal form. The term $M$, for instance, has a single traversal which via suitable filtering, yields the path $\lambda z \cdot z$, therefore its beta-normal form is $\lambda z. z$, up to variable renaming.
-
+%
  To prove correctness of the evaluation procedure, we show that traversals recursively implement \emph{head linear reduction}, a term reduction method
  based on a non-standard notion of redex that is reduced
  by substituting one variable occurrence at a time.
@@ -504,7 +504,7 @@ A \defname{redex} is a sub-term of the form $(\lambda x. M) N$.
 Reducing redex $(\lambda x. M) N$, or also \emph{firing} the redex, means substituting all free occurrences of $x$ in $M$ by the term $N$
 using capture-avoiding substitution (the bound variable is renamed afresh when recursively substituting under a lambda).
 A term is said to be in \defname{$\beta$-normal form}, abbreviated $\beta$-nf, if it does not contain any redex.
-A term is in \defname{head normal form} if it can be written $\lambda x_1 \ldots x_n . y A_1 \ldots A_m$ for $n,m\geq0$. If a term is not in head normal form then its \defname{head beta-redex} is the left-most redex, otherwise the term does not have any head beta-redex. For any reduction relation $\rightarrow$ between terms we will write $\rightarrow^*$ to denote its reflexive transitive closure. The \defname{eta-expansion} of $M$ refers to some term $\lambda x. M x $ for some variable $x$ fresh in $M$.
+A term is in \defname{head normal form} if it can be written $\lambda x_1 \ldots x_n . y A_1 \ldots A_m$ for $n,m\geq0$. If a term is not in head normal form then its \defname{head beta-redex} is the leftmost redex, otherwise the term does not have any head beta-redex. For any reduction relation $\rightarrow$ between terms we will write $\rightarrow^*$ to denote its reflexive transitive closure. The \defname{eta-expansion} of $M$ refers to some term $\lambda x. M x $ for some variable $x$ fresh in $M$.
 
 The \defname{head reduction}, denoted $\rightarrow_{h}$, fires the head redex of a term if it exists.
 A well-know result is that $\rightarrow^*_{h}$ yields the head-normal form. The \defname{normal-order reduction strategy}, also called leftmost-outermost reduction strategy, performs head reduction until reaching the head-normal form and then recursively applies head reduction on each operand of the head variable. A standard result is that this reduction strategy yields the normal form if it exists.
@@ -1530,7 +1530,7 @@ For any (closed) simply-typed term $M^\tau$ in \emph{eta-long form},
 \end{theorem}
 
 
-% Proof idea: ``traversals implement left-most linear reduction''.
+% Proof idea: ``traversals implement leftmost linear reduction''.
 % The proof sketch:
 % \begin{itemize}
 % \item Show that `leftmost linear reduction' yields the `quasi normal form'.  (Proposition~\ref{prop:qnf_nf}(ii))
@@ -1979,8 +1979,8 @@ The normal form must therefore have shape $\lambda y s z \ldots \cdot s N_1 \ldo
 %
 To determine the arguments $N_k$, we enumerate all the possible instantiations of $\rulename{IVar}$ for every non-deterministic choice of $k\geq 1$, and recursively unfold the strands of the traversal. How many values of $k$ shall be considered? We should not eta-expand beyond the point where further extensions are guaranteed to visit only ghost occurrences. That upper-bound is precisely given by the \emph{dynamic arity} of $t_\epsilon$.
 We look up the node arities from the tree represented in Figure~\ref{fig:comptree_examples}. The arities of the nodes in the traversal strand are
- $0,1,4,2,2,1,0,0,0,0$ so the dynamic arity is given by the maximum of the intermediate values generated from the summation $(((((0) + -0+0) -0 +1) -2 + 2) -4 +1)$, thus $\dynar(t_\epsilon) = \max \{ 0,0,1,1,-2 \} = 1$.
- Hence this eliminates the cases $k>1$, so that the normal form must be of the shape $\lambda y s z \ldots \cdot s N_1$.
+ $0,1,4,2,2,1,0,0,0,0$, the dynamic arity is thus given by the maximum of the intermediate values (in parentheses) in the summation $(((((0) + -0+0) -0 +1) -2 + 2) -4 +1)$: $\dynar(t_\epsilon) = \max \{ 0,0,1,1,-2 \} = 1$.
+ This eliminates the cases $k>1$, so that the normal form must be of the shape $\lambda y s z \ldots \cdot s N_1$.
 %
  Extending traversal $t_\epsilon$ with rule $\rulename{IVar}$ for $k=1$ and unfolding the next strand gives traversal
 $t_1 = \Pstr[0.7cm]{(n0){\underline\lambda }
@@ -2010,11 +2010,11 @@ $\core{t_1} =  \lambda y s z ~ s ~ \lambda ~ y
 $
 therefore the normal form is of the shape $\lambda y s z \cdots . s (y \cdots)$.
 The dynamic arity of $t_1$ is $\dynar(t_1) = \max \{ 0, 2,2,2,2,0 \} = 2$
-(where the $2$ comes from the arity of variable node $y$) hence the normal form is of the shape $\lambda y s z \cdots . s (y R_1 R_2)$
+(where `$2$' gets introduced from the arity of variable node $y$) hence the normal form is of the shape $\lambda y s z \cdots . s (y R_1 R_2)$
 for some terms $R_1$, $R_2$.
 We apply rule \rulenamet{IVar} with the child index ranging from $1$ to $2$ which gives the following two maximal traversals
 \ifshortversion
-(We omit some of the occurrences from the first two strands for succinctness.):
+(We omit some occurrences from the first two strands for succinctness.):
 \begin{eqnarray*}
 t_{11} = \Pstr[0.7cm]{
     (n0){\underline\lambda}
@@ -2132,14 +2132,14 @@ Their core projections are $\Pstr[0.7cm]{
 (n20-n19){\ghostlmd^2}
 (n25-n0) {\ghostvar^3}
 }$.
-The first one shows that $\betanf{M}$ must be of the form $\lambda y s z \cdots . s (y\, s\, R_2)$, while the second one indicates that it must be of the form  $\lambda y s z \cdots . s(y\, R_1\, z)$.
-Assembling those two maximal tree paths together yields the beta-normal form $\lambda y s z . s(y\, s\, z)$.
+The first one shows that $\betanf{M}$ must be of the form $\lambda y s z \cdots . s (y\, s\, R_2)$, while the second one indicates it is of the form  $\lambda y s z \cdots . s(y\, R_1\, z)$.
+Combining those two maximal tree paths yields the $\beta$-nf $\lambda y s z . s(y\, s\, z)$.
 \end{example}
 
 \begin{example}[Missing operand example]
 \label{ex:missingoperand}
-This example, due to Neil D.~Jones, illustrates how `on-the-fly' eta-expansion handles the
- ``missing argument'' situation, explained in introduction, which stymies concrete traversals. Take the term $J = (\lambda u . u (x\,u)) (\lambda v . v\, y)$ whose
+This example, due to Neil D.~Jones, illustrates how `on-the-fly eta-expansion' handles the
+ ``missing argument'' situation, explained in introduction, which stymies concrete traversals. Take $J = (\lambda u . u (x\,u)) (\lambda v . v\, y)$ whose
  tree is represented in Figure~\ref{fig:comptree_examples}.
 Its two maximal normalizing traversals are:
 \def\vtspace{\kern 0.1pt}
@@ -2182,9 +2182,11 @@ t_2 = \Pstr[4ex]{
     \vtspace (n11-n0){\underline{y}}
 }
 \end{eqnarray*}
-Traversing $J$ with concrete rules lets you follow $t_1$ until the second occurrence of $v$ in $t_1$, where the traversal gets stuck due to the second occurrence of $u$ lacking an operand. The imaginary traversal instantiates that missing operand on-the-fly, via the ghost child lambda node $\ghostlmd^1$ of $u$.
-Traversal $t_2$ illustrates a different situation where, instead of being stuck, the concrete traversals misses a valid path from the beta-normal form: variable $x$ does have one argument in $J$, which gets traversed by concrete traversals, but the imaginary traversal $t_2$ pushes the exploration further by traversing the imaginary second argument to $x$, represented by $\ghostlmd^2$, eventually materializing node $y$, which ends up being the second argument of $x$ in the normal form.
-The core projections
+Traversing $J$ with \emph{concrete} rules lets you follow $t_1$ until the second occurrence of $v$ in $t_1$, where the traversal gets stuck due to the second occurrence of $u$ lacking an operand. The \emph{imaginary} traversal instantiates that missing operand on-the-fly via the ghost child lambda node $\ghostlmd^1$ of $u$.
+Traversal $t_2$ illustrates a different situation where, instead of being stuck, the concrete traversals misses a valid path from the beta-normal form: variable $x$ has one immediate argument in $J$, which gets traversed by concrete traversals, but the imaginary traversal $t_2$ goes beyond by
+traversing an imaginary second argument to $x$, represented by $\ghostlmd^2$, which eventually materializes node $y$, that ends up being the second argument of $x$ in the normal form.
+The two maximal paths in the beta-normal form are given by
+core projections
 $\core{t_1} = \Pstr[0.7cm]{
     (n0){\lambda}
 \,(n1-n0){x}
@@ -2197,8 +2199,7 @@ and
     (n0){\lambda }
     \,(n1-n0){x}
     \,(n2-n1){{\ghostlmd^{2}}}
-    \,(n3-n0,40){y}}$
-are the two maximal paths in the beta-normal form.
+    \,(n3-n0,40){y}}$.
 The beta-normal form of $J$ is thus $x (\lambda v.v\,y) y$.
 \end{example}
 
@@ -2458,7 +2459,7 @@ To define head-linear reduction, one needs to consider specific \emph{occurrence
 %
 We say that a variable occurrence is \defname{involved} in the generalized redex $(\lambda x, A)$ if the variable occurrence is bound by $\lambda x$. A variable occurrence can therefore be involved in at most one generalized redex. We define the \defname{linear substitution} of $x$ for $A$ as the term obtained by performing capture-avoiding substitution of that single occurrence of $x$ by $A$. (Compare this to the standard substitution that applies to \emph{every} occurrence of $x$ in $M$.) When performing such substitution we say that we \defname{linearly fire} the generalized redex $(\lambda x, A)$ for that occurrence of $x$.
 %
-The \defname{head variable occurrence}, abbreviated \defname{hoc}, of a term is the left-most variable occurring in the term (\ie, the first variable found by a depth-first traversal of the term tree.) If the head variable occurrence of a term is involved in a generalized redex then we call that redex the \defname{head-linear redex}.
+The \defname{head variable occurrence}, abbreviated \defname{hoc}, of a term is the leftmost variable occurring in the term (\ie, the first variable found by a depth-first traversal of the term tree.) If the head variable occurrence of a term is involved in a generalized redex then we call that redex the \defname{head-linear redex}.
 A term that does not have a head-linear redex is said to be in \defname{quasi head-normal form}, abbreviated `\emph{qhnf}'.
 The \defname{head-linear reduction} $\hlred$ is the reduction that linearly fires the head linear redex, if it exists. It can be shown that the reflexive transitive closure $\rightarrow^*_{hl}$ yields the quasi head-normal form~\cite{danos-head,danosherbelinregnier1996}.
 
@@ -2514,13 +2515,13 @@ The \defname{leftmost linear variable occurrence} of $M$
 is defined as $lloc_M(M)$ if it exists and the generalized redex it is involved in is called the \defname{lloc redex}, otherwise $M$ is said to be in \defname{quasi normal form}, or \emph{qnf} for short.
 The \defname{leftmost linear reduction} strategy, written $\llred$, is defined as the strategy that linearly fires the generalized redex involving the leftmost linear variable occurrence.
 \end{definition}
-Leftmost linear reduction proceeds by first locating the left-most variable occurrence and, if it is involved in a redex, linearly fires it. In comparison, the standard left-most outermost reduction strategy first locates the leftmost redex and then fires it by substituting all the variables involved in it.
+Leftmost linear reduction proceeds by first locating the leftmost variable occurrence and, if it is involved in a redex, linearly fires it. In comparison, the standard leftmost outermost reduction strategy first locates the leftmost redex and then fires it by substituting all the variables involved in it.
 %
-Since the \emph{lloc} is uniquely defined, a given term has a unique left-most linear reduction sequence $M \llred M_1 \llred M_2 \llred \ldots$ (also abbreviated as \defname{linear reduction sequence}).
+Since the \emph{lloc} is uniquely defined, a given term has a unique leftmost linear reduction sequence $M \llred M_1 \llred M_2 \llred \ldots$ (also abbreviated as \defname{linear reduction sequence}).
 
 \begin{example}
 Take $M = (\lambda x. x x N) z$. We have $M \hlred (\lambda x. z x N) z$ which is in quasi head normal form because the head variable $z$ is not involved in any generalized redex.
-But since the left-most linear occurrence $x$ is involved in the redex $(\lambda x, z)$ the leftmost linear reduction gives $(\lambda x. z x N) z \llred (\lambda x. z z N) z$.
+But since the leftmost linear occurrence $x$ is involved in the redex $(\lambda x, z)$ the leftmost linear reduction gives $(\lambda x. z x N) z \llred (\lambda x. z z N) z$.
 \end{example}
 
 The \emph{lloc} generalizes the notion of \emph{hoc} to arguments of the head variable. Observe, however, that contrary to the \emph{hoc}, the definition requires the \emph{lloc} to be involved in a generalized redex.
@@ -2708,7 +2709,7 @@ $M$ is also in quasi normal form. Indeed $lloc_M(M) = lloc_M (\lambda w y . y) =
 
 \begin{theorem}[Soundness of leftmost linear reduction]
 \label{thm:soundness_leftmostlinearred}
-If $M \rightarrow_{ll} N$ then $M$ and $N$ are beta-equivalent.
+If $M \llred N$ then $M$ and $N$ are beta-equivalent.
 \end{theorem}
 \begin{proof}
 The proof is like that of Theorem~\ref{thm:danosregnier_headlinred}. We adapt the notion of \emph{consecutive redex} from~\cite{danos-head} to  leftmost-linear reduction: Let $r = (\lambda x, V)$ and  $s =(\lambda y, W)$ be two generalized redexes. We say that $r$ contains $s$ if the node $\lambda y$ lies in the scope of $\lambda x$. We say that $r$ and $s$ are \emph{consecutive} if $r$ contains $s$; no other generalized redex other than $r$ and $s$ is contained in $r$ and contains $s$; and $s$ is the leftmost generalized redex contained in $r$ (\ie, any other redex $t$ contained in $r$ resides on the left of node $\lambda y$ in the standard term tree representation). Let $r_0, \ldots, r_p$ denote the consecutive generalized redexes for $p\geq 0$ where $r_0$ is not contained in any other generalized redexes and $r_p$ is the \emph{lloc redex}. (This sequence necessarily exists by definition of \emph{lloc}.) An induction on $p$ shows that $M$ and $N$ reduce to the same term by exactly $p-1$ standard reduction steps (\ie, the strategy reducing the leftmost outermost redex), observing that at every step, no redex can be introduced above or on the left of the \emph{lloc}.
@@ -2755,39 +2756,41 @@ $M$ and its normal form must have the same lambda list. We can then conclude usi
 
 \begin{theorem}[Completeness of leftmost linear reduction]
 \label{thm:completeness_leftmostlinearred}
-If $M$ has a beta-normal form then its left-most linear reduction terminates (and thus yields a quasi normal form).
+If $M$ has a beta-normal form then its leftmost linear reduction terminates (and thus yields a quasi normal form).
 \end{theorem}
 \shortproof
 % The proof relies on Theorem~\ref{thm:danosregnier_headlinred}, to reduce
 % the to the case of quasi-head-normal-forms.
 % It is then proven by strong induction on the size of $M$ and case analysis.
 % In the application case,
-Suppose that $M$ has a $\beta$-nf. Then its head-reduction terminates and by Theorem~\ref{thm:danosregnier_headlinred} its $\hlred$-reduction
- also terminates and yields its \emph{qhnf}. Since for terms not in \emph{qhnf} $\hlred$ coincides with $\llred$, we can without loss of generality assume that $M$ is in \emph{qhnf}.
 We prove by strong induction on the \emph{size} of $M$ that
-`\emph{H1: If $M$ has a $\beta$-nf then its leftmost linear reduction sequence terminates.}'
+`\emph{H1: If $M$ has a $\beta$-nf then its $\llred$-reduction sequence terminates.}'
+The variable case is trivial, and the abstraction case is immediate by induction. Suppose $M = U V$.
+Since $M$ has a $\beta$-nf. Then its head-reduction terminates and by Theorem~\ref{thm:danosregnier_headlinred} its $\hlred$-reduction
+ also terminates and yields its \emph{qhnf}. Since for terms not in \emph{qhnf} $\hlred$ coincides with $\llred$, we can without loss of generality assume that $M$ is in \emph{qhnf}.
 %
-The variable case is trivial, and the abstraction case follows
-immediately by induction. Suppose $M = U V$ and $M$ is not a \emph{qnf} then it has a \emph{lloc} that is distinct from the \emph{hoc}.
+If $M$ is also in \emph{qnf} then the result is immediate. Otherwise it must have a \emph{lloc} that is distinct from the \emph{hoc}.
+We consider two cases: whether the \emph{lloc} is in $U$ or in $V$.
 %
 %\begin{enumerate}[noitemsep,label=(\roman*),leftmargin=1pc]
 %\item
-Suppose that the \emph{lloc} of $M$ is in $U$.
+Suppose that the \emph{lloc} is in $U$.
 %($lloc_M(U) \ne \bot$).
     We show by finite \emph{structural} induction on subterms $T$ of $U$ that:
     `\emph{H2: If $lloc_M(T) \neq \bot$ and $hoc(M)$ is in $T$ then there is
-     only a finite number of steps in the linear reduction sequence of $M$ that involve a linear substitutions in (reducts of) $T$.}'
+     only a finite number of steps in the $\llred$-sequence of $M$ that involve a linear substitutions in (reducts of) $T$.}'
 %
-    If $T$ is a variable, since it contains the \hoc\, it must be the
-    \hoc~itself. Because $M$ is in \emph{qhnf}, the \hoc~is not involved in any generalized redex and therefore $T$ is not involved in any substitution of the linear reduction sequence of $M$.
+    If $T$ is a variable %, since it contains the \hoc\,
+    it must be the \hoc~itself. Because $M$ is in \emph{qhnf}, the \hoc~is not involved in any generalized redex and therefore $T$ is not involved in any substitution of the $\llred$-reduction sequence of $M$.
 %
-    If $T$ is an abstraction then both the \emph{hoc} and \emph{lloc} are in its body so we conclude by induction (H2).
+    If $T$ is an abstraction then both the \emph{hoc} and \emph{lloc} are in its body so we conclude by induction hypothesis H2.
 %
-    If $T = T_1 T_2$. By definition, the \emph{hoc} is necessarily in $T_1$.
-    Suppose that $\emph{lloc}$ is in $T_2$. Then we have $lloc_M(T_1) =\bot$ therefore none of the steps in the linear reduction sequence of $M$ involve substitutions in $T_1$.
-    %(there is no variable in $T_1$ involved in a  general redex therefore subsequent linear reduction steps can only introduce general redexes on the right of $T_1$).
-    If it is a variable $x$ then it must be the \emph{hoc} and $T = x\,T_2$.
-    We show the result by induction (H3) on the number of pending arguments of the \emph{hoc}.
+    If $T = T_1 T_2$ then by definition the \emph{hoc} must be in $T_1$.
+
+    Suppose that $\emph{lloc}$ is in $T_2$. Then we have $lloc_M(T_1) =\bot$ therefore none of the steps in the $\llred$-reduction sequence of $M$ involve substitutions in $T_1$.
+    %(there is no variable in $T_1$ involved in a  general redex therefore subsequent $\llred$-reduction steps can only introduce general redexes on the right of $T_1$).
+    If $T_1$ is a variable $x$ then it must be the \emph{hoc} and $T = x\,T_2$.
+    We show that H2 holds by another induction H3 on the number of pending arguments of the \emph{hoc}.
     %
     %\begin{compactitem}
     %\item
@@ -2803,9 +2806,9 @@ Suppose that the \emph{lloc} of $M$ is in $U$.
     Let $M'$ denote the term obtained by replacing
     the subterm $T$ by $T_2$, the $\llred$-reduction sequence of $M$ coincides with that of $M'$.
     %
-    Now $M'$ must necessarily have a $\beta$-normal form. Otherwise, its standard $\beta$-reduction sequence would not terminate, which would imply that $\gamma(T_2)$ does not terminate, which contradicts the fact that $\gamma(T_2)$ is the argument of the head variable in the head normal form!
+    Now $M'$ must necessarily have a $\beta$-normal form. Otherwise, its standard $\beta$-reduction sequence would not terminate, which would imply that $\gamma(T_2)$ does not terminate, which contradicts the fact that $\gamma(T_2)$ is the argument of the head variable in the head normal form.
     %
-    Since $M'$ is smaller than $M$, by H1, its linear-reduction sequence terminates. We can conclude since the linear reduction sequences of $M$ and $M'$ coincide.
+    And since $M'$ is smaller than $M$, by H1, its $\llred$-reduction sequence terminates. We conclude since the $\llred$-reduction sequences of $M$ and $M'$ coincide.
     %
     %%%%%%%%%%%%%%%
     %\item
@@ -2814,37 +2817,38 @@ Suppose that the \emph{lloc} of $M$ is in $U$.
     Let $U_{n+1} V_{n+1}$ denote the subterm of $M$ such that $V_{n+1}$ is the last \hoc\ argument of $M$. We consider the term $M'$ obtained from $M$ by removing the last \hoc\ argument of $M$ (\ie~replacing $U_{n+1} V_{n+1}$ by $U_{n+1}$).
     Observe that the last argument of the hoc cannot possibly be the argument of any generalized redex, therefore the linear reduction of $M$ must  coincide with that of $M'$ up until the \hoc\ of the reduct of $M$ lies under the last \hoc\ argument $U_{n+1}$.
 %
-    By induction hypothesis (H3), the $\llred$-reduction sequence of $M'$ involves a finite number of substitutions under $T_2$. Consequently, the same holds in $M$.
+    By induction hypothesis H3, the $\llred$-reduction sequence of $M'$ involves a finite number of substitutions under $T_2$. Consequently, the same holds in $M$.
     %\end{compactitem}
 %%%%
 
     Suppose $T_1$ is not a variable. Let $z$ denote a fresh variable in $M$, and $M' = M[z/T_1]$ be the term obtained by replacing the subterm $T_1$ in $M$ by the fresh variable $z$.   Since $T_1$ is not a variable, $M'$ must be strictly smaller than $M$. And since $M$ has a $\beta$-nf, so must $M'$, thus by the induction hypothesis (H1), the $\llred$ reduction sequence of $M'$ terminates. Consequently, there is only a finite number of steps in the linear reduction of $M'$ that involve substitutions in reducts of $z~T_2$.
-    Clearly, the linear reduction steps under $T_2$ in $M'$ coincide with those of $T_2$ in $M$. Hence, we can conclude that at most a finite number of substitutions take place under $T= T_1 T_2$ in the linear reduction sequence of $M$.
+    Clearly, the linear reduction steps under $T_2$ in $M'$ coincide with those of $T_2$ in $M$. Hence, we can conclude that at most a finite number of substitutions take place under $T= T_1 T_2$ in the $\llred$-reduction sequence of $M$.
 %%%%
 
-    Suppose that $\emph{lloc}$ is in $T_1$. Then by the induction hypothesis (H2) there is a finite number of steps in the linear reduction sequence of $M$ that involve (reducts of) $T_1$. Let us consider the first reduct $R$ of $M$ in the $\llred$ reduction sequence such that the \emph{lloc} is not under a reduct of $T_1$.  Observe that in the linear reduction sequence of $T$, the subterm $T_2$ remains unmodified as long as the \emph{lloc} remains in (the reduct) of $T_1$.
+    Suppose that $\emph{lloc}$ is in $T_1$. Then by the induction hypothesis H2 there is a finite number of steps in the $\llred$-reduction sequence of $M$ that involve (reducts of) $T_1$. Let us consider the first reduct $R$ of $M$ in the $\llred$ reduction sequence such that the \emph{lloc} is not under a reduct of $T_1$.  Observe that in the $\llred$-reduction sequence of $T$, the subterm $T_2$ remains unmodified as long as the \emph{lloc} remains in (the reduct) of $T_1$.
     %
-    At $R$, if the \emph{lloc} is not under $T_2$ then none of the further steps in the linear reduction sequence of $R$ will involve $T_2$.
+    At $R$, if the \emph{lloc} is not under $T_2$ then none of the further steps in the $\llred$-reduction sequence of $R$ will involve $T_2$.
     % (\ie, subsequent substitutions will occur outside of $T$ -- on its right,  more precisely).
     We can thus conclude.
     %
     If instead at $R$ the \emph{lloc} lies under the subterm $T_2$
     %: $lloc_R(T2) \ne\bot$,
-    then $T_1$ cannot be a variable, otherwise it would be both the \emph{hoc} and the \emph{lloc} of $M$ which contradict the assumption. We can thus conclude by applying the same reasoning as case (a) above to the reduct $R$.
+    then $T_1$ cannot be a variable, otherwise it would be both the \emph{hoc} and the \emph{lloc} of $M$ which contradict the assumption.
+    We conclude by applying the same reasoning as case (a) above to the reduct $R$.
     %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %\item
-    Suppose that the lloc is in $V$.
-    Then by definition of the \emph{lloc}
-    %for the application case,
+    If instead the \emph{lloc} is in $V$
+    then
+    %by definition of the \emph{lloc}  %for the application case,
     we have $lloc_M(U) =\bot$ and $\lambda_l(U)=\epsilon$.
     Hence $U$ is in \emph{qnf} and by Proposition~\ref{prop:qnf_nf} it has a $\beta$-nf.
-     By Property~\ref{prop:qnf_betanf_empty_lambdalist}
-    $U$'s normal form is not an abstraction. Hence since $M$ has a
-    $\beta$-nf so must $V$ and $\betanf{M} = \betanf{U} \betanf{V}$.
-    By (H1) the $\llred$-reduction of $V$ must terminate.
+     By Property~\ref{prop:qnf_betanf_empty_lambdalist},
+    $U$'s normal form is not an abstraction.
+    Thus, since $M$ has a $\beta$-nf so must $V$ and $\betanf{M} = \betanf{U} \betanf{V}$.
+    By the induction hypothesis H1. the $\llred$-reduction of $V$ terminates.
     We conclude by observing that the linear-substitutions performed in the
-    linear-reduction sequence of $M$ map one-to-one to those in the linear-reduction sequence of $V$: if $V \llred V_2 \llred \ldots V_i$ then $M = U V \llred U V_2 \llred \ldots U V_i$ for some $i\geq 0$.
+    $\llred$-reduction sequence of $M$ map one-to-one to those in the $\llred$-reduction sequence of $V$: if $V \llred V_2 \llred \ldots V_i$ for some $i\geq 0$ then $M = U V \llred U V_2 \llred \ldots U V_i$.
 %\end{enumerate}
 \endshortproof
 
@@ -2852,7 +2856,7 @@ Suppose that the \emph{lloc} of $M$ is in $U$.
 Suppose $M$ has a beta-normal form then by a standard result of lambda calculus its head-reduction terminates, therefore by Theorem~\ref{thm:danosregnier_headlinred} the $\hlred$-reduction of $M$ terminates and yields its quasi-\emph{head}-normal form. Since $\hlred$ coincides with $\llred$, for terms not in \emph{qhnf}, we can without loss of generality assume that $M$ is in \emph{qhnf}.
 We prove by induction on the \emph{size} of $M$ that
 \begin{quote}
-{\bf (H1)} If $M$ has a beta-nf then its linear reduction sequence terminates.
+{\bf (H1)} If $M$ has a beta-nf then its $\llred$-reduction sequence terminates.
 \end{quote}
 For the variable case, $\llred$ trivially terminates.
 If $M = \lambda x . U$ then $U$ must also admit a beta-nf so we can conclude by induction. Suppose $M = U V$. If $M$ is in \emph{qnf} then we conclude immediately. Otherwise, $M$ must have a \emph{lloc} occurrence that is distinct from the \emph{hoc} occurrence.
@@ -2860,11 +2864,11 @@ If $M = \lambda x . U$ then $U$ must also admit a beta-nf so we can conclude by 
 \item Suppose that the \emph{lloc} of $M$ is in $U$ ($lloc_M(U) \ne \bot$).
     We show by finite \emph{structural} induction on subterms $T$ of $U$ that:
     \begin{quote}
-    {\bf (H2)} If $lloc_M(T) \neq \bot$ and $hoc(M)$ is in $T$ then there are at most a finite number of steps in the linear reduction sequence of $M$ that involve a linear substitutions in (reducts of) $T$.
+    {\bf (H2)} If $lloc_M(T) \neq \bot$ and $hoc(M)$ is in $T$ then there are at most a finite number of steps in the $\llred$-reduction sequence of $M$ that involve a linear substitutions in (reducts of) $T$.
     \end{quote}
 
     \begin{enumerate}[noitemsep,leftmargin=0pt,label=-]
-        \item $T$ is a variable. Since $M$'s \hoc\ is in $T$, it must be $T$ itself. Because $M$ is in quasi-head-normal form, the \hoc~is not involved in any generalized redex and therefore $T$ is not involved in any substitution of the linear reduction sequence of $M$.
+        \item $T$ is a variable. Since $M$'s \hoc\ is in $T$, it must be $T$ itself. Because $M$ is in quasi-head-normal form, the \hoc~is not involved in any generalized redex and therefore $T$ is not involved in any substitution of the $\llred$-reduction sequence of $M$.
 
         \item $T =\lambda x . T'$ then the \emph{hoc} and \emph{lloc} must be in $T'$ and we can conclude by the induction hypothesis (H2).
 
@@ -2872,7 +2876,7 @@ If $M = \lambda x . U$ then $U$ must also admit a beta-nf so we can conclude by 
 
         \begin{enumerate}[noitemsep,label=(\alph*)]
 
-            \item Suppose that $\emph{lloc}$ is in $T_2$. Then we have $lloc_M(T_1) =\bot$ therefore none of the steps in the linear reduction sequence of $M$ will involve substitutions in $T_1$ (there is no  variable in $T_1$ involved in a  general redex therefore subsequent linear reduction steps can only introduce general redexes on the right of $T_1$).
+            \item Suppose that $\emph{lloc}$ is in $T_2$. Then we have $lloc_M(T_1) =\bot$ therefore none of the steps in the $\llred$-reduction sequence of $M$ will involve substitutions in $T_1$ (there is no  variable in $T_1$ involved in a  general redex therefore subsequent linear reduction steps can only introduce general redexes on the right of $T_1$).
 
             \begin{compactitem}
                 \item Suppose $T_1$ is a variable $x$ then it must be the \emph{hoc} and we have $T = x~T_2$.
@@ -2893,10 +2897,10 @@ If $M = \lambda x . U$ then $U$ must also admit a beta-nf so we can conclude by 
                     Therefore if we consider the term $M'$ obtained by replacing
                     the subterm $T$ by just $T_2$, the $\llred$-reduction sequence of $M$ coincides with that of $M'$.
 
-                    Now $M'$ must necessarily have a beta-normal form. Otherwise it's standard beta-reduction sequence would not terminate, which would imply that $\gamma(T_2)$ does not terminate, which contradicts the fact that $\gamma(T_2)$ is the argument of the head variable in the head normal form!
+                    Now $M'$ must necessarily have a beta-normal form. Otherwise it's standard beta-reduction sequence would not terminate, which would imply that $\gamma(T_2)$ does not terminate, which contradicts the fact that $\gamma(T_2)$ is the argument of the head variable in the head normal form.
 
-                    Thus, since $M'$ is by definition smaller than $M$,by the induction hypothesis H1, its linear-reduction sequence terminates. We can then conclude since we have shown that
-                    the linear reduction sequences of $M$ and $M'$ coincide.
+                    Thus, since $M'$ is by definition smaller than $M$,by the induction hypothesis H1, its $\llred$-reduction sequence terminates. We can then conclude since we have shown that
+                    the $\llred$-reduction sequences of $M$ and $M'$ coincide.
 
                     %%%%%%%%%%%%%%%
                     \item Inductive case: suppose the result holds for terms with $n \geq 1$ \hoc\ arguments, and suppose ${\sf Args}(M) = n+1$.
@@ -2915,28 +2919,28 @@ If $M = \lambda x . U$ then $U$ must also admit a beta-nf so we can conclude by 
 
                 Since $T_1$ is not a variable, $M'$ must be strictly smaller than $M$. And since $M$ has a beta-nf, so must $M'$, thus by the induction hypothesis (H1), the $\llred$ reduction sequence of $M'$ terminates. Consequently, there is only a finite number of steps in the linear reduction of $M'$ that involve substitutions in reducts of $z~T_2$.
 
-                Clearly, the linear reduction steps under $T_2$ in $M'$ coincide with those of $T_2$ in $M$. Hence, we can conclude that at most a finite number of substitutions take place under $T= T_1 T_2$ in the linear reduction sequence of $M$.
+                Clearly, the linear reduction steps under $T_2$ in $M'$ coincide with those of $T_2$ in $M$. Hence, we can conclude that at most a finite number of substitutions take place under $T= T_1 T_2$ in the $\llred$-reduction sequence of $M$.
             \end{compactitem}
 
 
-            \item Suppose that $\emph{lloc}$ is in $T_1$. Then by the induction hypothesis (H2) there is a finite number of steps in the linear reduction sequence of $M$ that involve (reducts of) $T_1$. Let us consider the first reduct $R$ of $M$ in the $\llred$ reduction sequence such that the \emph{lloc} is not under a reduct of $T_1$.  Observe that in the linear reduction sequence of $T$, the subterm $T_2$ remains unmodified as long as the \emph{lloc} remains in (the reduct) of $T_1$.
+            \item Suppose that $\emph{lloc}$ is in $T_1$. Then by the induction hypothesis (H2) there is a finite number of steps in the $\llred$-reduction sequence of $M$ that involve (reducts of) $T_1$. Let us consider the first reduct $R$ of $M$ in the $\llred$ reduction sequence such that the \emph{lloc} is not under a reduct of $T_1$.  Observe that in the $\llred$-reduction sequence of $T$, the subterm $T_2$ remains unmodified as long as the \emph{lloc} remains in (the reduct) of $T_1$.
 
-            At $R$, if the \emph{lloc} is not under $T_2$ then none of the further steps in the linear reduction sequence of $R$ will involve $T_2$ (\ie, subsequent substitutions will occur outside of $T$ -- on its right,  more precisely). We can thus conclude.
+            At $R$, if the \emph{lloc} is not under $T_2$ then none of the further steps in the $\llred$-reduction sequence of $R$ will involve $T_2$ (\ie, subsequent substitutions will occur outside of $T$ -- on its right,  more precisely). We can thus conclude.
 
-            If instead at $R$ the \emph{lloc} lies under the subterm $T_2$: $lloc_R(T2) \ne\bot$, then $T_1$ cannot be a variable, otherwise it would be both the \emph{hoc} and the \emph{lloc} of $M$ which contradict the assumption. We thus conclude by applying the same reasoning as case (a) above to the reduct $R$.
+            If instead at $R$ the \emph{lloc} lies under the subterm $T_2$: $lloc_R(T2) \ne\bot$, then $T_1$ cannot be a variable, otherwise it would be both the \emph{hoc} and the \emph{lloc} of $M$ which contradict the assumption. We thus conclude by applying to $R$ the same reasoning as when the \emph{lloc} is in $T_2$.
         \end{enumerate}
 
     \end{enumerate}
     %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    \item Suppose that the lloc is in $V$.
+    \item Suppose that the \emph{lloc} is in $V$.
     Then by definition of the \emph{lloc} for the application case, we must have $lloc_M(U) =\bot$ and $\lambda_l(U)=\epsilon$.
     Hence $U$ is a term in \emph{qnf} and by Proposition~\ref{prop:qnf_nf} it must
     have a beta-normal form. By Property~\ref{prop:qnf_betanf_empty_lambdalist}
     $U$'s normal form is not an abstraction. Hence since $M$ has a normal form so must $V$ and we have $\betanf{M} = \betanf{U} \betanf{V}$.
     By the induction hypothesis (H1) the $\llred$-reduction of $V$ must terminate.
     We can then conclude by observing that the linear-substitutions performed in the
-    linear-reduction sequence of $M$ map one-to-one to those in the linear-reduction sequence of $V$ (\ie, if $V \llred V_2 \llred \ldots V_i$ then $M = U V \llred U V_2 \llred \ldots U V_i$ for some $i\geq 0$)
+    $\llred$-reduction sequence of $M$ map one-to-one to those in the $\llred$-reduction sequence of $V$ (\ie, if $V \llred V_2 \llred \ldots V_i$ then $M = U V \llred U V_2 \llred \ldots U V_i$ for some $i\geq 0$)
 \end{enumerate}
 \endproofatend
 
@@ -3041,7 +3045,7 @@ where in the 2nd and 4th transition, the lambda-occurrence $\lambda\overline{y_2
 \end{proposition}
 %\begin{proof}
 \proofatend
-By case analysis showing that for a \emph{qnf}, the rules of normalizing traversals unfold according to the state diagram of Figure~\ref{fig:qnf_strand_decomposition_statemachine} and therefore never traverses an internal variable. The three states represent the type of external nodes traversed (lambda, ghost lambda and variable). The bottom states represent the start of a new strand, the top state represent the end. The double arrows represent consecutive applications of deterministic traversal rules while regular arrows represent the two possible non-deterministic choices in rule \rulenamet{IVar}: one for structural child lambda nodes (left) and one for ghost children (right).
+By case analysis showing that for a \emph{qnf}, the rules of normalizing traversals unfold according to the state diagram of Figure~\ref{fig:qnf_strand_decomposition_statemachine} and therefore never traverses any internal variable. The three states represent the type of external nodes traversed (lambda, ghost lambda and variable). The bottom states represent the start of a new strand, the top state represent the end. The double arrows represent consecutive applications of deterministic traversal rules while regular arrows represent the two possible non-deterministic choices in rule \rulenamet{IVar}: one for structural child lambda nodes (left) and one for ghost children (right).
 
 \begin{enumerate}
 \item[(Init)] The first strand is obtained by applying the rule \rulenamet{Root} followed by repeated applications of \rulenamet{App} and \rulenamet{Lam}, which yields $u$, a path from the root $\lambda\overline{w}$ to some variable node $x$ in the tree of $M$, so that $u$ is a spinal descent consisting only of lambda nodes and application nodes.
@@ -3250,7 +3254,7 @@ We thus have $|\lambda_l(\lambda\overline{z_{i-1}})| - k_{i-1}
     = |\lambda\overline{z_{i-1}}| +|\lambda_l(@_i)| - k_{i-1}
     = \max (  |@_i|- k_i, |\lambda_l(\lambda\overline{z_i})| - k_i )$.
 By the induction hypothesis we have $|\lambda_l(\lambda\overline{z_i})| < k_i$, and since nodes in $v$ are all ghosts we have $|@_i|< k_i$ thus the `$\max$' is negative which shows $|\lambda_l(\lambda\overline{z_{i-1}})| < k_{i-1}$.
-Since in particular $|\lambda_l(\lambda\overline{z_r})| < k_r$, the application $(\lambda\overline{z_r} . A_0) A_1 \ldots A_{k_r-1}$ has more operands than pending lambdas in the operator, thus its lambda list is empty. By assumption, the strand is of type $S$ thus $lloc(\lambda\overline{w_1})=\bot$ and since there is no lloc ``left of'' $\lambda\overline{y_2}$, there cannot possibly be a lloc under $\lambda\overline{y_2}$. Hence $lloc(\lambda\overline{y_2}) =\bot$.
+Since in particular $|\lambda_l(\lambda\overline{z_r})| < k_r$, the application $(\lambda\overline{z_r} . A_0) A_1 \ldots A_{k_r-1}$ has more operands than pending lambdas in the operator, thus its lambda list is empty. By assumption, the strand is of type $S$ thus $lloc(\lambda\overline{w_1})=\bot$ and since there is no \emph{lloc} ``left of'' $\lambda\overline{y_2}$, there cannot possibly be a \emph{lloc} under $\lambda\overline{y_2}$. Hence $lloc(\lambda\overline{y_2}) =\bot$.
 The same argument used in the \emph{structural argument} case shows that
  $u_2$ is a spinal descent. Hence the next strand is of type $G$.
 \endshortproof
@@ -3883,17 +3887,18 @@ not alter the dynamic arity of traversals.
 %\noindent
 \emph{Case $r>1$ (right)} The tree of $N$ is obtained by removing the @-node and argument $A_1$ and combining the two $\lambda$-nodes into $\lambda\overline{y}$ where $\overline{y} = \overline{w} x_2 \ldots x_n$.
 %
-There is an implicit injection $\Phi$ from nodes of $N$ to nodes of $M$.
+This induces an injection $\Phi$ from nodes of $N$ to nodes of $M$.
 %that maps $\lambda\overline{y}$ to $\lambda\overline{w}$.
 %We extend it element-wise to $\phi$ on justified sequences
 % such that occurrences of $\lambda\overline{y}$ in $N$ gets replaced by the three occurrences $\lambda\overline{w} \cdot @ \cdot \lambda\overline{x}$ in $M$.
 %
 %%%%%%%%%%
 We simultaneously and inductively define
-a bijection $\varphi$ from $\travset_\normalizing(N)$ to a subset of $\travset_\normalizing(M)$ and show by induction that $\rightarrow_M$ simulates $\rightarrow_N$ via $\varphi$ and reciprocally.
+a bijection $\varphi$ from $\travset_\normalizing(N)$ to a subset of $\travset_\normalizing(M)$ and that $\rightarrow_M$ simulates $\rightarrow_N$ via $\varphi$ and reciprocally.
 The base case is immediate; we treat the interesting case of the induction:
 $u_1$ and $t_1=\varphi(u_1)$ are respectively traversals of $N$ and $M$ such that $\core{u_1} = \core{t_1}$.
-Suppose that $u_1 \rightarrow_N u_1 \cdot \lambda\overline{y} = u'$. Then $u' \internalextension_N u_1 \cdot \lambda\overline{y} \cdot s \cdot z = u$ where $s$ is the spinal descent in $T$ and $z$ is the \emph{hoc} of $T$.
+If $u_1 \rightarrow_N u_1 \cdot \lambda\overline{y} = u'$ then we extend
+$u' \internalextension_N u_1 \cdot \lambda\overline{y} \cdot s \cdot z = u$ where $s$ is the spinal descent in $T$ and $z$ is the \emph{hoc} of $T$.
 The sequence $t' = t_1 \cdot \lambda\overline{w} ~ @ ~ \lambda\overline{x} \cdot \Phi(s) \cdot \Phi(z)$
 where $\Phi(s)$ denotes the pointwise extension of $\Phi$, is clearly a traversal extension of $t_1$ in $M$.
 %
@@ -3903,23 +3908,25 @@ $|\lambda\overline{w}| - |@| + |\lambda\overline{x}|
 %=|\lambda\overline{w}x_2\ldots x_n|
 =|\lambda\overline{y}|
 $, the core calculation
-on $t'_{\leq \lambda\overline{x}}$ adequately generates pending lambdas from variable names $x_2 \ldots x_n$ and discharge them onto node $\lambda\overline{w}$. To proive
+on $t'_{\leq \lambda\overline{x}}$ adequately
+ and discharge pending lambdas names $x_2 \ldots x_n$
+  onto node $\lambda\overline{w}$. To prove
 that the simulation preserves $\core{\_}$
 it suffices to show that occurrences following
-$\lambda\overline{x}$ in $t'$ and those following $\lambda\overline{y}$ in $u$ produce the same pending lambdas, and that the last occurrence in the two traversals are either both internal or both external.
+$\lambda\overline{x}$ in $t'$ and those following $\lambda\overline{y}$ in $u$ yield the same pending lambdas, and that the last occurrence in the two traversals are either both internal or both external.
 %
-If $z$ is internal then since $s$ and $\varphi(s)$ are both  spinal descent of $T$, they have the same bound variables and arities therefore we have $\core{u} = \core{t'}$.
+If $z$ is internal then since $s$ and $\varphi(s)$ are both  spinal descent of $T$, they have the same bound variables and arities thus we have $\core{u} = \core{t'}$.
 If $z$ is external and its justifier is not $\lambda\overline{w}$ then
 $\Phi(z)$ is also external and again $\core{u} = \core{t'}$.
-If $z$ is external and is justified by $\lambda\overline{w}$ with link label
+If $z$ is external and justified by $\lambda\overline{w}$ with link label
 $j<|\overline{w}|$ then $\Phi(z)$ is necessarily external and $\core{u} = \core{t'}$.
 For those three cases we define $\varphi(u) = t'$.
 %
 If $z$ is external and is justified by $\lambda\overline{w}$ with link label
-$|\overline{w}|<j\leq |\overline{w}| + n -1$ then $z$ and $\Phi(z)$ are both labelled by the variable $x_i$ where $i=j-|\overline{w}|+1$, and therefore node $\Phi(z)$ in $M$ is bound by node $\lambda\overline{x}$ and is thus external.
+$|\overline{w}|<j\leq |\overline{w}| + n -1$ then $z$ and $\Phi(z)$ are both labelled by the variable $x_i$ where $i=j-|\overline{w}|+1$, and therefore node $\Phi(z)$ is bound by $\lambda\overline{x}$ in $M$ and is thus external.
 %
-We simulate $u'$ by extending $t' \rightarrow^*_M t = t' \cdot (\ghostlmd\, \ghostvar)^k$ for some $k>0$, where
-$(\ghostlmd\, \ghostvar)^k$ denotes the argument lookup of $z$ and
+To simulate $u'$ we extend $t' \rightarrow^*_M t = t' \cdot (\ghostlmd\, \ghostvar)^k$ where
+$(\ghostlmd\, \ghostvar)^k$ is the argument lookup of $z$ for $k>0$ and
 the last $\ghostvar$ points to $\lambda\overline{w}$ with label $j$. We then have $t_1 \rightarrow^*_M t$, $u'\internalextension_N u$
 and, since ghosts all have null arity, $\core{u} = \core{t}$. We define $\varphi(u) = t$.
 This is the situation where a ghost variable in $M$ gets materialized into a variable occurrence ($x_i$) in $N$.
@@ -4110,27 +4117,29 @@ exist for other evaluation strategies, such as call-by-name and call-by-value~\c
 which does not fire redexes inside the body of an unapplied abstraction, would easily be accommodated for. A strict evaluation strategy like call-by-value, on the other hand, might require substantial changes. For traditional reduction strategies, such as the normal order of lambda calculus,
 this might require non-deterministically spawning new traversals for every occurrence of the variable involved in a redex.
 
-\paragraph{Game semantics} We conjecture that a correspondence similar
-to Theorem~\ref{thm:gamesem_correspondence_stlc} holds for
-the untyped lambda calculus: there is an isomorphism between the cores of imaginary traversals and the innocent \emph{effectively almost everywhere copycat (EAC)} game denotation of untyped lambda terms~\cite{KerThesis}, as well as an isomorphism between the imaginary traversals and the EAC game denotation where internal moves are not hidden during strategy composition. We suspect that a connection exists between the `on-the-fly' eta-expansion performed by traversals and the morphism $Fun : U \rightarrow (U \Rightarrow U)$ of Ker's game category, where $U$ denotes the maximal game arena of the EAC strategies.
+\paragraph{Game semantics} We conjecture a result similar
+to Theorem~\ref{thm:gamesem_correspondence_stlc} for
+the untyped case: there is an isomorphism between the cores of imaginary traversals and the innocent \emph{effectively almost everywhere copycat (EAC)} game denotation of untyped lambda terms~\cite{KerThesis}, as well as an isomorphism between the imaginary traversals and the EAC denotations that preserves internal moves during composition. We suspect that a connection exists between the `on-the-fly eta-expansion' of traversals and the morphism $Fun : U \rightarrow (U \Rightarrow U)$ of Ker's game category, where $U$ is the maximal game arena of the EAC strategies.
 %%%%%%%%%%%%%%%%%
 
 \paragraph{Optimality and compilation}
-Example~\ref{tab:varity2_trav} shows that traversals can easily get very long even for relatively simple terms. This is not surprising given that they were not designed with efficiency nor optimality in mind, but rather derived from the game-semantic analogy.
-Traversals are clearly not L\'evy-optimal~\cite{optimal-reduction-levy}: they do exhibit some sharing through their use of pointers, which avoids copying or rewriting subterms when evaluating redexes, but they make no attempt to exploit such sharing to avoid redundant work: in the term $(\lambda x. y x x) A$, each occurrence of $x$ involves re-traversing the argument $A$.
-If a redex is traversed in $A$ the first time then it will get traversed again the second time, without reusing any work from the first traversal.
+Example~\ref{tab:varity2_trav} shows that traversals may get long even for relatively simple terms. It is not surprising given that they were not designed with efficiency in mind, but rather inspired by Game Semantics.
+Traversals are clearly not L\'evy-optimal~\cite{optimal-reduction-levy}: they do exhibit some sharing through their use of pointers, which avoids copying or rewriting subterms when evaluating redexes, but they make no attempt to exploit such sharing to avoid redundant work.
+% In the term $(\lambda x. y x x) A$, for instance, both occurrences of $x$ involve traversing the argument $A$.
+Traversing $(\lambda x. y x x) A$, for instance, involves traversing $A$ for both occurrences of $x$, and if that involves traversing a redex in $A$ the first time then that redex gets traversed again the second time. %, without reusing any work from the first traversal.
 %
-On the other hand, just like head-linear reduction, traversals are  ``hyper-lazy'' in nature~\cite{danosherbelinregnier1996}: they only evaluate (linear) redexes one variable occurrence at a time and only when the value of that occurrence is needed. So besides the possible redundancy described above, no useless work is performed, as opposed to the traditional
-way of evaluating redexes which involves substituting all variable occurrences at once including those that might be dead-code.
+On the other hand, traversals are  ``hyper-lazy''~\cite{danosherbelinregnier1996}: they evaluate (generalized) redexes one variable occurrence at a time and only when needed. So besides the above-mentioned  redundancy, no useless work is performed, contrary to the traditional
+evaluation of redexes that substitutes \emph{all} variable occurrences even those that are dead-code.
 %
-Traversals may not be too far from being optimal:
-memoization techniques may conceivably help shorten traversals
-and potentially give rise to a L\'evy-optimal notion of traversals
-by detecting shared L\'evy-families of redexes as traversals unfold.
-This perhaps relates to the remark by Danos and Regnier that memoization
-techniques can make \emph{Jumping Abstract Machines} optimal~\cite{DANOS199979}.
+We might not be too far from optimality:
+memoization techniques could conceivably shorten traversals
+and possibly gain optimality
+by detecting shared L\'evy-families of redexes as they unfold.
+This perhaps relates to a remark by Danos and Regnier that memoization
+can make \emph{Jumping Abstract Machines} optimal~\cite{DANOS199979}.
 %
-On the other hand, traversals are straightforward to implement and despite the lack of L\'evy-optimality, they have potential applications to program compilation, such as partial evaluation, an avenue pursued by Berezun and Jones for their own notion of traversals~\cite{berezunjones_partialevalbytraversals}.
+Finally, traversals are straightforward to implement and despite the lack of optimality, have potential applications to program compilation, such as partial evaluation, an avenue pursued by Berezun and Jones
+for their own notion of traversals~\cite{berezunjones_partialevalbytraversals}.
 
 
 %1 - Not the traditional notion of redex (linear)
@@ -4149,8 +4158,9 @@ On the other hand, traversals are straightforward to implement and despite the l
 
 %  The generated tree would be an order-$0$ tree representation of the beta-normal of a term: each terminal symbol of the automaton would correspond to a ``token'' of the lambda term: either a lambda node (represented by non-terminal of type $o\rightarrow o$), or a variable node (represented by a non-terminal of type $o^k\rightarrow o$ where $k\geq0$ is the number of operands applied to the variable in the beta-normal form of the term.
 
-\subsection*{Acknowledgement}
-This work got inspired by the Galop workshop slides by Daniil Berezun and Neil D. Jones~\cite{berezunjones_partialevalbytraversals}. It benefited from email communications with the authors and memorable discussions with Neil D. Jones during a visit at Microsoft in May 2017.
+\paragraph{Acknowledgement}
+This work got inspired by slides of a talk by Daniil Berezun and
+Neil D.~Jones~\cite{berezunjones_partialevalbytraversals}. It benefited from  communications with the authors and memorable discussions with Neil D.~Jones during a visit at Microsoft in May 2017.
 An anonymous referee provided valuable comments.
 \bibliographystyle{abbrv}
 \bibliography{ulc-trav}
