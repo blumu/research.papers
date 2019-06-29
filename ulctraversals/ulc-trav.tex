@@ -929,20 +929,19 @@ or (ii) up to $\alpha$-conversion, by the \emph{structure} of the maximal justif
 %%%
 A set of name-preserving justified sequences $T\subset \nameencoding^*$ is \defname{$\alpha$-consistent} if all its `path-like' justified sequences agree on how to name bound-variables in lambda nodes: if $p \cdot (\overline{x}, 1, i)$ and $p \cdot (\overline{y}, 1, i)$ are in $T$ for $i\geq 0$, $p\in \nameencoding^*$ then $\overline{x} = \overline{y}$.
 
-\begin{proposition}[Name-preserving term read-out]
+\begin{proposition}[Term read-out]
 \label{proposition:termtree_readout_from_justitied_paths}
 
-Let $T\subset \nameencoding^*$ be a finite set of (name-preserving encoded) justified sequences  that is $\alpha$-consistent.
-If $T\structisomorphic \pathset(M)$ for some (a priori unknown) untyped term $M$ then one can effectively read out from $T$ an untyped
-term  $\readout[T]$ that is $\alpha$-equivalent to $M$.
-%
-Furthermore, provided that no variable capture situation occurs, the variable  occurring in $\readout[T]$ preserves original names from lambda-occurrences in $T$.
+Let $T\subset \nameencoding^*$ be a finite $\alpha$-consistent set of (name-preserving encoded) justified sequences.
+If $T\structisomorphic \pathset(M)$ for some (a priori unknown) untyped term $M$ then one can effectively construct an untyped
+term  $\readout[T]$ that is $\alpha$-equivalent to $M$,
+and which preserves variables names as defined by the $\lambda$-binders in $T$, except where a variable capture situation occurs.
 \end{proposition}
 %(Then $T$ is path-like, that is lambda nodes are justified by their immediate predecessor in the sequence.)
 \begin{proof}
     Because $T \structisomorphic \pathset(M)$, the sequences in $T$ have the properties
-of justified paths of a term tree: they start with a lambda, alternate between lambda and variable/@, lambdas have
-a single child, and are necessarily justified by their immediate predecessor in the sequence (their parent).
+of justified paths of a term tree: they start with a lambda, alternate between lambda and variable/@, contain no ghost nodes, lambdas have
+a single child and are justified by their immediate predecessor in the sequence (their parent).
 Furthermore, $T$ induces an arity for each occurrence of a sequence in $T$: the arity of a lambda-occurrence $(\overline{x},j,i)\in\nameencoding$ is $|\overline{x}|$, the arity of a variable or @-occurrence is the maximum
 child-index (given by the link label) of any lambda occurrence immediately following it in any sequence of $T$.
 %
@@ -2821,7 +2820,7 @@ Suppose that the \emph{lloc} is in $U$.
     %\end{compactitem}
 %%%%
 
-    Suppose $T_1$ is not a variable. Let $z$ denote a fresh variable in $M$, and $M' = M[z/T_1]$ be the term obtained by replacing the subterm $T_1$ in $M$ by the fresh variable $z$.   Since $T_1$ is not a variable, $M'$ must be strictly smaller than $M$. And since $M$ has a $\beta$-nf, so must $M'$, thus by the induction hypothesis (H1), the $\llred$ reduction sequence of $M'$ terminates. Consequently, there is only a finite number of steps in the linear reduction of $M'$ that involve substitutions in reducts of $z~T_2$.
+    Suppose $T_1$ is not a variable. Let $M'$ be the term obtained by replacing the subterm $T_1$ in $M$ by some variable $z$ fresh in $M$. Since $T_1$ is not a variable, $M'$ is strictly smaller than $M$, and since $M$ has a $\beta$-nf, so must $M'$, thus by the induction hypothesis H1, the $\llred$ reduction sequence of $M'$ terminates. Consequently, there is only a finite number of steps in the linear reduction of $M'$ that involve substitutions in reducts of $z~T_2$.
     Clearly, the linear reduction steps under $T_2$ in $M'$ coincide with those of $T_2$ in $M$. Hence, we can conclude that at most a finite number of substitutions take place under $T= T_1 T_2$ in the $\llred$-reduction sequence of $M$.
 %%%%
 
