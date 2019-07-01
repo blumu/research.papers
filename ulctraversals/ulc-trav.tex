@@ -819,11 +819,6 @@ $\nameencoding = (\mathcal{V}^*\times\nat\times\nat) +
  with link distance $j$ and link label $i$ gets encoded
  as $(\overline{x},j,i) \in \mathcal{E}$.
 %
-Replacing the second components of the lambda nodes encoding by their length
-yields the name-free encoding.
-Reciprocally, given a fixed term, the list of variable names in each $\lambda$-occurrences is uniquely recoverable from the sequence structure and the enabling relation $\enables$ over $\exttree$.
-%
-%
 %%%%% clash-free concatenation
 % For any variables $\overline{x}\in\VarSet^*$
 % and variable $y\in\VarSet$ we write $\overline{x} \otimes y$ for the list of variables obtained by appending $y$ to $\overline{x}$ without introducing any name clash: $\overline{x} \otimes y = \overline{x} \cdot y$ if $y\not\in\overline{x}$, and
@@ -832,7 +827,7 @@ Reciprocally, given a fixed term, the list of variable names in each $\lambda$-o
 % we write $\overline{x} \otimes \overline{y}$ for $((\ldots(\overline{x} \otimes y_1) \otimes y_2) \ldots \otimes y_m)$.
 %%%%%%
 The \emph{readout function} $\readout: \nameencoding^* \rightarrow \mathcal{L}^*$
-decodes a name-preserving encoding into a sequence of node labels in $\mathcal{L}$. It is defined by
+decodes a name-preserving encoding into a sequence of node labels in $\mathcal{L}$, and is given by
 $\readout[\epsilon]= \epsilon$;
 $\readout[s \cdot @] = \readout[s] \cdot @$;
 $\readout[s \cdot (\overline{x}, j, i) ] = \readout[s] \cdot \lambda\overline{x}$
@@ -891,6 +886,10 @@ by point-wise extension.
 The main results of the paper apply to both encodings, though
 the name-preserving presentation has the advantage of reusing names from the original terms when producing the normal form.
 We thus adopt that encoding in the rest of the paper and take $\justseqset(M)$ to be a (strict) subset of $\nameencoding^*$.
+%
+% NOTE: the actual node structure (i.e., its parent, children) is not recorded in the above two justified sequence encodings.
+% But in practice, the sequences we will consider (traversals) will verify the visibility condition (every var/@-node points in the P-view), which suffices to uniquely determine the node $n\in\Nodes$ at any
+% point in the traversal.
 
 \subsection{Justified paths of the term tree}
 
@@ -1076,6 +1075,9 @@ For \rulenamet{Lam^\ghostvar}, the induction hypothesis (ii) shows that $i>|m|$,
 Finally (iii) holds because the node preceding $\ghostvar$ in the P-view is precisely $\mu$, its parent node.
 %
 Other rules are straightforward.
+
+Observe that by (iii), the P-view at a given occurrence
+uniquely determines the corresponding tree node. This allows us to look up child/parent nodes when applying traversal rules, even with an underlying sequence encoding, such as $\mathcal{E}^*$, that omits tree structure information.
 \endshortproof
 
 The last property generalizes a concept from the theory of traversals~\cite{OngLics2006,BlumPhd} to the untyped setting: The game-semantic concept of P-views corresponds to paths in the computation tree.
