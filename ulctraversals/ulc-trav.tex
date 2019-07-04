@@ -405,7 +405,9 @@ The read-out phase of the algorithm appeals to a correspondence property between
  based on a non-standard notion of redex that is reduced
  by substituting one variable occurrence at a time.
 
- We have implemented the evaluation procedure in HOG, a tool to study the theory of traversals and pushdown automata generated from Higher-Order Grammars and lambda terms~\cite{BlumGalop2008,Blum-HogTool}.  Section~\ref{sec:examples} includes traversals of untyped lambda terms generated with this tool.
+ We have implemented the evaluation procedure in F\#/OCaml as part of HOG, a tool to study Higher-Order Grammars and $\lambda$-terms~\cite{BlumGalop2008,Blum-HogTool}. Traversals depicted in Section~\ref{sec:examples} were generated with it.
+ We have also produced a separate implementation in TypeScript
+ \cite{BlumTypeScriptTraversal2019}.
 
 \subsection{Related work}
 
@@ -4139,7 +4141,7 @@ by detecting shared L\'evy-families of redexes as they unfold.
 This perhaps relates to a remark by Danos and Regnier that memoization
 can make \emph{Jumping Abstract Machines} optimal~\cite{DANOS199979}.
 %
-Finally, traversals are straightforward to implement and despite the lack of optimality, have potential applications to program compilation, such as partial evaluation, an avenue pursued by Berezun and Jones
+Despite the lack of optimality, traversals have potential applications to program compilation, such as partial evaluation, an avenue pursued by Berezun and Jones
 for their own notion of traversals~\cite{berezunjones_partialevalbytraversals}.
 
 
