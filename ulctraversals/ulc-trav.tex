@@ -349,30 +349,29 @@ where each traversal explores a path in the tree representation of the normal fo
 
 %%%%%%%%%%%%%%%
 \subsection{Overview}
-This paper first generalizes the notion of traversals from the typed setting, which we call `\emph{concrete traversals}', to the untyped lambda calculus (ULC), which we name `\emph{imaginary traversals}'.
-It then introduces a method to evaluate untyped lambda terms based on enumerating traversals and establishes a connection between traversals and \emph{head linear reduction}.
+This paper generalizes the notion of traversals from the typed setting, which we call `\emph{concrete traversals}', to the untyped lambda calculus (ULC), which we name `\emph{imaginary traversals}'.
+It then introduces a method to evaluate untyped lambda terms based on traversals enumeration, and establishes a connection between traversals and \emph{head linear reduction}.
 
 The idea of \emph{imaginary} traversals starts with the following observation:
 Attempting to traverse an untyped lambda term with the
-traversal rules of STLC causes the traversal to get stuck when the operator sub-term of an application has insufficiently many operands. In such a situation, there is no operand node to traverse in the term tree.
-A \emph{concrete} traversal of the lambda term $M = (\lambda f.f)(\lambda x.x)$, for example,  gives the sequence of nodes $\lambda f \cdot f \cdot \lambda x \cdot x$, at which point no further node can be traversed since there is no subterm representing the first argument of $f$.
+`concrete' traversal rules of STLC causes the traversal to get stuck when the operator sub-term of an application has insufficiently many operands. In such a situation, there is no operand node to traverse in the term tree.
+A \emph{concrete} traversal of the lambda term $M = (\lambda f.f)(\lambda x.x)$, for example, gives the sequence of nodes $\lambda f \cdot f \cdot \lambda x \cdot x$, at which point there is no further node to traverse since there is no subterm representing the first argument of $f$.
 Similarly, a concrete traversal of $U = (\lambda x. x x)(\lambda y. y)$,
-detailed in Example~\ref{examp:baby}, gets stuck after traversing $y$. To take an analogy with abstract machine evaluators, this would be like a broken implementation of a Krivine machine~\cite{Krivine2007} attempting to lookup a variable from an empty environment, or an SECD machine~\cite{landin-secd} attempting to pop an argument from an empty stack when evaluating the application operator.
+detailed in Example~\ref{examp:baby}, gets stuck after traversing $y$. To take an analogy with abstract machine evaluators, this would be like a Krivine machine~\cite{Krivine2007} attempting to lookup a variable from an empty environment, or an SECD machine~\cite{landin-secd} attempting to pop an argument from an empty stack when evaluating the application operator.
 
-This situation never occurs in the typed setting where lambda terms are
-conveniently assumed to be \emph{eta-long expanded}, a transformation that recursively eta-expands the subterms with respect to their type,
-which ensures that when traversing an application, there exists a subterm representing every possible operator's argument.
+This situation never occurs in the original setting where lambda terms are
+conveniently \emph{eta-long expanded}, a transformation that recursively eta-expands the subterms with respect to their type.
+This ensures that every possible argument of an operator in an application gets represented by some subterm.
 %
-Untyped terms admitting a simple type, like $M$, can be traversed via eta-long expansion with respect to whichever type they inhabit.
-But this is not feasible in the general ULC case where untyped terms do not necessarily inhabit a simple type.
-Sometimes, well-chosen eta-expansions can help. For instance, the untyped term $U$, which has no simple type, is traversable if we eta-expand all its variable occurrences. This does not always work, unfortunately: to traverse the
-term $J = (\lambda u . u(x\, u)) (\lambda v . v\, y)$ from
- Example~\ref{ex:missingoperand}, nested eta-expansions are necessary:
+Untyped terms that admit a simple type, such as $M$, can thus be traversed via eta-long expansion with respect to that type.
+But this is of course not feasible in the general case since untyped terms do not necessarily inhabit a simple type.
+Sometimes, well-chosen eta-expansions can help. For instance, the untyped term $U$, which has no simple type, is traversable if we eta-expand all its variable occurrences. But again, this strategy is not always sufficient. To traverse $J = (\lambda u . u(x\, u)) (\lambda v . v\, y)$ from
+ Example~\ref{ex:missingoperand}, for instance, one needs to perform \emph{nested} eta-expansions:
  the fresh variable resulting from the eta-expansion of $(x\, u)$ needs to be itself eta-expanded to unblock a concrete traversal of the term.
  Eta-expanding all variables infinitely often is not feasible, so instead imaginary traversals exhibit the missing operand via ad-hoc dynamic eta-expansion, as they traverse the term.
  This allows a traversal to proceed as if the operand existed in the original term.
 
-So, for instance in $M$, an imaginary traversal traverses node $x$ by jumping to a fictitious fresh node $y$ that would exist if $f$ were eta-expanded
+In the term $M$, for instance, an imaginary traversal traverses node $x$ by jumping to a fictitious fresh node $y$ that would exist if $f$ were eta-expanded
 as $\lambda y.f\, y$. This trick allows the traversal to proceed with the usual traversal rules, until reaching that fictitious node $y$.
 A second eta-expansion, this time of the term itself to
 $\lambda z. (\lambda f y.f\, y)(\lambda x.x) z$,
@@ -396,7 +395,7 @@ similarly to complex numbers introduced intermediately in a calculation without 
 
 Evaluating an untyped term then boils down to enumerating traversals.
  Although the set of imaginary traversals is infinite and the traversals  themselves can be infinitely long, we only need to consider an effectively computable subset with sufficiently enough traversals to characterize the normal form, when it exists.
-We achieve this by restricting the non-determinism when traversing a variable: we bound the argument index by a critical quantity called the `dynamic arity', calculated in linear time from the traversal itself. It determines the number of arguments beyond which eta-expansions becomes unnecessary for the sake of finding a path in the normal form. This restricts both the breadth and depth of the traversal enumeration: only a finite number of on-the-fly eta-expansions are applied on a given traversal; and a traversal cannot unfold infinitely, provided that the term has a beta-normal form.
+We achieve this by restricting the non-determinism when traversing a variable: we bound the argument index by a critical quantity called the `dynamic arity', calculated in linear time from the traversal itself. It determines the number of arguments beyond which eta-expansions becomes unnecessary for the sake of finding a path in the syntax tree of the normal form. This restricts both the breadth and depth of the traversal enumeration: only a finite number of on-the-fly eta-expansions are applied on a given traversal; and a traversal cannot unfold infinitely, provided that the term has a beta-normal form.
 On the other hand, traversing a non-terminating term like $(\lambda x. x\,x)(\lambda x. x\,x)$ leads to infinitely long traversals, as one would expect.
 
 The read-out phase of the algorithm appeals to a correspondence property between the traversals and paths in the tree representation of the normal form. The term $M$, for instance, has a single traversal which via suitable filtering, yields the path $\lambda z \cdot z$, therefore its beta-normal form is $\lambda z. z$, up to variable renaming.
@@ -447,7 +446,7 @@ Neither notion of traversals requires any prior syntactic transformation of the 
 Their traversals operate on the traditional term tree where each node represents a token from the lambda calculus syntax,
 whereas imaginary traversals operate on a compressed term tree that merges consecutive lambdas-nodes and consecutive applications nodes into single bulk lambda node or bulk application node.
 %
-Their traversals also distinctively rely on two justification pointers for each token: a \emph{binding pointer} plus a \emph{control pointer}. The control pointers would be what Danos-Regnier call the ``price to pay for having no stacks or environments'' in the definition of the argument lookup transition of the Pointer Abstract Machine~\cite{danos-head}. They also involve a `flag` boolean parameter associated with every token of the traversal.
+Their traversals also distinctively rely on two justification pointers for each token: a \emph{binding pointer} plus a \emph{control pointer}. The control pointers would be what Danos-Regnier call the ``price to pay for having no stacks or environments'' in the definition of the argument lookup transition of the Pointer Abstract Machine~\cite{danos-head}. They also involve a `flag' boolean parameter associated with every token of the traversal.
 In contrast, imaginary traversals necessitate a single justification pointer per node traversed.
 
 Another notable difference is that their normalization algorithm requires a single traversal of the term. Our algorithm, on the other hand, produces one traversal for every possible maximal path in the tree of the beta-normal form. Each branching point in the traversal enumeration corresponds to some occurrence of a variable in the normal form, where each sub-branch corresponds to some operand of that variable. This non-deterministic branching may conceivably be eliminated using auxiliary pointers to implement backtracking: once a variable operand is fully evaluated, the traversal would return to that variable node and start exploring remaining operands.
@@ -498,7 +497,7 @@ where $x$ ranges over a countable set of variable names $\VarSet$.
 % countable is important so that we can pick as many fresh variables as needed
 For conciseness we abbreviate consecutive lambda abstractions when writing lambda terms, so that $\lambda x_1 \ldots \lambda x_n . M$ for some $n\geq 0$ and term $M$ will be written $\lambda x_1 \ldots x_n . M$; or just
 $\lambda \overline{x} . M$ if $\overline{x} = x_1 \ldots x_n$.
-We will also drop brackets, and assume left-associative application so that $U\,V\,W$ means $(U\,V)\,W$. We says that two terms are $\alpha$-equivalent if they are equal up to variable renaming.
+We will also drop brackets, and assume left-associative application so that $U\,V\,W$ means $(U\,V)\,W$. We say that two terms are $\alpha$-equivalent if they are equal up to variable renaming.
 In the rest of the paper, we use uppercase letters $M, N, T, U, V$ for lambda terms and lowercase $x,y,z$ to denote variable names. Terms have variable names ranging in some fixed set $\VarSet$ of identifiers.
 
 We recall standard results of the lambda calculus.
@@ -509,7 +508,7 @@ A term is said to be in \defname{$\beta$-normal form}, abbreviated $\beta$-nf, i
 A term is in \defname{head normal form} if it can be written $\lambda x_1 \ldots x_n . y A_1 \ldots A_m$ for $n,m\geq0$. If a term is not in head normal form then its \defname{head beta-redex} is the leftmost redex, otherwise the term does not have any head beta-redex. For any reduction relation $\rightarrow$ between terms we will write $\rightarrow^*$ to denote its reflexive transitive closure. The \defname{eta-expansion} of $M$ refers to some term $\lambda x. M x $ for some variable $x$ fresh in $M$.
 
 The \defname{head reduction}, denoted $\rightarrow_{h}$, fires the head redex of a term if it exists.
-A well-know result is that $\rightarrow^*_{h}$ yields the head-normal form. The \defname{normal-order reduction strategy}, also called leftmost-outermost reduction strategy, performs head reduction until reaching the head-normal form and then recursively applies head reduction on each operand of the head variable. A standard result is that this reduction strategy yields the normal form if it exists.
+A well-known result is that $\rightarrow^*_{h}$ yields the head-normal form. The \defname{normal-order reduction strategy}, also called leftmost-outermost reduction strategy, performs head reduction until reaching the head-normal form and then recursively applies head reduction on each operand of the head variable. A standard result is that this reduction strategy yields the normal form if it exists.
 
 \paragraph{Types} Simple types are generated from the grammar $\tau:= o\,|\,\tau\,\rightarrow\,\tau$ where $o$ ranges over a fixed set of atomic types. Typed-annotated lambda terms are generated from the grammar $E := \VarSet\, |\, (E\, E)\, |\, \lambda \VarSet \colon\tau. E $.
 We write $M^\tau$ to denote a closed (\ie, no free variable)
@@ -653,8 +652,8 @@ We write $\Nodes(M)$ for the set of nodes of $\ctree(M)$, or just $\Nodes$ if th
 \centering
 \end{figure}
 
-We define the \defname{enabling relation} $\enables$ on tree nodes $\Nodes$ as the relation mapping (i) each $\lambda$-node to all the variable nodes that it binds; (ii) the root of the tree to all the free variable nodes; (iii) variable and application node to each one of their child node.
-We number children nodes starting from $0$ for @-nodes and from $1$ for variable nodes, so that the $0$th child denotes the operator of a redex, while other children represent operands of either an @-node or a variable node.
+We define the \defname{enabling relation} $\enables$ on tree nodes $\Nodes$ as the relation mapping (i) each $\lambda$-node to all the variable nodes that it binds; (ii) the root of the tree to all the free variable nodes; (iii) variable and application node to each one of their child nodes.
+We number child nodes starting from $0$ for @-nodes and from $1$ for variable nodes, so that the $0$th child denotes the operator of a redex, while other children represent operands of either an @-node or a variable node.
 %
 We write
 $n \enables_k \lambda\overline{x}$, for $k\geq0$, to indicate that
@@ -812,7 +811,7 @@ Two subsets $J_1\subseteq \justseqset(M_1)$ and $J_2\subseteq\justseqset(M_2)$ a
 \end{example}
 
 
-The \defname{name-preserving encoding} of a justified sequence of nodes with variables in $\VarSet$ is a sequence of element in
+The \defname{name-preserving encoding} of a justified sequence of nodes with variables in $\VarSet$ is a sequence of elements in
 $\nameencoding = (\mathcal{V}^*\times\nat\times\nat) +
    (\nat\times\nat)
    + \{ @ \}$  defined occurrence-wise similarly to the name-free encoding
@@ -1128,7 +1127,7 @@ It follows that $M$ is a sub-tree of $M^t$: paths in $\ctree(M)$ are also paths 
 
 \begin{example}
 The eta-expansion of $J = (\lambda u . u(x\,u)) (\lambda v . v\,y)$ with respect to traversal $t$ from Example~\ref{ex:ulctrav_sample} is
-$J^t = (\lambda u . u(x (\lambda z_1. u (\lambda z_2.z_1\,z_2))) (\lambda v . v\,y)$
+$J^t = (\lambda u . u(x (\lambda z_1. u (\lambda z_2.z_1\,z_2)))) (\lambda v . v\,y)$
 for some fresh variable names $z_1, z_2$.
 \end{example}
 
@@ -4198,7 +4197,8 @@ An anonymous referee provided valuable comments.
 \else
 %%%%%%% short version
 \gdef\pstr@DefaultArrowAngle{10}
-\newgeometry{left=1cm,right=1cm, bottom=2cm, top=1cm}
+% left/right becomes top/bottom due to rotation
+\newgeometry{left=0cm, right=1cm, bottom=0.4cm, top=0.4cm}
 \begin{landscape}
 \thispagestyle{empty}
 \begin{table}
