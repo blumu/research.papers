@@ -1410,7 +1410,7 @@ The essential traversals effectively exclude all contexts that apply a term $A$ 
 Just like imaginary traversals,
 essential traversals allow for infinitely many eta-expansions.
 This is reasonable from a denotational semantics stand-point, where the notion of compositionality matters:
-each eta-expansion represents how the term would interact with its arguments if more arguments were to be be applied to it. But with the goal of finding a normal form, traversing ghost nodes only helps if it is a finite process that leads to some structural node of the final normal term tree.
+each eta-expansion represents how the term would interact with its arguments if more arguments were to be applied to it. But with the goal of finding a normal form, traversing ghost nodes only helps if it is a finite process that leads to some structural node of the final normal term tree.
 %
 \emph{Concrete} traversals restrict the choice `(L)' of the child lambda node to be a \emph{structural} child of the traversed variable node. This restriction effectively eliminates eta-expansion altogether:
 \begin{definition}
@@ -2780,7 +2780,7 @@ Suppose that the \emph{lloc} is in $U$.
 %($lloc_M(U) \ne \bot$).
     We show by finite \emph{structural} induction on subterms $T$ of $U$ that:
     `\emph{H2: If $lloc_M(T) \neq \bot$ and $hoc(M)$ is in $T$ then there is
-     only a finite number of steps in the $\llred$-sequence of $M$ that involve a linear substitutions in (reducts of) $T$.}'
+     only a finite number of steps in the $\llred$-sequence of $M$ that involve linear substitutions in (reducts of) $T$.}'
 %
     If $T$ is a variable %, since it contains the \hoc\,
     it must be the \hoc~itself. Because $M$ is in \emph{qhnf}, the \hoc~is not involved in any generalized redex and therefore $T$ is not involved in any substitution of the $\llred$-reduction sequence of $M$.
@@ -2799,7 +2799,7 @@ Suppose that the \emph{lloc} is in $U$.
     \emph{Base case of H3}: $z$ has a single argument which must be $T_2$.
     By Theorem~\ref{thm:danosregnier_headlinred}, reducing all the prime redexes in $M$ yields its head-normal form
     with head variable $x$.
-    Let $\gamma$ denotes the sequence of substitutions performed on $M$ to reduce the prime redexes, so that $\gamma(M)$ is the head normal form of $M$.  Then $\gamma(T_2)$ will become the (unique) argument of $x$ in the head normal form. And because $M$ has a $\beta$-nf, the term $\gamma(T_2)$ must also have a $\beta$-nf.
+    Let $\gamma$ denote the sequence of substitutions performed on $M$ to reduce the prime redexes, so that $\gamma(M)$ is the head normal form of $M$.  Then $\gamma(T_2)$ will become the (unique) argument of $x$ in the head normal form. And because $M$ has a $\beta$-nf, the term $\gamma(T_2)$ must also have a $\beta$-nf.
     %
     Because $z$ has a single hoc argument, all the subsequent linear substitutions in $M$ must necessarily occur under $T_2$ and its reducts: the \emph{lloc} will never get out of $T_2$.
     %%%% not needed in short proof
@@ -2890,7 +2890,7 @@ If $M = \lambda x . U$ then $U$ must also admit a beta-nf so we can conclude by 
 
                     By Theorem~\ref{thm:danosregnier_headlinred}, reducing all the prime redexes in $M$ yields its head-normal form
                     with $x$ as the head variable.
-                    Let $\gamma$ denotes the sequence of substitutions performed on $M$ to reduce the prime redexes, so that $\gamma(M)$ is the head normal form of $M$.
+                    Let $\gamma$ denote the sequence of substitutions performed on $M$ to reduce the prime redexes, so that $\gamma(M)$ is the head normal form of $M$.
                     Then $\gamma(T_2)$ will becomes the (unique) argument of $x$ in the head normal form. And because $M$ has a beta-nf, the term $\gamma(T_2)$ must also have a beta-nf.
 
                     Because $z$ has a single hoc argument, all the subsequent linear substitutions in $M$ must necessarily occur under $T_2$ and its reducts: the \emph{lloc} will never get out of $T_2$.
